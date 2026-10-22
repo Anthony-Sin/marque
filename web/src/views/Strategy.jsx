@@ -8,16 +8,17 @@ import { SignalChips } from '../components/Qloo.jsx';
 import './strategy.css';
 
 // the textarea opens with this default — editable; chips below swap in alternates.
-const DEFAULT_PROMPT = 'Help me launch our cold brew coffee subscription to busy parents';
+const DEFAULT_PROMPT = 'Cold brew coffee subscription → busy parents';
 
-// real-product prompts — click to fill. A chip may also set the site-URL field
-// (url) so the scrape context comes along with the prompt.
+// real-product prompts — "product/brand → target audience". Every idea carries
+// its product page so the scraper pulls real context; clicking fills BOTH the
+// prompt and the link field.
 const PROMPT_IDEAS = [
-  { label: 'Rhode lip tint → Gen Z', text: 'Help me build a campaign for the Rhode peptide lip tint to market to Gen Z' },
-  { label: 'On Cloud sneakers → runners', text: 'Help me build a campaign for On Cloud running shoes aimed at marathoners' },
-  { label: 'Stanley drop → TikTok', text: 'Launch a new Stanley Quencher colorway on TikTok' },
-  { label: 'Position our coffee vs Blue Bottle', text: 'Position our small-batch coffee brand against Blue Bottle' },
-  { label: 'Analyze allbirds.com', text: 'Analyze allbirds.com — suggest campaign strategies for this store', url: 'https://allbirds.com' },
+  { label: 'Rhode lip tint → Gen Z', text: 'Rhode peptide lip tint → Gen Z', url: 'https://rhodeskin.com' },
+  { label: 'On Cloud sneakers → runners', text: 'On Cloud running shoes → marathoners', url: 'https://www.on.com' },
+  { label: 'Stanley drop → TikTok', text: 'New Stanley Quencher colorway → TikTok', url: 'https://www.stanley1913.com' },
+  { label: 'Our coffee vs Blue Bottle', text: 'Small-batch coffee brand → coffee snobs (position against Blue Bottle)', url: 'https://bluebottlecoffee.com' },
+  { label: 'allbirds.com → eco shoppers', text: 'allbirds.com → eco-conscious shoppers', url: 'https://allbirds.com' },
 ];
 
 const ALL_CHANNELS = ['instagram', 'tiktok', 'youtube', 'tv', 'streaming', 'podcast', 'ooh', 'guerrilla', 'email', 'press'];
@@ -104,8 +105,44 @@ function Ring({ value = 0, label, small }) {
   );
 }
 
+// ghost-drafting — muted phrases typed into skeleton card slots while the
+// model works: type → hold → erase → next phrase. The LLM-writing feel without
+// fake progress: these are visibly drafting marks, replaced by real data.
+const GHOST_AUD = ['reading the taste graph…', 'scoring media habits…', 'weighing audience signals…', 'checking what to rule out…'];
+const GHOST_PICKS = [
+  ['drafting lead channel play…', 'fitting formats to the audience…', 'scoring reach…'],
+  ['testing a culture-collab angle…', 'matching taste entities…', 'scoring reach…'],
+  ['trying counter-positioning…', 'weighing press vs social…', 'scoring reach…'],
+];
+
+function GhostWriter({ phrases, delay = 0, big = false }) {
+  const [txt, setTxt] = useState('');
+  useEffect(() => {
+    if (REDUCED) { setTxt(phrases[0] || ''); return undefined; }
+    let pi = 0, ci = 0, del = false, alive = true, t;
+    const tick = () => {
+      if (!alive) return;
+      const p = phrases[pi % phrases.length];
+      if (!del) {
+        ci += 1; setTxt(p.slice(0, ci));
+        if (ci >= p.length) { del = true; t = setTimeout(tick, 1700); return; }
+        t = setTimeout(tick, 24 + Math.random() * 42);
+      } else {
+        ci = Math.max(0, ci - 3); setTxt(p.slice(0, ci));
+        if (ci === 0) { del = false; pi += 1; t = setTimeout(tick, 340); return; }
+        t = setTimeout(tick, 13);
+      }
+    };
+    t = setTimeout(tick, delay);
+    return () => { alive = false; clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return <span className={`stg-ghost${big ? ' big' : ''}`}>{txt}<i className="stg-caret" /></span>;
+}
+
 // board-shaped skeleton shown the moment generation starts — same 12-col bento
-// as the real board, so the staggered .stg-fill reveals land in place of it.
+// as the real board, with ghost text being written into the slots so it reads
+// as the model drafting, then the staggered .stg-fill reveals land on top.
 function BoardSkeleton() {
   const bar = (w, h, cls = '') => (
     <span className={`stg-shimmer sk ${cls}`.trim()} style={{ '--w': w, '--h': h }}><i /></span>
@@ -117,7 +154,7 @@ function BoardSkeleton() {
         <div className="stg-tile-head">{bar('112px', '10px')}</div>
         <div className="stg-aud-main">
           <div className="stg-aud-left stg-skel-col">
-            {bar('62%', '24px')}
+            <GhostWriter phrases={GHOST_AUD} big />
             {bar('38%', '10px')}
             <div style={{ height: 8 }} />
             {bar('88%', '11px')}
@@ -146,7 +183,7 @@ function BoardSkeleton() {
                 {bar('92px', '9px')}
                 {bar('46px', '46px', 'circle')}
               </span>
-              {bar('94%', '15px')}
+              <GhostWriter phrases={GHOST_PICKS[i]} delay={200 + i * 420} />
               {bar('58%', '15px')}
               {bar('82%', '10px')}
               <span className="stg-pick-foot">
@@ -229,6 +266,8 @@ export default function Strategy() {
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [siteUrl, setSiteUrl] = useState('');
   const [busy, setBusy] = useState(false);
+  const [editingPrompt, setEditingPrompt] = useState(false); // chipbar inline edit
+  const [editPrompt, setEditPrompt] = useState('');
   const [resL, setResL] = useState(undefined); // local override; undefined → follow ctx board
   const [err, setErr] = useState('');
   const [notes, setNotes] = useState('');      // "add notes for the campaign"
@@ -488,20 +527,39 @@ export default function Strategy() {
         </>
       ) : (
         <>
-          {/* ---- collapsed prompt pill — click to re-open the composer ---- */}
+          {/* ---- collapsed prompt pill — click the text to edit it inline,
+                Enter regenerates from the modified prompt ---- */}
           {(busy || res) && (
-            <div className="stg-chipbar" role="button" tabIndex={0} title="Edit this prompt"
-              onClick={reset} onKeyDown={(e) => { if (e.key === 'Enter') reset(); }}>
+            <div className={`stg-chipbar${editingPrompt ? ' editing' : ''}`} role="button" tabIndex={editingPrompt ? -1 : 0}
+              title="Click to modify this prompt"
+              onClick={() => { if (!editingPrompt && !busy) { setEditPrompt(sub?.prompt || ''); setEditingPrompt(true); } }}
+              onKeyDown={(e) => { if (e.key === 'Enter' && !editingPrompt && !busy) { setEditPrompt(sub?.prompt || ''); setEditingPrompt(true); } }}>
               <span className="stg-chipbar-ic"><Icon name="sparkle" size={14} /></span>
-              <span className="stg-chipbar-prompt" title={sub?.prompt || sub?.url}>
-                {sub?.prompt || sub?.url || 'strategy board'}
-              </span>
-              {!!subProduct && <span className="stg-tag"><Icon name="bag" size={11} />{subProduct.name}</span>}
-              {!!subHost && <span className="stg-tag"><Icon name="globe" size={11} />{subHost}</span>}
-              <button className="btn ghost sm stg-chipbar-new" disabled={busy}
-                onClick={(e) => { e.stopPropagation(); if (!busy) reset(); }}>
-                <Icon name="edit" size={13} /> New prompt
-              </button>
+              {editingPrompt ? (
+                <input className="stg-chipbar-edit" autoFocus value={editPrompt}
+                  placeholder="product/brand → audience"
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => setEditPrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    e.stopPropagation();
+                    if (e.key === 'Enter' && editPrompt.trim()) { setEditingPrompt(false); generate(editPrompt.trim()); }
+                    if (e.key === 'Escape') setEditingPrompt(false);
+                  }}
+                  onBlur={() => setEditingPrompt(false)} />
+              ) : (
+                <span className="stg-chipbar-prompt" title={sub?.prompt || sub?.url}>
+                  {sub?.prompt || sub?.url || 'strategy board'}
+                </span>
+              )}
+              {!editingPrompt && !!subProduct && <span className="stg-tag"><Icon name="bag" size={11} />{subProduct.name}</span>}
+              {!editingPrompt && !!subHost && <span className="stg-tag"><Icon name="globe" size={11} />{subHost}</span>}
+              {!editingPrompt && (
+                <button className="btn ghost sm stg-chipbar-new" disabled={busy}
+                  title="Start a fresh plan from the composer"
+                  onClick={(e) => { e.stopPropagation(); if (!busy) reset(); }}>
+                  <Icon name="edit" size={13} /> New prompt
+                </button>
+              )}
             </div>
           )}
 
@@ -549,35 +607,38 @@ export default function Strategy() {
               <div className="card stg-ask">
                 <textarea
                   value={prompt}
-                  placeholder="What are you trying to make happen? e.g. launch our spring drop to people who already love what we do"
+                  placeholder="Your product or brand → the audience you want. e.g. Rhode lip tint → Gen Z"
                   onChange={(e) => setPrompt(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate(); }}
                 />
-                <div className="stg-ask-foot">
-                  <span className={`stg-urlwrap${siteUrl.trim() ? ' has' : ''}`} title="Optional — we'll scrape this as product/site context">
-                    <Icon name="link" size={13} />
-                    <input className="stg-url" value={siteUrl} placeholder="or paste a product/store URL"
-                      onChange={(e) => setSiteUrl(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') generate(); }} />
-                  </span>
+                <div className={`stg-linkrow${siteUrl.trim() ? ' has' : ''}`}>
+                  <span className="stg-linkrow-lbl"><Icon name="link" size={13} /> Product link</span>
+                  <input className="stg-url" value={siteUrl}
+                    placeholder="amazon.com/dp/… · yourstore.com/product · any product or brand site"
+                    onChange={(e) => setSiteUrl(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') generate(); }} />
                   {!!inlineUrl && !siteUrl.trim() && (
                     <span className="stg-tag" title="Detected in your prompt — will be scraped as context">
                       <Icon name="globe" size={11} />{host(inlineUrl)}
                     </span>
                   )}
+                </div>
+                <div className="stg-ask-foot">
+                  <span className="stg-hint-inline">the link gets scraped for real product context — the more real the page, the sharper the strategies</span>
                   <span className="grow" />
                   <button className="btn lime" disabled={!canGo} onClick={() => generate()}>
                     <Icon name="sparkle" /> Generate strategies
                   </button>
                 </div>
-                <div className="stg-hint">prompt, or paste a product/website URL — we'll scrape it for context</div>
               </div>
 
               {!err && (
                 <div className="stg-examples">
                   {PROMPT_IDEAS.map((idea) => (
-                    <button key={idea.text} className="stg-ex" title={idea.url ? `${idea.text} · ${idea.url}` : idea.text}
-                      onClick={() => { setPrompt(idea.text); if (idea.url) setSiteUrl(idea.url); }}>{idea.label}</button>
+                    <button key={idea.text} className="stg-ex" title={`${idea.text} · scrapes ${idea.url}`}
+                      onClick={() => { setPrompt(idea.text); setSiteUrl(idea.url); }}>
+                      {idea.label}<span className="stg-ex-url">{host(idea.url)}</span>
+                    </button>
                   ))}
                 </div>
               )}
