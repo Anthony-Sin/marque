@@ -7,30 +7,20 @@ import Wayfind from '../components/Wayfind.jsx';
 import { SignalChips } from '../components/Qloo.jsx';
 import './strategy.css';
 
-// typed out one line at a time while /api/strategy runs — the scan coverage is real:
-// the server scores fit across every channel below from the taste bundle.
-const TYPE_LINES = [
-  'Reading your taste graph…',
-  'Scanning Instagram · TikTok · YouTube · TV · Streaming · Podcasts · OOH · Press · Email…',
-  'Scoring channel fit against your audience…',
-  'Drafting strategies…',
-];
-
 // the textarea opens with this default — editable; chips below swap in alternates.
-const DEFAULT_PROMPT = 'Help me build a campaign for this product to market to adults';
+const DEFAULT_PROMPT = 'Help me launch our cold brew coffee subscription to busy parents';
 
-// audience/task-shaped alternates — click to fill the prompt. A chip may also set
-// the site-URL field (url) so the scrape context comes along with the prompt.
+// real-product prompts — click to fill. A chip may also set the site-URL field
+// (url) so the scrape context comes along with the prompt.
 const PROMPT_IDEAS = [
-  { label: '…to kids', text: 'Help me build a campaign for this product to market to kids' },
-  { label: '…to Gen Z', text: 'Help me build a campaign for this product to market to Gen Z' },
-  { label: 'Position this brand against bigger competitors', text: 'Position this brand against bigger competitors' },
-  { label: 'Find the best channels to reach my audience', text: 'Find the best channels to reach my audience' },
+  { label: 'Rhode lip tint → Gen Z', text: 'Help me build a campaign for the Rhode peptide lip tint to market to Gen Z' },
+  { label: 'On Cloud sneakers → runners', text: 'Help me build a campaign for On Cloud running shoes aimed at marathoners' },
+  { label: 'Stanley drop → TikTok', text: 'Launch a new Stanley Quencher colorway on TikTok' },
+  { label: 'Position our coffee vs Blue Bottle', text: 'Position our small-batch coffee brand against Blue Bottle' },
   { label: 'Analyze allbirds.com', text: 'Analyze allbirds.com — suggest campaign strategies for this store', url: 'https://allbirds.com' },
 ];
 
 const ALL_CHANNELS = ['instagram', 'tiktok', 'youtube', 'tv', 'streaming', 'podcast', 'ooh', 'guerrilla', 'email', 'press'];
-const PULL_SOURCES = ['YouTube', 'TikTok', 'iTunes', 'Wikipedia', 'Wikimedia Commons'];
 const URL_RE = /https?:\/\/[^\s]+/;
 
 // map evidence/strategy channel names onto the existing Icon set
@@ -50,6 +40,32 @@ const fmtViews = (n) => {
   return `${v}`;
 };
 const REDUCED = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+// streams text character-by-character — the LLM "writing" feel. Used on text
+// that lands when data resolves, so content appears to be generated in place.
+function Typed({ text = '', cps = 46, delay = 0, className = '', as: Tag = 'span', ...rest }) {
+  const s = String(text);
+  const [n, setN] = useState(REDUCED ? s.length : 0);
+  useEffect(() => {
+    if (REDUCED) { setN(s.length); return undefined; }
+    setN(0);
+    let i = 0, iv;
+    const t = setTimeout(() => {
+      iv = setInterval(() => {
+        i += 1 + (Math.random() < .28 ? 1 : 0); // uneven cadence reads generated
+        setN(Math.min(i, s.length));
+        if (i >= s.length) clearInterval(iv);
+      }, 1000 / cps);
+    }, delay);
+    return () => { clearTimeout(t); if (iv) clearInterval(iv); };
+  }, [s, cps, delay]);
+  return (
+    <Tag className={className} {...rest}>
+      {s.slice(0, n)}
+      {n < s.length && <i className="stg-caret" aria-hidden="true" />}
+    </Tag>
+  );
+}
 
 // count-up for ring numerals (skipped under reduced-motion)
 function CountUp({ v = 0 }) {
@@ -84,51 +100,6 @@ function Ring({ value = 0, label, small }) {
           strokeDasharray={C} style={{ strokeDashoffset: C * (1 - v) }} />
       </svg>
       <div className="stg-ring-num"><b><CountUp v={pct(v)} /></b><span>{label}</span></div>
-    </div>
-  );
-}
-
-// LLM-style staged progress — each status line types out character-by-character,
-// then the next one starts. Previous lines stay, checked. No spinner.
-// slim → a compact bar pinned above the board skeleton (the cards are already
-// there; the status types underneath the composer, alongside them).
-function Typer({ lines = TYPE_LINES, slim = false }) {
-  const [li, setLi] = useState(0);
-  const [cc, setCc] = useState(0);
-  useEffect(() => {
-    if (REDUCED) { setLi(lines.length - 1); setCc(9999); return undefined; }
-    const line = lines[li] || '';
-    if (cc < line.length) {
-      const ch = line[cc];
-      const d = ch === ' ' ? 12 : 15 + Math.random() * 34; // uneven cadence — feels written
-      const t = setTimeout(() => setCc((c) => c + 1), d);
-      return () => clearTimeout(t);
-    }
-    if (li < lines.length - 1) {
-      const t = setTimeout(() => { setLi((l) => l + 1); setCc(0); }, 420);
-      return () => clearTimeout(t);
-    }
-    return undefined;
-  }, [li, cc, lines]);
-
-  return (
-    <div className={`card stg-typer${slim ? ' slim' : ''}`} aria-live="polite">
-      <div className="stg-typer-head">
-        <span className="stg-typer-dot" />
-        Marque is working
-      </div>
-      <div className="stg-typer-lines">
-        {lines.slice(0, li).map((l) => (
-          <div className="stg-tw done" key={l}>
-            <Icon name="check" size={12} sw={2.4} /><span>{l}</span>
-          </div>
-        ))}
-        <div className="stg-tw now">
-          <span>{(lines[li] || '').slice(0, cc)}</span>
-          <span className="stg-tw-caret" />
-        </div>
-      </div>
-      {!slim && <div className="stg-shimmer"><i /></div>}
     </div>
   );
 }
@@ -190,26 +161,15 @@ function BoardSkeleton() {
   );
 }
 
-// rotating "pulling examples from X…" line while /api/strategy/examples scrapes (30-90s)
-function PullStatus() {
-  const [i, setI] = useState(0);
-  useEffect(() => {
-    if (REDUCED) return undefined;
-    const t = setInterval(() => setI((n) => (n + 1) % PULL_SOURCES.length), 1700);
-    return () => clearInterval(t);
-  }, []);
-  return (
-    <span>
-      pulling examples from <b className="stg-pull-src" key={i}>{PULL_SOURCES[i]}</b> — live scrape, can take a couple of minutes…
-    </span>
-  );
-}
-
 const SRC_LABEL = { scraped: 'scraped', 'catalog-art': 'catalog art', 'concept-art': 'concept art' };
 
-// one "in the wild" example card. Embed-capable items (YouTube/TikTok player URLs)
-// open an inline collapsible player; everything else links out in a NEW TAB.
-function WildCard({ e, i }) {
+// stable identity for an example card — survives re-pulls ordering shifts
+const exKey = (e) => e.url || e.embed || `${e.platform || 'web'}:${e.title || ''}`;
+
+// one "in the wild" example card — SELECTABLE: a click toggles it into the set
+// of references handed to the campaign. Embed/image folds still open via the
+// play/view button inside; nothing ever links out of the app.
+function WildCard({ e, i, sel, onToggle }) {
   const [open, setOpen] = useState(false);
   const tt = /tiktok/i.test(e.embed || '');
   const media = e.embed && open ? (
@@ -222,32 +182,34 @@ function WildCard({ e, i }) {
     <span className="stg-wx-media"><img src={e.image} alt="" loading="lazy" /></span>
   ) : null;
 
-  const body = (
-    <span className="stg-wx-body">
-      <span className="stg-wx-plat">
-        <Icon name={chanIcon(e.platform)} size={12} />{e.platform || 'web'}
-        <span className={`stg-src ${e.source || 'scraped'}`}>{SRC_LABEL[e.source] || e.source || 'scraped'}</span>
-      </span>
-      <span className="stg-wx-title">{e.title}</span>
-      {!!e.match && <span className="stg-wx-match">{e.match}</span>}
-      {!!e.author && <span className="stg-wx-author">{e.author}</span>}
-      {!!e.note && <span className="stg-wx-note">“{e.note}”</span>}
-      <span className="stg-wx-acts">
-        {(!!e.embed || !!e.image) && (
-          <button type="button" className="stg-wx-play"
-            onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); setOpen((o) => !o); }}>
-            <Icon name={open ? 'x' : 'play'} size={10} /> {open ? 'close' : e.embed ? 'play inline' : 'view'}
-          </button>
-        )}
-      </span>
-    </span>
-  );
-
-  // never navigate out — embeds play in the fold, images expand in place
   return (
-    <div className={`stg-wx${open ? ' open' : ''}`} style={{ '--i': i }}
-      onClick={() => { if (!e.embed && e.image) setOpen((o) => !o); }} role={!e.embed && e.image ? 'button' : undefined}>
-      {media}{body}
+    <div className={`stg-wx pickable${open ? ' open' : ''}${sel ? ' sel' : ''}`} style={{ '--i': i }}
+      role="button" tabIndex={0} aria-pressed={!!sel}
+      title={sel ? 'Selected — will feed the campaign' : 'Select as a campaign reference'}
+      onClick={onToggle}
+      onKeyDown={(ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onToggle?.(); } }}>
+      {media}
+      <span className="stg-wx-body stg-fill">
+        <span className="stg-wx-plat">
+          <Icon name={chanIcon(e.platform)} size={12} />{e.platform || 'web'}
+          <span className={`stg-src ${e.source || 'scraped'}`}>{SRC_LABEL[e.source] || e.source || 'scraped'}</span>
+        </span>
+        <span className="stg-wx-title">{e.title}</span>
+        {!!e.match && <span className="stg-wx-match">{e.match}</span>}
+        {!!e.author && <span className="stg-wx-author">{e.author}</span>}
+        {!!e.note && <span className="stg-wx-note">“{e.note}”</span>}
+        <span className="stg-wx-acts">
+          {(!!e.embed || !!e.image) && (
+            <button type="button" className="stg-wx-play"
+              onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); setOpen((o) => !o); }}>
+              <Icon name={open ? 'x' : 'play'} size={10} /> {open ? 'close' : e.embed ? 'play inline' : 'view'}
+            </button>
+          )}
+        </span>
+      </span>
+      <span className={`stg-wx-check${sel ? ' on' : ''}`} aria-hidden="true">
+        <Icon name="check" size={11} sw={2.8} />
+      </span>
       {open && !e.embed && e.image && (
         <span className="stg-wx-big"><img src={e.image} alt={e.title || ''} /></span>
       )}
@@ -266,13 +228,19 @@ export default function Strategy() {
 
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [siteUrl, setSiteUrl] = useState('');
-  const [productId, setProductId] = useState('');
   const [busy, setBusy] = useState(false);
   const [resL, setResL] = useState(undefined); // local override; undefined → follow ctx board
   const [err, setErr] = useState('');
   const [notes, setNotes] = useState('');      // "add notes for the campaign"
   const [ex, setEx] = useState({});            // strategyId -> {status, data, err}
   const [sub, setSub] = useState(null);        // submitted {prompt, productId, url}
+  // selected "in the wild" references, keyed per board+strategy so the set
+  // survives route hops; mirrored to sessionStorage + the Campaigns handoff
+  // (the boards API only persists title — there is no selection field).
+  const [selEx, setSelEx] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('marque.wildSel') || '{}') || {}; }
+    catch { return {}; }
+  });
   const [renaming, setRenaming] = useState(false);
   const [renameVal, setRenameVal] = useState('');
   const renameRef = useRef(null);
@@ -321,9 +289,10 @@ export default function Strategy() {
     if (text) setPrompt(p);
     setBusy(true); setErr(''); setNotes(''); setEx({});
     try {
-      const out = await api.strategy(p, productId || undefined, url || undefined);
+      // productId intentionally not sent — the prompt text carries any product anchor
+      const out = await api.strategy(p, undefined, url || undefined);
       setRes(out);
-      const s = { prompt: p, productId, url };
+      const s = { prompt: p, productId: '', url };
       setSub(s);
       try { sessionStorage.setItem('marque.strategySub', JSON.stringify(s)); } catch { /* storage unavailable */ }
       // a new board now exists — refresh the plans switcher
@@ -370,8 +339,13 @@ export default function Strategy() {
     }
   };
 
-  // hand the strategy to Campaigns: stash the handoff, then open /campaigns
+  // hand the strategy to Campaigns: stash the handoff (+ any wild-example
+  // references the user selected), then open /campaigns
   const useStrategy = (s) => {
+    const keys = new Set(selEx[wildScope(s)] || []);
+    const exampleRefs = ((ex[s.id || s.title]?.data?.examples) || [])
+      .filter((e) => keys.has(exKey(e)))
+      .map((e) => ({ platform: e.platform || '', title: e.title || '', author: e.author || '', url: e.url || '', note: e.note || '' }));
     try {
       sessionStorage.setItem('strategyHandoff', JSON.stringify({
         strategy: s,
@@ -379,7 +353,8 @@ export default function Strategy() {
         strategyTitle: s.title || '',
         notes,
         prompt: sub?.prompt || '',
-        productId: sub?.productId || productId || '',
+        productId: sub?.productId || '',
+        exampleRefs,
       }));
     } catch { /* storage unavailable — Campaigns just won't prefill */ }
     say?.(`"${s.title}" handed to Campaigns`);
@@ -393,6 +368,33 @@ export default function Strategy() {
   const chans = cur ? [...(cur.channels || [])].sort((a, b) => (+b.fit || 0) - (+a.fit || 0)) : [];
   const exState = cur ? ex[cur.id || cur.title] : null;
   const calls = res?.evidence?.calls || [];
+  const ev = res?.evidence || {};
+
+  // selection scope: per board + strategy, so picks don't leak between plans
+  const wildScope = (s) => `${res?.id || 'board'}:${s?.id || s?.title || ''}`;
+  const curScope = cur ? wildScope(cur) : '';
+  const curSel = new Set(selEx[curScope] || []);
+  const wildList = (exState?.data?.examples || []).slice(0, 8);
+  const selExamples = wildList.filter((e) => curSel.has(exKey(e)));
+  const toggleWild = (e) => {
+    if (!curScope) return;
+    const k = exKey(e);
+    setSelEx((m) => {
+      const cur2 = new Set(m[curScope] || []);
+      if (cur2.has(k)) cur2.delete(k); else cur2.add(k);
+      const next = { ...m, [curScope]: [...cur2] };
+      try { sessionStorage.setItem('marque.wildSel', JSON.stringify(next)); } catch { /* storage unavailable */ }
+      return next;
+    });
+  };
+
+  // provenance line under the signals — built from real board.evidence fields
+  const provBits = [];
+  if (ev.qlooMode && ev.qlooMode !== 'none') provBits.push('Qloo taste graph');
+  if (calls.length) provBits.push(`${calls.length} call${calls.length === 1 ? '' : 's'}`);
+  if (ev.qlooMode && ev.qlooMode !== 'none') provBits.push(`${ev.qlooMode} mode`);
+  if (ev.source) provBits.push(ev.source === 'tensor' ? 'TensorMux strategy model' : 'deterministic strategy model');
+  if (sub?.url || res?.sub?.url) provBits.push('site scrape');
 
   // lazy-pull examples whenever a strategy detail page is open
   useEffect(() => {
@@ -552,13 +554,6 @@ export default function Strategy() {
                   onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate(); }}
                 />
                 <div className="stg-ask-foot">
-                  {!!(profile?.catalog || []).length && (
-                    <select className="stg-prod" value={productId} onChange={(e) => setProductId(e.target.value)}
-                      title="Optional — anchor strategies to a catalog product">
-                      <option value="">No specific product</option>
-                      {profile.catalog.map((p) => <option key={p.id} value={p.id}>For: {p.name}</option>)}
-                    </select>
-                  )}
                   <span className={`stg-urlwrap${siteUrl.trim() ? ' has' : ''}`} title="Optional — we'll scrape this as product/site context">
                     <Icon name="link" size={13} />
                     <input className="stg-url" value={siteUrl} placeholder="or paste a product/store URL"
@@ -613,22 +608,36 @@ export default function Strategy() {
                   </div>
                   <div className="stg-aud-main">
                     <div className="stg-aud-left">
-                      <div className="stg-lean display">{lean.label || 'Unclear'}</div>
-                      <div className="stg-heur">heuristic read — not a fact</div>
+                      <Typed as="div" className="stg-lean display stg-fill" style={{ '--fo': '60ms' }} text={lean.label || 'Unclear'} delay={80} cps={34} />
+                      <div className="stg-heur stg-fill" style={{ '--fo': '130ms' }}>heuristic read — not a fact</div>
                       {!!lean.signals?.length && (
                         <ul className="stg-sigs">
-                          {lean.signals.map((s, i) => <li key={i}>{s}</li>)}
+                          {lean.signals.map((s, i) => (
+                            <li key={i} className="stg-fill" style={{ '--fo': `${190 + i * 55}ms` }}>{s}</li>
+                          ))}
                         </ul>
                       )}
                     </div>
-                    <Ring value={lean.confidence} label="conf" />
+                    <div className="stg-fill stg-ringwrap" style={{ '--fo': '120ms' }}>
+                      <Ring value={lean.confidence} label="conf" />
+                    </div>
                   </div>
+
+                  {/* provenance — derived from the board's own evidence fields */}
+                  {!!provBits.length && (
+                    <div className="stg-prov stg-fill" style={{ '--fo': '320ms' }}
+                      title="Where this read came from">
+                      <Icon name="qloo" size={10} />
+                      <span>from {provBits.join(' · ')}</span>
+                    </div>
+                  )}
+
                   {!!read.mediaHabits?.length && (
-                    <div>
+                    <div className="stg-fill" style={{ '--fo': '380ms' }}>
                       <span className="stg-ml">Media habits</span>
                       <div className="stg-habits" style={{ marginTop: 8 }}>
                         {read.mediaHabits.map((h, i) => (
-                          <div className="stg-habit" key={i}>
+                          <div className="stg-habit stg-fill" key={i} style={{ '--fo': `${410 + i * 55}ms` }}>
                             <span className="stg-hchip"><Icon name={chanIcon(h.channel)} />{h.channel}</span>
                             <span className="stg-hnote">{h.note}</span>
                           </div>
@@ -637,40 +646,18 @@ export default function Strategy() {
                     </div>
                   )}
                   {!!read.vibeWords?.length && (
-                    <div>
+                    <div className="stg-fill" style={{ '--fo': '540ms' }}>
                       <span className="stg-ml">Vibe</span>
                       <div className="stg-chiprow" style={{ marginTop: 7 }}>
-                        {read.vibeWords.map((w) => <span key={w} className="stg-chip vibe">{w}</span>)}
+                        {read.vibeWords.map((w, i) => (
+                          <span key={w} className="stg-chip vibe stg-fill" style={{ '--fo': `${560 + i * 30}ms` }}>{w}</span>
+                        ))}
                       </div>
                     </div>
                   )}
 
-                  {/* ---- ruled out — collapsed accordion inside the audience card ---- */}
-                  {!!anti.length && (
-                    <details className="stg-ruled">
-                      <summary className="stg-ruled-sum">
-                        <span className="stg-ml rose">What we ruled out, and why</span>
-                        <span className="stg-ruled-meta">
-                          {anti.length} <span className="stg-fit-caret">▾</span>
-                        </span>
-                      </summary>
-                      <div className="stg-nope-list">
-                        {anti.map((r, i) => (
-                          <div className="stg-rej" key={`${r.title}-${i}`}>
-                            <span className="stg-rej-x"><Icon name="x" /></span>
-                            <div>
-                              <b>{r.title}</b>
-                              {!!r.channel && <span className="stg-rej-chan">{r.channel}</span>}
-                              <span className="stg-rej-why">{r.why}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </details>
-                  )}
-
                   {/* ---- data sources — where the board's evidence came from ---- */}
-                  <div>
+                  <div className="stg-fill" style={{ '--fo': '650ms' }}>
                     <span className="stg-ml">Data sources</span>
                     <div className="stg-srcs" style={{ marginTop: 7 }}>
                       <span className="stg-src-item"><Icon name="qloo" size={11} />Qloo taste graph</span>
@@ -690,7 +677,7 @@ export default function Strategy() {
                         </summary>
                         <div className="stg-calls-list">
                           {calls.map((c, i) => (
-                            <div className="stg-call-line" key={i}>
+                            <div className="stg-call-line" key={i} style={{ '--i': i }}>
                               <b>{c.endpoint}</b>{' '}
                               {Object.entries(c.params || {}).map(([k, v]) => `${k}=${String(v).slice(0, 36)}`).join(' ')}
                               {c.n != null && <span className="n"> → {c.n} results</span>}
@@ -716,13 +703,13 @@ export default function Strategy() {
                       {strats.map((s, i) => (
                         <Link key={s.id || i} className="stg-pick"
                           style={{ '--i': i }} to={`/strategy/${i}`} title={s.title}>
-                          <span className="stg-pick-top">
+                          <span className="stg-pick-top stg-fill" style={{ '--fo': '30ms' }}>
                             <span className="stg-idx">STRATEGY {String(i + 1).padStart(2, '0')}</span>
                             <Ring value={s.audienceFit?.score} label="fit" small />
                           </span>
-                          <b className="stg-pick-title stg-fill" style={{ '--fo': '90ms' }}>{s.title}</b>
+                          <Typed as="b" className="stg-pick-title stg-fill" style={{ '--fo': '120ms' }} text={s.title} delay={140} cps={40} />
                           {!!(s.channels || []).length && (
-                            <span className="stg-pick-chips stg-fill" style={{ '--fo': '170ms' }}>
+                            <span className="stg-pick-chips stg-fill" style={{ '--fo': '210ms' }}>
                               {[...(s.channels || [])].sort((a, b) => (+b.fit || 0) - (+a.fit || 0)).slice(0, 4).map((c) => (
                                 <span className="stg-chip stg-pick-chip" key={c.name}>
                                   <Icon name={chanIcon(c.name)} size={10} />{c.name}
@@ -730,7 +717,7 @@ export default function Strategy() {
                               ))}
                             </span>
                           )}
-                          <span className="stg-pick-foot">
+                          <span className="stg-pick-foot stg-fill" style={{ '--fo': '300ms' }}>
                             {!!s.reach && (
                               <span className="stg-reach" title={s.reach.basis || 'estimated reach'}>
                                 <Icon name="eye" size={11} />{fmtViews(s.reach.estViews)} est. views
@@ -740,6 +727,23 @@ export default function Strategy() {
                           </span>
                         </Link>
                       ))}
+                    </div>
+                  )}
+
+                  {/* ---- ruled out — always-visible quiet rows under the pick grid ---- */}
+                  {!!anti.length && (
+                    <div className="stg-ruled-out">
+                      <span className="stg-ml stg-ruled-lbl">What we ruled out</span>
+                      <div className="stg-ruled-rows">
+                        {anti.map((r, i) => (
+                          <div className="stg-rej stg-fill" key={`${r.title}-${i}`} style={{ '--fo': `${300 + i * 50}ms` }}>
+                            <Icon name="x" size={10} />
+                            <b>{r.title}</b>
+                            {!!r.channel && <span className="stg-rej-chan">{r.channel}</span>}
+                            <span className="stg-rej-why">{r.why}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </section>
@@ -760,8 +764,8 @@ export default function Strategy() {
                 <div className="stg-detail-top">
                   <div className="stg-strat-id">
                     <span className="stg-idx">STRATEGY {String(sel + 1).padStart(2, '0')} · CAMPAIGN BOARD</span>
-                    <h3 className="display">{cur.title}</h3>
-                    {!!cur.angle && <p className="stg-angle">{cur.angle}</p>}
+                    <Typed as="h3" className="display" text={cur.title || ''} cps={40} />
+                    {!!cur.angle && <p className="stg-angle"><Typed text={cur.angle} delay={220} cps={70} /></p>}
                     {!!cur.audienceFit?.notes?.length && (
                       <div className="stg-fitnotes">{cur.audienceFit.notes.join(' · ')}</div>
                     )}
@@ -870,11 +874,18 @@ export default function Strategy() {
                   </div>
                 </div>
 
-                {/* ---- in the wild: real examples scraped per strategy ---- */}
+                {/* ---- in the wild: real examples scraped per strategy; click to
+                        select references that ride into the campaign handoff ---- */}
                 <div className="stg-wild">
                   <div className="stg-wild-head">
                     <span className="stg-ml">In the wild — pulled from the open web</span>
                     <span className="stg-wild-tools">
+                      {exState?.status === 'done' && !!wildList.length && (
+                        <span className="stg-wild-hint">
+                          select references to feed the campaign
+                          {!!selExamples.length && <b className="stg-wild-n">{selExamples.length} selected</b>}
+                        </span>
+                      )}
                       {exState?.status === 'done' && !!(exState.data?.hunts || []).length && (
                         <span className="stg-wild-hunts">
                           hunts: {[...new Set(exState.data.hunts.map((h) => h.platform))].join(' · ')}
@@ -882,25 +893,20 @@ export default function Strategy() {
                       )}
                       <button className="btn ghost sm" onClick={() => loadExamples(cur, true)}
                         disabled={exState?.status === 'loading'}>
-                        <Icon name="refresh" size={13} />
-                        {exState?.status === 'loading' ? 'Pulling…' : 'Re-pull'}
+                        <Icon name="refresh" size={13} /> Re-pull
                       </button>
                     </span>
                   </div>
 
+                  {/* skeleton cards while the scrape runs — they fill in when data lands */}
                   {(!exState || exState.status === 'loading') && (
-                    <>
-                      <div className="stg-wild-status">
-                        <span className="spinner stg-btnspin" /><PullStatus />
-                      </div>
-                      <div className="stg-wild-grid">
-                        {[0, 1, 2, 3].map((i) => (
-                          <div className="stg-wx skel" key={i} style={{ '--i': i }}>
-                            <i className="m" /><i className="t" /><i className="t s" />
-                          </div>
-                        ))}
-                      </div>
-                    </>
+                    <div className="stg-wild-grid">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div className="stg-wx skel" key={i} style={{ '--i': i }}>
+                          <i className="m" /><i className="t" /><i className="t s" />
+                        </div>
+                      ))}
+                    </div>
                   )}
 
                   {exState?.status === 'error' && (
@@ -913,9 +919,12 @@ export default function Strategy() {
                   )}
 
                   {exState?.status === 'done' && (
-                    (exState.data?.examples || []).length ? (
+                    wildList.length ? (
                       <div className="stg-wild-grid">
-                        {exState.data.examples.map((e, i) => <WildCard key={i} e={e} i={i} />)}
+                        {wildList.map((e, i) => (
+                          <WildCard key={exKey(e) || i} e={e} i={i}
+                            sel={curSel.has(exKey(e))} onToggle={() => toggleWild(e)} />
+                        ))}
                       </div>
                     ) : (
                       <div className="stg-empty-note">No examples surfaced for this strategy — try re-pulling.</div>

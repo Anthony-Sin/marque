@@ -4,15 +4,8 @@ import { api } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon, { Logo } from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
+import { isRaster, MediaFallback } from '../components/Composer.jsx';
 import './dashboard.css';
-
-// the pipeline, as a journey — each step is a live stat card that opens its section.
-const FLOW = [
-  { to: '/strategy', icon: 'sparkle', label: 'Strategy', free: true },
-  { to: '/campaigns', icon: 'campaign', label: 'Campaign' },
-  { to: '/photoshoot', icon: 'photo', label: 'Create' },
-  { to: '/websites', icon: 'site', label: 'Publish' },
-];
 
 const CHAN_ICON = {
   instagram: 'image', tiktok: 'film', youtube: 'play', tv: 'site', streaming: 'share',
@@ -105,17 +98,18 @@ export default function Dashboard() {
         setWork(recent.map((c) => {
           const f = full.find((x) => x.id === c.id) || {};
           const crs = f.creatives || [];
-          const shot = crs.find((cr) => creativeImg(cr));
+          const shot = crs.find((cr) => isRaster(creativeImg(cr)));
           return {
             ...c,
             title: c.title || f.brief?.title || 'Untitled campaign',
             strategyTitle: c.strategyTitle || f.strategyTitle || '',
+            channel: (f.brief?.channels || [])[0] || '',
             img: shot ? creativeImg(shot) : '',
             grade: Math.max(0, ...crs.map((cr) => +cr.grade || 0)),
           };
         }));
       } catch {
-        if (!dead) setWork(recent.map((c) => ({ ...c, img: '', grade: 0 })));
+        if (!dead) setWork(recent.map((c) => ({ ...c, img: '', channel: '', grade: 0 })));
       }
     })();
     return () => { dead = true; };
@@ -169,14 +163,6 @@ export default function Dashboard() {
     return <div className="loading-wrap"><div className="spinner" /></div>;
   }
 
-  // live state per pipeline step — counts fed by /api/dashboard
-  const stepStat = (to) => {
-    if (to === '/strategy') return { n: boards.length, u: boards.length === 1 ? 'plan' : 'plans' };
-    if (to === '/campaigns') return { n: campaigns.length, u: campaigns.length === 1 ? 'campaign' : 'campaigns' };
-    if (to === '/photoshoot') return { n: dash.photoshootCount ?? '—', u: 'shoots' };
-    return { n: dash.websiteCount ?? '—', u: (dash.websiteCount === 1 ? 'site' : 'sites') };
-  };
-
   // top-2 strategy titles for a plan card — ctx board if it's active, else lazy fetch
   const stratTitles = (b) => {
     const full = (board?.id === b.id ? board : null) || fullBoards[b.id];
@@ -195,30 +181,6 @@ export default function Dashboard() {
         <h1 className="display dash-title">Dashboard</h1>
         <p className="dash-greet">What are we making today?</p>
 
-        {/* pipeline — 4 connected steps, each a live stat card */}
-        <div className="dash-flow" aria-label="pipeline">
-          {FLOW.map((s, i) => {
-            const locked = !s.free && !board;
-            const st = stepStat(s.to);
-            return (
-              <button key={s.label} type="button" style={{ '--i': i }}
-                className={`card dash-step${locked ? ' locked' : ''}`}
-                title={locked ? 'Generate a strategy first — this step unlocks' : `Open ${s.label}`}
-                onClick={() => nav(locked ? '/strategy' : s.to)}>
-                <span className="dash-step-top">
-                  <span className="dash-step-idx">{String(i + 1).padStart(2, '0')}</span>
-                  <span className="dash-step-ic"><Icon name={locked ? 'lock' : s.icon} size={15} /></span>
-                </span>
-                <span className="dash-step-name">{s.label}</span>
-                {locked ? (
-                  <span className="dash-step-count dim">needs a board</span>
-                ) : (
-                  <span className="dash-step-count"><b>{st.n}</b> {st.u}</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
       </header>
 
       {!boards.length ? (
@@ -330,7 +292,8 @@ export default function Dashboard() {
                             onError={() => setBadImg((m) => ({ ...m, [c.id]: true }))} />
                         </span>
                       ) : (
-                        <span className="dash-work-media none"><Icon name="image" size={20} /></span>
+                        <MediaFallback className="dash-work-media"
+                          seed={c.title} channel={c.channel} monogram={profile?.name} />
                       )}
                       <span className="dash-work-body">
                         <b className="dash-work-title">{c.title || 'Untitled campaign'}</b>

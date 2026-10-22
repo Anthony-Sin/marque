@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
-import Composer, { KebabMenu } from '../components/Composer.jsx';
+import Composer, { arCss, isRaster, MediaFallback } from '../components/Composer.jsx';
 import CreativeCard from '../components/CreativeCard.jsx';
 import CreativeEditor from '../components/CreativeEditor.jsx';
 import EvidenceDrawer from '../components/EvidenceDrawer.jsx';
@@ -10,41 +10,17 @@ import Wayfind from '../components/Wayfind.jsx';
 import { QlooBadge, SignalChips } from '../components/Qloo.jsx';
 import './studio.css';
 
-const SEASONS = ['Spring', 'Summer', 'Autumn', 'Holiday'];
-const season = () => SEASONS[Math.min(3, Math.floor(((new Date().getMonth() + 1) % 12) / 3))];
-const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : '');
+const EXPECTED_CREATIVES = 4; // server generates 4 per campaign — skeleton count while filling
 
-// Client-side "Suggestions based on Business Profile" cards.
-function buildSuggestions(p) {
-  if (!p) return [];
-  const out = [];
-  const prod = (p.catalog || [])[0];
-  const s = season();
-  const value = cap((p.values || [])[0]) || 'quality';
-  const aest = (p.aesthetic || [])[0] || 'clean';
-  out.push({
-    id: 'seasonal',
-    title: `${s} spotlight for ${p.name || 'your brand'}.`,
-    body: `A timely ${s.toLowerCase()} push — "${p.tagline || p.description || 'your story'}" — aimed at ${p.audience || 'your customers'}.`,
-    prompt: `Create a ${s.toLowerCase()} campaign for ${p.name || 'our brand'} (${p.tagline || ''}) targeting ${p.audience || 'our customers'}, tone: ${(p.tone || []).join(', ') || 'on-brand'}.`,
-  });
-  if (prod) {
-    out.push({
-      id: 'hero',
-      title: `Hero ${prod.name}.`,
-      body: `Put ${prod.name} front and center — ${prod.description || 'the product story'} for ${p.audience || 'your audience'}.`,
-      prompt: `Create a product-hero campaign around ${prod.name}${prod.description ? ` — ${prod.description}` : ''}.`,
-      productId: prod.id,
-    });
-  }
-  out.push({
-    id: 'value',
-    title: `${value}, the ${aest} way.`,
-    body: `Lead with the value your audience cares about — ${value.toLowerCase()} — expressed through a ${aest} aesthetic.`,
-    prompt: `Create a brand-values campaign for ${p.name || 'our brand'} about ${value.toLowerCase()}, in a ${aest} visual style.`,
-  });
-  return out.slice(0, 3);
-}
+// Brief fields materialize one-by-one (fade+blur) once the response lands —
+// `mat` + `--i` drive the stagger. Skeleton bars show while it drafts.
+const BRIEF_SKEL_FIELDS = [
+  { k: 'Angle', w: 'w85' },
+  { k: 'Audience', w: 'w70' },
+  { k: 'Key message', w: 'w85' },
+  { k: 'Channels', pills: true },
+  { k: 'Taste signals', pills: true },
+];
 
 export default function Campaigns() {
   const { profile, say, status } = useApp();
@@ -54,12 +30,12 @@ export default function Campaigns() {
   const [draft, setDraft] = useState(null);          // composer payload that produced the brief
   const [seed, setSeed] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState('');
-  const [dismissed, setDismissed] = useState(() => new Set());
+  const [phase, setPhase] = useState('idle');        // idle | briefing | generating
+  const [making, setMaking] = useState('');          // campaign id currently filling with creatives
   const [editing, setEditing] = useState(null);      // creative in the editor modal
   const [animating, setAnimating] = useState('');    // creative id currently animating
   const [evi, setEvi] = useState(false);
-  const [handoff, setHandoff] = useState(null);      // {strategy, notes, prompt, productId}
+  const [handoff, setHandoff] = useState(null);      // {strategy, notes, prompt, productId, exampleRefs?}
 
   const reload = async () => {
     try { setCampaigns((await api.listCampaigns()).campaigns || []); }
@@ -68,7 +44,9 @@ export default function Campaigns() {
   useEffect(() => { reload(); }, []);
 
   // Strategy board handoff: 'strategyHandoff' is written by the Strategy view's
-  // "Use this strategy" button. Consume once → banner + auto-start brief generation.
+  // "Use this strategy" button. Consume once → composer chip + auto-start brief.
+  // Optional `exampleRefs: [{platform,title,author,url,note}]` fold into the
+  // brief text as a "Reference examples:" section.
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem('strategyHandoff');
@@ -79,7 +57,7 @@ export default function Campaigns() {
       if (!s) return;
       setHandoff(data);
       const b = s.brief || {};
-      const merged = [
+      const lines = [
         `Campaign: ${b.title || s.title}`,
         b.angle ? `Angle: ${b.angle}` : '',
         b.audience ? `Audience: ${b.audience}` : '',
@@ -87,7 +65,14 @@ export default function Campaigns() {
         (s.channels || []).length ? `Channels: ${s.channels.map((c) => c.name || c).join(', ')}` : '',
         data.notes ? `Notes from the strategy board: ${data.notes}` : '',
         data.prompt ? `Original ask: ${data.prompt}` : '',
-      ].filter(Boolean).join('\n');
+      ];
+      if (Array.isArray(data.exampleRefs) && data.exampleRefs.length) {
+        lines.push('Reference examples:');
+        for (const r of data.exampleRefs) {
+          lines.push(`- ${r.title || 'example'} — @${r.author || 'unknown'}${r.platform ? ` (${r.platform})` : ''}${r.note ? `: ${r.note}` : ''}`);
+        }
+      }
+      const merged = lines.filter(Boolean).join('\n');
       setSeed({ text: merged, productId: data.productId || null });
       genBrief({ prompt: merged, productId: data.productId || undefined });
       say('Strategy loaded — drafting your brief');
@@ -95,7 +80,6 @@ export default function Campaigns() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const suggestions = useMemo(() => buildSuggestions(profile).filter((s) => !dismissed.has(s.id)), [profile, dismissed]);
   const open = (campaigns || []).find((c) => c.id === openId) || null;
 
   // group "Your campaigns" by the strategy that spawned them (handoff metadata)
@@ -111,7 +95,8 @@ export default function Campaigns() {
     return { strat: [...byStrat.values()], other };
   }, [campaigns]);
 
-  // one campaign summary card — shared by grouped + ungrouped lists
+  // one campaign summary card — shared by grouped + ungrouped lists.
+  // SVG/empty creatives get a branded fallback tile instead of a raw empty box.
   const campCard = (c) => (
     <div key={c.id} className="card camp-card">
       <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -126,7 +111,17 @@ export default function Campaigns() {
       {!!c.creatives?.length && (
         <div className="thumbs">
           {c.creatives.slice(0, 4).map((cr) => (
-            <span key={cr.id} className="media-tile">{cr.imagePath && <img src={cr.imagePath} alt="" loading="lazy" />}</span>
+            <span key={cr.id} className="media-tile">
+              {isRaster(cr.imagePath) ? (
+                <img src={cr.imagePath} alt="" loading="lazy" />
+              ) : (
+                <MediaFallback
+                  seed={c.brief?.title || cr.headline}
+                  channel={(c.brief?.channels || [])[0]}
+                  monogram={profile?.name}
+                />
+              )}
+            </span>
           ))}
           {c.creatives.length > 4 && <span className="more">+{c.creatives.length - 4}</span>}
         </div>
@@ -139,25 +134,33 @@ export default function Campaigns() {
     </div>
   );
 
-  // Generate Brief → brief review card
+  // skeleton creative tile — image area + title bar shimmer while a campaign fills
+  const skelCreative = (i, ar) => (
+    <div key={`skel-${i}`} className="card creative-card" style={{ '--ar': arCss(ar) }}>
+      <div className="cc-media">
+        <span className="skel cc-skel-media" />
+      </div>
+      <div className="meta"><span className="skel skel-line w70" /></div>
+    </div>
+  );
+
+  // Generate Brief → skeleton card → fields materialize on the response
   const genBrief = async (payload) => {
     if (busy) return;
-    setBusy(true); setNote('Drafting your campaign brief…');
+    setBusy(true); setPhase('briefing');
     try {
       const res = await api.campaignBrief(payload);
       setBrief(res);
       setDraft(payload);
     } catch (e) { say(e.message); }
-    setBusy(false); setNote('');
+    setBusy(false); setPhase((p) => (p === 'briefing' ? 'idle' : p));
   };
 
-  // Confirm brief → createCampaign → job (rotating stage copy) → refresh
+  // Confirm brief → createCampaign → open the campaign (skeleton creative grid
+  // while the job runs) → poll → creatives fill in staggered.
   const confirmBrief = async () => {
     if (!brief?.brief) return;
-    const STAGES = ['Crafting your creatives…', 'Laying out formats…', 'Finalizing assets…'];
-    let si = 0;
-    setBusy(true); setNote(STAGES[0]);
-    const rot = setInterval(() => { si = (si + 1) % STAGES.length; setNote(STAGES[si]); }, 2800);
+    setBusy(true); setPhase('generating');
     try {
       const { campaign, job } = await api.createCampaign({
         brief: brief.brief,
@@ -169,17 +172,24 @@ export default function Campaigns() {
         strategyId: handoff?.strategyId || handoff?.strategy?.id || undefined,
         strategyTitle: handoff?.strategyTitle || handoff?.strategy?.title || undefined,
       });
-      if (job?.id) {
+      if (campaign?.id) {
+        setMaking(campaign.id);
+        await reload();                  // pick up the fresh (still-empty) campaign
+        setOpenId(campaign.id);          // detail view shows skeleton creatives
+        if (job?.id) {
+          await pollJob(job.id).catch((e) => say(e.message));
+        }
+        await reload();                  // creatives land → staggered fill-in
+      } else if (job?.id) {
         await pollJob(job.id).catch((e) => say(e.message));
+        await reload();
       }
-      await reload();
       setBrief(null);
       setHandoff(null);
-      if (campaign?.id) setOpenId(campaign.id);
       say('Campaign ready');
     } catch (e) { say(e.message); }
-    clearInterval(rot);
-    setBusy(false); setNote('');
+    setMaking('');
+    setBusy(false); setPhase('idle');
   };
 
   // Card-level animate shortcut (9:16 only — CreativeCard hides it otherwise).
@@ -196,6 +206,8 @@ export default function Campaigns() {
 
   // ---------- detail: creative grid ----------
   if (open) {
+    const creatives = open.creatives || [];
+    const pendingSkels = making === open.id ? Math.max(0, EXPECTED_CREATIVES - creatives.length) : 0;
     return (
       <div className="section" style={{ paddingBottom: 80 }}>
         <Wayfind />
@@ -215,7 +227,7 @@ export default function Campaigns() {
           </div>
         </div>
         <div className="creative-grid">
-          {(open.creatives || []).map((cr) => (
+          {creatives.map((cr) => (
             <CreativeCard
               key={cr.id}
               creative={cr}
@@ -227,8 +239,9 @@ export default function Campaigns() {
               onChanged={reload}
             />
           ))}
+          {Array.from({ length: pendingSkels }, (_, i) => skelCreative(i, open.aspectRatio))}
         </div>
-        {!(open.creatives || []).length && (
+        {!creatives.length && !pendingSkels && (
           <div className="empty">
             <p>No creatives yet — generation may still be running.</p>
             <button className="btn ghost sm" onClick={reload}>
@@ -250,48 +263,73 @@ export default function Campaigns() {
   }
 
   // ---------- landing ----------
+  const chans = (handoff?.strategy?.channels || []).map((c) => c.name || c).filter(Boolean);
   return (
     <div className="section" style={{ paddingBottom: 80 }}>
       <Wayfind />
       <div className="page-head">
         <h1 className="display">Campaigns</h1>
-        <p className="sub">Start from our suggestions or prompt to create a new campaign.</p>
+        <p className="sub">Prompt a campaign or continue one below — brief first, creatives after.</p>
       </div>
 
-      {handoff && (
-        <div className="camp-handoff">
-          <Icon name="sparkle" size={14} />
-          <span>Campaign from strategy: <b>{handoff.strategy?.title || 'untitled'}</b></span>
-          {(handoff.strategy?.channels || []).slice(0, 4).map((c) => (
-            <span key={c.name || c} className="chan-chip">{c.name || c}</span>
+      <div className="composer-zone">
+        {handoff && (
+          <div className="camp-src">
+            <Icon name="sparkle" size={12} />
+            <span className="camp-src-txt">
+              from strategy: <b>{handoff.strategy?.title || handoff.strategyTitle || 'untitled'}</b>
+              {!!chans.length && <i> · {chans.slice(0, 3).join(' · ')}</i>}
+            </span>
+            <button className="x" title="Dismiss" onClick={() => setHandoff(null)}>✕</button>
+          </div>
+        )}
+        <Composer seed={seed} busy={busy} onGenerate={genBrief} />
+      </div>
+
+      {phase === 'briefing' && !brief?.brief && (
+        <div className="card pad brief-card" aria-busy="true" aria-label="Drafting your campaign brief">
+          <div className="row" style={{ justifyContent: 'space-between', marginBottom: 8 }}>
+            <span className="skel skel-line w55" style={{ height: 18 }} />
+            <span className="skel" style={{ width: 52, height: 18, borderRadius: 999 }} />
+          </div>
+          {BRIEF_SKEL_FIELDS.map((f) => (
+            <div className="brief-field" key={f.k}>
+              <span className="k">{f.k}</span>
+              {f.pills ? (
+                <span className="v chip-row">
+                  <span className="skel" style={{ width: 62, height: 20, borderRadius: 999 }} />
+                  <span className="skel" style={{ width: 80, height: 20, borderRadius: 999 }} />
+                  <span className="skel" style={{ width: 48, height: 20, borderRadius: 999 }} />
+                </span>
+              ) : (
+                <span className="v"><span className={`skel skel-line ${f.w}`} /></span>
+              )}
+            </div>
           ))}
-          <button className="x" title="Dismiss" onClick={() => setHandoff(null)}>✕</button>
         </div>
       )}
 
-      <Composer seed={seed} busy={busy} note={note} onGenerate={genBrief} />
-
       {brief?.brief && (
         <div className="card pad brief-card">
-          <div className="row" style={{ justifyContent: 'space-between', marginBottom: 8 }}>
+          <div className="row mat" style={{ '--i': 0, justifyContent: 'space-between', marginBottom: 8 }}>
             <h3>{brief.brief.title || 'Campaign brief'}</h3>
             <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'demo'} />
           </div>
-          <div className="brief-field"><span className="k">Angle</span><span className="v">{brief.brief.angle}</span></div>
-          <div className="brief-field"><span className="k">Audience</span><span className="v">{brief.brief.audience}</span></div>
-          <div className="brief-field"><span className="k">Key message</span><span className="v">{brief.brief.keyMessage}</span></div>
-          <div className="brief-field">
+          <div className="brief-field mat" style={{ '--i': 1 }}><span className="k">Angle</span><span className="v">{brief.brief.angle}</span></div>
+          <div className="brief-field mat" style={{ '--i': 2 }}><span className="k">Audience</span><span className="v">{brief.brief.audience}</span></div>
+          <div className="brief-field mat" style={{ '--i': 3 }}><span className="k">Key message</span><span className="v">{brief.brief.keyMessage}</span></div>
+          <div className="brief-field mat" style={{ '--i': 4 }}>
             <span className="k">Channels</span>
             <span className="v chip-row">{(brief.brief.channels || []).map((c) => <span key={c} className="chan-chip">{c}</span>)}</span>
           </div>
           {!!brief.qlooSignals?.length && (
-            <div className="brief-field">
+            <div className="brief-field mat" style={{ '--i': 5 }}>
               <span className="k">Taste signals</span>
               <span className="v"><SignalChips signals={brief.qlooSignals} max={6} /></span>
             </div>
           )}
           {!!brief.suggestions?.length && (
-            <div className="brief-field">
+            <div className="brief-field mat" style={{ '--i': 6 }}>
               <span className="k">Alternatives</span>
               <span className="v" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {brief.suggestions.map((s, i) => (
@@ -304,37 +342,13 @@ export default function Campaigns() {
               </span>
             </div>
           )}
-          <div className="row mt16" style={{ justifyContent: 'flex-end', gap: 10 }}>
-            <button className="btn ghost" onClick={() => { setBrief(null); setHandoff(null); }}>Discard</button>
+          <div className="row mt16 mat" style={{ '--i': 7, justifyContent: 'flex-end', gap: 10 }}>
+            <button className="btn ghost" onClick={() => { setBrief(null); setHandoff(null); setPhase('idle'); }}>Discard</button>
             <button className="btn lime" disabled={busy} onClick={confirmBrief}>
               <Icon name="check" /> Confirm — generate creatives
             </button>
           </div>
         </div>
-      )}
-
-      {!!suggestions.length && (
-        <>
-          <div className="section-label">Suggestions based on Business Profile</div>
-          <div className="grid c3">
-            {suggestions.map((s) => (
-              <div key={s.id} className="card suggest-card">
-                <KebabMenu items={[
-                  { label: 'Use', onClick: () => { setSeed({ text: s.prompt }); genBrief({ prompt: s.prompt, productId: s.productId }); } },
-                  { label: 'Dismiss', onClick: () => setDismissed((d) => new Set(d).add(s.id)) },
-                ]} />
-                <h4>{s.title}</h4>
-                <p>{s.body}</p>
-                <div className="mt16">
-                  <button className="btn ghost sm" disabled={busy}
-                    onClick={() => { setSeed({ text: s.prompt }); genBrief({ prompt: s.prompt, productId: s.productId }); }}>
-                    <Icon name="sparkle" size={14} /> Use
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
       )}
 
       <div className="section-label">Your campaigns</div>

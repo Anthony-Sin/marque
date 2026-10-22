@@ -14,12 +14,6 @@
   color: var(--ink); font-size: 16.5px; line-height: 1.5; min-height: 84px; padding: 6px 8px;
 }
 .stg-ask-foot { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
-.stg-prod {
-  background: var(--card-3); border: 1px solid var(--line); color: var(--ink-2);
-  border-radius: var(--radius-pill); padding: 9px 14px; font-size: 13px;
-  outline: none; max-width: 250px;
-}
-.stg-prod:focus { border-color: var(--lime); }
 .stg-examples { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
 .stg-ex {
   border: 1px solid var(--line); background: var(--card); color: var(--ink-3);
@@ -35,7 +29,6 @@
 }
 .stg-urlwrap:focus-within, .stg-urlwrap.has { border-color: rgba(211, 227, 116, .55); }
 .stg-url { background: none; border: none; outline: none; color: var(--ink); font-size: 13px; padding: 9px 0; width: 200px; }
-.stg-btnspin { width: 14px; height: 14px; border-width: 2px; display: inline-block; flex: none; }
 
 /* ---------- composer collapse (prompt → board transition: slide up + fade) ---------- */
 .stg-compose {
@@ -79,35 +72,7 @@
 .stg-nudge h3 { margin: 0 0 8px; font-size: 26px; }
 .stg-nudge p { color: var(--ink-3); margin: 0 0 18px; font-size: 14px; }
 
-/* ---------- typewriter progress (LLM-style staged status) ---------- */
-.stg-typer {
-  max-width: 620px; margin: 30px auto 0; padding: 22px 24px;
-  animation: stgPanel .45s cubic-bezier(.22, .9, .24, 1) both;
-}
-.stg-typer-head {
-  display: flex; align-items: center; gap: 9px;
-  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
-  color: var(--ink-4); font-weight: 700;
-}
-.stg-typer-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  background: var(--lime); animation: stgPulse 1.6s infinite; flex: none;
-}
-.stg-typer-lines {
-  margin: 15px 0 17px; display: flex; flex-direction: column; gap: 10px;
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  font-size: 12.5px; line-height: 1.5;
-}
-.stg-tw { display: flex; gap: 9px; align-items: baseline; color: var(--ink-4); }
-.stg-tw.done { color: var(--ink-3); }
-.stg-tw.done svg { color: var(--lime); flex: none; align-self: center; }
-.stg-tw.now { color: var(--ink); }
-.stg-tw.now > span:first-child { word-break: break-word; }
-.stg-tw-caret {
-  width: 8px; height: 15px; border-radius: 2px; flex: none; align-self: center;
-  background: var(--lime); animation: stgBlink 1.05s steps(1) infinite;
-}
-@keyframes stgBlink { 50% { opacity: 0; } }
+/* ---------- skeleton bars — lime sweep, sized per element via --w/--h ---------- */
 .stg-shimmer { height: 6px; border-radius: 99px; background: var(--card-3); overflow: hidden; position: relative; }
 .stg-shimmer i {
   position: absolute; top: 0; bottom: 0; width: 38%; border-radius: 99px;
@@ -115,18 +80,6 @@
   animation: stgSlide 1.5s ease-in-out infinite;
 }
 @keyframes stgSlide { from { left: -42%; } to { left: 104%; } }
-@keyframes stgPulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(211, 227, 116, .35); }
-  50% { opacity: .55; box-shadow: 0 0 0 6px rgba(211, 227, 116, 0); }
-}
-
-/* slim variant — pinned above the board skeleton while generating */
-.stg-typer.slim {
-  max-width: none; margin: 20px 0 0; padding: 13px 17px;
-  animation: stgPanel .4s cubic-bezier(.22, .9, .24, 1) both;
-}
-.stg-typer.slim .stg-typer-lines { margin: 9px 0 0; gap: 6px; font-size: 11.5px; }
-.stg-typer.slim .stg-tw-caret { width: 7px; height: 12px; }
 
 /* skeleton bars — reuse .stg-shimmer's lime sweep, sized per element via --w/--h */
 .stg-shimmer.sk { display: block; width: var(--w, 100%); height: var(--h, 11px); border-radius: 7px; flex: none; }
@@ -176,9 +129,24 @@
 .stg-aud-left { min-width: 0; flex: 1; }
 .stg-lean { font-size: 23px; line-height: 1.15; }
 .stg-heur { font-size: 11px; color: var(--ink-4); margin-top: 5px; font-style: italic; }
-.stg-sigs { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.stg-sigs li { font-size: 12px; color: var(--ink-3); padding-left: 14px; position: relative; line-height: 1.4; }
-.stg-sigs li::before { content: ''; position: absolute; left: 0; top: 6px; width: 6px; height: 6px; border-radius: 2px; background: var(--lime); }
+/* signals render as small affinity chips */
+.stg-sigs { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.stg-sigs li {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 11px; color: var(--ink-2); line-height: 1.35;
+  background: var(--bg-raise); border: 1px solid var(--line-soft);
+  border-radius: var(--radius-pill); padding: 5px 11px;
+}
+.stg-sigs li::before { content: ''; width: 5px; height: 5px; border-radius: 2px; background: var(--lime); flex: none; }
+/* provenance — "from Qloo taste graph · 9 calls · simulated mode" under signals */
+.stg-prov {
+  display: flex; align-items: center; gap: 7px;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 10.5px; color: var(--ink-4); letter-spacing: .02em;
+  border-top: 1px dashed var(--line-soft); padding-top: 10px;
+}
+.stg-prov svg { color: var(--lime); flex: none; }
+.stg-ringwrap { flex: none; }
 .stg-habits { display: flex; flex-direction: column; gap: 8px; }
 .stg-habit { display: flex; align-items: center; gap: 9px; }
 .stg-hchip {
@@ -253,7 +221,7 @@
 @keyframes stgGrow { from { transform: scaleX(0); } }
 .stg-chan-val { font-size: 11px; font-weight: 700; text-align: right; color: var(--ink-2); font-variant-numeric: tabular-nums; }
 .stg-fit-caret { font-size: 10px; color: var(--ink-4); transition: transform .18s ease; }
-.stg-fit[open] .stg-fit-caret, .stg-ruled[open] .stg-fit-caret, .stg-calls[open] .stg-fit-caret { transform: rotate(180deg); }
+.stg-fit[open] .stg-fit-caret, .stg-calls[open] .stg-fit-caret { transform: rotate(180deg); }
 .stg-fit-body { padding: 2px 12px 13px 44px; animation: stgIn .25s ease both; }
 .stg-fit-likes { list-style: none; margin: 7px 0 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
 .stg-fit-likes li {
@@ -282,39 +250,24 @@
 .stg-strat-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 6px; flex-wrap: wrap; }
 .stg-strat-foot .hint { font-size: 11.5px; color: var(--ink-4); }
 
-/* ---------- "what we ruled out" — collapsed accordion inside the audience card ---------- */
-.stg-ruled {
-  border: 1px dashed var(--line); border-radius: 12px;
-  background: var(--bg-raise); overflow: hidden;
-}
-.stg-ruled[open] { border-color: var(--line); }
-.stg-ruled-sum {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  padding: 11px 13px; cursor: pointer; list-style: none; user-select: none;
-}
-.stg-ruled-sum::-webkit-details-marker { display: none; }
-.stg-ruled-meta { font-size: 11.5px; color: var(--ink-4); display: inline-flex; align-items: center; gap: 7px; }
-.stg-ruled-meta .stg-fit-caret { display: inline-block; }
-.stg-nope-list { padding: 0 13px 12px; animation: stgIn .3s ease both; }
-.stg-rej { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; border-bottom: 1px dashed var(--line-soft); }
-.stg-rej:last-child { border-bottom: none; }
-.stg-rej-x {
-  width: 22px; height: 22px; border-radius: 50%; background: rgba(232, 160, 180, .1);
-  color: var(--rose); display: flex; align-items: center; justify-content: center;
-  flex: none; margin-top: 1px;
-}
-.stg-rej-x svg { width: 11px; height: 11px; }
+/* ---------- "what we ruled out" — always-visible quiet rows under the pick grid ---------- */
+.stg-ruled-out { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line-soft); }
+.stg-ruled-lbl { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; letter-spacing: .16em; }
+.stg-ruled-rows { margin-top: 8px; display: flex; flex-direction: column; }
+.stg-rej { padding: 5px 0; font-size: 12px; line-height: 1.45; color: var(--ink-4); }
+.stg-rej + .stg-rej { border-top: 1px solid var(--line-soft); }
+.stg-rej > svg { width: 10px; height: 10px; vertical-align: -1px; margin-right: 8px; color: var(--rose); opacity: .7; }
 .stg-rej b {
-  font-size: 13px; text-transform: capitalize; display: inline-block; color: var(--ink-3);
-  text-decoration: line-through; text-decoration-color: rgba(232, 160, 180, .6);
+  font-size: 12px; font-weight: 600; text-transform: capitalize; color: var(--ink-3);
+  text-decoration: line-through; text-decoration-color: rgba(232, 160, 180, .55);
 }
 .stg-rej-chan {
-  display: inline-block; margin-left: 8px; font-size: 10px; font-weight: 700;
+  display: inline-block; margin: 0 8px; font-size: 9.5px; font-weight: 700;
   letter-spacing: .08em; text-transform: uppercase; color: var(--ink-4);
-  border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px;
+  border: 1px solid var(--line); border-radius: 999px; padding: 0 7px;
   vertical-align: 1px;
 }
-.stg-rej-why { font-size: 11.5px; color: var(--ink-4); line-height: 1.4; display: block; margin-top: 1px; }
+.stg-rej-why { font-size: 11.5px; color: var(--ink-4); }
 
 /* ---------- strategy picker cards ---------- */
 .stg-pick-grid {
@@ -422,22 +375,51 @@
 .stg-wild-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .stg-wild-tools { display: inline-flex; align-items: center; gap: 12px; }
 .stg-wild-hunts { font-size: 10.5px; color: var(--ink-4); letter-spacing: .03em; text-transform: capitalize; }
-.stg-wild-status { display: flex; align-items: center; gap: 9px; font-size: 12.5px; color: var(--ink-3); }
-.stg-pull-src { color: var(--lime); font-weight: 600; display: inline-block; animation: stgSwap .4s ease both; }
+.stg-wild-hint { font-size: 11px; color: var(--ink-4); display: inline-flex; align-items: center; }
+.stg-wild-n {
+  margin-left: 7px; font-size: 10px; font-weight: 700; letter-spacing: .06em;
+  color: var(--lime); background: rgba(211, 227, 116, .12);
+  border: 1px solid rgba(211, 227, 116, .4); border-radius: 999px; padding: 2px 9px;
+}
 .stg-wild-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
 .stg-wx {
+  position: relative;
   display: flex; flex-direction: column; background: var(--card-2); color: var(--ink);
   border: 1px solid var(--line-soft); border-radius: 14px; overflow: hidden;
   animation: stgIn .5s cubic-bezier(.22, .9, .24, 1) both;
   animation-delay: calc(var(--i, 0) * 80ms);
   transition: transform .22s cubic-bezier(.22, .9, .24, 1), border-color .22s, box-shadow .22s;
 }
-.stg-wx.link:hover { transform: translateY(-3px); border-color: var(--line); box-shadow: var(--shadow); }
+/* selectable reference cards — click toggles them into the campaign handoff */
+.stg-wx.pickable { cursor: pointer; }
+.stg-wx.pickable:hover { transform: translateY(-3px); border-color: var(--line); box-shadow: var(--shadow); }
+.stg-wx.pickable:focus-visible { outline: 2px solid rgba(211, 227, 116, .7); outline-offset: 2px; }
+/* .pickable.sel must out-specify .pickable:hover or the ring vanishes under the cursor */
+.stg-wx.pickable.sel {
+  border-color: var(--lime); transform: translateY(-3px);
+  box-shadow: 0 0 0 1.5px var(--lime), 0 12px 28px rgba(0, 0, 0, .4);
+}
+.stg-wx.pickable.sel:hover { border-color: var(--lime); box-shadow: 0 0 0 1.5px var(--lime), 0 12px 28px rgba(0, 0, 0, .4); }
+.stg-wx-check {
+  position: absolute; top: 9px; right: 9px; z-index: 2;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(10, 12, 6, .45); border: 1.5px solid rgba(255, 255, 255, .4);
+  color: transparent; transition: border-color .18s, background .18s;
+}
+.stg-wx.pickable:hover .stg-wx-check { border-color: rgba(211, 227, 116, .8); }
+.stg-wx-check.on {
+  background: var(--lime); border-color: var(--lime); color: var(--lime-ink);
+  animation: stgPop .28s cubic-bezier(.2, .7, .2, 1) both;
+}
 .stg-wx-media { display: block; width: 100%; aspect-ratio: 16/9; background: var(--card-3); overflow: hidden; }
 .stg-wx-media img { width: 100%; height: 100%; object-fit: cover; }
 .stg-wx-media iframe { width: 100%; height: 100%; border: 0; display: block; }
 .stg-wx-media.tt { aspect-ratio: 9/16; max-height: 480px; }
 .stg-wx-body { display: flex; flex-direction: column; gap: 5px; padding: 12px 13px 14px; }
+/* inside a wild card the text "writes in" right after the card shell lands —
+   tighter than the board-level .stg-fill stagger */
+.stg-wx .stg-fill { animation-delay: calc(var(--i, 0) * 80ms + 140ms + var(--fo, 0ms)); }
 .stg-wx-plat {
   display: flex; align-items: center; gap: 6px;
   font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-4);
@@ -525,6 +507,11 @@
   font-size: 10.5px; color: var(--ink-4); line-height: 1.5;
   padding: 5px 0; border-top: 1px solid var(--line-soft); word-break: break-all;
 }
+/* entries "populate" one by one when the accordion opens / data lands */
+.stg-calls[open] .stg-call-line {
+  animation: stgFill .38s cubic-bezier(.2, .7, .2, 1) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
 .stg-call-line b { color: var(--ink-3); font-weight: 600; }
 .stg-call-line .n { color: var(--lime); }
 
@@ -605,11 +592,20 @@
 
 /* ---------- reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .stg-tile, .stg-strat-body, .stg-fit-body, .stg-nope-list,
-  .stg-bar i, .stg-ring-fg, .stg-shimmer i, .stg-typer, .stg-tw-caret, .stg-typer-dot,
-  .stg-chipbar, .stg-plans, .stg-pick, .stg-pick-check, .stg-detail, .stg-wx, .stg-pull-src,
-  .stg-fill, .stg-detailpage,
+  .stg-tile, .stg-strat-body, .stg-fit-body,
+  .stg-bar i, .stg-ring-fg, .stg-shimmer i,
+  .stg-chipbar, .stg-plans, .stg-pick, .stg-pick-check, .stg-detail, .stg-wx,
+  .stg-fill, .stg-detailpage, .stg-call-line, .stg-wx-check.on,
   .stg-wx.skel i::after { animation: none !important; }
-  .stg-tile:hover, .stg-ex:hover, .stg-pick:hover, .stg-pick.sel, .stg-wx.link:hover { transform: none; }
+  .stg-tile:hover, .stg-ex:hover, .stg-pick:hover, .stg-pick.sel,
+  .stg-wx.pickable:hover, .stg-wx.pickable.sel, .stg-wx.pickable.sel:hover { transform: none; }
   .stg-compose, .stg-compose-in { transition: none; }
 }
+
+/* typed-text caret — blinks while a Typed element is still streaming */
+.stg-caret {
+  display: inline-block; width: 8px; height: .92em; margin-left: 2px;
+  border-radius: 2px; background: var(--lime); vertical-align: -.08em;
+  animation: stgCaret 1s steps(1) infinite;
+}
+@keyframes stgCaret { 50% { opacity: 0; } }

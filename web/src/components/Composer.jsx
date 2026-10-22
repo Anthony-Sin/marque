@@ -32,6 +32,45 @@ export function fmtDate(d) {
   return isNaN(t) ? '' : t.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
+// true when a creative/campaign image path points at a real raster render —
+// generated placeholders are saved as .svg and read as flat empty tiles.
+export const isRaster = (p) => !!p && !/\.svg(?:[?#]|$)/i.test(String(p));
+
+// channel name → icon glyph (shared by campaign tiles + dashboard work cards)
+const CHAN_GLYPH = {
+  instagram: 'image', tiktok: 'film', youtube: 'play', tv: 'site', streaming: 'share',
+  podcast: 'mic', ooh: 'aspect', guerrilla: 'megaphone', email: 'send', press: 'book',
+  print: 'book', facebook: 'share', web: 'site',
+};
+export const chanGlyph = (c) => CHAN_GLYPH[String(c || '').toLowerCase()] || 'sparkle';
+
+// Styled tile shown when a creative has no real raster image: a dark,
+// subtly-tinted gradient (deterministic from `seed`, usually the campaign
+// title), a brand monogram and the primary channel glyph — reads as an
+// intentional placeholder instead of an empty box.
+export function MediaFallback({ seed = '', channel, monogram, className = '', style }) {
+  let h = 0;
+  for (const ch of String(seed || 'marque')) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const h1 = h % 360;
+  const h2 = (h1 + 36 + (h % 55)) % 360;
+  const mono = String(monogram || seed || 'M').trim()[0]?.toUpperCase() || 'M';
+  return (
+    <span
+      className={`media-fallback${className ? ` ${className}` : ''}`}
+      style={{
+        background: `linear-gradient(150deg, hsl(${h1}, 26%, 23%) 0%, hsl(${h2}, 30%, 14%) 100%)`,
+        ...style,
+      }}
+      aria-hidden="true"
+    >
+      <span className="mf-mono">{mono}</span>
+      {channel && (
+        <span className="mf-chan"><Icon name={chanGlyph(channel)} size={11} /><i>{channel}</i></span>
+      )}
+    </span>
+  );
+}
+
 // POST helper for contract routes the api client doesn't wrap (images ops, brandbook unpublish).
 export async function postJson(url, body) {
   const r = await fetch(url, {

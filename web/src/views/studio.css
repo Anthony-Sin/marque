@@ -61,13 +61,22 @@
 /* ---------- campaign cards ---------- */
 .camp-card { padding: 18px; display: flex; flex-direction: column; gap: 4px; }
 .camp-card h4 { margin: 0; font-size: 16px; }
-.camp-card .thumbs { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; }
+.camp-card .thumbs {
+  display: flex; gap: 8px; margin-top: 12px; overflow-x: auto;
+  -webkit-mask-image: linear-gradient(to right, #000 0 calc(100% - 30px), transparent 100%);
+  mask-image: linear-gradient(to right, #000 0 calc(100% - 30px), transparent 100%);
+}
 .camp-card .thumbs .media-tile { width: 72px; height: 72px; flex: 0 0 auto; }
 .camp-card .thumbs .more {
   width: 72px; height: 72px; display: flex; align-items: center; justify-content: center;
   color: var(--ink-3); background: var(--card-3); border-radius: 12px; font-size: 12px;
 }
 .camp-card .foot { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+/* fallback tiles inside the 72px thumbs — compact monogram, icon-only channel
+   (extra .media-fallback in the selector beats the base rule bundled later) */
+.camp-card .thumbs .media-fallback .mf-mono { font-size: 23px; }
+.camp-card .thumbs .media-fallback .mf-chan { left: 5px; bottom: 5px; padding: 2px 6px; }
+.camp-card .thumbs .media-fallback .mf-chan i { display: none; }
 .camp-group { margin-top: 20px; }
 .camp-group-label {
   display: flex; align-items: center; gap: 6px;
@@ -78,20 +87,43 @@
 
 /* ---------- creative grid + hover card ---------- */
 .creative-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 16px; }
+.creative-card { container-type: inline-size; }
+/* image well — holds the veil action bar + promote fold above the .meta row */
+.creative-card .cc-media { position: relative; }
+.creative-card .cc-media > .media-fallback { aspect-ratio: var(--ar, 1/1); height: auto; }
+.cc-skel-media { display: block; width: 100%; aspect-ratio: var(--ar, 1/1); border-radius: 0; }
+.creative-card .media-fallback .mf-mono { font-size: 52px; }
+.creative-card .media-fallback .mf-chan { left: 10px; bottom: 10px; font-size: 10.5px; }
+/* hover → a single bottom action bar over the image; even split, one line,
+   never wraps or overlaps (labels drop to icon-only on very narrow cards) */
 .creative-card .veil {
-  position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center;
-  gap: 8px; padding-bottom: 60px;
-  background: linear-gradient(180deg, rgba(0,0,0,.04), rgba(0,0,0,.72));
-  opacity: 0; transition: opacity .18s;
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 34px 7px 7px;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .68));
+  opacity: 0; transform: translateY(8px);
+  transition: opacity .18s ease, transform .18s ease;
+  pointer-events: none;
 }
-.creative-card:hover .veil, .creative-card .veil.pin { opacity: 1; }
+.creative-card:hover .veil, .creative-card:focus-within .veil, .creative-card .veil.pin {
+  opacity: 1; transform: none; pointer-events: auto;
+}
+.veil-bar { display: flex; width: 100%; gap: 4px; flex-wrap: nowrap; }
 .veil-btn {
-  display: inline-flex; align-items: center; gap: 6px; padding: 8px 13px;
-  background: rgba(20,20,20,.8); border: 1px solid var(--line); color: var(--ink);
-  font-size: 12.5px; font-weight: 600; border-radius: 999px; backdrop-filter: blur(6px);
+  flex: 1 1 0; min-width: 0;
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  padding: 7px 4px; border-radius: 10px;
+  background: rgba(20, 20, 20, .82); border: 1px solid var(--line); color: var(--ink);
+  font-size: 10.5px; font-weight: 600; white-space: nowrap; overflow: hidden;
+  backdrop-filter: blur(6px);
 }
+.veil-btn svg { flex: 0 0 auto; }
+.veil-btn > span:last-child { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .veil-btn:hover { background: var(--lime); color: var(--lime-ink); border-color: var(--lime); }
 .veil-btn:disabled { opacity: .5; }
+@container (max-width: 205px) {
+  .veil-btn > span:last-child { display: none; }
+  .veil-btn { padding: 7px 2px; }
+}
 .creative-card .badge-v {
   position: absolute; top: 10px; left: 10px; z-index: 2;
   background: rgba(20,20,20,.78); color: var(--lime); font-size: 10.5px; font-weight: 700;
@@ -236,21 +268,25 @@
 .status-dot.error { background: #e08080; }
 @keyframes pulse { 50% { opacity: .35; } }
 
-/* ---------- campaigns: strategy handoff banner ---------- */
-.camp-handoff {
-  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
-  max-width: 720px; margin: 0 auto 14px;
-  background: rgba(211, 227, 116, .08); border: 1px solid rgba(211, 227, 116, .35);
-  border-radius: var(--radius-pill); padding: 9px 12px 9px 16px;
-  font-size: 13px; color: var(--ink-2);
+/* ---------- campaigns: strategy handoff — small chip line attached above the composer ---------- */
+.composer-zone { max-width: 720px; margin: 0 auto; }
+.composer-zone .composer { max-width: none; width: 100%; }
+.camp-src {
+  display: inline-flex; align-items: center; gap: 7px; max-width: 100%;
+  margin: 0 0 8px 4px; padding: 5px 9px 5px 12px;
+  background: rgba(211, 227, 116, .07); border: 1px solid rgba(211, 227, 116, .3);
+  border-radius: var(--radius-pill);
+  font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden;
 }
-.camp-handoff > svg { color: var(--lime); flex: none; }
-.camp-handoff b { color: var(--ink); }
-.camp-handoff .x {
-  margin-left: auto; background: none; border: none; color: var(--ink-3);
-  font-size: 13px; padding: 3px 8px; border-radius: 8px; flex: none;
+.camp-src > svg { color: var(--lime); flex: none; }
+.camp-src-txt { overflow: hidden; text-overflow: ellipsis; }
+.camp-src b { color: var(--ink-2); font-weight: 600; }
+.camp-src i { font-style: normal; color: var(--ink-4); }
+.camp-src .x {
+  flex: none; background: none; border: none; color: var(--ink-4);
+  font-size: 10px; padding: 2px 5px; border-radius: 999px; line-height: 1;
 }
-.camp-handoff .x:hover { color: var(--ink); background: var(--card-3); }
+.camp-src .x:hover { color: var(--ink); background: var(--card-3); }
 
 /* ---------- websites: improve my site ---------- */
 .imp-wrap { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
@@ -325,7 +361,11 @@
   background: rgba(211,227,116,.1); border: 1px solid rgba(211,227,116,.3);
   display: flex; align-items: center; justify-content: center;
 }
-.ver-tabs { display: flex; gap: 14px; align-items: flex-end; overflow-x: auto; padding: 8px 2px 14px; }
+.ver-tabs {
+  display: flex; gap: 14px; align-items: flex-end; overflow-x: auto; padding: 8px 2px 14px;
+  -webkit-mask-image: linear-gradient(to right, #000 0 calc(100% - 36px), transparent 100%);
+  mask-image: linear-gradient(to right, #000 0 calc(100% - 36px), transparent 100%);
+}
 .ver-tab { flex: 0 0 auto; width: 150px; text-align: center; background: none; border: none; padding: 0; color: var(--ink-3); }
 .ver-tab .thumb {
   height: 96px; border-radius: 14px; background: var(--card-3); border: 2px solid var(--line);
@@ -387,13 +427,19 @@
 .book-imgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); gap: 10px; }
 .book-imgs .media-tile { aspect-ratio: 1; }
 
-/* ---------- promote panel (post-ready kit per creative) ---------- */
+/* ---------- promote panel (post-ready kit per creative) — a fold over the image well ---------- */
 .promote-panel {
   position: absolute; inset: auto 0 0 0; z-index: 6;
   background: rgba(16,16,16,.96); border-top: 1px solid var(--line);
   padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 8px;
   animation: stgPanel .25s ease both; backdrop-filter: blur(8px);
 }
+.promote-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.promote-panel .x {
+  background: none; border: none; color: var(--ink-4); font-size: 10px;
+  padding: 2px 6px; border-radius: 8px; line-height: 1; flex: none;
+}
+.promote-panel .x:hover { color: var(--ink); background: var(--card-3); }
 .promote-label { font-size: 9.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-4); }
 .promote-caption {
   margin: 0; font-size: 11.5px; line-height: 1.45; color: var(--ink-2);
