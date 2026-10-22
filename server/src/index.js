@@ -6,7 +6,8 @@ import path from 'node:path';
 import { PORT, ASSETS_DIR, WEB_DIST, ENV, DATA_DIR } from './config.js';
 import * as store from './services/store.js';
 import { chat, chatJSON, tensorConfigured } from './services/tensor.js';
-import { genImage, genVideo, geminiConfigured } from './services/gemini.js';
+import { geminiConfigured } from './services/gemini.js';
+import { genImageResilient, genVideoResilient } from './services/media.js';
 import * as qloo from './services/qloo.js';
 import { fetchSite } from './services/scraper.js';
 import * as brand from './services/brand.js';
@@ -221,7 +222,9 @@ app.post('/api/creatives/:id/regenerate-image', h(async (req, res) => {
     `Text placed ${hit.creative.layout?.vpos || 'bottom'} ${hit.creative.layout?.hpos || 'left'}. ${extra} Clean professional ad composition, no watermarks.`,
   ].join(' ');
   try {
-    hit.creative.imagePath = await genImage(prompt, { aspectRatio: hit.campaign.aspectRatio, refs: (profile?.images || []).slice(0, 1).map((i) => ({ path: i.path })) });
+    const g = await genImageResilient(prompt, { aspectRatio: hit.campaign.aspectRatio, refs: (profile?.images || []).slice(0, 1).map((i) => ({ path: i.path })) });
+    hit.creative.imagePath = g.path;
+    hit.creative.imageProvider = g.provider;
     delete hit.creative.placeholder;
   } catch (e) {
     hit.creative.imagePath = campaigns.placeholderCreative(profile, hit.creative);
@@ -253,14 +256,21 @@ app.post('/api/creatives/:id/animate', h(async (req, res) => {
   hit.creative.videoState = 'running';
   saveCampaign(hit.campaign);
   const job = runJob('video', async () => {
-    const videoPath = await genVideo(
-      `Animate this brand ad creative with subtle, premium motion: gentle camera push, product detail movement, ambient light shifts. Keep all on-image text crisp and readable. Brand: ${hit.campaign.brief?.title || 'ad'}.`,
-      { aspectRatio: hit.campaign.aspectRatio === '16:9' ? '16:9' : '9:16', imagePath: hit.creative.imagePath },
-    );
-    const stored = find('campaigns', hit.campaign.id);
-    const cr = stored?.creatives?.find((x) => x.id === hit.creative.id);
-    if (cr) { cr.videoPath = videoPath; cr.videoState = 'done'; saveCampaign(stored); }
-    return { creativeId: hit.creative.id, videoPath };
+    try {
+      const v = await genVideoResilient(
+        `Animate this brand ad creative with subtle, premium motion: gentle camera push, product detail movement, ambient light shifts. Keep all on-image text crisp and readable. Brand: ${hit.campaign.brief?.title || 'ad'}.`,
+        { aspectRatio: hit.campaign.aspectRatio === '16:9' ? '16:9' : '9:16', imagePath: hit.creative.imagePath },
+      );
+      const stored = find('campaigns', hit.campaign.id);
+      const cr = stored?.creatives?.find((x) => x.id === hit.creative.id);
+      if (cr) { cr.videoPath = v.path; cr.videoState = 'done'; cr.videoProvider = v.provider; saveCampaign(stored); }
+      return { creativeId: hit.creative.id, videoPath: v.path, provider: v.provider };
+    } catch (e) {
+      const stored = find('campaigns', hit.campaign.id);
+      const cr = stored?.creatives?.find((x) => x.id === hit.creative.id);
+      if (cr) { cr.videoState = 'error'; saveCampaign(stored); }
+      throw e;
+    }
   });
   ok(res, { job });
 }));
@@ -284,9 +294,9 @@ function runShoot(shot, profile) {
         ? `Professional photoshoot image of this product — ${scene}. Brand "${profile?.name || ''}" style: ${(profile?.tone || []).join(', ') || 'clean, modern'}. Palette accents ${profile?.colors?.primary || ''}, ${profile?.colors?.accent || ''}. Commercial photography, high detail.`
         : `${shot.prompt || 'Brand photoshoot image'} — ${scene}. Style: ${(profile?.tone || []).join(', ') || 'clean, modern'}. Palette: ${profile?.colors?.primary || ''}, ${profile?.colors?.secondary || ''}.`;
       try {
-        const p = await genImage(prompt, { refs, aspectRatio: '4:5' });
-        store.registerImage(p, { source: 'photoshoot', template: tpl });
-        results.push({ id: uid(), imagePath: p, template: tpl });
+        const g = await genImageResilient(prompt, { refs, aspectRatio: '4:5' });
+        store.registerImage(g.path, { source: 'photoshoot', template: tpl, provider: g.provider });
+        results.push({ id: uid(), imagePath: g.path, template: tpl, provider: g.provider });
       } catch (e) {
         results.push({ id: uid(), imagePath: null, template: tpl, error: String(e.message || e).slice(0, 200) });
       }
@@ -311,12 +321,12 @@ app.post('/api/photoshoot/:id/edit', h(async (req, res) => {
   const { prompt, imagePath } = req.body || {};
   if (!prompt || !imagePath) return res.status(400).json({ error: 'prompt and imagePath required' });
   const job = runJob('image', async () => {
-    const p = await genImage(`Edit this image: ${prompt}. Keep everything else identical.`, { refs: [{ path: imagePath }], aspectRatio: '4:5' });
-    store.registerImage(p, { source: 'photoshoot-edit' });
+    const g = await genImageResilient(`Edit this image: ${prompt}. Keep everything else identical.`, { refs: [{ path: imagePath }], aspectRatio: '4:5' });
+    store.registerImage(g.path, { source: 'photoshoot-edit', provider: g.provider });
     const stored = find('photoshoots', shot.id);
-    stored.edits = [...(stored.edits || []), { prompt, imagePath: p }];
+    stored.edits = [...(stored.edits || []), { prompt, imagePath: g.path, provider: g.provider }];
     update('photoshoots', shot.id, stored);
-    return { shootId: shot.id, imagePath: p };
+    return { shootId: shot.id, imagePath: g.path, provider: g.provider };
   });
   ok(res, { job });
 }));
@@ -325,16 +335,16 @@ app.post('/api/images/:id/resize', h(async (req, res) => {
   const rec = store.findImage(req.params.id);
   if (!rec) return res.status(404).json({ error: 'image not found' });
   const aspect = ['1:1', '4:5', '9:16', '16:9', '3:4', '4:3'].includes(req.body?.aspect) ? req.body.aspect : '1:1';
-  const p = await genImage(`Reframe and extend this image to a ${aspect} composition. Keep the subject, style and colors identical — fill new areas naturally.`, { refs: [{ path: rec.path }], aspectRatio: aspect });
-  const created = store.registerImage(p, { source: 'resize', of: rec.id });
-  ok(res, { image: { id: created.id, imagePath: p } });
+  const g = await genImageResilient(`Reframe and extend this image to a ${aspect} composition. Keep the subject, style and colors identical — fill new areas naturally.`, { refs: [{ path: rec.path }], aspectRatio: aspect });
+  const created = store.registerImage(g.path, { source: 'resize', of: rec.id, provider: g.provider });
+  ok(res, { image: { id: created.id, imagePath: g.path, provider: g.provider } });
 }));
 app.post('/api/images/:id/animate', h(async (req, res) => {
   const rec = store.findImage(req.params.id);
   if (!rec) return res.status(404).json({ error: 'image not found' });
   const job = runJob('video', async () => {
-    const videoPath = await genVideo(req.body?.prompt || 'Subtle cinematic motion, gentle camera push-in, ambient light shift. Keep the subject identical.', { imagePath: rec.path, aspectRatio: '9:16' });
-    return { imageId: rec.id, videoPath };
+    const v = await genVideoResilient(req.body?.prompt || 'Subtle cinematic motion, gentle camera push-in, ambient light shift. Keep the subject identical.', { imagePath: rec.path, aspectRatio: '9:16' });
+    return { imageId: rec.id, videoPath: v.path, provider: v.provider };
   });
   ok(res, { job });
 }));

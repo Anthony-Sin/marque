@@ -1,6 +1,6 @@
 // campaign briefs + creative generation (copy via TensorMux, image via Gemini, SVG fallback)
 import { chatJSON } from './tensor.js';
-import { genImage } from './gemini.js';
+import { genImageResilient } from './media.js';
 import { find, uid, saveAssetBuf, registerImage } from './store.js';
 
 const BRIEF_SYS = `You are a senior marketing strategist. Given a brand profile and a campaign prompt, return JSON:
@@ -120,10 +120,12 @@ async function oneCreative(campaign, profile, product, angle) {
   if (product?.image) refs.push({ path: product.image });
   for (const im of (campaign.ingredients?.images || profile?.images?.slice(0, 1).map((i) => i.path) || [])) refs.push({ path: im });
   try {
-    creative.imagePath = await genImage(composeImagePrompt(campaign, profile, safe, product, angle), {
+    const g = await genImageResilient(composeImagePrompt(campaign, profile, safe, product, angle), {
       aspectRatio: campaign.aspectRatio || '1:1',
       refs: refs.slice(0, 3),
     });
+    creative.imagePath = g.path;
+    creative.imageProvider = g.provider;
   } catch (e) {
     creative.imagePath = placeholderCreative(profile, safe);
     creative.placeholder = true;
