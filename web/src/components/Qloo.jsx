@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Icon from './Icon.jsx';
 
 // <QlooBadge mode="live"|"simulated"|"demo" label="…" /> — the everywhere-visible taste marker.
-const MODE_LABEL = { live: '', simulated: ' · sim', demo: ' · demo', fixture: ' · demo' };
+const MODE_LABEL = { live: '', simulated: ' · simulated', demo: ' · demo', fixture: ' · demo' };
 const MODE_TITLE = {
   live: 'Powered by Qloo taste graph',
   simulated: 'Qloo-style taste data synthesized by the agent — live Qloo key pending',

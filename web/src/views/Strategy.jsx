@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../App.jsx';
@@ -15,6 +15,8 @@ const STAGES = [
 ];
 
 const ALL_CHANNELS = ['instagram', 'tiktok', 'youtube', 'tv', 'streaming', 'podcast', 'ooh', 'guerrilla', 'email', 'press'];
+const PULL_SOURCES = ['YouTube', 'TikTok', 'iTunes', 'Wikipedia', 'Wikimedia Commons'];
+const URL_RE = /https?:\/\/[^\s]+/;
 
 // map evidence/strategy channel names onto the existing Icon set
 const CHAN_ICON = {
@@ -24,6 +26,8 @@ const CHAN_ICON = {
 const chanIcon = (c) => CHAN_ICON[String(c || '').toLowerCase()] || 'sparkle';
 const pct = (v) => Math.round(Math.max(0, Math.min(1, +v || 0)) * 100);
 const badgeMode = (m) => (m === 'live' ? 'live' : m === 'simulated' ? 'simulated' : 'demo');
+const findUrl = (t) => (String(t || '').match(URL_RE) || [])[0] || '';
+const host = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
 const REDUCED = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 // count-up for ring numerals (skipped under reduced-motion)
@@ -88,17 +92,76 @@ function Loader({ stage, mode }) {
   );
 }
 
+// rotating "pulling examples from X…" line while /api/strategy/examples scrapes (30-90s)
+function PullStatus() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (REDUCED) return undefined;
+    const t = setInterval(() => setI((n) => (n + 1) % PULL_SOURCES.length), 1700);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <span>
+      pulling examples from <b className="stg-pull-src" key={i}>{PULL_SOURCES[i]}</b> — live scrape, can take a minute…
+    </span>
+  );
+}
+
+const SRC_LABEL = { scraped: 'scraped', 'catalog-art': 'catalog art', 'concept-art': 'concept art' };
+
+// one "in the wild" example card — embed iframe if we got a safe player URL,
+// thumbnail otherwise; whole card links out when there's no embed.
+function WildCard({ e, i }) {
+  const tt = /tiktok/i.test(e.embed || '');
+  const inner = (
+    <>
+      {e.embed ? (
+        <span className={`stg-wx-media${tt ? ' tt' : ''}`}>
+          <iframe src={e.embed} title={e.title || 'example'} loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
+        </span>
+      ) : e.image ? (
+        <span className="stg-wx-media"><img src={e.image} alt="" loading="lazy" /></span>
+      ) : null}
+      <span className="stg-wx-body">
+        <span className="stg-wx-plat">
+          <Icon name={chanIcon(e.platform)} size={12} />{e.platform || 'web'}
+          <span className={`stg-src ${e.source || 'scraped'}`}>{SRC_LABEL[e.source] || e.source || 'scraped'}</span>
+        </span>
+        <span className="stg-wx-title">{e.title}</span>
+        {!!e.author && <span className="stg-wx-author">{e.author}</span>}
+        {!!e.note && <span className="stg-wx-note">“{e.note}”</span>}
+        {!!e.url && !!e.embed && (
+          <a className="stg-wx-open" href={e.url} target="_blank" rel="noreferrer">
+            open original <Icon name="link" size={10} />
+          </a>
+        )}
+      </span>
+    </>
+  );
+  const cls = `stg-wx${e.url && !e.embed ? ' link' : ''}`;
+  return e.url && !e.embed
+    ? <a className={cls} style={{ '--i': i }} href={e.url} target="_blank" rel="noreferrer">{inner}</a>
+    : <div className={cls} style={{ '--i': i }}>{inner}</div>;
+}
+
 export default function Strategy() {
   const { profile, say, status } = useApp();
   const nav = useNavigate();
   const [prompt, setPrompt] = useState('');
+  const [siteUrl, setSiteUrl] = useState('');
   const [productId, setProductId] = useState('');
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState(0);
   const [res, setRes] = useState(null);
   const [err, setErr] = useState('');
-  const [sel, setSel] = useState(0);       // selected strategy index
+  const [sel, setSel] = useState(0);          // selected strategy index
+  const [view, setView] = useState('rec');    // 'rec' recommended | 'nope' wouldn't-work
   const [eviOpen, setEviOpen] = useState(false);
+  const [ex, setEx] = useState({});           // strategyId -> {status, data, err}
+  const [sub, setSub] = useState(null);       // submitted {prompt, productId, url}
+  const detailRef = useRef(null);
 
   useEffect(() => {
     if (!busy) return;
@@ -108,17 +171,38 @@ export default function Strategy() {
   }, [busy]);
 
   const generate = async (text) => {
-    const p = String(text ?? prompt).trim();
-    if (!p || busy) return;
+    const raw = String(text ?? prompt);
+    const p = raw.trim();
+    const url = siteUrl.trim() || findUrl(raw);
+    if ((!p && !url) || busy) return;
     if (text) setPrompt(p);
-    setBusy(true); setErr(''); setRes(null); setSel(0); setEviOpen(false);
+    setBusy(true); setErr(''); setRes(null); setSel(0); setView('rec'); setEviOpen(false); setEx({});
+    setSub({ prompt: p, productId, url });
     try {
-      setRes(await api.strategy(p, productId || undefined));
+      setRes(await api.strategy(p, productId || undefined, url || undefined));
     } catch (e) {
       setErr(e.message || 'strategy generation failed');
       say?.(e.message);
     }
     setBusy(false);
+  };
+
+  // collapse back to the composer (chip bar "new prompt")
+  const reset = () => { setRes(null); setErr(''); setSel(0); setView('rec'); setEx({}); setSub(null); };
+
+  // lazy pull of real-world examples for a strategy — cached per strategy id
+  const loadExamples = async (s, force = false) => {
+    if (!s) return;
+    const id = s.id || s.title;
+    const cur2 = ex[id];
+    if (!force && cur2 && cur2.status !== 'error') return;
+    setEx((m) => ({ ...m, [id]: { status: 'loading' } }));
+    try {
+      const data = await api.strategyExamples(s, res?.audienceRead);
+      setEx((m) => ({ ...m, [id]: { status: 'done', data } }));
+    } catch (e) {
+      setEx((m) => ({ ...m, [id]: { status: 'error', err: e.message || 'pull failed' } }));
+    }
   };
 
   // hand a strategy to Campaigns: stash its brief, then open /campaigns?strategy=<id>
@@ -129,7 +213,7 @@ export default function Strategy() {
       b.angle ? `Angle: ${b.angle}` : '',
       b.audience ? `Audience: ${b.audience}` : '',
       b.keyMessage ? `Key message: ${b.keyMessage}` : '',
-      (s.channels || []).length ? `Channels: ${s.channels.map((c) => c.name || c).join(', ')}` : '',
+      (s.channels || []).length ? `Channels: ${s.channels.map((c) => c.name).join(', ')}` : '',
     ].filter(Boolean).join('\n');
     try {
       sessionStorage.setItem('marque.strategyBrief', JSON.stringify({
@@ -158,6 +242,21 @@ export default function Strategy() {
   const chans = cur ? [...(cur.channels || [])].sort((a, b) => (+b.fit || 0) - (+a.fit || 0)) : [];
   const drivers = (evi.drivers?.length ? evi.drivers : read.mediaHabits) || [];
   const qmode = evi.qlooMode || status?.qloo;
+  const exState = cur ? ex[cur.id || cur.title] : null;
+
+  // lazy-pull examples the first time a strategy's dashboard opens
+  useEffect(() => {
+    if (res && !busy && cur && view === 'rec') loadExamples(cur);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [res, busy, sel, view]);
+
+  // select a card → open its campaign dashboard below
+  const pick = (i) => {
+    setSel(i); setView('rec');
+    if (!REDUCED) {
+      setTimeout(() => detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 140);
+    }
+  };
 
   // "Wouldn't work" — channels nobody suggested or that score <0.35 everywhere,
   // plus one lean-derived gimmick the audience read penalizes.
@@ -186,6 +285,12 @@ export default function Strategy() {
     return out.slice(0, 7);
   }, [res]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const inlineUrl = findUrl(prompt);
+  const effUrl = siteUrl.trim() || inlineUrl;
+  const canGo = !busy && !!(prompt.trim() || effUrl);
+  const subProduct = sub?.productId ? (profile?.catalog || []).find((p) => p.id === sub.productId) : null;
+  const subHost = sub?.url ? host(sub.url) : '';
+
   if (profile === undefined) {
     return <div className="loading-wrap"><div className="spinner" /></div>;
   }
@@ -195,8 +300,8 @@ export default function Strategy() {
       <div className="page-head">
         <h1 className="display">Strategy board</h1>
         <p className="sub">
-          Say what you're trying to do — we read your audience's taste graph, pitch strategies
-          with the evidence behind every call, and flag what wouldn't work.
+          Say what you're trying to do — or paste a product/site URL — we read your audience's
+          taste graph, pitch strategies with the evidence behind every call, and flag what wouldn't work.
         </p>
       </div>
 
@@ -213,35 +318,70 @@ export default function Strategy() {
         </div>
       ) : (
         <>
-          <div className="card stg-ask">
-            <textarea
-              value={prompt}
-              placeholder="What are you trying to make happen? e.g. launch our spring drop to people who already love what we do"
-              onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate(); }}
-            />
-            <div className="stg-ask-foot">
-              {!!(profile?.catalog || []).length && (
-                <select className="stg-prod" value={productId} onChange={(e) => setProductId(e.target.value)}
-                  title="Optional — anchor strategies to a catalog product">
-                  <option value="">No specific product</option>
-                  {profile.catalog.map((p) => <option key={p.id} value={p.id}>For: {p.name}</option>)}
-                </select>
-              )}
-              <span className="grow" />
-              <button className="btn lime" disabled={busy || !prompt.trim()} onClick={() => generate()}>
-                <Icon name="sparkle" /> {busy ? 'Working…' : 'Generate strategies'}
+          {/* ---- collapsed prompt chip — the board owns the screen once results land ---- */}
+          {res && !busy && (
+            <div className="stg-chipbar">
+              <span className="stg-chipbar-ic"><Icon name="sparkle" size={14} /></span>
+              <span className="stg-chipbar-prompt" title={sub?.prompt || sub?.url}>
+                {sub?.prompt || sub?.url || 'strategy board'}
+              </span>
+              {!!subProduct && <span className="stg-tag"><Icon name="bag" size={11} />{subProduct.name}</span>}
+              {!!subHost && <span className="stg-tag"><Icon name="globe" size={11} />{subHost}</span>}
+              <button className="btn ghost sm stg-chipbar-new" onClick={reset}>
+                <Icon name="edit" size={13} /> New prompt
               </button>
             </div>
-          </div>
-
-          {!res && !busy && !err && (
-            <div className="stg-examples">
-              {examples.map((x) => (
-                <button key={x} className="stg-ex" onClick={() => setPrompt(x)}>{x}</button>
-              ))}
-            </div>
           )}
+
+          {/* ---- composer — animates shut once strategies arrive ---- */}
+          <div className={`stg-compose${res && !busy ? ' shut' : ''}`} aria-hidden={!!(res && !busy)}>
+            <div className="stg-compose-in">
+              <div className="card stg-ask">
+                <textarea
+                  value={prompt}
+                  placeholder="What are you trying to make happen? e.g. launch our spring drop to people who already love what we do"
+                  onChange={(e) => setPrompt(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generate(); }}
+                />
+                <div className="stg-ask-foot">
+                  {!!(profile?.catalog || []).length && (
+                    <select className="stg-prod" value={productId} onChange={(e) => setProductId(e.target.value)}
+                      title="Optional — anchor strategies to a catalog product">
+                      <option value="">No specific product</option>
+                      {profile.catalog.map((p) => <option key={p.id} value={p.id}>For: {p.name}</option>)}
+                    </select>
+                  )}
+                  <span className={`stg-urlwrap${siteUrl.trim() ? ' has' : ''}`} title="Optional — we'll scrape this as product/site context">
+                    <Icon name="link" size={13} />
+                    <input className="stg-url" value={siteUrl} placeholder="or paste a product/site URL"
+                      onChange={(e) => setSiteUrl(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') generate(); }} />
+                  </span>
+                  {!!inlineUrl && !siteUrl.trim() && (
+                    <span className="stg-tag" title="Detected in your prompt — will be scraped as context">
+                      <Icon name="globe" size={11} />{host(inlineUrl)}
+                    </span>
+                  )}
+                  <span className="grow" />
+                  <button className="btn lime" disabled={!canGo} onClick={() => generate()}>
+                    {busy
+                      ? <span className="spinner stg-btnspin" />
+                      : <Icon name="sparkle" />}
+                    {busy ? 'Working…' : 'Generate strategies'}
+                  </button>
+                </div>
+                <div className="stg-hint">prompt, or paste a product/website URL — we'll scrape it for context</div>
+              </div>
+
+              {!res && !busy && !err && (
+                <div className="stg-examples">
+                  {examples.map((x) => (
+                    <button key={x} className="stg-ex" onClick={() => setPrompt(x)}>{x}</button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
 
           {busy && <Loader stage={stage} mode={badgeMode(status?.qloo)} />}
 
@@ -366,116 +506,215 @@ export default function Strategy() {
                 )}
               </section>
 
-              {/* ---- featured strategy (switcher) ---- */}
-              <section className="card stg-tile stg-strat" style={{ '--i': 2 }}>
+              {/* ---- strategy picker: recommended cards vs rejected tactics ---- */}
+              <section className="card stg-tile stg-picks" style={{ '--i': 2 }}>
                 <div className="stg-tile-head">
                   <span className="stg-ml">Strategies · {strats.length}</span>
-                  {strats.length > 1 && (
-                    <div className="stg-seg" role="tablist" aria-label="Switch strategy">
-                      {strats.map((s, i) => (
-                        <button key={s.id || i} role="tab" aria-selected={i === sel}
-                          className={i === sel ? 'on' : ''} title={s.title}
-                          onClick={() => setSel(i)}>{i + 1}</button>
-                      ))}
-                    </div>
-                  )}
+                  <div className="stg-seg" role="tablist" aria-label="Recommended or rejected">
+                    <button role="tab" aria-selected={view === 'rec'} className={view === 'rec' ? 'on' : ''}
+                      onClick={() => setView('rec')}>Recommended · {strats.length}</button>
+                    <button role="tab" aria-selected={view === 'nope'} className={view === 'nope' ? 'on' : ''}
+                      onClick={() => setView('nope')}>Wouldn't work · {rejected.length}</button>
+                  </div>
                 </div>
 
-                {!cur ? (
+                {view === 'nope' ? (
+                  <div className="stg-nope-list">
+                    <p className="stg-nope-sub">
+                      Rejected before it costs you money — same evidence, opposite conclusion.
+                    </p>
+                    {rejected.length ? rejected.map((r) => (
+                      <div className="stg-rej" key={r.name}>
+                        <span className="stg-rej-x"><Icon name="x" /></span>
+                        <div>
+                          <b>{r.name}</b>
+                          <span className="stg-rej-why">{r.reason}</span>
+                        </div>
+                      </div>
+                    )) : (
+                      <div className="stg-empty-note">Nothing ruled out — this audience reads broad-channel.</div>
+                    )}
+                  </div>
+                ) : !strats.length ? (
                   <div className="stg-empty-note">The agent didn't return any strategies — try a more specific prompt.</div>
                 ) : (
-                  <div className="stg-strat-body" key={cur.id || sel}>
-                    <div className="stg-strat-top">
-                      <div className="stg-strat-id">
-                        <span className="stg-idx">STRATEGY {String(sel + 1).padStart(2, '0')}</span>
-                        <h3 className="display">{cur.title}</h3>
-                        {!!cur.angle && <p className="stg-angle">{cur.angle}</p>}
-                      </div>
-                      <Ring value={cur.audienceFit?.score} label="audience fit" />
-                    </div>
-                    {!!cur.audienceFit?.notes?.length && (
-                      <div className="stg-fitnotes">{cur.audienceFit.notes.join(' · ')}</div>
-                    )}
-
-                    <div>
-                      <span className="stg-ml">Channel fit</span>
-                      <div className="stg-chans" style={{ marginTop: 9 }}>
-                        {chans.length ? chans.map((c, i) => (
-                          <div className="stg-chan" key={c.name}>
-                            <span className="stg-chan-ic"><Icon name={chanIcon(c.name)} /></span>
-                            <span className="stg-chan-name">{c.name}</span>
-                            <span className="stg-bar">
-                              <i className={i === 0 ? 'hot' : ''}
-                                style={{ width: `${pct(c.fit)}%`, '--d': `${0.15 + i * 0.09}s` }} />
-                            </span>
-                            <span className="stg-chan-val">{pct(c.fit)}</span>
-                            {!!c.why && <div className="stg-why">{c.why}</div>}
-                          </div>
-                        )) : <div className="stg-empty-note">No channel mix attached.</div>}
-                      </div>
-                    </div>
-
-                    {!!cur.formats?.length && (
-                      <div>
-                        <span className="stg-ml">Formats</span>
-                        <div className="stg-chiprow" style={{ marginTop: 7 }}>
-                          {cur.formats.map((f) => <span key={f} className="stg-chip">{f}</span>)}
-                        </div>
-                      </div>
-                    )}
-
-                    {(!!cur.heroSignal || !!cur.qlooSignals?.length) && (
-                      <div>
-                        <span className="stg-ml">Grounded in</span>
-                        <div className="stg-chiprow" style={{ marginTop: 7, alignItems: 'center' }}>
-                          {!!cur.heroSignal && (
-                            <span className="stg-hero-sig" title="hero signal">
-                              <Icon name="qloo" />{cur.heroSignal}
-                            </span>
-                          )}
-                          <SignalChips signals={(cur.qlooSignals || []).filter((q) => q.entity !== cur.heroSignal)} max={5} />
-                        </div>
-                      </div>
-                    )}
-
-                    {!!cur.watchouts?.length && (
-                      <div className="stg-watch">
-                        <span className="stg-ml rose">Watchouts</span>
-                        <ul>{cur.watchouts.map((w, i) => <li key={i}>{w}</li>)}</ul>
-                      </div>
-                    )}
-
-                    <div className="stg-strat-foot">
-                      <span className="hint">Hands its brief to the Campaigns composer</span>
-                      <button className="btn lime" onClick={() => useStrategy(cur)}>
-                        Use this strategy <Icon name="send" size={15} />
+                  <div className="stg-pick-grid">
+                    {strats.map((s, i) => (
+                      <button key={s.id || i} className={`stg-pick${i === sel ? ' sel' : ''}`}
+                        style={{ '--i': i }} onClick={() => pick(i)}
+                        aria-pressed={i === sel} title={s.title}>
+                        <span className="stg-pick-top">
+                          <span className="stg-idx">STRATEGY {String(i + 1).padStart(2, '0')}</span>
+                          {i === sel && <span className="stg-pick-check"><Icon name="check" size={11} sw={2.4} /></span>}
+                        </span>
+                        <b className="stg-pick-title">{s.title}</b>
+                        {!!s.angle && <span className="stg-pick-angle">{s.angle}</span>}
+                        {!!(s.channels || []).length && (
+                          <span className="stg-pick-chans">
+                            {[...(s.channels || [])].sort((a, b) => (+b.fit || 0) - (+a.fit || 0)).slice(0, 3).map((c) => (
+                              <span className="stg-pick-chan" key={c.name}>
+                                <Icon name={chanIcon(c.name)} size={11} />{c.name}
+                                <em><i style={{ width: `${pct(c.fit)}%` }} /></em>
+                              </span>
+                            ))}
+                          </span>
+                        )}
+                        <span className="stg-pick-foot">
+                          <span className="stg-pick-fit">{pct(s.audienceFit?.score)}% audience fit</span>
+                          <span className="stg-pick-go">{i === sel ? 'selected' : 'open board →'}</span>
+                        </span>
                       </button>
-                    </div>
+                    ))}
                   </div>
                 )}
               </section>
 
-              {/* ---- wouldn't work ---- */}
-              <section className="card stg-tile stg-nope" style={{ '--i': 3 }}>
-                <div className="stg-tile-head">
-                  <span className="stg-ml rose">Wouldn't work here</span>
-                  <span style={{ color: 'var(--rose)' }}><Icon name="x" size={15} /></span>
-                </div>
-                <p className="stg-nope-sub">
-                  Rejected before it costs you money — same evidence, opposite conclusion.
-                </p>
-                {rejected.length ? rejected.map((r) => (
-                  <div className="stg-rej" key={r.name}>
-                    <span className="stg-rej-x"><Icon name="x" /></span>
-                    <div>
-                      <b>{r.name}</b>
-                      <span className="stg-rej-why">{r.reason}</span>
+              {/* ---- campaign dashboard for the selected strategy ---- */}
+              {cur && view === 'rec' && (
+                <section ref={detailRef} key={cur.id || sel}
+                  className="card stg-tile stg-detail" style={{ '--i': 3 }}>
+                  <div className="stg-detail-top">
+                    <div className="stg-strat-id">
+                      <span className="stg-idx">STRATEGY {String(sel + 1).padStart(2, '0')} · CAMPAIGN BOARD</span>
+                      <h3 className="display">{cur.title}</h3>
+                      {!!cur.angle && <p className="stg-angle">{cur.angle}</p>}
+                      {!!cur.audienceFit?.notes?.length && (
+                        <div className="stg-fitnotes">{cur.audienceFit.notes.join(' · ')}</div>
+                      )}
+                    </div>
+                    <Ring value={cur.audienceFit?.score} label="audience fit" />
+                  </div>
+
+                  <div className="stg-detail-cols">
+                    <div className="stg-detail-left">
+                      {!!cur.brief && (
+                        <div className="stg-brief">
+                          <span className="stg-ml">Brief summary</span>
+                          {!!cur.brief.keyMessage && (
+                            <div className="stg-brief-row"><b>Key message</b>{cur.brief.keyMessage}</div>
+                          )}
+                          {!!cur.brief.audience && (
+                            <div className="stg-brief-row"><b>Audience</b>{cur.brief.audience}</div>
+                          )}
+                          {!!cur.brief.angle && (
+                            <div className="stg-brief-row"><b>Angle</b>{cur.brief.angle}</div>
+                          )}
+                        </div>
+                      )}
+
+                      {!!cur.formats?.length && (
+                        <div>
+                          <span className="stg-ml">Formats</span>
+                          <div className="stg-chiprow" style={{ marginTop: 7 }}>
+                            {cur.formats.map((f) => <span key={f} className="stg-chip">{f}</span>)}
+                          </div>
+                        </div>
+                      )}
+
+                      {(!!cur.heroSignal || !!cur.qlooSignals?.length) && (
+                        <div>
+                          <span className="stg-ml">Grounded in</span>
+                          <div className="stg-chiprow" style={{ marginTop: 7, alignItems: 'center' }}>
+                            {!!cur.heroSignal && (
+                              <span className="stg-hero-sig" title="hero signal">
+                                <Icon name="qloo" />{cur.heroSignal}
+                              </span>
+                            )}
+                            <SignalChips signals={(cur.qlooSignals || []).filter((q) => q.entity !== cur.heroSignal)} max={5} />
+                          </div>
+                        </div>
+                      )}
+
+                      {!!cur.watchouts?.length && (
+                        <div className="stg-watch">
+                          <span className="stg-ml rose">Watchouts</span>
+                          <ul>{cur.watchouts.map((w, i) => <li key={i}>{w}</li>)}</ul>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="stg-detail-right">
+                      <div>
+                        <span className="stg-ml">Channel fit</span>
+                        <div className="stg-chans" style={{ marginTop: 9 }}>
+                          {chans.length ? chans.map((c, i) => (
+                            <div className="stg-chan" key={c.name}>
+                              <span className="stg-chan-ic"><Icon name={chanIcon(c.name)} /></span>
+                              <span className="stg-chan-name">{c.name}</span>
+                              <span className="stg-bar">
+                                <i className={i === 0 ? 'hot' : ''}
+                                  style={{ width: `${pct(c.fit)}%`, '--d': `${0.15 + i * 0.09}s` }} />
+                              </span>
+                              <span className="stg-chan-val">{pct(c.fit)}</span>
+                              {!!c.why && <div className="stg-why">{c.why}</div>}
+                            </div>
+                          )) : <div className="stg-empty-note">No channel mix attached.</div>}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                )) : (
-                  <div className="stg-empty-note">Nothing ruled out — this audience reads broad-channel.</div>
-                )}
-              </section>
+
+                  {/* ---- in the wild: real examples scraped per strategy ---- */}
+                  <div className="stg-wild">
+                    <div className="stg-wild-head">
+                      <span className="stg-ml">In the wild — pulled from the open web</span>
+                      <span className="stg-wild-tools">
+                        {exState?.status === 'done' && !!(exState.data?.hunts || []).length && (
+                          <span className="stg-wild-hunts">
+                            hunts: {[...new Set(exState.data.hunts.map((h) => h.platform))].join(' · ')}
+                          </span>
+                        )}
+                        <button className="btn ghost sm" onClick={() => loadExamples(cur, true)}
+                          disabled={exState?.status === 'loading'}>
+                          <Icon name="refresh" size={13} />
+                          {exState?.status === 'loading' ? 'Pulling…' : 'Re-pull'}
+                        </button>
+                      </span>
+                    </div>
+
+                    {(!exState || exState.status === 'loading') && (
+                      <>
+                        <div className="stg-wild-status">
+                          <span className="spinner stg-btnspin" /><PullStatus />
+                        </div>
+                        <div className="stg-wild-grid">
+                          {[0, 1, 2, 3].map((i) => (
+                            <div className="stg-wx skel" key={i} style={{ '--i': i }}>
+                              <i className="m" /><i className="t" /><i className="t s" />
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {exState?.status === 'error' && (
+                      <div className="stg-wild-err">
+                        <span><Icon name="x" size={14} /> Couldn't pull live examples — {exState.err}</span>
+                        <button className="btn ghost sm" onClick={() => loadExamples(cur, true)}>
+                          <Icon name="refresh" size={13} /> Retry
+                        </button>
+                      </div>
+                    )}
+
+                    {exState?.status === 'done' && (
+                      (exState.data?.examples || []).length ? (
+                        <div className="stg-wild-grid">
+                          {exState.data.examples.map((e, i) => <WildCard key={i} e={e} i={i} />)}
+                        </div>
+                      ) : (
+                        <div className="stg-empty-note">No examples surfaced for this strategy — try re-pulling.</div>
+                      )
+                    )}
+                  </div>
+
+                  <div className="stg-strat-foot">
+                    <span className="hint">Hands its brief to the Campaigns composer</span>
+                    <button className="btn lime" onClick={() => useStrategy(cur)}>
+                      Use this strategy <Icon name="send" size={15} />
+                    </button>
+                  </div>
+                </section>
+              )}
             </div>
           )}
         </>

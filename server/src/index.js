@@ -14,6 +14,7 @@ import * as brand from './services/brand.js';
 import * as campaigns from './services/campaigns.js';
 import { agentChat } from './services/agent.js';
 import { generateStrategies } from './services/strategy.js';
+import { generateExamples } from './services/scout.js';
 import { generateWebsite, editWebsite, siteVersion } from './services/sites.js';
 import { buildBook, htmlBook } from './services/brandbook.js';
 
@@ -60,10 +61,10 @@ function syncProfileCatalog() {
 }
 
 app.post('/api/profile/build', h(async (req, res) => {
-  const { url, templateId } = req.body || {};
+  const { url, templateId, includeListing } = req.body || {};
   if (templateId) return ok(res, await brand.buildFromTemplate(templateId));
   if (!url) return res.status(400).json({ error: 'url required' });
-  ok(res, await brand.buildProfileFromWebsite(url));
+  ok(res, await brand.buildProfileFromWebsite(url, { includeListing }));
 }));
 app.post('/api/profile/scratch', h(async (req, res) => {
   ok(res, await brand.buildFromScratch(req.body?.messages, req.body?.attachments));
@@ -153,9 +154,26 @@ app.post('/api/catalog/:id/sync-image', h(async (req, res) => {
 
 // ---------- strategy board ----------
 app.post('/api/strategy', h(async (req, res) => {
-  const { prompt } = req.body || {};
-  if (!prompt?.trim()) return res.status(400).json({ error: 'prompt required' });
-  ok(res, await generateStrategies({ prompt: prompt.trim(), profile: brand.currentProfile() }));
+  const { prompt, productId, url } = req.body || {};
+  const raw = (prompt || '').trim();
+  // allow the URL itself to be the "prompt" (product/site scouting)
+  const inlineUrl = url || (raw.match(/https?:\/\/\S+/) || [])[0] || null;
+  if (!raw && !inlineUrl) return res.status(400).json({ error: 'prompt required' });
+  const product = productId ? find('catalog', productId) : null;
+  let urlContext = null;
+  if (inlineUrl) {
+    try {
+      const s = await fetchSite(inlineUrl);
+      urlContext = { url: inlineUrl, title: s.title, description: s.description || s.meta?.description || '' };
+    } catch { urlContext = { url: inlineUrl }; }
+  }
+  const finalPrompt = raw || `analyze this product/site and suggest campaign strategies: ${inlineUrl}`;
+  ok(res, await generateStrategies({ prompt: finalPrompt, profile: brand.currentProfile(), product, urlContext }));
+}));
+app.post('/api/strategy/examples', h(async (req, res) => {
+  const { strategy, audienceRead } = req.body || {};
+  if (!strategy?.id && !strategy?.title) return res.status(400).json({ error: 'strategy required' });
+  ok(res, await generateExamples({ strategy, profile: brand.currentProfile(), audienceRead }));
 }));
 
 // ---------- campaigns + creatives ----------

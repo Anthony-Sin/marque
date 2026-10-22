@@ -102,7 +102,7 @@ function channelFit(bundle, lean) {
 
 const SCHEMA = `Respond with strict JSON: {"strategies":[{ "title","angle","channels":[channel names],"formats":[],"brief":{"title","angle","audience","keyMessage"},"watchouts":[],"heroSignal" }]} — 3-4 strategies. Each channels[] picks from: ${ALL_CHANNELS.join(', ')}. Base every call on the audience data given; never suggest a channel with no evidence.`;
 
-export async function generateStrategies({ prompt, profile }) {
+export async function generateStrategies({ prompt, profile, product = null, urlContext = null }) {
   const bundle = profile?.qloo || null;
   const read = audienceRead(bundle, profile);
   const fitMap = channelFit(bundle, read.lean);
@@ -118,6 +118,8 @@ export async function generateStrategies({ prompt, profile }) {
         role: 'user', content: [
           `Campaign prompt: ${prompt}`,
           `Brand: ${profile?.name} — ${profile?.tagline || ''}. Tone: ${(profile?.tone || []).join(', ')}. Overview: ${(profile?.overview || '').slice(0, 300)}`,
+          product ? `Focus product: ${product.name}${product.description ? ` — ${product.description.slice(0, 200)}` : ''}${product.price ? ` (${product.price})` : ''}` : null,
+          urlContext ? `Referenced site: ${urlContext.title || urlContext.url} — ${(urlContext.description || '').slice(0, 200)}` : null,
           `Audience read: lean=${read.lean.label} (heuristic). Media habits: ${read.mediaHabits.map((m) => `${m.channel} (${m.note})`).join('; ')}.`,
           `Top audience affinities:\n${signalLines.join('\n')}`,
           `Channel-fit priors (0-1): ${Object.entries(fitMap).map(([c, v]) => `${c}=${v.fit.toFixed(2)}`).join(', ')}`,

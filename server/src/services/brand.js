@@ -45,13 +45,23 @@ const DNA_SYS = `You are a brand strategist extracting a brand DNA profile from 
 Return a JSON object: {"name","tagline","description","tone":[4-7 voice keywords],"values":[3-6 strings],"audience":"one sentence","colors":{"primary","secondary","accent","background","surface","text"} all as #rrggbb,"fonts":{"heading","body"} display names}.
 Prefer the scraped color palette and fonts when present; invent tasteful hex values only where scraping found nothing. Description is 2-3 sentences. Never invent product names or facts not in the data.`;
 
-export async function buildProfileFromWebsite(url) {
+export async function buildProfileFromWebsite(url, { includeListing } = {}) {
   const scraped = await fetchSite(url);
   const payload = {
     url, title: scraped.title, description: scraped.description, og: scraped.og,
     text: scraped.text, colors: scraped.colors, fonts: scraped.fonts,
     imageCaptions: scraped.images.map((i) => i.alt || i.caption).filter(Boolean),
   };
+  // "Include public business-listing details" — enrich with the public
+  // knowledge-graph summary for this brand (Wikipedia REST), when one exists.
+  if (includeListing) {
+    try {
+      const name = (scraped.og?.site_name || scraped.title || new URL(url).hostname.replace(/^www\.|\.\w+$/g, '')).split(/[|\-–—]/)[0].trim();
+      const w = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`,
+        { headers: { 'User-Agent': 'marque/1.0' }, signal: AbortSignal.timeout(8000) }).then((r) => (r.ok ? r.json() : null));
+      if (w?.extract) payload.publicListing = { source: 'wikipedia', title: w.title, summary: w.extract.slice(0, 600) };
+    } catch { /* listing enrichment is best-effort */ }
+  }
   const dna = await chatJSON([
     { role: 'system', content: DNA_SYS },
     { role: 'user', content: `Scraped site data:\n${JSON.stringify(payload)}` },
