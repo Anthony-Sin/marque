@@ -1,10 +1,24 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import '../views/studio.css';
 
 export const ASPECTS = ['1:1', '4:5', '9:16', '16:9'];
 export const arCss = (ar) => (ar || '1:1').replace(':', '/');
+
+// Stage-rotating copy for long-running jobs. Returns stages[i], cycling every
+// `ms` while `active`; resets to the first stage each time `active` turns on.
+export function useStages(stages, active, ms = 2800) {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    if (!active) return undefined;
+    setI(0);
+    const t = setInterval(() => setI((x) => (x + 1) % stages.length), ms);
+    return () => clearInterval(t);
+  }, [active, stages.length, ms]);
+  return stages[Math.min(i, stages.length - 1)];
+}
 
 export function fmtDate(d) {
   if (!d) return '';
@@ -100,6 +114,7 @@ export default function Composer({
   onGenerate,
 }) {
   const { profile } = useApp();
+  const nav = useNavigate();
   const [prompt, setPrompt] = useState('');
   const [productId, setProductId] = useState('');
   const [images, setImages] = useState([]);      // asset paths, ≤3
@@ -152,7 +167,11 @@ export default function Composer({
                 {p.name}
               </button>
             ))}
-            {!catalog.length && <div className="menu-title" style={{ textTransform: 'none' }}>No catalog items yet</div>}
+            {!catalog.length && (
+              <button onClick={() => { setMenu(null); nav('/profile/catalog'); }}>
+                No catalog items yet — add one →
+              </button>
+            )}
           </PillMenu>
 
           <PillMenu
@@ -169,9 +188,9 @@ export default function Composer({
                 ))}
               </div>
             ) : (
-              <div className="menu-title" style={{ textTransform: 'none' }}>
-                No images on your Business Profile yet
-              </div>
+              <button onClick={() => { setMenu(null); nav('/profile/assets'); }}>
+                No images yet — add some in Assets →
+              </button>
             )}
             {!!images.length && <button onClick={() => setImages([])}>Clear selection</button>}
           </PillMenu>
@@ -189,7 +208,7 @@ export default function Composer({
 
           <span className="grow" />
           <button className="btn lime" disabled={busy || !prompt.trim()} onClick={submit}>
-            <Icon name="sparkle" /> {busy ? 'Working…' : cta}
+            {busy ? <span className="spinner" /> : <Icon name="sparkle" />} {busy ? 'Working…' : cta}
           </button>
         </div>
       </div>

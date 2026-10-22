@@ -2,8 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
-import { downloadAsset, fmtDate, postJson } from '../components/Composer.jsx';
+import { downloadAsset, fmtDate, postJson, useStages } from '../components/Composer.jsx';
 import './studio.css';
+
+const GEN_STAGES = ['Setting the scene…', 'Composing your shots…', 'Developing the images…', 'Final touch-ups…'];
 
 // Scene text is sent as the template value — the server maps known keys
 // (studio/lifestyle/flat-lay/detail/outdoor) and passes anything else through as prompt text.
@@ -54,7 +56,7 @@ export default function Photoshoot() {
   const [jobs, setJobs] = useState(null);
   const [activeJob, setActiveJob] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState('');
+  const stageNote = useStages(GEN_STAGES, busy);
   // product flow
   const [inputImage, setInputImage] = useState(null);  // {path, caption}
   const [picked, setPicked] = useState([]);            // template ids
@@ -84,7 +86,7 @@ export default function Photoshoot() {
   useEffect(() => { reload(); }, []);
 
   const runAndTrack = async (createCall, doneNote) => {
-    setBusy(true); setNote('Generating — this can take a minute…');
+    setBusy(true);
     try {
       const res = await createCall();
       // POST returns { job: Job, shoot: PhotoshootJob } — job.id ≠ shoot.id;
@@ -94,7 +96,7 @@ export default function Photoshoot() {
       await reload();
       say(doneNote || 'Images ready');
     } catch (e) { say(e.message); }
-    setBusy(false); setNote('');
+    setBusy(false);
   };
 
   // ---------- inputs ----------
@@ -442,7 +444,21 @@ export default function Photoshoot() {
         </div>
       )}
 
-      {note && <div className="gen-note"><span className="spinner" />{note}</div>}
+      {busy && (
+        <>
+          <div className="gen-note"><span className="spinner" />{stageNote}</div>
+          <div className="grid c4">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="card result-card">
+                <span className="skel" style={{ width: '100%', aspectRatio: 1 }} />
+                <div style={{ padding: '10px 12px 14px' }}>
+                  <span className="skel skel-line w55" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* active results — results[] + prompt edits[] + local resize extras */}
       {job && !!allResults(job, extras).length && (
@@ -454,10 +470,32 @@ export default function Photoshoot() {
         </>
       )}
       {job && !allResults(job, extras).length && !busy && (
-        <div className="empty">That shoot produced no images.</div>
+        <div className="empty">
+          <p>That shoot produced no images.</p>
+          <button className="btn ghost sm" onClick={() => { setMode(null); setStep(0); }}>
+            <Icon name="sparkle" size={13} /> Try a new shoot
+          </button>
+        </div>
       )}
 
       {/* history */}
+      {jobs === null && !mode && (
+        <div className="grid" style={{ gap: 10, marginTop: 26 }}>
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="card job-row" style={{ cursor: 'default' }}>
+              <span className="skel" style={{ width: 8, height: 8, borderRadius: '50%', flex: '0 0 auto' }} />
+              <span className="skel" style={{ width: 34, height: 34, borderRadius: 9, flex: '0 0 auto' }} />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <span className="skel skel-line w40" style={{ height: 14 }} />
+                <span className="skel skel-line w55" />
+              </div>
+              <div className="thumbs">
+                {[0, 1, 2].map((j) => <span key={j} className="media-tile skel" />)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       {!!jobs?.length && (
         <>
           <div className="section-label">History</div>
@@ -485,7 +523,12 @@ export default function Photoshoot() {
         </>
       )}
       {jobs !== null && !jobs?.length && !mode && (
-        <div className="empty" style={{ paddingTop: 30 }}>No photoshoots yet — pick a mode above.</div>
+        <div className="empty" style={{ paddingTop: 30 }}>
+          <p>No photoshoots yet — pick a mode above.</p>
+          <button className="btn ghost sm" onClick={() => { setMode('product'); setStep(0); }}>
+            <Icon name="bag" size={13} /> Start a product shoot
+          </button>
+        </div>
       )}
     </div>
   );

@@ -245,7 +245,7 @@ export default function FieldEdit({ label, hint, kind = 'text', value, onSave, r
             <Editor kind={kind} draft={draft} setDraft={setDraft} placeholder={placeholder} />
             <div className="row mt8">
               <button type="button" className="btn lime sm" onClick={apply} disabled={busy}>
-                {busy ? 'Saving…' : 'Apply'}
+                {busy && <span className="spinner" />}{busy ? 'Saving…' : 'Apply'}
               </button>
               <button type="button" className="btn ghost sm" onClick={cancel} disabled={busy}>Cancel</button>
             </div>

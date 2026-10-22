@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
 import PublishBar from '../components/PublishBar.jsx';
 import { QlooBadge, TastePanel } from '../components/Qloo.jsx';
-import { postJson } from '../components/Composer.jsx';
+import { postJson, useStages } from '../components/Composer.jsx';
 import './studio.css';
 
 const MAX_IMGS = 7;
+const COVER_STAGES = ['Dreaming up cover art…', 'Rendering your cover…', 'Applying finishing touches…'];
 
 // profile.colors is a keyed object ({primary, secondary, accent, background,
 // surface, text}) on the server — normalize to [{label, hex}] (array-safe too).
@@ -20,12 +22,14 @@ const colorList = (p) => {
 
 export default function BrandBook() {
   const { profile, setProfile, say, status } = useApp();
+  const nav = useNavigate();
   const [book, setBook] = useState(undefined);       // undefined=loading, null=none
   const [step, setStep] = useState('cover');         // cover | images | view
   const [cover, setCover] = useState(null);          // {id?, path}
   const [picked, setPicked] = useState([]);          // image ids (profile.images)
   const [page, setPage] = useState(0);
   const [busy, setBusy] = useState('');              // 'gen-cover' | 'create' | 'pub'
+  const coverNote = useStages(COVER_STAGES, busy === 'gen-cover');
   const fileRef = useRef(null);
 
   const reload = async () => {
@@ -138,10 +142,16 @@ export default function BrandBook() {
           <h1 className="display">Your Brand Book</h1>
           <p className="sub">A Brand Book generated from your Business Profile.</p>
         </div>
-        <div className="gen-hero">
-          <div className="icon-hero"><Icon name="book" size={28} /></div>
-          <div className="big">Loading your Brand Book</div>
-          <div className="muted">Just a moment…</div>
+        <div className="book-stage">
+          <div className="book-page" style={{ padding: 38, display: 'block' }}>
+            <span className="skel skel-line" style={{ width: 120, marginBottom: 18 }} />
+            <span className="skel" style={{ width: '100%', height: 240, borderRadius: 14 }} />
+            <span className="skel skel-line w70 mt16" />
+            <span className="skel skel-line w40" style={{ marginTop: 10 }} />
+          </div>
+          <div className="book-nav">
+            {[0, 1, 2, 3, 4, 5].map((i) => <span key={i} className="skel" style={{ width: 8, height: 8, borderRadius: '50%' }} />)}
+          </div>
         </div>
       </div>
     );
@@ -190,6 +200,7 @@ export default function BrandBook() {
                   <span className="pick-tile sel"><img src={cover.path} alt="cover" /><span className="cap">cover</span></span>
                 )}
               </div>
+              {busy === 'gen-cover' && <div className="gen-note"><span className="spinner" />{coverNote}</div>}
               <div className="row mt16" style={{ justifyContent: 'flex-end' }}>
                 <button className="btn lime" disabled={!cover} onClick={() => setStep('images')}>
                   Confirm cover →
@@ -221,7 +232,7 @@ export default function BrandBook() {
               <div className="row mt16" style={{ justifyContent: 'space-between' }}>
                 <button className="btn ghost" onClick={() => setStep('cover')}>← Cover</button>
                 <button className="btn lime" disabled={busy === 'create' || !picked.length} onClick={createBook}>
-                  <Icon name="book" /> {busy === 'create' ? 'Creating…' : `Create book (${picked.length}/${MAX_IMGS})`}
+                  {busy === 'create' ? <span className="spinner" /> : <Icon name="book" />} {busy === 'create' ? 'Creating…' : `Create book (${picked.length}/${MAX_IMGS})`}
                 </button>
               </div>
             </div>
@@ -316,7 +327,14 @@ export default function BrandBook() {
               <div className="pg-label">Imagery · {bookImgs.length}</div>
               <div className="book-imgs">
                 {bookImgs.map((p, i) => <span key={i} className="media-tile"><img src={p} alt="" /></span>)}
-                {!bookImgs.length && <p className="muted">No imagery recorded on this book.</p>}
+                {!bookImgs.length && (
+                  <div className="empty" style={{ padding: '30px 10px', gridColumn: '1 / -1' }}>
+                    <p>No imagery recorded on this book.</p>
+                    <button type="button" className="btn ghost sm" onClick={() => nav('/profile/assets')}>
+                      <Icon name="image" size={13} /> Add images in Assets
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}

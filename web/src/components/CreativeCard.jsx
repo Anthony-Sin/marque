@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Icon from './Icon.jsx';
 import { arCss, downloadAsset } from './Composer.jsx';
 import { useApp } from '../App.jsx';
@@ -7,12 +7,16 @@ import { useApp } from '../App.jsx';
 export default function CreativeCard({ creative, aspect = '1:1', animating, onEdit, onAnimate, onChanged }) {
   const { say } = useApp();
   const video = !!creative.videoPath;
+  const [dl, setDl] = useState(false);
 
   const download = async () => {
+    if (dl) return;
+    setDl(true);
     try {
       const src = video ? creative.videoPath : creative.imagePath;
       await downloadAsset(src, `marque-${creative.id}${video ? '.mp4' : '.png'}`);
     } catch (e) { say(e.message); }
+    setDl(false);
   };
 
   return (
@@ -33,8 +37,8 @@ export default function CreativeCard({ creative, aspect = '1:1', animating, onEd
             <Icon name="film" size={14} /> Animate
           </button>
         )}
-        <button className="veil-btn" title="Download" onClick={download}>
-          <Icon name="download" size={14} />
+        <button className="veil-btn" title="Download" disabled={dl} onClick={download}>
+          {dl ? <span className="spinner" /> : <Icon name="download" size={14} />}
         </button>
       </div>
       <div className="meta">

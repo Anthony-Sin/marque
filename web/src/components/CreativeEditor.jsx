@@ -4,8 +4,11 @@ import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import { QlooBadge, SignalChips } from './Qloo.jsx';
 import EvidenceDrawer from './EvidenceDrawer.jsx';
-import { downloadAsset } from './Composer.jsx';
+import { downloadAsset, useStages } from './Composer.jsx';
 import '../views/studio.css';
+
+const ANIM_STAGES = ['Animating with Veo — this takes a minute…', 'Directing the motion…', 'Rendering frames…', 'Polishing the cut…'];
+const REGEN_STAGES = ['Regenerating image…', 'Recomposing the scene…', 'Finishing the render…'];
 
 // Creative editor modal: image preview + headline/body/CTA + image regen,
 // layout fix, animate (9:16), download, and the Qloo signals panel.
@@ -17,8 +20,10 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
   const [cta, setCta] = useState(creative.cta || '');
   const [regenPrompt, setRegenPrompt] = useState('');
   const [busy, setBusy] = useState('');           // 'save' | 'regen' | 'fix' | 'anim'
+  const [dl, setDl] = useState(false);
   const [evi, setEvi] = useState(false);
   const [media, setMedia] = useState('image');    // 'image' | 'video'
+  const stageNote = useStages(busy === 'anim' ? ANIM_STAGES : REGEN_STAGES, busy === 'anim' || busy === 'regen');
   const aspect = campaign?.aspectRatio || '1:1';
 
   const done = (c, msg) => {
@@ -58,10 +63,13 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
     say('Animation ready');
   });
   const download = async () => {
+    if (dl) return;
+    setDl(true);
     try {
       const src = media === 'video' && cur.videoPath ? cur.videoPath : cur.imagePath;
       await downloadAsset(src, `marque-${cur.id}${src === cur.videoPath ? '.mp4' : '.png'}`);
     } catch (e) { say(e.message); }
+    setDl(false);
   };
 
   const signals = [...(cur.qlooSignals || []), ...(campaign?.qlooSignals || [])];
@@ -90,9 +98,7 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
                 <div className="spin-overlay" style={{ position: 'static' }}>
                   <div className="row" style={{ flexDirection: 'column', gap: 12 }}>
                     <div className="spinner" />
-                    <span className="muted small">
-                      {busy === 'anim' ? 'Animating with Veo — this takes a minute…' : 'Regenerating image…'}
-                    </span>
+                    <span className="muted small">{stageNote}</span>
                   </div>
                 </div>
               ) : showVideo ? (
@@ -125,21 +131,21 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
 
             <div className="editor-actions">
               <button className="btn lime sm" disabled={!!busy} onClick={save}>
-                <Icon name="check" /> {busy === 'save' ? 'Saving…' : 'Save'}
+                {busy === 'save' ? <span className="spinner" /> : <Icon name="check" />} {busy === 'save' ? 'Saving…' : 'Save'}
               </button>
               <button className="btn sm" disabled={!!busy} onClick={regen}>
-                <Icon name="refresh" /> Regenerate image
+                {busy === 'regen' ? <span className="spinner" /> : <Icon name="refresh" />} Regenerate image
               </button>
               <button className="btn ghost sm" disabled={!!busy} onClick={fix}>
-                <Icon name="layout" /> Fix layout
+                {busy === 'fix' ? <span className="spinner" /> : <Icon name="layout" />} Fix layout
               </button>
               {aspect === '9:16' && (
                 <button className="btn ghost sm" disabled={!!busy} onClick={animate}>
-                  <Icon name="film" /> {busy === 'anim' ? 'Animating…' : 'Animate'}
+                  {busy === 'anim' ? <span className="spinner" /> : <Icon name="film" />} {busy === 'anim' ? 'Animating…' : 'Animate'}
                 </button>
               )}
-              <button className="btn ghost sm" onClick={download}>
-                <Icon name="download" /> Download
+              <button className="btn ghost sm" disabled={dl} onClick={download}>
+                {dl ? <span className="spinner" /> : <Icon name="download" />} Download
               </button>
             </div>
             {aspect !== '9:16' && (

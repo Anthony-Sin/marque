@@ -144,7 +144,7 @@ export default function Onboarding() {
               {TEMPLATES.map((t) => (
                 <button key={t.id} type="button" className="ob-tpl" onClick={() => useTemplate(t.id)} disabled={!!tplBusy} title={t.tagline}>
                   <span className="ob-tpl-sw">{t.colors.map((c) => <i key={c} style={{ background: c }} />)}</span>
-                  <b>{tplBusy === t.id ? 'Building…' : t.name}</b>
+                  <b>{tplBusy === t.id ? <><span className="spinner" /> Building…</> : t.name}</b>
                   <span className="ob-tpl-cat">{t.cat}</span>
                 </button>
               ))}

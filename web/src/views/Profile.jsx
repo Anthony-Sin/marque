@@ -28,7 +28,20 @@ const colorList = (colors) => {
 
 export default function ProfilePage() {
   const { profile } = useApp();
-  if (profile === undefined) return <div className="loading-wrap"><div className="spinner" /></div>;
+  if (profile === undefined) {
+    return (
+      <div className="profile-wrap" style={{ paddingTop: 60 }}>
+        <div className="card pad">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="field">
+              <span className="f-label"><span className="skel skel-line w70" /></span>
+              <span className="f-val"><span className="skel skel-line" style={{ maxWidth: 320 }} /></span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (!profile) return <Navigate to="/onboarding" replace />;
   return (
     <div className="split">
@@ -62,6 +75,7 @@ function Overview() {
   const nav = useNavigate();
   const [sub, setSub] = useState('brand'); // 'brand' | 'details'
   const [confirmReset, setConfirmReset] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const b = p.business || {};
 
   const save = async (patch) => {
@@ -75,8 +89,11 @@ function Overview() {
   };
 
   const doReset = async () => {
-    setConfirmReset(false);
+    if (resetting) return;
+    setResetting(true);
     try { await fetch('/api/profile', { method: 'DELETE' }); } catch { /* route may not exist yet */ }
+    setConfirmReset(false);
+    setResetting(false);
     setProfile(null);
     nav('/onboarding');
   };
@@ -168,8 +185,8 @@ function Overview() {
           footer={(
             <>
               <button type="button" className="btn ghost" onClick={() => setConfirmReset(false)}>Cancel</button>
-              <button type="button" className="btn pf-danger-solid" onClick={doReset}>
-                <Icon name="trash" size={14} /> Reset profile
+              <button type="button" className="btn pf-danger-solid" onClick={doReset} disabled={resetting}>
+                {resetting ? <span className="spinner" /> : <Icon name="trash" size={14} />} Reset profile
               </button>
             </>
           )}
@@ -205,15 +222,20 @@ function CatalogTab() {
   const { profile: p, refresh, say } = useApp();
   const nav = useNavigate();
   const [modal, setModal] = useState(null); // {kind:'url'|'item', item?}
+  const [acting, setActing] = useState(false); // async kebab op in flight
   const items = p.catalog || [];
 
   const act = async (fn, okMsg) => {
+    if (acting) return;
+    setActing(true);
     try {
       await fn();
       await refresh();
       if (okMsg) say(okMsg);
     } catch (e) {
       say(e.message);
+    } finally {
+      setActing(false);
     }
   };
 
@@ -266,6 +288,11 @@ function CatalogTab() {
       {!items.length && (
         <div className="empty">No products yet — add one from a URL or build it from scratch.</div>
       )}
+      {acting && (
+        <div className="row" style={{ justifyContent: 'center', margin: '14px 0', color: 'var(--ink-3)', fontSize: 13.5 }}>
+          <span className="spinner pf-spin-sm" /> Working…
+        </div>
+      )}
 
       {modal?.kind === 'url' && (
         <AddUrlModal
@@ -310,7 +337,7 @@ function AddUrlModal({ onClose, onDone, say }) {
         <>
           <button type="button" className="btn ghost" onClick={onClose}>Cancel</button>
           <button type="button" className="btn lime" onClick={go} disabled={busy || !url.trim()}>
-            {busy ? 'Fetching…' : 'Add product'}
+            {busy && <span className="spinner" />}{busy ? 'Fetching…' : 'Add product'}
           </button>
         </>
       )}
@@ -366,7 +393,7 @@ function ItemModal({ item, onClose, onDone, say }) {
         <>
           <button type="button" className="btn ghost" onClick={onClose}>Cancel</button>
           <button type="button" className="btn lime" onClick={go} disabled={busy}>
-            {busy ? 'Saving…' : editing ? 'Save changes' : 'Add product'}
+            {busy && <span className="spinner" />}{busy ? 'Saving…' : editing ? 'Save changes' : 'Add product'}
           </button>
         </>
       )}
@@ -412,15 +439,20 @@ function AssetsTab() {
   imgsRef.current = imgs;
   const [capModal, setCapModal] = useState(null); // image record
   const [urlModal, setUrlModal] = useState(false);
+  const [acting, setActing] = useState(false);
 
   const writeImages = async (next, okMsg) => {
+    if (acting) return;
     imgsRef.current = next; // keep multi-upload sequential writes consistent
+    setActing(true);
     try {
       await api.updateProfile({ images: next });
       await refresh();
       if (okMsg) say(okMsg);
     } catch (e) {
       say(e.message);
+    } finally {
+      setActing(false);
     }
   };
   const addImage = (img) => writeImages([...imgsRef.current, img]);
@@ -448,6 +480,12 @@ function AssetsTab() {
           </button>
         </div>
       </div>
+
+      {acting && (
+        <div className="row" style={{ justifyContent: 'center', margin: '14px 0', color: 'var(--ink-3)', fontSize: 13.5 }}>
+          <span className="spinner pf-spin-sm" /> Working…
+        </div>
+      )}
 
       {imgs.length ? (
         <div className="grid c4 mt16">
@@ -509,7 +547,12 @@ function AssetsTab() {
 
 function CaptionModal({ im, onClose, onSave }) {
   const [cap, setCap] = useState(im.caption || '');
-  const go = () => onSave(cap.trim());
+  const [busy, setBusy] = useState(false);
+  const go = async () => {
+    if (busy) return;
+    setBusy(true);
+    try { await onSave(cap.trim()); } finally { setBusy(false); }
+  };
   return (
     <Modal
       narrow
@@ -518,7 +561,9 @@ function CaptionModal({ im, onClose, onSave }) {
       footer={(
         <>
           <button type="button" className="btn ghost" onClick={onClose}>Cancel</button>
-          <button type="button" className="btn lime" onClick={go}>Save</button>
+          <button type="button" className="btn lime" onClick={go} disabled={busy}>
+            {busy && <span className="spinner" />}Save
+          </button>
         </>
       )}
     >
@@ -538,7 +583,12 @@ function CaptionModal({ im, onClose, onSave }) {
 function AssetUrlModal({ onClose, onSave }) {
   const [url, setUrl] = useState('');
   const [cap, setCap] = useState('');
-  const go = () => url.trim() && onSave(url.trim(), cap.trim());
+  const [busy, setBusy] = useState(false);
+  const go = async () => {
+    if (!url.trim() || busy) return;
+    setBusy(true);
+    try { await onSave(url.trim(), cap.trim()); } finally { setBusy(false); }
+  };
   return (
     <Modal
       narrow
@@ -547,7 +597,9 @@ function AssetUrlModal({ onClose, onSave }) {
       footer={(
         <>
           <button type="button" className="btn ghost" onClick={onClose}>Cancel</button>
-          <button type="button" className="btn lime" onClick={go} disabled={!url.trim()}>Add image</button>
+          <button type="button" className="btn lime" onClick={go} disabled={busy || !url.trim()}>
+            {busy && <span className="spinner" />}Add image
+          </button>
         </>
       )}
     >

@@ -394,3 +394,65 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 .pf-dot:nth-child(2) { animation-delay: .2s; }
 .pf-dot:nth-child(3) { animation-delay: .4s; }
 @keyframes pf-blink { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+
+/* ==================== reactivity polish (appended) ==================== */
+/* Skeleton shimmer — gradient sweep over --card-3. Use .skel on a block sized
+   to match the real element (or .skel-line for text bars). */
+.skel { position: relative; overflow: hidden; background: var(--card-3); border-radius: 10px; display: block; }
+.skel::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(100deg, transparent 22%, rgba(255, 255, 255, .075) 50%, transparent 78%);
+  transform: translateX(-100%);
+}
+.skel-line { height: 12px; width: 100%; }
+.skel-line.w40 { width: 40%; } .skel-line.w55 { width: 55%; }
+.skel-line.w70 { width: 70%; } .skel-line.w85 { width: 85%; }
+
+/* Inline spinner inside buttons (smaller than the standalone .spinner). */
+.btn .spinner, .veil-btn .spinner, .send .spinner, .ob-tpl .spinner { width: 14px; height: 14px; border-width: 2px; flex: 0 0 auto; display: inline-block; vertical-align: -2px; }
+.btn.lime .spinner, .send .spinner { border-color: rgba(28, 34, 8, .3); border-top-color: var(--lime-ink); }
+
+@keyframes skel-sweep { to { transform: translateX(100%); } }
+@keyframes rise-in { from { opacity: 0; transform: translateY(10px); } }
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes modal-in { from { opacity: 0; transform: translateY(14px) scale(.985); } }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 14px); } }
+@keyframes menu-in { from { opacity: 0; transform: translateY(-4px) scale(.97); } }
+
+@media (prefers-reduced-motion: no-preference) {
+  .skel::after { animation: skel-sweep 1.5s ease-in-out infinite; }
+
+  /* card entrances — fade + rise, staggered */
+  .grid > *, .mode-grid > *, .pick-grid > * { animation: rise-in .35s ease both; }
+  .grid > *:nth-child(2), .mode-grid > *:nth-child(2), .pick-grid > *:nth-child(2) { animation-delay: .05s; }
+  .grid > *:nth-child(3), .mode-grid > *:nth-child(3), .pick-grid > *:nth-child(3) { animation-delay: .1s; }
+  .grid > *:nth-child(4), .pick-grid > *:nth-child(4) { animation-delay: .15s; }
+  .grid > *:nth-child(5), .pick-grid > *:nth-child(5) { animation-delay: .2s; }
+  .grid > *:nth-child(6), .pick-grid > *:nth-child(6) { animation-delay: .25s; }
+  .grid > *:nth-child(n+7), .pick-grid > *:nth-child(n+7) { animation-delay: .3s; }
+
+  /* overlays / transient surfaces */
+  .toast { animation: toast-in .28s cubic-bezier(.2, .9, .3, 1.2); }
+  .modal { animation: modal-in .2s ease; }
+  .modal-veil { animation: fade-in .18s ease; }
+  .menu { animation: menu-in .14s ease; transform-origin: top left; }
+
+  /* hover micro-states */
+  .media-tile, .pf-cat, .creative-card, .camp-card, .suggest-card, .result-card, .pf-addcard {
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .media-tile:hover, .pf-cat:hover, .creative-card:hover, .camp-card:hover,
+  .suggest-card:hover, .result-card:hover {
+    transform: translateY(-3px); border-color: var(--line);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .3);
+  }
+  .pf-addcard:hover { transform: translateY(-3px); }
+  .job-row { transition: border-color .15s, transform .15s; }
+  .job-row:hover { transform: translateX(3px); }
+  .ver-tab .thumb { transition: transform .18s ease, border-color .15s; }
+  .ver-tab:hover .thumb { transform: translateY(-2px); }
+  .tab { transition: background .16s, color .16s, border-color .16s; }
+  .book-dot { transition: transform .15s, background .15s; }
+  .book-dot.on { transform: scale(1.4); }
+  .msg { animation: rise-in .22s ease both; }
+}

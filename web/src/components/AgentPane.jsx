@@ -77,7 +77,7 @@ export default function AgentPane() {
           onKeyDown={(e) => e.key === 'Enter' && send()}
         />
         <button type="button" className="send" onClick={send} disabled={busy || !input.trim()} title="Send">
-          <Icon name="send" size={17} />
+          {busy ? <span className="spinner" /> : <Icon name="send" size={17} />}
         </button>
       </div>
     </aside>

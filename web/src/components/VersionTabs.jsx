@@ -8,8 +8,8 @@ export default function VersionTabs({ versions = [], activeId, onPick, onRegener
   return (
     <div className="ver-tabs">
       <button className="ver-tab add" onClick={onRegenerate} disabled={busy} title="Regenerate site">
-        <span className="thumb"><Icon name="plus" size={26} /></span>
-        <span className="cap">Regenerate</span>
+        <span className="thumb">{busy ? <span className="spinner" style={{ width: 22, height: 22 }} /> : <Icon name="plus" size={26} />}</span>
+        <span className="cap">{busy ? 'Working…' : 'Regenerate'}</span>
       </button>
       {versions.map((v, i) => (
         <button

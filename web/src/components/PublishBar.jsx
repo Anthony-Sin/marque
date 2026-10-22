@@ -26,7 +26,7 @@ export default function PublishBar({ publishedSlug, base = '/s/', label = 'this 
           <button className="btn ghost sm" onClick={copy}><Icon name="share" /> Share</button>
           <span className="grow" />
           <button className="btn ghost sm" disabled={busy} onClick={() => onUnpublish?.()}>
-            Unpublish
+            {busy && <span className="spinner" />}Unpublish
           </button>
         </>
       ) : (
@@ -41,7 +41,7 @@ export default function PublishBar({ publishedSlug, base = '/s/', label = 'this 
             placeholder="custom-slug (optional)"
           />
           <button className="btn lime sm" disabled={busy} onClick={() => onPublish?.(slug.trim() || undefined)}>
-            <Icon name="link" /> Publish
+            {busy ? <span className="spinner" /> : <Icon name="link" />} Publish
           </button>
         </>
       )}

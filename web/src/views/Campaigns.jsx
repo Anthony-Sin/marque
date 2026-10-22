@@ -79,10 +79,13 @@ export default function Campaigns() {
     setBusy(false); setNote('');
   };
 
-  // Confirm brief → createCampaign → job ("Crafting your creatives…") → refresh
+  // Confirm brief → createCampaign → job (rotating stage copy) → refresh
   const confirmBrief = async () => {
     if (!brief?.brief) return;
-    setBusy(true); setNote('Crafting your creatives…');
+    const STAGES = ['Crafting your creatives…', 'Laying out formats…', 'Finalizing assets…'];
+    let si = 0;
+    setBusy(true); setNote(STAGES[0]);
+    const rot = setInterval(() => { si = (si + 1) % STAGES.length; setNote(STAGES[si]); }, 2800);
     try {
       const { campaign, job } = await api.createCampaign({
         brief: brief.brief,
@@ -92,14 +95,14 @@ export default function Campaigns() {
         qlooSignals: brief.qlooSignals,   // server persists these onto the campaign
       });
       if (job?.id) {
-        await pollJob(job.id, { onTick: () => setNote('Crafting your creatives…') })
-          .catch((e) => say(e.message));
+        await pollJob(job.id).catch((e) => say(e.message));
       }
       await reload();
       setBrief(null);
       if (campaign?.id) setOpenId(campaign.id);
       say('Campaign ready');
     } catch (e) { say(e.message); }
+    clearInterval(rot);
     setBusy(false); setNote('');
   };
 
@@ -147,7 +150,12 @@ export default function Campaigns() {
           ))}
         </div>
         {!(open.creatives || []).length && (
-          <div className="empty">No creatives yet — generation may still be running. Check back shortly.</div>
+          <div className="empty">
+            <p>No creatives yet — generation may still be running.</p>
+            <button className="btn ghost sm" onClick={reload}>
+              <Icon name="refresh" size={13} /> Check again
+            </button>
+          </div>
         )}
         {editing && (
           <CreativeEditor
@@ -240,7 +248,24 @@ export default function Campaigns() {
 
       <div className="section-label">Your campaigns</div>
       {campaigns === null ? (
-        <div className="loading-wrap" style={{ padding: '40px 0' }}><div className="spinner" /></div>
+        <div className="grid c2">
+          {[0, 1].map((i) => (
+            <div key={i} className="card camp-card">
+              <div className="row" style={{ justifyContent: 'space-between' }}>
+                <span className="skel skel-line w55" style={{ height: 15 }} />
+                <span className="skel" style={{ width: 34, height: 20, borderRadius: 999 }} />
+              </div>
+              <span className="skel skel-line w85" />
+              <div className="chip-row mt8">
+                <span className="skel" style={{ width: 52, height: 20, borderRadius: 999 }} />
+                <span className="skel" style={{ width: 64, height: 20, borderRadius: 999 }} />
+              </div>
+              <div className="thumbs">
+                {[0, 1, 2, 3].map((j) => <span key={j} className="media-tile skel" />)}
+              </div>
+            </div>
+          ))}
+        </div>
       ) : campaigns.length ? (
         <div className="grid c2">
           {campaigns.map((c) => (
@@ -271,7 +296,12 @@ export default function Campaigns() {
           ))}
         </div>
       ) : (
-        <div className="empty">No campaigns yet — generate a brief above to get started.</div>
+        <div className="empty">
+          <p>No campaigns yet — generate a brief above to get started.</p>
+          <button className="btn ghost sm" onClick={() => document.querySelector('.composer textarea')?.focus()}>
+            <Icon name="sparkle" size={13} /> Start a brief
+          </button>
+        </div>
       )}
     </div>
   );
