@@ -14,10 +14,16 @@ async function ytdlp(args, timeout = 40000) {
   return stdout.trim();
 }
 
-async function getJson(url, timeout = 12000) {
-  const res = await fetch(url, { headers: UA, signal: AbortSignal.timeout(timeout) });
-  if (!res.ok) throw new Error(`fetch ${res.status}`);
-  return res.json();
+async function getJson(url, timeout = 12000, retries = 1) {
+  let lastErr;
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const res = await fetch(url, { headers: UA, signal: AbortSignal.timeout(timeout) });
+      if (!res.ok) throw new Error(`fetch ${res.status}`);
+      return await res.json();
+    } catch (e) { lastErr = e; if (i < retries) await new Promise((s) => setTimeout(s, 1200)); }
+  }
+  throw lastErr;
 }
 
 // ---- resolvers (each returns a normalized example card or null) ----
@@ -129,7 +135,7 @@ export async function generateExamples({ strategy, profile, audienceRead }) {
           `note = one line: why this example proves the tactic works for this audience.`,
         ].join('\n'),
       },
-    ], { maxTokens: 1400 });
+    ], { maxTokens: 2600 });
     hunts = j.hunts;
   } catch { /* deterministic fallback below */ }
 
@@ -138,7 +144,8 @@ export async function generateExamples({ strategy, profile, audienceRead }) {
     // top affinity entities/category terms (not the brand's own name).
     const topEnt = (type) => (profile?.qloo?.affinities || [])
       .find((a) => a.type === type)?.entities?.[0]?.name;
-    const cat = (profile?.tagline || profile?.overview || 'lifestyle brand').split(/[,.—]/)[0].trim();
+    let cat = (profile?.tagline || profile?.overview || '').split(/[,.—]/)[0].trim();
+    if (!cat || /example|domain|illustrative|lorem|placeholder/i.test(cat)) cat = 'modern lifestyle brand';
     const chanQueries = {
       youtube: `${cat} brand film`, tiktok: topEnt('urn:entity:artist') ? `@${topEnt('urn:entity:artist').replace(/\s/g, '').toLowerCase()}` : null,
       tv: topEnt('urn:entity:tv_show'), streaming: topEnt('urn:entity:movie'),
