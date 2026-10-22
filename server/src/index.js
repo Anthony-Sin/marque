@@ -4,7 +4,7 @@ import multer from 'multer';
 import fs from 'node:fs';
 import path from 'node:path';
 import { PORT, ASSETS_DIR, WEB_DIST, ENV, DATA_DIR } from './config.js';
-import * as store from './store.js';
+import * as store from './services/store.js';
 import { chat, chatJSON, tensorConfigured } from './services/tensor.js';
 import { genImage, genVideo, geminiConfigured } from './services/gemini.js';
 import * as qloo from './services/qloo.js';
@@ -12,6 +12,7 @@ import { fetchSite } from './services/scraper.js';
 import * as brand from './services/brand.js';
 import * as campaigns from './services/campaigns.js';
 import { agentChat } from './services/agent.js';
+import { generateStrategies } from './services/strategy.js';
 import { generateWebsite, editWebsite, siteVersion } from './services/sites.js';
 import { buildBook, htmlBook } from './services/brandbook.js';
 
@@ -80,6 +81,11 @@ app.put('/api/profile', h(async (req, res) => {
   merged.catalog = list('catalog');
   ok(res, { profile: set('profile', merged) });
 }));
+app.delete('/api/profile', h(async (_req, res) => {
+  set('profile', null); set('catalog', []); set('campaigns', []); set('photoshoots', []);
+  set('websites', []); set('brandbook', null);
+  ok(res, { profile: null });
+}));
 app.post('/api/agent', h(async (req, res) => ok(res, await agentChat(req.body?.messages))));
 
 // ---------- qloo ----------
@@ -142,6 +148,13 @@ app.post('/api/catalog/:id/sync-image', h(async (req, res) => {
   const updated = update('catalog', item.id, { image: s.images[0].path });
   syncProfileCatalog();
   ok(res, { item: updated });
+}));
+
+// ---------- strategy board ----------
+app.post('/api/strategy', h(async (req, res) => {
+  const { prompt } = req.body || {};
+  if (!prompt?.trim()) return res.status(400).json({ error: 'prompt required' });
+  ok(res, await generateStrategies({ prompt: prompt.trim(), profile: brand.currentProfile() }));
 }));
 
 // ---------- campaigns + creatives ----------
@@ -404,6 +417,13 @@ app.post('/api/brandbook/publish', h(async (req, res) => {
   set('brandbook', book);
   ok(res, { publishedSlug: slug });
 }));
+app.post('/api/brandbook/unpublish', h(async (_req, res) => {
+  const book = get('brandbook');
+  if (!book) return res.status(404).json({ error: 'no book yet' });
+  delete book.publishedSlug;
+  set('brandbook', book);
+  ok(res, { book });
+}));
 app.get('/api/brandbook/pdf', h(async (_req, res) => {
   const book = get('brandbook');
   const profile = brand.currentProfile();
@@ -439,5 +459,5 @@ if (fs.existsSync(path.join(WEB_DIST, 'index.html'))) {
 
 app.listen(PORT, () => {
   console.log(`[marque] listening on :${PORT}`);
-  console.log(`[marque] tensor: ${ENV.tensorKey ? 'configured' : 'missing'} | gemini: ${ENV.geminiKey ? 'configured' : 'missing'} | qloo: ${ENV.qlooKey ? 'live' : 'fixture (no key)'} | data: ${DATA_DIR}`);
+  console.log(`[marque] tensor: ${ENV.tensorKey ? 'configured' : 'missing'} | gemini: ${ENV.geminiKey ? 'configured' : 'missing'} | qloo: ${qloo.qlooMode()} | data: ${DATA_DIR}`);
 });

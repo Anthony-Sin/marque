@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
 import Icon from './Icon.jsx';
 
-// <QlooBadge mode="live"|"demo" label="…" /> — the everywhere-visible taste marker.
+// <QlooBadge mode="live"|"simulated"|"demo" label="…" /> — the everywhere-visible taste marker.
+const MODE_LABEL = { live: '', simulated: ' · sim', demo: ' · demo', fixture: ' · demo' };
+const MODE_TITLE = {
+  live: 'Powered by Qloo taste graph',
+  simulated: 'Qloo-style taste data synthesized by the agent — live Qloo key pending',
+  demo: 'Qloo demo data — live key pending', fixture: 'Qloo demo data — live key pending',
+};
 export function QlooBadge({ mode = 'live', label, small }) {
+  const m = MODE_LABEL[mode] !== undefined ? mode : 'demo';
   return (
-    <span className={`qloo-badge${mode === 'demo' ? ' demo' : ''}`} title={mode === 'demo' ? 'Qloo demo data — live key pending' : 'Powered by Qloo taste graph'}>
-      <Icon name="qloo" size={11} sw={2} /> {label || 'Powered by Qloo'}{mode === 'demo' ? ' · demo' : ''}
+    <span className={`qloo-badge${m === 'live' ? '' : ' demo'}`} title={MODE_TITLE[m]}>
+      <Icon name="qloo" size={11} sw={2} /> {label || 'Powered by Qloo'}{MODE_LABEL[m]}
     </span>
   );
 }
@@ -31,7 +38,7 @@ export function SignalChips({ signals = [], max = 4 }) {
 export function TastePanel({ bundle, compact }) {
   const [showCalls, setShowCalls] = useState(false);
   if (!bundle) return null;
-  const mode = bundle.mode === 'live' ? 'live' : 'demo';
+  const mode = bundle.mode === 'live' ? 'live' : bundle.mode === 'simulated' ? 'simulated' : 'demo';
   const cat = (t) => t.replace('urn:entity:', '').replace('_', ' ');
   return (
     <div className="card pad taste-panel">
