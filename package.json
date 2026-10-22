@@ -1,0 +1,16 @@
+{
+  "name": "marque",
+  "version": "0.1.0",
+  "private": true,
+  "description": "On-brand marketing studio — agentic brand DNA, campaigns, photoshoots and sites tuned by cultural taste intelligence",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -n server,web -c blue,magenta \"npm --prefix server run dev\" \"npm --prefix web run dev\"",
+    "build": "npm --prefix web run build",
+    "start": "node server/src/index.js",
+    "smoke": "node server/test/smoke.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
