@@ -22,16 +22,22 @@ the UI must still render all Qloo surfaces with a "demo data" note.
 Profile = {
   id, createdAt, updatedAt,
   source: { type: 'website'|'scratch'|'template', url? , templateId?},
-  name, tagline, description,           // strings
-  tone: [string],                       // voice keywords e.g. "warm", "expert"
-  values: [string],
+  name, website, tagline, description,  // strings (description = "Business overview")
+  tone: [string],                       // "Brand tone of voice" e.g. Bold, Warm
+  aesthetic: [string],                  // "Brand aesthetic" e.g. minimal, playful
+  values: [string],                     // "Brand values"
   audience: string,
-  colors: { primary, secondary, accent, background, surface, text },  // hex
+  colors: [hex, hex, ...],              // ordered palette, first = primary
   fonts: { heading, body },             // display names
+  business: {                           // "Business Details" tab fields
+    location, phone, hours, keywords: [string], social: [string],
+    ctaLinks: [ {label,url} ], testimonials: [ {quote,author} ]
+  },
   images: [ { id, path, url, caption } ],   // path = /assets/<file>
   catalog: [ CatalogItem ],
   qloo: QlooBundle | null,
 }
+// UI derives: colors[0]=primary, colors[1]=secondary, colors[2]=accent, etc.
 CatalogItem = { id, name, description, image?, url?, price? }
 QlooBundle = {
   entity: { id, name, popularity } | null,       // /search best brand match
