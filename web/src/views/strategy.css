@@ -498,6 +498,61 @@
 }
 .stg-notes:focus { border-color: rgba(211, 227, 116, .55); }
 
+/* ---------- plans row — board switcher above the board ---------- */
+.stg-plans {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  max-width: 860px; margin: 14px auto 0; padding: 0 4px;
+  animation: stgChipIn .45s cubic-bezier(.22, .9, .24, 1) both;
+}
+.stg-plans-cur { display: inline-flex; align-items: baseline; gap: 7px; min-width: 0; }
+.stg-plans-label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .13em;
+  text-transform: uppercase; color: var(--ink-4);
+}
+.stg-plans-title {
+  font-size: 18px; color: var(--ink); display: inline-flex; align-items: center; gap: 7px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 42vw;
+}
+.stg-plan-edit {
+  background: none; border: none; color: var(--ink-4); padding: 4px;
+  border-radius: 7px; display: inline-flex; cursor: pointer; flex: none;
+}
+.stg-plan-edit:hover { color: var(--lime); background: var(--card-3); }
+.stg-plan-rename {
+  background: var(--bg-raise); border: 1px solid var(--lime); color: var(--ink);
+  border-radius: 10px; padding: 6px 11px; font-size: 14px; outline: none;
+  font-family: var(--font-display); font-style: italic; min-width: 180px;
+}
+.stg-plans-chips {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  margin-left: auto; min-width: 0;
+}
+.stg-plan-chip {
+  display: inline-flex; align-items: baseline; gap: 5px;
+  font-size: 12px; font-weight: 500; color: var(--ink-3); cursor: pointer;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius-pill); padding: 6px 13px;
+  max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.stg-plan-chip i { font-style: normal; font-size: 10px; color: var(--ink-4); }
+.stg-plan-chip:hover { color: var(--ink); border-color: var(--ink-4); }
+.stg-plan-chip.on {
+  color: var(--lime); border-color: rgba(211, 227, 116, .55);
+  background: rgba(211, 227, 116, .09); font-weight: 600;
+}
+.stg-plan-chip.on i { color: var(--lime); opacity: .7; }
+.stg-plan-chip.new {
+  border-style: dashed; color: var(--lime); gap: 6px; align-items: center;
+  background: rgba(211, 227, 116, .05);
+}
+.stg-plan-chip.new:hover { border-color: var(--lime); background: rgba(211, 227, 116, .1); }
+@media (max-width: 720px) {
+  .stg-plans { gap: 9px; }
+  .stg-plans-title { max-width: 60vw; font-size: 16px; }
+  .stg-plans-chips { margin-left: 0; }
+}
+
 /* ---------- honest one-line attribution at the board's foot ---------- */
 .stg-attrib {
   margin-top: 16px; text-align: center;
@@ -508,7 +563,7 @@
 @media (prefers-reduced-motion: reduce) {
   .stg-tile, .stg-strat-body, .stg-fit-body, .stg-nope-list,
   .stg-bar i, .stg-ring-fg, .stg-shimmer i, .stg-typer, .stg-tw-caret, .stg-typer-dot,
-  .stg-chipbar, .stg-pick, .stg-pick-check, .stg-detail, .stg-wx, .stg-pull-src,
+  .stg-chipbar, .stg-plans, .stg-pick, .stg-pick-check, .stg-detail, .stg-wx, .stg-pull-src,
   .stg-fill, .stg-detailpage,
   .stg-wx.skel i::after { animation: none !important; }
   .stg-tile:hover, .stg-ex:hover, .stg-pick:hover, .stg-pick.sel, .stg-wx.link:hover { transform: none; }

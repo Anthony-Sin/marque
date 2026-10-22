@@ -1,0 +1,126 @@
+/* ==================== dashboard (dash-) ====================
+   Home surface — pipeline line, stat strip, plan cards, recent campaigns.
+   Uses only design tokens from styles.css. */
+
+.dash-wrap { max-width: 1080px; padding-bottom: 90px; }
+
+/* ---------- pipeline line under the header ---------- */
+.dash-flow {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-top: 14px; flex-wrap: wrap;
+}
+.dash-flow-step {
+  font-size: 11.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+.dash-flow-step:first-child { color: var(--lime); }
+.dash-flow-sep { color: var(--ink-4); font-size: 12px; }
+
+/* ---------- empty state ---------- */
+.dash-empty {
+  max-width: 620px; margin: 34px auto 0; padding: 52px 30px;
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px;
+}
+.dash-empty-ic {
+  width: 62px; height: 62px; border-radius: 18px; color: var(--lime);
+  background: rgba(211, 227, 116, .1); border: 1px solid rgba(211, 227, 116, .35);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 6px;
+}
+.dash-empty h2 { margin: 0; font-size: 30px; }
+.dash-empty p { color: var(--ink-3); margin: 0 0 16px; font-size: 14px; max-width: 44ch; }
+
+/* ---------- stat strip ---------- */
+.dash-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 6px;
+}
+.dash-stat {
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 2px;
+}
+.dash-stat b { font-size: 24px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.dash-stat span {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ink-4);
+}
+@media (max-width: 620px) {
+  .dash-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ---------- plan cards ---------- */
+.dash-plan {
+  padding: 18px; display: flex; flex-direction: column; gap: 8px;
+  cursor: pointer; text-align: left; color: var(--ink);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.dash-plan:hover {
+  transform: translateY(-3px); border-color: var(--line);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .3);
+}
+.dash-plan.on { border-color: rgba(211, 227, 116, .45); }
+.dash-plan-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.dash-plan-top h4 { margin: 0; font-size: 16px; line-height: 1.3; min-width: 0; }
+.dash-plan-live {
+  margin-left: 9px; font-size: 9px; font-weight: 800; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--lime); vertical-align: 2px;
+  border: 1px solid rgba(211, 227, 116, .45); border-radius: 999px; padding: 2px 8px;
+  white-space: nowrap;
+}
+.dash-plan-acts { display: inline-flex; gap: 6px; flex: none; margin: -4px -6px 0 0; }
+.dash-plan-acts .icon-btn { width: 28px; height: 28px; border-radius: 8px; background: transparent; }
+.dash-plan-acts .icon-btn:hover { background: var(--card-3); }
+.dash-plan-acts .icon-btn.danger:hover { color: var(--rose); }
+.dash-plan-rename {
+  flex: 1; min-width: 0; background: var(--bg-raise); border: 1px solid var(--lime);
+  color: var(--ink); border-radius: 9px; padding: 6px 10px; font-size: 14px; outline: none;
+}
+.dash-plan-meta { font-size: 12px; color: var(--ink-4); }
+.dash-plan-sub {
+  font-size: 12.5px; color: var(--ink-3); font-style: italic; line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.dash-plan .chip-row { margin-top: 2px; }
+.dash-plan .chan-chip { display: inline-flex; align-items: center; gap: 5px; text-transform: capitalize; }
+.dash-plan .chan-chip svg { color: var(--ink-4); }
+.dash-plan-foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line-soft);
+}
+.dash-reach {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10.5px; font-weight: 700; color: var(--amber);
+  background: rgba(232, 200, 143, .08); border: 1px solid rgba(232, 200, 143, .3);
+  border-radius: 999px; padding: 3px 9px; white-space: nowrap;
+}
+.dash-plan-go {
+  margin-left: auto; font-size: 10px; font-weight: 700; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--ink-4); transition: color .2s;
+}
+.dash-plan:hover .dash-plan-go { color: var(--lime); }
+.dash-plan-go:only-child { margin-left: auto; }
+
+/* "+ New plan" dashed card */
+.dash-new {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 9px; min-height: 150px; cursor: pointer;
+  color: var(--lime); border: 1px dashed var(--line);
+  background: rgba(211, 227, 116, .045); font-size: 14px; font-weight: 600;
+  transition: border-color .15s, background .15s, transform .15s;
+}
+.dash-new:hover { border-color: var(--lime); background: rgba(211, 227, 116, .09); transform: translateY(-3px); }
+
+/* ---------- recent campaign cards ---------- */
+.dash-camp {
+  padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;
+  color: var(--ink); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.dash-camp:hover {
+  transform: translateY(-3px); border-color: var(--line);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .3);
+}
+.dash-camp h4 { margin: 0; font-size: 15.5px; }
+.dash-camp-src {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--ink-4); letter-spacing: .03em;
+}
+.dash-camp-src svg { color: var(--lime); }
+.dash-camp-src b { color: var(--ink-3); font-weight: 600; }
+.dash-camp-meta { font-size: 12px; color: var(--ink-4); margin-top: 2px; }

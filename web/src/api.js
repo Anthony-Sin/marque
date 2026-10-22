@@ -45,6 +45,13 @@ export const api = {
   strategy: (prompt, productId, url) => req('POST', '/api/strategy', { prompt, productId, url }),
   getStrategy: () => req('GET', '/api/strategy'),
   strategyExamples: (strategy, audienceRead) => req('POST', '/api/strategy/examples', { strategy, audienceRead }),
+  // multi-plan boards
+  boards: () => req('GET', '/api/boards'),
+  board: (id) => req('GET', `/api/boards/${id}`),
+  activateBoard: (id) => req('POST', `/api/boards/${id}/activate`),
+  renameBoard: (id, title) => req('PATCH', `/api/boards/${id}`, { title }),
+  deleteBoard: (id) => req('DELETE', `/api/boards/${id}`),
+  dashboard: () => req('GET', '/api/dashboard'),
   // campaigns
   listCampaigns: () => req('GET', '/api/campaigns'),
   campaignBrief: (payload) => req('POST', '/api/campaigns/brief', payload),

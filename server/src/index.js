@@ -86,6 +86,7 @@ app.put('/api/profile', h(async (req, res) => {
 app.delete('/api/profile', h(async (_req, res) => {
   set('profile', null); set('catalog', []); set('campaigns', []); set('photoshoots', []);
   set('websites', []); set('brandbook', null); set('lastStrategy', null);
+  set('boards', []); set('activeBoardId', null); exCache.clear();
   ok(res, { profile: null });
 }));
 app.post('/api/agent', h(async (req, res) => ok(res, await agentChat(req.body?.messages))));
@@ -152,7 +153,28 @@ app.post('/api/catalog/:id/sync-image', h(async (req, res) => {
   ok(res, { item: updated });
 }));
 
-// ---------- strategy board ----------
+// ---------- strategy boards (plans) ----------
+function boardTitle(prompt) {
+  const t = String(prompt || '').replace(/\s+/g, ' ').trim().slice(0, 48).trim();
+  return t || 'Untitled plan';
+}
+function boardSummary(b) {
+  return { id: b.id, title: b.title || 'Untitled plan', createdAt: b.createdAt || null, sub: b.sub || null, strategyCount: (b.strategies || []).length };
+}
+function migrateBoards() {
+  // one-time lazy migration: a legacy single 'lastStrategy' becomes the first board
+  const last = get('lastStrategy');
+  if (!last || list('boards').length) return;
+  const board = { id: uid(), title: boardTitle(last.sub?.prompt), createdAt: last.fetchedAt || now(), activeStrategyIdx: null, ...last };
+  push('boards', board);
+  set('activeBoardId', board.id);
+}
+function resolveActiveBoard() {
+  migrateBoards();
+  const boards = list('boards');
+  return boards.find((b) => b.id === get('activeBoardId')) || get('lastStrategy') || boards.at(-1) || null;
+}
+
 app.post('/api/strategy', h(async (req, res) => {
   const { prompt, productId, url } = req.body || {};
   const raw = (prompt || '').trim();
@@ -170,20 +192,95 @@ app.post('/api/strategy', h(async (req, res) => {
   const finalPrompt = raw || `analyze this product/site and suggest campaign strategies: ${inlineUrl}`;
   const result = await generateStrategies({ prompt: finalPrompt, profile: brand.currentProfile(), product, urlContext });
   result.sub = { prompt: finalPrompt, productId: productId || '', url: inlineUrl || '' };
-  set('lastStrategy', result);   // persist so the board survives navigation
-  ok(res, result);
+  const board = { id: uid(), title: boardTitle(finalPrompt), createdAt: now(), activeStrategyIdx: null, ...result };
+  push('boards', board);
+  set('activeBoardId', board.id);
+  set('lastStrategy', board);   // backward compat: GET /api/strategy + legacy readers
+  ok(res, board);
 }));
-app.get('/api/strategy', h(async (_req, res) => ok(res, { board: get('lastStrategy') || null })));
+app.get('/api/strategy', h(async (_req, res) => {
+  ok(res, { board: resolveActiveBoard(), boards: list('boards').map(boardSummary) });
+}));
 const exCache = new Map(); // in-memory per-board cache — re-visiting a card doesn't re-scrape
 app.post('/api/strategy/examples', h(async (req, res) => {
-  const { strategy, audienceRead } = req.body || {};
+  const { strategy, audienceRead, boardId } = req.body || {};
   if (!strategy?.id && !strategy?.title) return res.status(400).json({ error: 'strategy required' });
-  const key = strategy.id || strategy.title;
+  const skey = strategy.id || strategy.title;
+  const scope = boardId || get('activeBoardId') || '';
+  const key = scope ? `${scope}:${skey}` : skey;
   if (exCache.has(key)) return ok(res, exCache.get(key));
   const data = await generateExamples({ strategy, profile: brand.currentProfile(), audienceRead });
   if (exCache.size > 30) exCache.clear();
   exCache.set(key, data);
   ok(res, data);
+}));
+
+// ---------- boards ----------
+app.get('/api/boards', h(async (_req, res) => {
+  migrateBoards();
+  ok(res, { boards: list('boards').map(boardSummary), activeBoardId: get('activeBoardId') });
+}));
+app.get('/api/boards/:id', h(async (req, res) => {
+  const b = find('boards', req.params.id);
+  b ? ok(res, { board: b }) : res.status(404).json({ error: 'board not found' });
+}));
+app.post('/api/boards/:id/activate', h(async (req, res) => {
+  const b = find('boards', req.params.id);
+  if (!b) return res.status(404).json({ error: 'board not found' });
+  set('activeBoardId', b.id);
+  set('lastStrategy', b);   // whole board — keeps GET /api/strategy correct
+  ok(res, { board: b, activeBoardId: b.id });
+}));
+app.patch('/api/boards/:id', h(async (req, res) => {
+  const b = find('boards', req.params.id);
+  if (!b) return res.status(404).json({ error: 'board not found' });
+  const title = typeof req.body?.title === 'string' ? req.body.title.trim() : '';
+  if (!title || title.length > 120) return res.status(400).json({ error: 'title must be a non-empty string up to 120 chars' });
+  const board = update('boards', b.id, { title });
+  if (get('activeBoardId') === b.id) set('lastStrategy', board); // keep legacy pointer fresh
+  ok(res, { board });
+}));
+app.delete('/api/boards/:id', h(async (req, res) => {
+  const b = find('boards', req.params.id);
+  if (!b) return res.status(404).json({ error: 'board not found' });
+  remove('boards', b.id);
+  if (get('activeBoardId') === b.id) {
+    const next = list('boards')
+      .slice()
+      .sort((x, y) => String(x.createdAt || '').localeCompare(String(y.createdAt || '')))
+      .at(-1) || null;
+    set('activeBoardId', next?.id || null);
+    set('lastStrategy', next);
+  } else if (get('lastStrategy')?.id === b.id) {
+    set('lastStrategy', find('boards', get('activeBoardId')));
+  }
+  ok(res, { ok: true, activeBoardId: get('activeBoardId') });
+}));
+
+// ---------- dashboard ----------
+app.get('/api/dashboard', h(async (_req, res) => {
+  migrateBoards();
+  const p = brand.currentProfile();
+  const boards = list('boards').map((b) => ({
+    ...boardSummary(b),
+    channels: (b.strategies?.[0]?.channels || []).slice(0, 4).map((c) => c.name).filter(Boolean),
+    topReach: (b.strategies || []).reduce((m, s) => Math.max(m, +s.reach?.estViews || 0), 0),
+  }));
+  ok(res, {
+    profile: p ? { name: p.name || '', tagline: p.tagline || '', source: p.source || null } : null,
+    boards,
+    campaigns: list('campaigns').map((c) => ({
+      id: c.id,
+      title: c.brief?.title || 'Untitled campaign',
+      createdAt: c.createdAt || null,
+      creativeCount: (c.creatives || []).length,
+      strategyTitle: c.strategyTitle || '',
+    })),
+    photoshootCount: list('photoshoots').length,
+    websiteCount: list('websites').length,
+    brandbook: !!get('brandbook'),
+    qlooMode: qloo.status().mode,
+  });
 }));
 
 // ---------- campaigns + creatives ----------

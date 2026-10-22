@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef, createContext, useContext } from 'react';
-import { Routes, Route, NavLink, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import api from './api.js';
 import Icon, { Logo } from './components/Icon.jsx';
 import Onboarding from './views/Onboarding.jsx';
+import DashboardPage from './views/Dashboard.jsx';
 import ProfilePage from './views/Profile.jsx';
 import StrategyPage from './views/Strategy.jsx';
 import CampaignsPage from './views/Campaigns.jsx';
@@ -13,20 +14,18 @@ import BrandBookPage from './views/BrandBook.jsx';
 export const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
 
+// flat topbar nav — Dashboard + Strategy are always reachable; the rest
+// stay locked (dimmed, rerouting to /strategy) until a board exists.
 const NAV = [
-  { group: 'Plan', items: [
-    { to: '/strategy', icon: 'sparkle', label: 'Strategy' },
-    { to: '/profile', icon: 'dna', label: 'Business', sub: ['Overview', 'Catalog', 'Assets'] },
-  ] },
-  { group: 'Create', items: [
-    { to: '/campaigns', icon: 'campaign', label: 'Campaigns' },
-    { to: '/photoshoot', icon: 'photo', label: 'Photoshoot' },
-  ] },
-  { group: 'Publish', items: [
-    { to: '/brandbook', icon: 'book', label: 'Brand Book' },
-    { to: '/websites', icon: 'site', label: 'Websites' },
-  ] },
+  { to: '/dashboard', icon: 'layout', label: 'Dashboard', alias: ['/'] },
+  { to: '/strategy', icon: 'sparkle', label: 'Strategy' },
+  { to: '/profile', icon: 'dna', label: 'Business' },
+  { to: '/campaigns', icon: 'campaign', label: 'Campaigns' },
+  { to: '/photoshoot', icon: 'photo', label: 'Photoshoot' },
+  { to: '/brandbook', icon: 'book', label: 'Brand' },
+  { to: '/websites', icon: 'site', label: 'Websites' },
 ];
+const FREE = ['/dashboard', '/strategy']; // unlocked without a board
 
 // Small "locked" placeholder for routes gated behind a generated strategy board.
 function LockedScreen() {
@@ -54,6 +53,7 @@ function Gate({ board, children }) {
 export default function App() {
   const [profile, setProfile] = useState(undefined); // undefined = loading
   const [board, setBoard] = useState(undefined);     // undefined = loading, null = no strategy yet
+  const [boards, setBoards] = useState([]);          // every plan/board summary, for switchers
   const [status, setStatus] = useState(null);
   const [toast, setToast] = useState(null);
   const nav = useNavigate();
@@ -70,8 +70,14 @@ export default function App() {
     api.status().then(setStatus).catch(() => setStatus(null));
     api.getStrategy()
       // only fill if nothing set yet — a fresh generate() may have landed first
-      .then(({ board }) => setBoard((b) => (b === undefined ? board || null : b)))
+      .then(({ board, boards }) => {
+        setBoard((b) => (b === undefined ? board || null : b));
+        if (Array.isArray(boards)) setBoards(boards);
+      })
       .catch(() => setBoard(null));
+    api.boards()
+      .then(({ boards }) => { if (Array.isArray(boards)) setBoards(boards); })
+      .catch(() => {}); // older backends — the switcher simply stays empty
   }, []);
   useEffect(() => {
     if (profile === null && loc.pathname !== '/onboarding') nav('/onboarding');
@@ -85,45 +91,48 @@ export default function App() {
   };
 
   const hasStrategy = !!board;
-  const ctx = { profile, setProfile, refresh, status, say, board, setBoard, hasStrategy };
+  // shared board activation — POST activate, then pull the full board into ctx
+  const openBoard = async (id) => {
+    await api.activateBoard(id);
+    const { board: full } = await api.board(id);
+    setBoard(full);
+    return full;
+  };
+  const ctx = { profile, setProfile, refresh, status, say, board, setBoard, boards, setBoards, openBoard, hasStrategy };
   const inApp = !!profile;
+
+  const isActive = (n) =>
+    loc.pathname === n.to || loc.pathname.startsWith(`${n.to}/`) || (n.alias || []).includes(loc.pathname);
 
   return (
     <Ctx.Provider value={ctx}>
       <div className="shell">
-        {inApp && (
-          <nav className="rail">
-            <div className="logo" title="Marque"><Logo size={40} /></div>
-            {NAV.map((g) => (
-              <React.Fragment key={g.group}>
-                <span className="rail-group">{g.group}</span>
-                {g.items.map((n) => {
-                  const locked = n.to !== '/strategy' && !board;
+        <div className="main">
+          {inApp && (
+            <div className="topbar">
+              <Link className="brand" to="/dashboard"><Logo size={22} /> Marque <span className="exp">STUDIO</span></Link>
+              <nav className="topnav">
+                {NAV.map((n) => {
+                  const locked = !board && !FREE.includes(n.to);
                   if (locked) {
                     return (
-                      <button key={n.to} type="button" className="rail-item locked"
+                      <button key={n.to} type="button" className="topnav-item locked"
                         title="Generate a strategy first" onClick={() => nav('/strategy')}>
-                        <Icon name={n.icon} />
-                        <span className="lbl">{n.label.split(' ')[0]}</span>
-                        <span className="rail-lock"><Icon name="lock" size={9} sw={2.4} /></span>
+                        <Icon name={n.icon} size={15} />
+                        <span>{n.label}</span>
+                        <Icon name="lock" size={9} sw={2.4} />
                       </button>
                     );
                   }
                   return (
-                    <NavLink key={n.to} to={n.to} className={({ isActive }) => `rail-item${isActive ? ' active' : ''}`} title={n.label}>
-                      <Icon name={n.icon} />
-                      <span className="lbl">{n.label.split(' ')[0]}</span>
-                    </NavLink>
+                    <Link key={n.to} to={n.to}
+                      className={`topnav-item${isActive(n) ? ' active' : ''}`} title={n.label}>
+                      <Icon name={n.icon} size={15} />
+                      <span>{n.label}</span>
+                    </Link>
                   );
                 })}
-              </React.Fragment>
-            ))}
-          </nav>
-        )}
-        <div className="main">
-          {inApp && (
-            <div className="topbar">
-              <div className="brand"><Logo size={22} /> Marque <span className="exp">STUDIO</span></div>
+              </nav>
             </div>
           )}
           {profile === undefined ? (
@@ -131,14 +140,15 @@ export default function App() {
           ) : (
           <Routes>
             <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/" element={<Navigate to="/strategy" replace />} />
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/strategy/*" element={<StrategyPage />} />
             <Route path="/profile/*" element={<Gate board={board}><ProfilePage /></Gate>} />
             <Route path="/campaigns/*" element={<Gate board={board}><CampaignsPage /></Gate>} />
             <Route path="/photoshoot" element={<Gate board={board}><PhotoshootPage /></Gate>} />
             <Route path="/websites" element={<Gate board={board}><WebsitesPage /></Gate>} />
             <Route path="/brandbook" element={<Gate board={board}><BrandBookPage /></Gate>} />
-            <Route path="*" element={<Navigate to={inApp ? '/strategy' : '/onboarding'} replace />} />
+            <Route path="*" element={<Navigate to={inApp ? '/dashboard' : '/onboarding'} replace />} />
           </Routes>
           )}
         </div>

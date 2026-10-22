@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
@@ -194,8 +194,9 @@ function WildCard({ e, i }) {
 }
 
 export default function Strategy() {
-  const { profile, say, board, setBoard } = useApp();
+  const { profile, say, board, setBoard, boards, setBoards, openBoard } = useApp();
   const nav = useNavigate();
+  const loc = useLocation();
   // /strategy → the board list; /strategy/:idx → one strategy's full page.
   const { '*': seg = '' } = useParams();
   const isDetail = seg !== '';
@@ -210,6 +211,9 @@ export default function Strategy() {
   const [notes, setNotes] = useState('');      // "add notes for the campaign"
   const [ex, setEx] = useState({});            // strategyId -> {status, data, err}
   const [sub, setSub] = useState(null);        // submitted {prompt, productId, url}
+  const [renaming, setRenaming] = useState(false);
+  const [renameVal, setRenameVal] = useState('');
+  const renameRef = useRef(null);
 
   // the board lives in app Ctx (loaded via api.getStrategy on app mount) so it
   // survives navigation; resL lets this view clear it locally for a new prompt
@@ -228,6 +232,25 @@ export default function Strategy() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [res]);
 
+  // the plans row lists every board — refresh summaries on mount
+  useEffect(() => {
+    api.boards()
+      .then(({ boards: bs }) => { if (Array.isArray(bs)) setBoards?.(bs); })
+      .catch(() => {}); // older backend — the switcher just stays short
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // /strategy?new=1 → straight into the composer for a fresh board
+  useEffect(() => {
+    if (new URLSearchParams(loc.search).get('new')) {
+      reset();
+      nav('/strategy', { replace: true }); // strip the query so it doesn't retrigger
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loc.search]);
+
+  useEffect(() => { if (renaming) renameRef.current?.focus(); }, [renaming]);
+
   const generate = async (text) => {
     const raw = String(text ?? prompt);
     const p = raw.trim();
@@ -241,6 +264,8 @@ export default function Strategy() {
       const s = { prompt: p, productId, url };
       setSub(s);
       try { sessionStorage.setItem('marque.strategySub', JSON.stringify(s)); } catch { /* storage unavailable */ }
+      // a new board now exists — refresh the plans switcher
+      api.boards().then(({ boards: bs }) => { if (Array.isArray(bs)) setBoards?.(bs); }).catch(() => {});
     } catch (e) {
       setErr(e.message || 'strategy generation failed');
       say?.(e.message);
@@ -250,8 +275,33 @@ export default function Strategy() {
 
   // pill click → collapse back to the composer (ctx board stays → app stays unlocked)
   const reset = () => {
-    setResL(null); setErr(''); setNotes(''); setEx({});
+    setResL(null); setErr(''); setNotes(''); setEx({}); setRenaming(false);
     if (isDetail) nav('/strategy');
+  };
+
+  // plans-row chip click → activate that board server-side, then follow ctx
+  const switchBoard = async (id) => {
+    if (!id || id === res?.id) return;
+    try {
+      await openBoard(id);          // activate + fetch full board → ctx
+      setResL(undefined);           // res follows the ctx board again
+      setEx({}); setErr(''); setSub(null); setRenaming(false);
+      if (isDetail) nav('/strategy');
+    } catch (e) { say?.(e.message || 'could not switch plans'); }
+  };
+
+  // inline board rename — PATCH /api/boards/:id, then patch every local copy
+  const commitRename = async () => {
+    const title = renameVal.trim();
+    setRenaming(false);
+    if (!title || !res?.id || title === res.title) return;
+    try {
+      await api.renameBoard(res.id, title);
+      const nb = { ...res, title };
+      setBoard(nb); setResL(nb);
+      setBoards?.((bs) => (bs || []).map((b) => (b.id === res.id ? { ...b, title } : b)));
+      say?.('Plan renamed');
+    } catch (e) { say?.(e.message || 'rename failed'); }
   };
 
   // lazy pull of real-world examples for a strategy — cached per strategy id
@@ -398,6 +448,55 @@ export default function Strategy() {
                 onClick={(e) => { e.stopPropagation(); if (!busy) reset(); }}>
                 <Icon name="edit" size={13} /> New prompt
               </button>
+            </div>
+          )}
+
+          {/* ---- plans row — switch between every generated strategy board ---- */}
+          {res && !busy && (
+            <div className="stg-plans">
+              <span className="stg-plans-cur">
+                <span className="stg-plans-label">Plan:</span>
+                {renaming ? (
+                  <input
+                    ref={renameRef}
+                    className="stg-plan-rename"
+                    value={renameVal}
+                    onChange={(e) => setRenameVal(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') commitRename();
+                      if (e.key === 'Escape') setRenaming(false);
+                    }}
+                    onBlur={commitRename}
+                  />
+                ) : (
+                  <span className="stg-plans-title display">
+                    {res.title || 'Strategy board'}
+                    {!!res.id && (
+                      <button type="button" className="stg-plan-edit" title="Rename plan"
+                        onClick={() => { setRenameVal(res.title || ''); setRenaming(true); }}>
+                        <Icon name="edit" size={12} />
+                      </button>
+                    )}
+                  </span>
+                )}
+              </span>
+              <span className="stg-plans-chips">
+                {(boards || []).map((b) => {
+                  const on = b.id && b.id === res.id;
+                  return (
+                    <button key={b.id || b.title} type="button"
+                      className={`stg-plan-chip${on ? ' on' : ''}`}
+                      title={b.sub?.prompt || b.title || 'board'}
+                      onClick={() => switchBoard(b.id)}>
+                      {b.title || 'board'}
+                      {b.strategyCount != null && <i>·{b.strategyCount}</i>}
+                    </button>
+                  );
+                })}
+                <button type="button" className="stg-plan-chip new" onClick={reset}>
+                  <Icon name="plus" size={11} /> New plan
+                </button>
+              </span>
             </div>
           )}
 
