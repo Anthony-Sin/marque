@@ -6,6 +6,7 @@ import Composer, { KebabMenu } from '../components/Composer.jsx';
 import CreativeCard from '../components/CreativeCard.jsx';
 import CreativeEditor from '../components/CreativeEditor.jsx';
 import EvidenceDrawer from '../components/EvidenceDrawer.jsx';
+import Wayfind from '../components/Wayfind.jsx';
 import { QlooBadge, SignalChips } from '../components/Qloo.jsx';
 import './studio.css';
 
@@ -197,7 +198,8 @@ export default function Campaigns() {
   if (open) {
     return (
       <div className="section" style={{ paddingBottom: 80 }}>
-        <div className="page-head" style={{ textAlign: 'left', padding: '30px 0 18px' }}>
+        <Wayfind />
+        <div className="page-head" style={{ textAlign: 'left', padding: '10px 0 18px' }}>
           <button className="btn ghost sm mb8" onClick={() => setOpenId(null)}>
             ← All campaigns
           </button>
@@ -217,6 +219,7 @@ export default function Campaigns() {
             <CreativeCard
               key={cr.id}
               creative={cr}
+              campaign={open}
               aspect={open.aspectRatio}
               animating={animating === cr.id}
               onEdit={setEditing}
@@ -249,6 +252,7 @@ export default function Campaigns() {
   // ---------- landing ----------
   return (
     <div className="section" style={{ paddingBottom: 80 }}>
+      <Wayfind />
       <div className="page-head">
         <h1 className="display">Campaigns</h1>
         <p className="sub">Start from our suggestions or prompt to create a new campaign.</p>

@@ -4,6 +4,7 @@ import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
 import PublishBar from '../components/PublishBar.jsx';
+import Wayfind from '../components/Wayfind.jsx';
 import { QlooBadge, TastePanel } from '../components/Qloo.jsx';
 import { postJson, useStages } from '../components/Composer.jsx';
 import './studio.css';
@@ -140,6 +141,7 @@ export default function BrandBook() {
   if (book === undefined) {
     return (
       <div className="section">
+        <Wayfind />
         <div className="page-head">
           <h1 className="display">Your Brand Book</h1>
           <p className="sub">A Brand Book generated from your Business Profile.</p>
@@ -163,6 +165,7 @@ export default function BrandBook() {
   if (step !== 'view') {
     return (
       <div className="section" style={{ paddingBottom: 80 }}>
+        <Wayfind />
         <div className="page-head">
           <h1 className="display">Your Brand Book</h1>
           <p className="sub">A Brand Book generated from your Business Profile.</p>
@@ -259,6 +262,7 @@ export default function BrandBook() {
 
   return (
     <div className="section" style={{ paddingBottom: 80 }}>
+      <Wayfind />
       <div className="page-head" style={{ paddingBottom: 14 }}>
         <h1 className="display">Your Brand Book</h1>
         <p className="sub">A Brand Book generated from your Business Profile.</p>

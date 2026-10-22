@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
+import Wayfind from '../components/Wayfind.jsx';
 import { downloadAsset, fileExt, fmtDate, postJson, useStages } from '../components/Composer.jsx';
 import './studio.css';
 
@@ -321,6 +322,7 @@ export default function Photoshoot() {
 
   return (
     <div className="section" style={{ paddingBottom: 80 }}>
+      <Wayfind />
       {header}
       <input ref={fileRef} type="file" accept="image/*" className="hidden" style={{ display: 'none' }} onChange={upload} />
 

@@ -8,6 +8,7 @@ import FieldEdit from '../components/FieldEdit.jsx';
 import Kebab from '../components/Kebab.jsx';
 import Modal from '../components/Modal.jsx';
 import UploadBtn from '../components/UploadBtn.jsx';
+import Wayfind from '../components/Wayfind.jsx';
 import { TastePanel } from '../components/Qloo.jsx';
 
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : `id-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
@@ -31,7 +32,8 @@ export default function ProfilePage() {
   const { profile } = useApp();
   if (profile === undefined) {
     return (
-      <div className="profile-wrap" style={{ paddingTop: 60 }}>
+      <div className="profile-wrap" style={{ paddingTop: 8 }}>
+        <Wayfind />
         <div className="card pad">
           {[0, 1, 2, 3, 4, 5].map((i) => (
             <div key={i} className="field">
@@ -47,6 +49,9 @@ export default function ProfilePage() {
   return (
     <div className="split">
       <div className="left">
+        <div className="profile-wrap" style={{ paddingBottom: 0 }}>
+          <Wayfind />
+        </div>
         <Routes>
           <Route index element={<Overview />} />
           <Route path="catalog" element={<CatalogTab />} />

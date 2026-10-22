@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef, createContext, useContext } from 'react';
-import { Routes, Route, Link, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import api from './api.js';
-import Icon, { Logo } from './components/Icon.jsx';
+import Icon from './components/Icon.jsx';
+import Wayfind from './components/Wayfind.jsx';
 import Onboarding from './views/Onboarding.jsx';
 import DashboardPage from './views/Dashboard.jsx';
 import ProfilePage from './views/Profile.jsx';
@@ -14,31 +15,25 @@ import BrandBookPage from './views/BrandBook.jsx';
 export const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
 
-// flat topbar nav — Dashboard + Strategy are always reachable; the rest
-// stay locked (dimmed, rerouting to /strategy) until a board exists.
-const NAV = [
-  { to: '/dashboard', icon: 'layout', label: 'Dashboard', alias: ['/'] },
-  { to: '/strategy', icon: 'sparkle', label: 'Strategy' },
-  { to: '/profile', icon: 'dna', label: 'Business' },
-  { to: '/campaigns', icon: 'campaign', label: 'Campaigns' },
-  { to: '/photoshoot', icon: 'photo', label: 'Photoshoot' },
-  { to: '/brandbook', icon: 'book', label: 'Brand' },
-  { to: '/websites', icon: 'site', label: 'Websites' },
-];
-const FREE = ['/dashboard', '/strategy']; // unlocked without a board
+// No persistent nav chrome — the Dashboard is the hub and every other view
+// offers a quiet "← Dashboard" wayfinding link at its top-left instead.
+// Locked routes still gate on ctx.board (see Gate below).
 
 // Small "locked" placeholder for routes gated behind a generated strategy board.
 function LockedScreen() {
   const nav = useNavigate();
   return (
-    <div className="locked-wrap">
-      <div className="locked-ic"><Icon name="lock" size={26} /></div>
-      <h2 className="display">Locked</h2>
-      <p>Generate a strategy on the Strategy board first — this section unlocks once your board exists.</p>
-      <button className="btn lime" onClick={() => nav('/strategy')}>
-        <Icon name="sparkle" size={15} /> Go to Strategy
-      </button>
-    </div>
+    <>
+      <div className="section"><Wayfind /></div>
+      <div className="locked-wrap" style={{ paddingTop: 60 }}>
+        <div className="locked-ic"><Icon name="lock" size={26} /></div>
+        <h2 className="display">Locked</h2>
+        <p>Generate a strategy on the Strategy board first — this section unlocks once your board exists.</p>
+        <button className="btn lime" onClick={() => nav('/strategy')}>
+          <Icon name="sparkle" size={15} /> Go to Strategy
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -101,40 +96,10 @@ export default function App() {
   const ctx = { profile, setProfile, refresh, status, say, board, setBoard, boards, setBoards, openBoard, hasStrategy };
   const inApp = !!profile;
 
-  const isActive = (n) =>
-    loc.pathname === n.to || loc.pathname.startsWith(`${n.to}/`) || (n.alias || []).includes(loc.pathname);
-
   return (
     <Ctx.Provider value={ctx}>
       <div className="shell">
         <div className="main">
-          {inApp && (
-            <div className="topbar">
-              <Link className="brand" to="/dashboard"><Logo size={22} /> Marque <span className="exp">STUDIO</span></Link>
-              <nav className="topnav">
-                {NAV.map((n) => {
-                  const locked = !board && !FREE.includes(n.to);
-                  if (locked) {
-                    return (
-                      <button key={n.to} type="button" className="topnav-item locked"
-                        title="Generate a strategy first" onClick={() => nav('/strategy')}>
-                        <Icon name={n.icon} size={15} />
-                        <span>{n.label}</span>
-                        <Icon name="lock" size={9} sw={2.4} />
-                      </button>
-                    );
-                  }
-                  return (
-                    <Link key={n.to} to={n.to}
-                      className={`topnav-item${isActive(n) ? ' active' : ''}`} title={n.label}>
-                      <Icon name={n.icon} size={15} />
-                      <span>{n.label}</span>
-                    </Link>
-                  );
-                })}
-              </nav>
-            </div>
-          )}
           {profile === undefined ? (
             <div className="loading-wrap"><div className="spinner" /></div>
           ) : (

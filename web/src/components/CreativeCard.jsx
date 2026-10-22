@@ -4,12 +4,30 @@ import { api } from '../api.js';
 import { arCss, downloadAsset, fileExt } from './Composer.jsx';
 import { useApp } from '../App.jsx';
 
-// Creative thumbnail in the campaign grid. Hover → Edit / Animate (9:16 only) / Download.
-export default function CreativeCard({ creative, aspect = '1:1', animating, onEdit, onAnimate, onChanged }) {
+// Creative thumbnail in the campaign grid. Hover → Edit / Animate (9:16 only) / Promote / Download.
+export default function CreativeCard({ creative, aspect = '1:1', campaign, animating, onEdit, onAnimate, onChanged }) {
   const { say } = useApp();
   const video = !!creative.videoPath;
   const [dl, setDl] = useState(false);
   const [g, setG] = useState(null); // optimistic grade override until the PATCH lands
+  const [promote, setPromote] = useState(false);
+
+  // ready-to-post kit — caption + hashtags composed from the creative + campaign context
+  const chans = campaign?.brief?.channels || [];
+  const tags = [...new Set([
+    ...chans.map((c) => `#${String(c).replace(/\s+/g, '')}`),
+    ...(campaign?.qlooSignals || []).slice(0, 3).map((q) => `#${String(q.entity || q).replace(/[^A-Za-z0-9]/g, '')}`),
+  ])].filter((t) => t.length > 2).slice(0, 6);
+  const caption = [
+    creative.headline || campaign?.brief?.title || '',
+    creative.body || '',
+    creative.cta ? `${creative.cta} →` : '',
+    tags.join(' '),
+  ].filter(Boolean).join('\n');
+  const copyCaption = async () => {
+    try { await navigator.clipboard.writeText(caption); say('Caption + tags copied'); }
+    catch { say('copy failed — select manually'); }
+  };
 
   const download = async () => {
     if (dl) return;
@@ -58,10 +76,25 @@ export default function CreativeCard({ creative, aspect = '1:1', animating, onEd
             <Icon name="film" size={14} /> Animate
           </button>
         )}
+        <button className="veil-btn" title="Promote — caption + tags kit" onClick={() => setPromote((p) => !p)}>
+          <Icon name="send" size={14} /> {promote ? 'Close' : 'Promote'}
+        </button>
         <button className="veil-btn" title="Download" disabled={dl} onClick={download}>
           {dl ? <span className="spinner" /> : <Icon name="download" size={14} />}
         </button>
       </div>
+      {promote && (
+        <div className="promote-panel">
+          <span className="promote-label">Post-ready caption</span>
+          <p className="promote-caption">{caption}</p>
+          {!!chans.length && (
+            <div className="promote-chans">
+              {chans.map((c) => <span key={c} className="chan-chip">{c}</span>)}
+            </div>
+          )}
+          <button className="btn lime sm" onClick={copyCaption}><Icon name="copy" size={12} /> Copy caption</button>
+        </div>
+      )}
       <div className="meta">
         <span className="ttl" title={creative.headline}>{creative.headline || 'Untitled creative'}</span>
         <span className="grade" role="radiogroup" aria-label="Grade this creative"

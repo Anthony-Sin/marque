@@ -209,7 +209,9 @@ app.post('/api/strategy/examples', h(async (req, res) => {
   const scope = boardId || get('activeBoardId') || '';
   const key = scope ? `${scope}:${skey}` : skey;
   if (exCache.has(key)) return ok(res, exCache.get(key));
-  const data = await generateExamples({ strategy, profile: brand.currentProfile(), audienceRead });
+  const exBoard = (boardId && find('boards', boardId)) || resolveActiveBoard();
+  const product = exBoard?.sub?.productId ? find('catalog', exBoard.sub.productId) : null;
+  const data = await generateExamples({ strategy, profile: brand.currentProfile(), audienceRead, product });
   if (exCache.size > 30) exCache.clear();
   exCache.set(key, data);
   ok(res, data);

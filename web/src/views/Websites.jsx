@@ -4,6 +4,7 @@ import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
 import VersionTabs from '../components/VersionTabs.jsx';
 import PublishBar from '../components/PublishBar.jsx';
+import Wayfind from '../components/Wayfind.jsx';
 import { QlooBadge } from '../components/Qloo.jsx';
 import { useStages } from '../components/Composer.jsx';
 import './studio.css';
@@ -367,6 +368,7 @@ export default function Websites() {
 
   return (
     <div className="section" style={{ paddingBottom: 80 }}>
+      <Wayfind />
       <div className="page-head" style={{ paddingBottom: 18 }}>
         <h1 className="display">Websites</h1>
         <p className="sub">Audit your live site against competitors — or generate a new one from your Business Profile.</p>

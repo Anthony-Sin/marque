@@ -64,43 +64,19 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 .shell { display: flex; height: 100%; }
 .main { flex: 1; overflow-y: auto; position: relative; }
 
-.topbar {
-  position: sticky; top: 0; z-index: 20; display: flex; align-items: center;
-  gap: 16px; padding: 10px 22px; background: rgba(22,22,22,.82);
-  backdrop-filter: blur(12px); border-bottom: 1px solid var(--line-soft);
-}
-.topbar .brand { display: flex; align-items: center; gap: 9px; font-weight: 600; letter-spacing: .02em; color: var(--ink); flex: none; }
-.topbar .brand .exp { font-size: 10px; color: var(--ink-3); border: 1px solid var(--line); padding: 2px 7px; border-radius: 999px; letter-spacing: .12em; }
-.topbar .spacer { flex: 1; }
-
-/* horizontal top nav (replaces the old side rail) — scrolls on narrow screens */
-.topnav {
-  display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0;
-  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
-}
-.topnav::-webkit-scrollbar { display: none; }
-.topnav-item {
-  display: inline-flex; align-items: center; gap: 7px; flex: none; white-space: nowrap;
-  border: none; background: transparent; color: var(--ink-3); cursor: pointer;
-  font-size: 13px; font-weight: 500; padding: 7px 13px; border-radius: var(--radius-pill);
+/* ---------- wayfinding (no persistent nav — the dashboard is the hub) ----------
+   A quiet ghost link at the top-left of every non-dashboard view. */
+.wayfind-row { padding-top: 16px; }
+.wayfind {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12.5px; font-weight: 600; letter-spacing: .02em; color: var(--ink-4);
+  padding: 6px 12px 6px 8px; margin-left: -8px; border-radius: var(--radius-pill);
   transition: color .15s, background .15s;
 }
-.topnav-item svg { flex: none; }
-.topnav-item:hover { color: var(--ink); background: var(--card-2); }
-.topnav-item.active { color: var(--lime); background: rgba(211, 227, 116, .1); }
-.topnav-item.locked { opacity: .4; }
-.topnav-item.locked:hover { color: var(--ink-3); background: var(--card-2); }
-@media (max-width: 720px) {
-  .topbar { gap: 10px; padding: 9px 14px; }
-  .topbar .brand .exp { display: none; }
-  .topnav-item { padding: 7px 11px; font-size: 12.5px; gap: 6px; }
-}
-@media (max-width: 430px) {
-  /* 390px phones: brand shrinks to the mark, nav scrolls horizontally */
-  .topbar .brand { font-size: 0; gap: 0; }
-  .topbar .brand svg { width: 24px; height: 24px; }
-  .topnav-item { padding: 7px 10px; font-size: 12px; }
-}
+.wayfind .wayfind-arrow { display: inline-block; transition: transform .18s ease; }
+.wayfind:hover { color: var(--ink); background: var(--card); }
+.wayfind:hover .wayfind-arrow { transform: translateX(-3px); }
+.wayfind:focus-visible { outline: 1px solid var(--lime); outline-offset: 2px; color: var(--ink); }
 .chips { display: flex; gap: 8px; align-items: center; }
 .chip {
   display: inline-flex; align-items: center; gap: 6px;
@@ -244,7 +220,7 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 .agent-input .send { width: 42px; height: 42px; border-radius: 50%; border: none; background: var(--lime); color: var(--lime-ink); display: flex; align-items: center; justify-content: center; }
 
 /* ---------- misc ---------- */
-.split { display: flex; height: calc(100% - 49px); }
+.split { display: flex; height: 100%; }
 .split .left { flex: 1; overflow-y: auto; }
 .loading-wrap { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 80px 20px; text-align: center; }
 .spinner { width: 46px; height: 46px; border-radius: 50%; border: 3px solid var(--card-3); border-top-color: var(--lime); animation: spin 1s linear infinite; }
@@ -483,7 +459,7 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
   .tabs .tab, .pf-wtabs .tab { padding-left: 14px; padding-right: 14px; font-size: 13px; }
 }
 
-/* ---------- strategy gate: locked screen (nav locks live in .topnav-item.locked) ---------- */
+/* ---------- strategy gate: locked screen ---------- */
 .locked-wrap {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center; gap: 12px; padding: 90px 24px;

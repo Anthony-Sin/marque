@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-route
 import { api } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
+import Wayfind from '../components/Wayfind.jsx';
 import { SignalChips } from '../components/Qloo.jsx';
 import './strategy.css';
 
@@ -89,7 +90,9 @@ function Ring({ value = 0, label, small }) {
 
 // LLM-style staged progress — each status line types out character-by-character,
 // then the next one starts. Previous lines stay, checked. No spinner.
-function Typer({ lines = TYPE_LINES }) {
+// slim → a compact bar pinned above the board skeleton (the cards are already
+// there; the status types underneath the composer, alongside them).
+function Typer({ lines = TYPE_LINES, slim = false }) {
   const [li, setLi] = useState(0);
   const [cc, setCc] = useState(0);
   useEffect(() => {
@@ -109,7 +112,7 @@ function Typer({ lines = TYPE_LINES }) {
   }, [li, cc, lines]);
 
   return (
-    <div className="card stg-typer" aria-live="polite">
+    <div className={`card stg-typer${slim ? ' slim' : ''}`} aria-live="polite">
       <div className="stg-typer-head">
         <span className="stg-typer-dot" />
         Marque is working
@@ -125,7 +128,64 @@ function Typer({ lines = TYPE_LINES }) {
           <span className="stg-tw-caret" />
         </div>
       </div>
-      <div className="stg-shimmer"><i /></div>
+      {!slim && <div className="stg-shimmer"><i /></div>}
+    </div>
+  );
+}
+
+// board-shaped skeleton shown the moment generation starts — same 12-col bento
+// as the real board, so the staggered .stg-fill reveals land in place of it.
+function BoardSkeleton() {
+  const bar = (w, h, cls = '') => (
+    <span className={`stg-shimmer sk ${cls}`.trim()} style={{ '--w': w, '--h': h }}><i /></span>
+  );
+  return (
+    <div className="stg-board stg-board-skel" aria-hidden="true">
+      {/* audience-read tile skeleton */}
+      <section className="card stg-tile stg-aud skel-tile">
+        <div className="stg-tile-head">{bar('112px', '10px')}</div>
+        <div className="stg-aud-main">
+          <div className="stg-aud-left stg-skel-col">
+            {bar('62%', '24px')}
+            {bar('38%', '10px')}
+            <div style={{ height: 8 }} />
+            {bar('88%', '11px')}
+            {bar('72%', '11px')}
+            {bar('55%', '11px')}
+          </div>
+          {bar('104px', '104px', 'circle')}
+        </div>
+        <div className="stg-skel-chips">
+          {bar('74px', '24px', 'pill')}
+          {bar('92px', '24px', 'pill')}
+          {bar('64px', '24px', 'pill')}
+          {bar('80px', '24px', 'pill')}
+        </div>
+        {bar('100%', '10px')}
+        {bar('76%', '10px')}
+      </section>
+
+      {/* strategy picks — 3 skeleton cards in the real pick grid */}
+      <section className="card stg-tile stg-picks skel-tile">
+        <div className="stg-tile-head">{bar('140px', '10px')}</div>
+        <div className="stg-pick-grid">
+          {[0, 1, 2].map((i) => (
+            <div className="stg-pick stg-pick-skel" key={i} style={{ '--i': i }}>
+              <span className="stg-pick-top">
+                {bar('92px', '9px')}
+                {bar('46px', '46px', 'circle')}
+              </span>
+              {bar('94%', '15px')}
+              {bar('58%', '15px')}
+              {bar('82%', '10px')}
+              <span className="stg-pick-foot">
+                {bar('86px', '17px', 'pill')}
+                {bar('42px', '9px')}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
@@ -169,28 +229,30 @@ function WildCard({ e, i }) {
         <span className={`stg-src ${e.source || 'scraped'}`}>{SRC_LABEL[e.source] || e.source || 'scraped'}</span>
       </span>
       <span className="stg-wx-title">{e.title}</span>
+      {!!e.match && <span className="stg-wx-match">{e.match}</span>}
       {!!e.author && <span className="stg-wx-author">{e.author}</span>}
       {!!e.note && <span className="stg-wx-note">“{e.note}”</span>}
       <span className="stg-wx-acts">
-        {!!e.embed && (
+        {(!!e.embed || !!e.image) && (
           <button type="button" className="stg-wx-play"
             onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); setOpen((o) => !o); }}>
-            <Icon name={open ? 'x' : 'play'} size={10} /> {open ? 'hide player' : 'play inline'}
+            <Icon name={open ? 'x' : 'play'} size={10} /> {open ? 'close' : e.embed ? 'play inline' : 'view'}
           </button>
-        )}
-        {!!e.url && !!e.embed && (
-          <a className="stg-wx-open" href={e.url} target="_blank" rel="noopener noreferrer">
-            open original <Icon name="link" size={10} />
-          </a>
         )}
       </span>
     </span>
   );
 
-  const cls = `stg-wx${e.url && !e.embed ? ' link' : ''}`;
-  return e.url && !e.embed
-    ? <a className={cls} style={{ '--i': i }} href={e.url} target="_blank" rel="noopener noreferrer">{media}{body}</a>
-    : <div className={cls} style={{ '--i': i }}>{media}{body}</div>;
+  // never navigate out — embeds play in the fold, images expand in place
+  return (
+    <div className={`stg-wx${open ? ' open' : ''}`} style={{ '--i': i }}
+      onClick={() => { if (!e.embed && e.image) setOpen((o) => !o); }} role={!e.embed && e.image ? 'button' : undefined}>
+      {media}{body}
+      {open && !e.embed && e.image && (
+        <span className="stg-wx-big"><img src={e.image} alt={e.title || ''} /></span>
+      )}
+    </div>
+  );
 }
 
 export default function Strategy() {
@@ -277,17 +339,6 @@ export default function Strategy() {
   const reset = () => {
     setResL(null); setErr(''); setNotes(''); setEx({}); setRenaming(false);
     if (isDetail) nav('/strategy');
-  };
-
-  // plans-row chip click → activate that board server-side, then follow ctx
-  const switchBoard = async (id) => {
-    if (!id || id === res?.id) return;
-    try {
-      await openBoard(id);          // activate + fetch full board → ctx
-      setResL(undefined);           // res follows the ctx board again
-      setEx({}); setErr(''); setSub(null); setRenaming(false);
-      if (isDetail) nav('/strategy');
-    } catch (e) { say?.(e.message || 'could not switch plans'); }
   };
 
   // inline board rename — PATCH /api/boards/:id, then patch every local copy
@@ -418,6 +469,7 @@ export default function Strategy() {
 
   return (
     <div className="section stg-wrap">
+      <Wayfind />
       {!profile ? (
         <>
           {pageHead}
@@ -480,23 +532,11 @@ export default function Strategy() {
                   </span>
                 )}
               </span>
-              <span className="stg-plans-chips">
-                {(boards || []).map((b) => {
-                  const on = b.id && b.id === res.id;
-                  return (
-                    <button key={b.id || b.title} type="button"
-                      className={`stg-plan-chip${on ? ' on' : ''}`}
-                      title={b.sub?.prompt || b.title || 'board'}
-                      onClick={() => switchBoard(b.id)}>
-                      {b.title || 'board'}
-                      {b.strategyCount != null && <i>·{b.strategyCount}</i>}
-                    </button>
-                  );
-                })}
-                <button type="button" className="stg-plan-chip new" onClick={reset}>
-                  <Icon name="plus" size={11} /> New plan
-                </button>
-              </span>
+              {/* this board shows only its own plan — other plans live on the
+                  dashboard, so there's no cross-contamination between boards */}
+              <button type="button" className="btn ghost sm stg-plan-new" onClick={reset}>
+                <Icon name="plus" size={11} /> New plan
+              </button>
             </div>
           )}
 
@@ -549,7 +589,9 @@ export default function Strategy() {
             </div>
           </div>
 
-          {busy && <Typer />}
+          {/* while the board generates: board-shaped skeleton cards fill in
+              real-time — no separate status bar */}
+          {busy && <BoardSkeleton />}
 
           {err && !busy && (
             <div className="card stg-err">
@@ -679,9 +721,8 @@ export default function Strategy() {
                             <Ring value={s.audienceFit?.score} label="fit" small />
                           </span>
                           <b className="stg-pick-title stg-fill" style={{ '--fo': '90ms' }}>{s.title}</b>
-                          {!!s.angle && <span className="stg-pick-angle stg-fill" style={{ '--fo': '170ms' }}>{s.angle}</span>}
                           {!!(s.channels || []).length && (
-                            <span className="stg-pick-chips stg-fill" style={{ '--fo': '240ms' }}>
+                            <span className="stg-pick-chips stg-fill" style={{ '--fo': '170ms' }}>
                               {[...(s.channels || [])].sort((a, b) => (+b.fit || 0) - (+a.fit || 0)).slice(0, 4).map((c) => (
                                 <span className="stg-chip stg-pick-chip" key={c.name}>
                                   <Icon name={chanIcon(c.name)} size={10} />{c.name}

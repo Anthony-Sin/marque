@@ -56,8 +56,8 @@ export async function generateBrief({ prompt, productId, ingredients }, profile)
   return { brief: out, suggestions, qlooSignals: pickQlooSignals(profile, `${prompt || ''} ${out.title} ${out.angle}`) };
 }
 
-const COPY_SYS = `You are a conversion copywriter. Return JSON {"headline","body","cta","layout":{"vpos","hpos"}}.
-Rules: headline <= 8 words, body <= 20 words, cta <= 4 words (like "Shop now"). layout.vpos: "top"|"middle"|"bottom"; layout.hpos: "left"|"center"|"right" — where text should sit on the image.`;
+const COPY_SYS = `You are a social-media copywriter writing ad creative for feeds (Instagram/TikTok/YouTube). Return JSON {"headline","body","cta","layout":{"vpos","hpos"}}.
+Rules: headline <= 7 words and MUST be a scroll-stopping hook written for the target audience — specific, punchy, native to social (never generic slogans like "records reality" or "the neutral standard"); body <= 15 words, conversational, drives the key message; cta <= 4 words and action-first ("See it in action", "Grab yours"). layout.vpos: "top"|"middle"|"bottom"; layout.hpos: "left"|"center"|"right" — where text should sit on the image.`;
 
 const ANGLES = ['product-led', 'lifestyle', 'offer', 'social-proof'];
 
@@ -65,7 +65,7 @@ function composeImagePrompt(campaign, profile, copy, product, angle) {
   const c = profile?.colors || {};
   const affNames = flattenAffinities(profile).slice(0, 3).map((a) => a.entity).join(', ');
   return [
-    `A finished ${campaign.aspectRatio || '1:1'} social media ad creative for the brand "${profile?.name}" (${angle} angle).`,
+    `A finished ${campaign.aspectRatio || '1:1'} social-media ad creative, native to ${(campaign.brief?.channels || [])[0] || 'instagram'} feed, for the brand "${profile?.name}" (${angle} angle). It must look like real platform content — strong focal subject, brand-true styling, not a generic stock-ad gradient.`,
     campaign.brief?.angle ? `Campaign angle: ${campaign.brief.angle}.` : '',
     product ? `Featuring the product "${product.name}"${product.description ? ` — ${product.description}` : ''}.` : '',
     `Brand palette: primary ${c.primary}, secondary ${c.secondary}, accent ${c.accent}, background ${c.background}, text ${c.text}. Use these exact colors.`,

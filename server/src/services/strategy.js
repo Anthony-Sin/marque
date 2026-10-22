@@ -76,7 +76,14 @@ export function audienceRead(bundle, profile = {}) {
     ...(bundle?.tags || []).slice(0, 3).map((t) => (t.name || '').replace(/^urn:tag:/, '')),
   ].filter(Boolean))].slice(0, 5);
 
-  return { lean: { label: lean.label, confidence: lean.confidence, signals: lean.signals }, mediaHabits, vibeWords };
+  // confidence is derived, not constant: base per lean + how much signal
+  // actually exists (breadth of entity types + strength of the top pull)
+  const typeCount = ranked.length;
+  const topMean = ranked[0]?.mean || 0;
+  const derived = Math.min(0.95, Math.max(0.3,
+    lean.confidence * 0.55 + topMean * 0.3 + Math.min(5, typeCount) * 0.03));
+
+  return { lean: { label: lean.label, confidence: +derived.toFixed(2), signals: lean.signals }, mediaHabits, vibeWords };
 }
 
 function channelFit(bundle, lean) {

@@ -120,6 +120,24 @@
   50% { opacity: .55; box-shadow: 0 0 0 6px rgba(211, 227, 116, 0); }
 }
 
+/* slim variant — pinned above the board skeleton while generating */
+.stg-typer.slim {
+  max-width: none; margin: 20px 0 0; padding: 13px 17px;
+  animation: stgPanel .4s cubic-bezier(.22, .9, .24, 1) both;
+}
+.stg-typer.slim .stg-typer-lines { margin: 9px 0 0; gap: 6px; font-size: 11.5px; }
+.stg-typer.slim .stg-tw-caret { width: 7px; height: 12px; }
+
+/* skeleton bars — reuse .stg-shimmer's lime sweep, sized per element via --w/--h */
+.stg-shimmer.sk { display: block; width: var(--w, 100%); height: var(--h, 11px); border-radius: 7px; flex: none; }
+.stg-shimmer.sk.pill { border-radius: 999px; }
+.stg-shimmer.sk.circle { border-radius: 50%; }
+.stg-board-skel { pointer-events: none; }
+.stg-board-skel .stg-tile:hover { transform: none; box-shadow: none; }
+.stg-skel-col { display: flex; flex-direction: column; gap: 8px; }
+.stg-skel-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.stg-pick-skel { gap: 10px; }
+
 /* ---------- error retry ---------- */
 .stg-err {
   max-width: 560px; margin: 24px auto 0; padding: 22px;
@@ -367,6 +385,27 @@
   scroll-margin-top: 18px;
 }
 @keyframes stgPanel { from { opacity: 0; transform: translateY(18px); } }
+
+/* detail page: sections cascade in so the board "generates" on card click */
+.stg-detailpage .stg-detail-top { animation: stgFill .4s ease .02s both; }
+.stg-detail-left > *, .stg-detail-right > * { animation: stgFill .45s ease both; }
+.stg-detail-left > *:nth-child(1) { animation-delay: .12s; }
+.stg-detail-left > *:nth-child(2) { animation-delay: .2s; }
+.stg-detail-left > *:nth-child(3) { animation-delay: .28s; }
+.stg-detail-left > *:nth-child(4) { animation-delay: .36s; }
+.stg-detail-right > *:nth-child(1) { animation-delay: .18s; }
+.stg-detail-right > *:nth-child(2) { animation-delay: .28s; }
+.stg-detail-right > *:nth-child(3) { animation-delay: .38s; }
+.stg-handoff { animation: stgFill .45s ease .34s both; }
+.stg-wild { animation: stgFill .45s ease .42s both; }
+
+/* plans row — just the active plan's title + rename; other plans live on the dashboard */
+.stg-plan-new { margin-left: auto; flex: none; }
+
+/* expanded in-page preview for non-embed wild cards */
+.stg-wx-big { display: block; border-radius: 10px; overflow: hidden; }
+.stg-wx-big img { width: 100%; display: block; }
+.stg-wx.open { border-color: rgba(211, 227, 116, .4); }
 .stg-detail-top { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; }
 .stg-detail-cols { display: grid; grid-template-columns: 1.05fr .95fr; gap: 24px; }
 @media (max-width: 900px) { .stg-detail-cols { grid-template-columns: 1fr; } }
@@ -414,6 +453,11 @@
 .stg-wx-title {
   font-size: 13px; font-weight: 600; line-height: 1.35;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+/* why-this-example line — backend may attach e.match ("matches audience pull — …") */
+.stg-wx-match {
+  font-size: 11px; color: var(--ink-4); font-style: italic; line-height: 1.35;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .stg-wx-author { font-size: 11.5px; color: var(--ink-4); }
 .stg-wx-note {
