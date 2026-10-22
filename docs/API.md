@@ -87,6 +87,12 @@ Catalog
 - `DELETE /api/catalog/:id`
 - `POST /api/catalog/:id/sync-image` → re-fetch image from item.url
 
+Strategy board (Qloo-grounded ideation — the differentiator)
+- `POST /api/strategy` `{prompt, productId?}` → `{strategies:[Strategy], audienceRead: AudienceRead, evidence}`
+- `Strategy = { id, title, angle, channels:[{name:'instagram'|'tiktok'|'youtube'|'tv'|'streaming'|'ooh'|'guerrilla'|'email'|'press', fit:0-1, why}], formats:[string], brief:{title,angle,audience,keyMessage}, audienceFit:{score:0-1, notes:[string]}, watchouts:[string], qlooSignals:[{entity,type,affinity}], heroSignal }`
+- `AudienceRead = { lean:{label,confidence,signals:[string]}, mediaHabits:[{channel,note}], vibeWords:[string] }` — the server's read of the profile's audience from the Qloo bundle (affinities + tags + demographics hints). Used to render the "who you're talking to" card and to gate suggestions (e.g. lean-sensitive advice like "AI-forward messaging lands differently with this crowd — keep the human story first" or "this audience rewards bold AI-native creative").
+- Channel-fit is computed server-side from the Qloo bundle: strong tv_show/podcast affinities → tv/streaming/podcast fit up; artist+brand affinities skewing visual/streetwear/food → instagram/tiktok/guerrilla up; book/press-ish → press/email. Every channel `why` cites a real signal name.
+
 Campaigns
 - `GET /api/campaigns` → `{campaigns}`
 - `POST /api/campaigns/brief` `{prompt, productId?, ingredients?}` → `{brief, suggestions:[{title,angle,keyMessage}], qlooSignals}` (Generate Brief step)
