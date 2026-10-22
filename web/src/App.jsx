@@ -4,6 +4,7 @@ import api from './api.js';
 import Icon, { Logo } from './components/Icon.jsx';
 import Onboarding from './views/Onboarding.jsx';
 import ProfilePage from './views/Profile.jsx';
+import StrategyPage from './views/Strategy.jsx';
 import CampaignsPage from './views/Campaigns.jsx';
 import PhotoshootPage from './views/Photoshoot.jsx';
 import WebsitesPage from './views/Websites.jsx';
@@ -14,6 +15,7 @@ export const useApp = () => useContext(Ctx);
 
 const NAV = [
   { to: '/profile', icon: 'dna', label: 'Business', sub: ['Overview', 'Catalog', 'Assets'] },
+  { to: '/strategy', icon: 'sparkle', label: 'Strategy' },
   { to: '/campaigns', icon: 'campaign', label: 'Campaigns' },
   { to: '/photoshoot', icon: 'photo', label: 'Photoshoot' },
   { to: '/brandbook', icon: 'book', label: 'Brand Book' },
@@ -89,6 +91,7 @@ export default function App() {
           <Routes>
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/profile/*" element={<ProfilePage />} />
+            <Route path="/strategy" element={<StrategyPage />} />
             <Route path="/campaigns/*" element={<CampaignsPage />} />
             <Route path="/photoshoot" element={<PhotoshootPage />} />
             <Route path="/websites" element={<WebsitesPage />} />

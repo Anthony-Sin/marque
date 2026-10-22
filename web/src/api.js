@@ -41,6 +41,8 @@ export const api = {
   updateCatalog: (id, patch) => req('PUT', `/api/catalog/${id}`, { patch }),
   deleteCatalog: (id) => req('DELETE', `/api/catalog/${id}`),
   syncCatalogImage: (id) => req('POST', `/api/catalog/${id}/sync-image`),
+  // strategy board
+  strategy: (prompt, productId) => req('POST', '/api/strategy', { prompt, productId }),
   // campaigns
   listCampaigns: () => req('GET', '/api/campaigns'),
   campaignBrief: (payload) => req('POST', '/api/campaigns/brief', payload),

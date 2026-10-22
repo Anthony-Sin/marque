@@ -65,6 +65,21 @@ export default function Campaigns() {
   };
   useEffect(() => { reload(); }, []);
 
+  // Strategy board handoff: 'marque.strategyBrief' prefills the composer once, then is consumed.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('marque.strategyBrief');
+      if (!raw) return;
+      sessionStorage.removeItem('marque.strategyBrief');
+      const data = JSON.parse(raw);
+      const text = typeof data === 'string' ? data : data?.prompt;
+      if (text) {
+        setSeed({ text });
+        say('Strategy loaded — review the prompt and generate the brief');
+      }
+    } catch { /* malformed stash — ignore */ }
+  }, []);
+
   const suggestions = useMemo(() => buildSuggestions(profile).filter((s) => !dismissed.has(s.id)), [profile, dismissed]);
   const open = (campaigns || []).find((c) => c.id === openId) || null;
 
