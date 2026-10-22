@@ -25,7 +25,6 @@ const NAV = [
 export default function App() {
   const [profile, setProfile] = useState(undefined); // undefined = loading
   const [status, setStatus] = useState(null);
-  const [banner, setBanner] = useState(true);
   const [toast, setToast] = useState(null);
   const nav = useNavigate();
   const loc = useLocation();
@@ -68,24 +67,9 @@ export default function App() {
           </nav>
         )}
         <div className="main">
-          {inApp && banner && (
-            <div className="banner">
-              <Icon name="megaphone" />
-              <span>New: Qloo taste-graph evidence is attached to every campaign — open any creative's signals panel.</span>
-              <button className="x" onClick={() => setBanner(false)}>✕</button>
-            </div>
-          )}
           {inApp && (
             <div className="topbar">
               <div className="brand"><Logo size={22} /> Marque <span className="exp">STUDIO</span></div>
-              <div className="spacer" />
-              <div className="chips">
-                <StatusChip label="agent" ok={status?.tensor} />
-                <StatusChip label="media" ok={status?.gemini} />
-                <span className={`chip qloo${status?.qloo === 'live' ? ' on' : ' demo'}`}>
-                  <span className="dot" /> Qloo {status?.qloo === 'live' ? 'live' : 'demo'}
-                </span>
-              </div>
             </div>
           )}
           <Routes>
@@ -103,8 +87,4 @@ export default function App() {
       {toast && <div className="toast">{toast}</div>}
     </Ctx.Provider>
   );
-}
-
-function StatusChip({ label, ok }) {
-  return <span className={`chip${ok ? ' on' : ''}`}><span className="dot" />{label}</span>;
 }
