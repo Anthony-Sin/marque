@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campaign Strategy Board</title>
+<style>
+  :root{
+    --bg:#ebebe7;
+    --tile:#ffffff;
+    --ink:#1b1b16;
+    --mut:#77776b;
+    --line:#e6e6df;
+    --chip:#f4f4ee;
+    --acc:#d3e374;
+    --acc-ink:#23260f;
+    --bar:#22221c;
+    --r:20px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    padding:30px 28px 60px;
+    min-height:100vh;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:16px;
+    max-width:1460px;
+    margin:0 auto;
+  }
+
+  /* ---- tiles ---- */
+  .tile{
+    background:var(--tile);
+    border-radius:var(--r);
+    padding:22px;
+    border:1px solid rgba(25,25,15,.04);
+    box-shadow:0 1px 2px rgba(25,25,15,.05),0 12px 32px -14px rgba(25,25,15,.12);
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    min-width:0;
+    transition:transform .25s ease,box-shadow .25s ease;
+    animation:pop .55s cubic-bezier(.2,.7,.2,1) both;
+    animation-delay:var(--pd,0s);
+  }
+  .tile:hover{
+    transform:translateY(-4px);
+    box-shadow:0 2px 4px rgba(25,25,15,.06),0 20px 44px -16px rgba(25,25,15,.18);
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+  .hero,.strategy{grid-column:span 2}
+
+  .ml{
+    font-size:10px;
+    letter-spacing:.15em;
+    text-transform:uppercase;
+    color:var(--mut);
+    font-weight:700;
+  }
+
+  /* ---- hero ---- */
+  .hero-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .hero h1{font-size:clamp(30px,3.4vw,42px);line-height:1.02;letter-spacing:-.03em;font-weight:800}
+  .hero h1 em{font-style:normal;color:transparent;-webkit-text-stroke:1.5px var(--ink)}
+  .hero .site{font-size:12px;color:var(--mut);font-weight:600}
+  .hero .tag{font-size:14px;color:#4a4a40;line-height:1.45;max-width:46ch}
+  .prompt-pill{
+    align-self:flex-start;
+    background:var(--acc);
+    color:var(--acc-ink);
+    font-weight:700;
+    font-size:14px;
+    line-height:1.35;
+    padding:10px 14px;
+    border-radius:12px;
+    max-width:52ch;
+  }
+  .prompt-pill::before{content:"BRIEF  ";font-size:9px;letter-spacing:.16em;vertical-align:2px;opacity:.55}
+  .hero-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-top:auto;flex-wrap:wrap}
+  .swatches{display:flex;gap:6px}
+  .sw{width:20px;height:20px;border-radius:7px;border:1px solid rgba(0,0,0,.08)}
+
+  /* ---- chips ---- */
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{
+    font-size:11px;
+    font-weight:600;
+    color:#3f3f36;
+    background:var(--chip);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:5px 11px;
+    white-space:nowrap;
+  }
+  .chip.sig{display:inline-flex;align-items:center;gap:6px}
+  .chip.sig i{font-style:normal;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+  .chip.sig b{font-weight:800}
+  .chip.sig.hero-sig{box-shadow:inset 0 0 0 1.5px var(--acc)}
+  .chip.sig.hero-sig::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--acc);flex:none}
+
+  /* ---- audience ---- */
+  .au-main{display:flex;gap:18px;align-items:center;justify-content:space-between}
+  .au-left{min-width:0;flex:1}
+  .lean{font-size:21px;line-height:1.12;font-weight:800;letter-spacing:-.02em}
+  .signals{list-style:none;margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .signals li{font-size:11.5px;color:#5b5b50;line-height:1.4;padding-left:14px;position:relative}
+  .signals li::before{content:"";position:absolute;left:0;top:6px;width:6px;height:6px;border-radius:2px;background:var(--acc)}
+
+  .ringwrap{position:relative;width:104px;height:104px;flex:none}
+  .ringwrap svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .ring-bg{fill:none;stroke:var(--line);stroke-width:9}
+  .ring-fg{fill:none;stroke:var(--acc);stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.2,.7,.2,1) .35s}
+  .ring-num{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:1px;
+  }
+  .ring-num .bignum{font-size:30px;font-weight:800;letter-spacing:-.03em}
+  .ring-num .ml{font-size:8px}
+
+  /* ---- media habits ---- */
+  .hrow{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+  .hrow:first-of-type{border-top:0;padding-top:2px}
+  .hhead{display:flex;align-items:center;gap:8px}
+  .hhead .gl{width:15px;height:15px;color:var(--ink);flex:none}
+  .hhead b{font-size:13px;font-weight:700;letter-spacing:-.01em}
+  .hhead .hpct{margin-left:auto;font-size:11px;font-weight:800;color:var(--mut);font-variant-numeric:tabular-nums}
+  .hnote{font-size:11px;color:var(--mut);line-height:1.4}
+
+  /* ---- bars ---- */
+  .bar{
+    height:6px;border-radius:99px;background:#eeeeea;overflow:hidden;flex:1;
+  }
+  .bar i{
+    display:block;height:100%;width:calc(var(--w)*100%);
+    border-radius:99px;background:var(--bar);
+    transform-origin:left;
+    animation:grow .9s cubic-bezier(.2,.7,.2,1) both;
+    animation-delay:var(--d,0s);
+  }
+  .bar i.hot{background:var(--acc)}
+  @keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+  /* ---- strategy ---- */
+  .st-top{display:flex;gap:16px;align-items:flex-start}
+  .st-id{flex:1;min-width:0}
+  .idx{font-size:10px;font-weight:800;letter-spacing:.18em;color:var(--mut)}
+  .st-id h2{font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin-top:3px}
+  .angle{font-size:12.5px;color:#5b5b50;line-height:1.45;margin-top:6px;max-width:44ch}
+  .score{text-align:right;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+  .score .bignum{font-size:46px;font-weight:800;letter-spacing:-.04em;line-height:.95;font-variant-numeric:tabular-nums}
+  .score .notes{font-size:9.5px;color:var(--mut);line-height:1.35;max-width:130px;margin-top:4px}
+
+  .st-ch{display:flex;flex-direction:column;gap:8px}
+  .crow{display:flex;align-items:center;gap:10px}
+  .crow .gl{width:14px;height:14px;flex:none;color:var(--ink)}
+  .cname{width:74px;font-size:12px;font-weight:700;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cval{width:26px;text-align:right;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;flex:none}
+
+  .st-block{display:flex;flex-direction:column;gap:7px}
+  .st-block .ml{margin-bottom:1px}
+
+  .st-foot{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:auto;padding-top:4px}
+  .watch{flex:1;min-width:0}
+  .watch summary{
+    list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;
+    font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);
+    user-select:none;
+  }
+  .watch summary::-webkit-details-marker{display:none}
+  .watch summary::before{content:"";width:0;height:0;border-left:5px solid var(--mut);border-top:4px solid transparent;border-bottom:4px solid transparent;transition:transform .2s}
+  .watch[open] summary::before{transform:rotate(90deg)}
+  .watch summary b{background:var(--chip);border:1px solid var(--line);border-radius:99px;padding:1px 7px;font-size:10px;color:#3f3f36}
+  .watch ul{list-style:none;margin-top:9px;display:flex;flex-direction:column;gap:6px}
+  .watch li{font-size:11.5px;color:#5b5b50;line-height:1.45;padding-left:14px;position:relative}
+  .watch li::before{content:"";position:absolute;left:0;top:6px;width:6px;height:6px;border-radius:50%;background:#d8d8cf}
+
+  .use{
+    flex:none;border:0;cursor:pointer;
+    background:var(--acc);color:var(--acc-ink);
+    font:800 13px/1 inherit;letter-spacing:-.01em;
+    padding:11px 20px;border-radius:12px;
+    transition:transform .15s ease,background .2s,color .2s;
+    font-family:inherit;
+  }
+  .use:hover{transform:translateY(-1px)}
+  .use:active{transform:translateY(0)}
+  .use.on{background:var(--ink);color:var(--acc)}
+
+  /* ---- responsive ---- */
+  @media (max-width:1100px){
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:700px){
+    body{padding:18px 14px 44px}
+    .grid{grid-template-columns:1fr}
+    .hero,.strategy{grid-column:span 1}
+    .au-main{flex-direction:column;align-items:flex-start}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .tile,.bar i{animation:none}
+    .tile:hover{transform:none}
+  }
+</style>
+</head>
+<body>
+<main class="grid" id="grid"></main>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  "use strict";
+  var D = window.DATA || {};
+  var grid = document.getElementById("grid");
+
+  /* ---------- helpers ---------- */
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+  function pct(v){
+    v = +v;
+    if (isNaN(v)) v = 0;
+    return Math.round(Math.max(0, Math.min(1, v)) * 100);
+  }
+
+  var GLYPHS = {
+    instagram:'<rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17" cy="7" r="1.1" fill="currentColor" stroke="none"/>',
+    tiktok:'<path d="M9.5 16.8a3.2 3.2 0 1 0 3.2 3.2V5.4c.6 2.5 2.3 4.1 4.8 4.6"/>',
+    podcast:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.8 11.2a6.2 6.2 0 0 0 12.4 0"/><path d="M12 17.4V20.5"/><path d="M9.2 20.5h5.6"/>',
+    tv:'<rect x="3" y="5.5" width="18" height="12" rx="2"/><path d="M8.5 20.5h7"/>',
+    youtube:'<rect x="3" y="5.5" width="18" height="13" rx="3.5"/><path d="M10.2 9.4v5.2l4.7-2.6z" fill="currentColor" stroke="none"/>',
+    email:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/>',
+    guerrilla:'<path d="M12 21.2S6 15.6 6 10.7a6 6 0 0 1 12 0c0 4.9-6 10.5-6 10.5z"/><circle cx="12" cy="10.7" r="2.1"/>',
+    ooh:'<rect x="4" y="4" width="16" height="9.5" rx="1.5"/><path d="M9 13.5V20M15 13.5V20M6.5 20h11"/>',
+    streaming:'<path d="M4.5 9.5a11.5 11.5 0 0 1 15 0"/><path d="M7.2 13a7.5 7.5 0 0 1 9.6 0"/><circle cx="12" cy="16.8" r="1.5" fill="currentColor" stroke="none"/>',
+    spotify:'<circle cx="12" cy="12" r="8.5"/><path d="M8.3 10.2c2.6-.8 5.5-.6 7.7.7"/><path d="M8.6 13c2.1-.6 4.3-.4 6.1.6"/>',
+    _default:'<circle cx="12" cy="12" r="6.5"/>'
+  };
+  function glyph(name){
+    var inner = GLYPHS[String(name || "").toLowerCase()] || GLYPHS._default;
+    return '<svg class="gl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + inner + '</svg>';
+  }
+
+  /* mediaHabits carry a verbal strength in note ("primary — ..."), not a number.
+     Map it; fall back to the mean fit of that channel across strategies. */
+  var LEVEL = {primary:.95, strong:.78, high:.85, moderate:.52, medium:.55, low:.24, weak:.2};
+  function habitFit(h){
+    var key = String(h.note || "").split(/[\u2014\u2013\-]/)[0].trim().toLowerCase();
+    if (LEVEL[key] != null) return LEVEL[key];
+    var fits = [];
+    (D.strategies || []).forEach(function(s){
+      (s.channels || []).forEach(function(c){
+        if (c.name === h.channel && typeof c.fit === "number") fits.push(c.fit);
+      });
+    });
+    return fits.length ? fits.reduce(function(a,b){return a+b;},0)/fits.length : .4;
+  }
+
+  var html = [];
+  var pop = 0;
+  function pd(){ return 'style="--pd:' + (0.05 * (pop++)).toFixed(2) + 's"'; }
+
+  /* ---------- hero tile ---------- */
+  var p = D.profile || {};
+  html.push(
+    '<section class="tile hero" ' + pd() + '>' +
+      '<div class="hero-top">' +
+        '<span class="ml">Campaign strategy board</span>' +
+        '<span class="ml">' + esc(new Date().toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})) + '</span>' +
+      '</div>' +
+      '<div>' +
+        '<h1>' + esc(p.name) + '<em>.</em></h1>' +
+        '<div class="site">' + esc(p.website) + '</div>' +
+      '</div>' +
+      '<p class="tag">' + esc(p.tagline) + '</p>' +
+      '<div class="prompt-pill">' + esc(p.prompt) + '</div>' +
+      '<div class="hero-foot">' +
+        '<div class="chips">' + (p.tone || []).map(function(t){ return '<span class="chip">' + esc(t) + '</span>'; }).join("") + '</div>' +
+        '<div class="swatches">' + (p.colors || []).map(function(c){ return '<span class="sw" title="' + esc(c) + '" style="background:' + esc(c) + '"></span>'; }).join("") + '</div>' +
+      '</div>' +
+    '</section>'
+  );
+
+  /* ---------- audience read tile ---------- */
+  var ar = D.audienceRead || {};
+  var lean = ar.lean || {};
+  var conf = Math.max(0, Math.min(1, +lean.confidence || 0));
+  var RC = (2 * Math.PI * 40).toFixed(2);
+  html.push(
+    '<section class="tile audience" ' + pd() + '>' +
+      '<span class="ml">Audience read</span>' +
+      '<div class="au-main">' +
+        '<div class="au-left">' +
+          '<div class="lean">' + esc(lean.label) + '</div>' +
+          '<ul class="signals">' + (lean.signals || []).map(function(s){ return '<li>' + esc(s) + '</li>'; }).join("") + '</ul>' +
+        '</div>' +
+        '<div class="ringwrap" role="img" aria-label="confidence ' + pct(conf) + ' percent">' +
+          '<svg viewBox="0 0 96 96">' +
+            '<circle class="ring-bg" cx="48" cy="48" r="40"/>' +
+            '<circle class="ring-fg" id="ringFg" cx="48" cy="48" r="40" stroke-dasharray="' + RC + '" stroke-dashoffset="' + RC + '"/>' +
+          '</svg>' +
+          '<div class="ring-num"><span class="bignum" data-v="' + pct(conf) + '">0</span><span class="ml">conf</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="chips">' + (ar.vibeWords || []).map(function(w){ return '<span class="chip">' + esc(w) + '</span>'; }).join("") + '</div>' +
+    '</section>'
+  );
+
+  /* ---------- media habits tile ---------- */
+  var habits = (ar.mediaHabits || []).map(function(h, i){
+    var f = habitFit(h);
+    return (
+      '<div class="hrow">' +
+        '<div class="hhead">' + glyph(h.channel) + '<b>' + esc(h.channel) + '</b><span class="hpct">' + pct(f) + '</span></div>' +
+        '<div class="bar"><i style="--w:' + f.toFixed(3) + ';--d:' + (0.25 + i * 0.08).toFixed(2) + 's"></i></div>' +
+        '<div class="hnote">' + esc(h.note) + '</div>' +
+      '</div>'
+    );
+  }).join("");
+  html.push(
+    '<section class="tile media" ' + pd() + '>' +
+      '<span class="ml">Media habits</span>' + habits +
+    '</section>'
+  );
+
+  /* ---------- strategy tiles ---------- */
+  (D.strategies || []).forEach(function(s, si){
+    var chans = (s.channels || []).slice().sort(function(a,b){ return (+b.fit||0) - (+a.fit||0); }).slice(0,3);
+    var rows = chans.map(function(c, i){
+      return (
+        '<div class="crow" title="' + esc(c.why || "") + '">' +
+          glyph(c.name) +
+          '<span class="cname">' + esc(c.name) + '</span>' +
+          '<div class="bar"><i' + (i === 0 ? ' class="hot"' : '') + ' style="--w:' + Math.max(0,Math.min(1,+c.fit||0)).toFixed(3) + ';--d:' + (0.35 + si * 0.1 + i * 0.09).toFixed(2) + 's"></i></div>' +
+          '<span class="cval">' + pct(c.fit) + '</span>' +
+        '</div>'
+      );
+    }).join("");
+
+    var fit = s.audienceFit || {};
+    var notes = (fit.notes || []).map(function(n){ return esc(n); }).join(" · ");
+
+    var formats = (s.formats || []).map(function(f){ return '<span class="chip">' + esc(f) + '</span>'; }).join("");
+
+    var sigs = (s.qlooSignals || []).map(function(q){
+      var cls = "chip sig" + (q.entity === s.heroSignal ? " hero-sig" : "");
+      return '<span class="' + cls + '"><b>' + esc(q.entity) + '</b><i>' + esc(q.type) + '</i>' + pct(q.affinity) + '</span>';
+    }).join("");
+
+    var w = s.watchouts || [];
+    var watch = w.length
+      ? '<details class="watch"><summary>Watchouts <b>' + w.length + '</b></summary><ul>' +
+        w.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join("") + '</ul></details>'
+      : '<span></span>';
+
+    html.push(
+      '<section class="tile strategy" ' + pd() + '>' +
+        '<div class="st-top">' +
+          '<div class="st-id">' +
+            '<span class="idx">STRATEGY ' + String(si + 1).padStart(2, "0") + '</span>' +
+            '<h2>' + esc(s.title) + '</h2>' +
+            '<p class="angle">' + esc(s.angle) + '</p>' +
+          '</div>' +
+          '<div class="score">' +
+            '<span class="bignum" data-v="' + pct(fit.score) + '">0</span>' +
+            '<span class="ml">Audience fit</span>' +
+            (notes ? '<div class="notes">' + notes + '</div>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="st-ch"><span class="ml">Top channels</span>' + rows + '</div>' +
+        '<div class="st-block"><span class="ml">Formats</span><div class="chips">' + formats + '</div></div>' +
+        '<div class="st-block"><span class="ml">Qloo signals</span><div class="chips">' + sigs + '</div></div>' +
+        '<div class="st-foot">' + watch +
+          '<button class="use" type="button">Use &#8594;</button>' +
+        '</div>' +
+      '</section>'
+    );
+  });
+
+  grid.innerHTML = html.join("");
+
+  /* ---------- count-up numerals ---------- */
+  document.querySelectorAll(".bignum").forEach(function(el){
+    var v = +el.getAttribute("data-v") || 0, t0;
+    function step(t){
+      if (!t0) t0 = t;
+      var pr = Math.min(1, (t - t0) / 850);
+      el.textContent = Math.round(v * (1 - Math.pow(1 - pr, 3)));
+      if (pr < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+
+  /* ---------- confidence ring sweep ---------- */
+  var fg = document.getElementById("ringFg");
+  if (fg){
+    var C = 2 * Math.PI * 40;
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        fg.style.strokeDashoffset = (C * (1 - conf)).toFixed(2);
+      });
+    });
+  }
+
+  /* ---------- Use button toggle ---------- */
+  grid.addEventListener("click", function(e){
+    var b = e.target.closest(".use");
+    if (!b) return;
+    b.classList.toggle("on");
+    b.innerHTML = b.classList.contains("on") ? "Selected &#10003;" : "Use &#8594;";
+  });
+})();
+</script>
+</body>
+</html>

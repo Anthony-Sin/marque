@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>MARQUE // Campaign Strategy Board</title>
+<style>
+:root{
+  --bg:#151517;
+  --panel:#1d1d21;
+  --panel-2:#1a1a1e;
+  --line:#2b2b31;
+  --line-soft:#232329;
+  --ink:#e9e9e4;
+  --mut:#909097;
+  --dim:#63636c;
+  --acc:#d3e374;
+  --acc-line:rgba(211,227,116,.45);
+  --warn:#dcb06a;
+  --warn-bg:rgba(220,176,106,.06);
+  --warn-line:rgba(220,176,106,.3);
+  --mono:ui-monospace,"SF Mono","Cascadia Code","Cascadia Mono","Roboto Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font:14px/1.55 var(--sans);
+  min-height:100vh;
+  padding-bottom:52px;
+}
+/* command-deck backdrop: blueprint grid + scanlines, css only */
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.024) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.024) 1px,transparent 1px);
+  background-size:44px 44px;
+  -webkit-mask-image:radial-gradient(ellipse 120% 90% at 50% 0%,#000 30%,transparent 100%);
+  mask-image:radial-gradient(ellipse 120% 90% at 50% 0%,#000 30%,transparent 100%);}
+body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.14) 3px 4px);}
+
+.num{font-variant-numeric:tabular-nums}
+.micro{font:10px/1.4 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.sec-l{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  font:9px/1.4 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.sec-l b{color:var(--acc);font-weight:400;letter-spacing:.1em}
+
+/* ---------- top strip ---------- */
+.top{position:relative;z-index:1;display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+  padding:14px 22px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#1b1b1f,#17171a)}
+.deck{display:flex;align-items:baseline;gap:12px;min-width:0}
+.deck .brand{font:650 16px/1 var(--sans);letter-spacing:.02em;white-space:nowrap}
+.deck .brand i{color:var(--acc);font-style:normal;font-family:var(--mono)}
+.deck .tag{font:10px var(--mono);letter-spacing:.18em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+.req{display:flex;align-items:baseline;gap:10px;flex:1;min-width:220px;justify-content:center}
+.req .lbl{font:10px var(--mono);letter-spacing:.16em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+.req .q{font:13px var(--mono);color:var(--ink);overflow:hidden;text-overflow:ellipsis}
+.req .q::before{content:"\201C";color:var(--acc)}
+.req .q::after{content:"\201D";color:var(--acc)}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--acc-line);
+  color:var(--acc);font:10px var(--mono);letter-spacing:.16em;padding:6px 12px;text-transform:uppercase;white-space:nowrap}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--acc);display:block;
+  box-shadow:0 0 8px var(--acc);animation:blip 1.8s infinite}
+@keyframes blip{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ---------- layout ---------- */
+.shell{position:relative;z-index:1;display:grid;grid-template-columns:322px minmax(0,1fr);
+  gap:18px;padding:20px 22px;max-width:1560px;margin:0 auto}
+
+/* panels + corner tick marks */
+.panel{position:relative;background:var(--panel);border:1px solid var(--line);padding:18px}
+.panel::before,.card::before{content:"";position:absolute;inset:-1px;pointer-events:none;
+  background:
+    linear-gradient(var(--acc),var(--acc)) left top/12px 1px,
+    linear-gradient(var(--acc),var(--acc)) left top/1px 12px,
+    linear-gradient(var(--acc),var(--acc)) right top/12px 1px,
+    linear-gradient(var(--acc),var(--acc)) right top/1px 12px,
+    linear-gradient(var(--acc),var(--acc)) left bottom/12px 1px,
+    linear-gradient(var(--acc),var(--acc)) left bottom/1px 12px,
+    linear-gradient(var(--acc),var(--acc)) right bottom/12px 1px,
+    linear-gradient(var(--acc),var(--acc)) right bottom/1px 12px;
+  background-repeat:no-repeat;opacity:.45}
+.p-head{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border-bottom:1px solid var(--line-soft);padding-bottom:10px;margin-bottom:16px}
+.p-head .t{font:11px var(--mono);letter-spacing:.2em;color:var(--ink);text-transform:uppercase}
+.p-head .t::before{content:"\25B8 ";color:var(--acc)}
+.p-head .x{font:9px var(--mono);letter-spacing:.14em;color:var(--dim)}
+
+/* ---------- audience rail ---------- */
+.rail .sec{margin-top:20px}
+.rail .sec:first-of-type{margin-top:0}
+.lean{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.conf{display:flex;align-items:center;gap:10px;margin-top:9px}
+.gauge{flex:1;height:5px;background:#101013;border:1px solid #2e2e34;position:relative}
+.gauge i{position:absolute;left:0;top:0;bottom:0;display:block;
+  background:linear-gradient(90deg,rgba(211,227,116,.4),var(--acc))}
+.conf .v{font:12px var(--mono);color:var(--acc);min-width:40px;text-align:right}
+.siglist{list-style:none}
+.siglist li{position:relative;padding:6px 0 6px 16px;color:var(--mut);font-size:12.5px;
+  border-bottom:1px dashed var(--line-soft)}
+.siglist li:last-child{border-bottom:0}
+.siglist li::before{content:"\203A";position:absolute;left:2px;color:var(--acc);font-family:var(--mono)}
+.mh{width:100%;border-collapse:collapse}
+.mh td{padding:7px 4px;border-bottom:1px solid var(--line-soft);vertical-align:top;font-size:12px}
+.mh tr:last-child td{border-bottom:0}
+.mh td.c{font:11px var(--mono);color:var(--acc);white-space:nowrap;text-transform:uppercase;width:84px}
+.mh td.n{color:var(--mut)}
+.mh .lv{display:inline-block;font:9px var(--mono);letter-spacing:.1em;text-transform:uppercase;
+  border:1px solid var(--line);color:var(--ink);padding:1px 6px;margin-right:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:11px var(--mono);color:var(--mut);border:1px solid var(--line);
+  padding:3px 9px;background:var(--panel-2);transition:border-color .15s,color .15s}
+.chip:hover{color:var(--ink);border-color:var(--acc-line)}
+
+/* ---------- strategy board ---------- */
+.board{display:flex;flex-direction:column;gap:16px;min-width:0}
+.board-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.board-h .t{font:11px var(--mono);letter-spacing:.2em;color:var(--mut);text-transform:uppercase}
+.board-h .t::before{content:"\25B8 ";color:var(--acc)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(500px,100%),1fr));gap:16px}
+.card{position:relative;background:var(--panel);border:1px solid var(--line);
+  display:flex;flex-direction:column;transition:border-color .2s}
+.card:hover{border-color:#3a3a42}
+.card.deployed{border-color:var(--acc-line)}
+.c-head{display:flex;gap:14px;padding:16px 16px 14px;border-bottom:1px solid var(--line-soft);align-items:flex-start}
+.rank{font:600 26px/1 var(--mono);color:var(--acc);min-width:46px;padding-top:1px;font-variant-numeric:tabular-nums}
+.rank::after{content:"";display:block;height:2px;background:var(--acc-line);margin-top:7px}
+.c-title{min-width:0}
+.c-title .sys{font:9px var(--mono);letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
+.c-title h3{font-size:17px;font-weight:650;margin:3px 0 2px;letter-spacing:-.01em}
+.c-title p{font-size:12px;color:var(--mut)}
+.score{margin-left:auto;text-align:right;min-width:76px;flex-shrink:0}
+.score .v{font:600 27px/1 var(--mono);color:var(--acc)}
+.score .l{font:9px var(--mono);letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-top:5px}
+.c-body{padding:14px 16px;display:flex;flex-direction:column;gap:15px;flex:1}
+.fit-notes{font:10px/1.6 var(--mono);color:var(--mut);letter-spacing:.02em;
+  border-left:2px solid var(--acc-line);padding-left:10px}
+.fit-notes span{color:var(--dim);letter-spacing:.14em;text-transform:uppercase}
+
+/* channel rows: name / meter / value, why expands on hover+focus */
+.ch-row{display:grid;grid-template-columns:92px 1fr 46px;gap:3px 10px;align-items:center;
+  padding:6px 8px;margin:0 -8px;border:1px solid transparent;cursor:default}
+.ch-row:hover,.ch-row:focus-visible{background:var(--panel-2);border-color:var(--line);outline:none}
+.ch-row .n{font:11px var(--mono);color:var(--ink);text-transform:uppercase}
+.ch-row .meter{height:4px;background:#101013;border:1px solid #2e2e34;position:relative}
+.ch-row .meter i{position:absolute;left:0;top:0;bottom:0;display:block;background:var(--acc);opacity:.85}
+.ch-row .fv{font:11px var(--mono);color:var(--mut);text-align:right}
+.ch-row .why{grid-column:2/4;font-size:11.5px;color:var(--mut);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-row:hover .why,.ch-row:focus-visible .why{white-space:normal;overflow:visible;color:#bdbdc4}
+
+/* watchouts */
+.watch{border:1px solid var(--warn-line);background:var(--warn-bg);padding:11px 12px}
+.watch .sec-l{color:var(--warn)}
+.watch ul{list-style:none}
+.watch li{position:relative;padding:4px 0 4px 15px;font-size:12px;color:#cbb995}
+.watch li::before{content:"!";position:absolute;left:1px;top:5px;
+  font:700 10px var(--mono);color:var(--warn)}
+
+/* qloo signals */
+.qchip{display:inline-flex;align-items:baseline;gap:7px;border:1px solid var(--line);
+  background:var(--panel-2);padding:4px 9px;font:11px var(--mono);color:var(--mut);
+  transition:border-color .15s}
+.qchip:hover{border-color:var(--acc-line)}
+.qchip .ty{font-size:9px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase}
+.qchip .af{color:var(--acc)}
+.qchip.hero{border-color:var(--acc-line);color:var(--ink);
+  box-shadow:0 0 0 1px rgba(211,227,116,.1),0 0 14px rgba(211,227,116,.05)}
+.qchip.hero::before{content:"\2605";color:var(--acc);font-size:9px}
+
+/* card footer */
+.c-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border-top:1px solid var(--line-soft);padding:12px 16px;margin-top:auto}
+.c-foot .id{font:10px var(--mono);color:var(--dim);letter-spacing:.14em}
+.deploy{appearance:none;background:transparent;border:1px solid var(--acc-line);color:var(--acc);
+  font:11px var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:9px 16px;
+  cursor:pointer;transition:background .15s,color .15s}
+.deploy:hover{background:var(--acc);color:#151517}
+.deploy::after{content:" \2192"}
+.card.deployed .deploy{background:var(--acc);color:#151517}
+
+/* status bar */
+.statusbar{position:fixed;left:0;right:0;bottom:0;z-index:2;display:flex;gap:18px;align-items:center;
+  padding:9px 22px;border-top:1px solid var(--line);background:#131316;
+  font:10px var(--mono);letter-spacing:.12em;color:var(--dim);text-transform:uppercase}
+.statusbar .ok{color:var(--acc)}
+.statusbar .sp{flex:1}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr;padding:14px}
+  .top{padding:12px 14px;gap:12px}
+  .req{justify-content:flex-start}
+}
+@media (max-width:520px){
+  .ch-row{grid-template-columns:80px 1fr 40px}
+  .score .v{font-size:22px}
+  .statusbar{gap:10px;padding:8px 14px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="deck">
+    <span class="brand"><i>&#9670;</i> <span id="brand">&mdash;</span></span>
+    <span class="tag">campaign strategy board</span>
+  </div>
+  <div class="req">
+    <span class="lbl">incoming request</span>
+    <span class="q" id="prompt"></span>
+  </div>
+  <div class="pill"><i></i><span>taste engine: live</span></div>
+</header>
+
+<div class="shell">
+  <aside class="rail">
+    <section class="panel">
+      <div class="p-head"><span class="t">Audience read</span><span class="x">AUX/READ.01</span></div>
+
+      <div class="sec">
+        <div class="sec-l"><span>dominant lean</span><b>confidence</b></div>
+        <div class="lean" id="lean-label"></div>
+        <div class="conf">
+          <div class="gauge"><i id="conf-fill"></i></div>
+          <span class="v num" id="conf-v"></span>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-l"><span>lean signals</span><b id="sig-n"></b></div>
+        <ul class="siglist" id="signals"></ul>
+      </div>
+
+      <div class="sec">
+        <div class="sec-l"><span>media habits</span><b id="mh-n"></b></div>
+        <table class="mh"><tbody id="mh"></tbody></table>
+      </div>
+
+      <div class="sec">
+        <div class="sec-l"><span>vibe words</span></div>
+        <div class="chips" id="vibes"></div>
+      </div>
+    </section>
+  </aside>
+
+  <main class="board">
+    <div class="board-h">
+      <span class="t">strategy vectors</span>
+      <span class="micro" id="count"></span>
+    </div>
+    <div class="cards" id="cards"></div>
+  </main>
+</div>
+
+<footer class="statusbar">
+  <span class="ok">sys.ok</span>
+  <span id="st-a"></span>
+  <span class="sp"></span>
+  <span id="st-b">src: window.data</span>
+  <span>session &#9679; live</span>
+</footer>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  "use strict";
+  var D = window.DATA || {profile:{}, audienceRead:{lean:{}}, strategies:[]};
+  var G = function(id){ return document.getElementById(id); };
+  var h = function(tag, cls, txt){
+    var n = document.createElement(tag);
+    if(cls) n.className = cls;
+    if(txt != null) n.textContent = txt;
+    return n;
+  };
+  var f2 = function(v){ return Number(v).toFixed(2); };
+  var pc = function(v){ return Math.max(0, Math.min(100, Math.round(Number(v)*100))); };
+  var p2 = function(n){ return String(n).padStart(2,"0"); };
+
+  /* ---- top strip ---- */
+  G("brand").textContent = (D.profile && D.profile.name) || "—";
+  G("prompt").textContent = (D.profile && D.profile.prompt) || "";
+
+  /* ---- audience rail ---- */
+  var ar = D.audienceRead || {}, lean = ar.lean || {};
+  G("lean-label").textContent = lean.label || "—";
+  G("conf-fill").style.width = pc(lean.confidence || 0) + "%";
+  G("conf-v").textContent = f2(lean.confidence || 0);
+  (lean.signals || []).forEach(function(s){ G("signals").appendChild(h("li", null, s)); });
+  G("sig-n").textContent = p2((lean.signals || []).length);
+
+  (ar.mediaHabits || []).forEach(function(m){
+    var tr = h("tr");
+    tr.appendChild(h("td", "c", m.channel));
+    var td = h("td", "n");
+    var note = String(m.note || "");
+    var idx = note.indexOf("\u2014");
+    if(idx > -1){
+      td.appendChild(h("span", "lv", note.slice(0, idx).trim()));
+      td.appendChild(document.createTextNode(note.slice(idx + 1).trim()));
+    } else {
+      td.textContent = note;
+    }
+    tr.appendChild(td);
+    G("mh").appendChild(tr);
+  });
+  G("mh-n").textContent = p2((ar.mediaHabits || []).length);
+  (ar.vibeWords || []).forEach(function(v){ G("vibes").appendChild(h("span", "chip", v)); });
+
+  /* ---- strategy cards ---- */
+  var wrap = G("cards");
+  var nChannels = 0;
+
+  (D.strategies || []).forEach(function(s, i){
+    nChannels += (s.channels || []).length;
+    var card = h("article", "card");
+
+    /* head: rank / sys id / title / angle / score */
+    var hd = h("div", "c-head");
+    hd.appendChild(h("div", "rank", p2(i + 1)));
+    var tb = h("div", "c-title");
+    tb.appendChild(h("div", "sys", "vec/" + String(s.id || "").toUpperCase()));
+    tb.appendChild(h("h3", null, s.title));
+    tb.appendChild(h("p", null, s.angle));
+    hd.appendChild(tb);
+    var sc = h("div", "score");
+    var af = s.audienceFit || {};
+    sc.appendChild(h("div", "v num", f2(af.score || 0)));
+    sc.appendChild(h("div", "l", "audience fit"));
+    hd.appendChild(sc);
+    card.appendChild(hd);
+
+    var bd = h("div", "c-body");
+
+    /* fit notes strip */
+    if(af.notes && af.notes.length){
+      var fn = h("div", "fit-notes");
+      fn.appendChild(h("span", null, "fit notes \u25B8 "));
+      fn.appendChild(document.createTextNode(af.notes.join("  \u00B7  ")));
+      bd.appendChild(fn);
+    }
+
+    /* channel mix */
+    var sec1 = h("section");
+    var l1 = h("div", "sec-l");
+    l1.appendChild(h("span", null, "channel mix"));
+    l1.appendChild(h("b", null, p2((s.channels || []).length) + " ch"));
+    sec1.appendChild(l1);
+    (s.channels || []).forEach(function(c){
+      var r = h("div", "ch-row");
+      r.tabIndex = 0;
+      r.appendChild(h("span", "n", c.name));
+      var m = h("div", "meter");
+      var f = h("i");
+      f.style.width = pc(c.fit) + "%";
+      m.appendChild(f);
+      r.appendChild(m);
+      r.appendChild(h("span", "fv num", f2(c.fit)));
+      var w = h("div", "why", c.why);
+      w.title = c.why || "";
+      r.appendChild(w);
+      sec1.appendChild(r);
+    });
+    bd.appendChild(sec1);
+
+    /* formats */
+    var sec2 = h("section");
+    var l2 = h("div", "sec-l");
+    l2.appendChild(h("span", null, "formats"));
+    l2.appendChild(h("b", null, p2((s.formats || []).length)));
+    sec2.appendChild(l2);
+    var chs = h("div", "chips");
+    (s.formats || []).forEach(function(f){ chs.appendChild(h("span", "chip", f)); });
+    sec2.appendChild(chs);
+    bd.appendChild(sec2);
+
+    /* watchouts */
+    var wbox = h("div", "watch");
+    var wl = h("div", "sec-l");
+    wl.appendChild(h("span", null, "watchouts"));
+    wl.appendChild(h("b", null, p2((s.watchouts || []).length)));
+    wbox.appendChild(wl);
+    var ul = h("ul");
+    (s.watchouts || []).forEach(function(x){ ul.appendChild(h("li", null, x)); });
+    wbox.appendChild(ul);
+    bd.appendChild(wbox);
+
+    /* qloo signals + hero callout */
+    var sec3 = h("section");
+    var l3 = h("div", "sec-l");
+    l3.appendChild(h("span", null, "qloo signals"));
+    l3.appendChild(h("b", null, "hero \u25B8 " + (s.heroSignal || "—")));
+    sec3.appendChild(l3);
+    var qc = h("div", "chips");
+    (s.qlooSignals || []).forEach(function(q){
+      var chip = h("span", "qchip" + (q.entity === s.heroSignal ? " hero" : ""));
+      chip.appendChild(h("span", null, q.entity));
+      chip.appendChild(h("span", "ty", q.type));
+      chip.appendChild(h("span", "af num", f2(q.affinity)));
+      qc.appendChild(chip);
+    });
+    sec3.appendChild(qc);
+    bd.appendChild(sec3);
+
+    card.appendChild(bd);
+
+    /* footer */
+    var ft = h("div", "c-foot");
+    ft.appendChild(h("span", "id", "run://" + (s.id || "")));
+    var btn = h("button", "deploy", "deploy strategy");
+    btn.type = "button";
+    btn.addEventListener("click", function(){
+      var on = card.classList.toggle("deployed");
+      btn.textContent = on ? "deployed // armed" : "deploy strategy";
+    });
+    ft.appendChild(btn);
+    card.appendChild(ft);
+
+    wrap.appendChild(card);
+  });
+
+  /* ---- status readouts ---- */
+  var nS = (D.strategies || []).length;
+  G("count").textContent = p2(nS) + " vectors // " + nChannels + " channel reads";
+  G("st-a").textContent = "render ok \u2014 " + nS + " strategies bound to board";
+})();
+</script>
+</body>
+</html>

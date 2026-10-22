@@ -211,6 +211,7 @@
 .result-card .edit-row input:focus { border-color: var(--lime); }
 .job-row { padding: 16px 20px; display: flex; gap: 14px; align-items: center; cursor: pointer; }
 .job-row:hover { border-color: var(--line); }
+.job-row.on { border-color: rgba(211,227,116,.5); }
 .job-row .thumbs { display: flex; gap: 6px; margin-left: auto; }
 .job-row .thumbs .media-tile { width: 44px; height: 44px; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-4); flex: 0 0 auto; }

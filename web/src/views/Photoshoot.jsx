@@ -1,4 +1,491 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { api, pollJob } from '../api.js';
+import { useApp } from '../App.jsx';
+import Icon from '../components/Icon.jsx';
+import { downloadAsset, fmtDate, postJson } from '../components/Composer.jsx';
+import './studio.css';
+
+const TEMPLATES = [
+  { id: 'studio-white-sweep', label: 'Studio · white sweep' },
+  { id: 'lifestyle-kitchen', label: 'Lifestyle · kitchen' },
+  { id: 'lifestyle-desk', label: 'Lifestyle · desk' },
+  { id: 'outdoor-golden', label: 'Outdoor · golden hour' },
+  { id: 'flat-lay', label: 'Flat lay' },
+  { id: 'moody-dark', label: 'Moody · dark' },
+];
+const MAX_TEMPLATES = 6;
+
+// Small icon-button with a popover menu (action rows on result cards).
+function PopBtn({ icon, label, title, items, disabled }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="pop-wrap">
+      <button className="icon-btn" title={title || label} disabled={disabled}
+        style={label ? { width: 'auto', padding: '0 10px', gap: 5, fontSize: 12 } : undefined}
+        onClick={() => setOpen(!open)}>
+        <Icon name={icon} size={15} />{label && <span>{label} ▾</span>}
+      </button>
+      {open && (
+        <>
+          <div className="menu-backdrop" onClick={() => setOpen(false)} />
+          <div className="menu popover">
+            {items.filter(Boolean).map((it, i) =>
+              it.sep ? <div key={i} className="menu-sep" />
+                : it.title ? <div key={i} className="menu-title">{it.title}</div>
+                  : (
+                    <button key={i} className={it.danger ? 'danger' : ''}
+                      onClick={() => { setOpen(false); it.onClick?.(); }}>
+                      {it.label}
+                    </button>
+                  ))}
+          </div>
+        </>
+      )}
+    </span>
+  );
+}
+
 export default function Photoshoot() {
-  return <div className="page-head"><h1 className="display">Photoshoot</h1><p className="sub">under construction</p></div>;
+  const { profile, setProfile, say } = useApp();
+  const [mode, setMode] = useState(null);              // 'product' | 'free'
+  const [step, setStep] = useState(0);                 // product wizard: 0 pick image, 1 templates
+  const [jobs, setJobs] = useState(null);
+  const [activeJob, setActiveJob] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState('');
+  // product flow
+  const [inputImage, setInputImage] = useState(null);  // {path, caption}
+  const [picked, setPicked] = useState([]);            // template ids
+  const [custom, setCustom] = useState('');
+  const [customOpen, setCustomOpen] = useState(false);
+  // free flow
+  const [prompt, setPrompt] = useState('');
+  const [refImage, setRefImage] = useState(null);
+  // per-result state
+  const [hidden, setHidden] = useState(new Set());
+  const [vids, setVids] = useState({});                // resultKey -> videoPath
+  const [showVid, setShowVid] = useState({});          // resultKey -> bool
+  const [editFor, setEditFor] = useState(null);        // resultKey
+  const [editPrompt, setEditPrompt] = useState('');
+  const [resBusy, setResBusy] = useState('');          // resultKey currently working
+  const fileRef = useRef(null);
+  const uploadTarget = useRef('input');                // 'input' | 'ref'
+
+  const reload = async () => {
+    try {
+      const list = (await api.listPhotoshoot()).jobs || [];
+      setJobs(list);
+      return list;
+    } catch (e) { say(e.message); return []; }
+  };
+  useEffect(() => { reload(); }, []);
+
+  const runAndTrack = async (createCall, doneNote) => {
+    setBusy(true); setNote('Generating — this can take a minute…');
+    try {
+      const { job } = await createCall();
+      if (job?.id) {
+        // POST may return a Job (status) or the PhotoshootJob record itself —
+        // poll only the former; a 404 there shouldn't lose the results.
+        await pollJob(job.id, { onTick: () => {} }).catch((e) => say(e.message));
+        setActiveJob(job.id);
+      }
+      await reload();
+      say(doneNote || 'Images ready');
+    } catch (e) { say(e.message); }
+    setBusy(false); setNote('');
+  };
+
+  // ---------- inputs ----------
+  const catalogImgs = (profile?.catalog || []).filter((c) => c.image)
+    .map((c) => ({ path: c.image, caption: c.name }));
+  const profileImgs = (profile?.images || []).map((i) => ({ path: i.path, caption: i.caption }));
+  const sources = mode === 'free' ? profileImgs : [...catalogImgs, ...profileImgs];
+
+  const upload = async (e) => {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    try {
+      const { path } = await api.upload(f);
+      const img = { path, caption: f.name };
+      if (uploadTarget.current === 'ref') setRefImage(img); else setInputImage(img);
+      say('Uploaded');
+    } catch (err) { say(err.message); }
+  };
+
+  // ---------- flows ----------
+  const templates = [...picked, ...(custom.trim() ? [`custom:${custom.trim()}`] : [])];
+  const generateProduct = () =>
+    runAndTrack(() => api.createPhotoshoot({ mode: 'product', inputImage: inputImage.path, templates }));
+  const generateFree = () =>
+    runAndTrack(() => api.createPhotoshoot({ mode: 'free', prompt: prompt.trim(), referenceImage: refImage?.path }));
+
+  const job = (jobs || []).find((j) => j.id === activeJob);
+
+  // ---------- result ops ----------
+  const key = (j, r, i) => `${j.id}:${r.id || i}`;
+  const imgId = (r) => encodeURIComponent(r.id || r.imagePath || '');
+
+  const editImage = async (j, r, k) => {
+    if (!editPrompt.trim()) return;
+    setResBusy(k);
+    try {
+      const { job: ej } = await api.editPhotoshoot(j.id, { prompt: editPrompt.trim(), imagePath: r.imagePath });
+      if (ej?.id) await pollJob(ej.id);
+      await reload();
+      setEditFor(null); setEditPrompt('');
+      say('Edit added to results');
+    } catch (e) { say(e.message); }
+    setResBusy('');
+  };
+
+  const animateImage = async (r, k) => {
+    setResBusy(k);
+    try {
+      const res = await postJson(`/api/images/${imgId(r)}/animate`);
+      const j = res.job || res;
+      let videoPath = res.videoPath || r.videoPath;
+      if (j?.id && j.status !== 'done') {
+        const out = await pollJob(j.id).catch((e) => { say(e.message); return null; });
+        videoPath = out?.videoPath || out?.result?.videoPath || videoPath;
+      }
+      if (videoPath) { setVids((v) => ({ ...v, [k]: videoPath })); setShowVid((s) => ({ ...s, [k]: true })); say('Animation ready'); }
+      else say('Animation queued — check back shortly');
+    } catch (e) { say(e.status === 404 ? 'Animate is not available on this server yet' : e.message); }
+    setResBusy('');
+  };
+
+  const resizeImage = async (j, r, k, aspect) => {
+    setResBusy(k);
+    try {
+      await postJson(`/api/images/${imgId(r)}/resize`, { aspect });
+      await reload();
+      say('Resized');
+    } catch (e) {
+      if (e.status === 404) {
+        // fallback per contract: ask the editor for an aspect-aware re-compose
+        try {
+          const { job: ej } = await api.editPhotoshoot(j.id, { prompt: `Recompose this image for a ${aspect} aspect ratio`, imagePath: r.imagePath });
+          if (ej?.id) await pollJob(ej.id);
+          await reload();
+          say('Resized via re-compose');
+        } catch (e2) { say(e2.message); }
+      } else say(e.message);
+    }
+    setResBusy('');
+  };
+
+  const saveToProfile = async (r) => {
+    try {
+      const { profile: p } = await api.updateProfile({
+        patch: { images: [...(profile?.images || []), { path: r.imagePath, caption: 'Studio shot' }] },
+      });
+      if (p) setProfile(p);
+      say('Saved to Business Profile');
+    } catch (e) { say(e.message); }
+  };
+  const saveAsCatalog = async (r) => {
+    try { await api.addCatalog({ name: 'Studio shot', image: r.imagePath }); say('Added to catalog'); }
+    catch (e) { say(e.message); }
+  };
+
+  // ---------- render ----------
+  const header = (
+    <div className="page-head">
+      <h1 className="display">Photoshoot</h1>
+      <p className="sub">Choose a guided template for professional product shots or use our flexible editor to create anything you can imagine.</p>
+    </div>
+  );
+
+  const resultCard = (j, r, i) => {
+    const k = key(j, r, i);
+    if (hidden.has(k)) return null;
+    const vid = vids[k] || r.videoPath;
+    const working = resBusy === k;
+    return (
+      <div key={k} className="card result-card">
+        {showVid[k] && vid ? (
+          <video src={vid} controls autoPlay loop muted style={{ width: '100%', aspectRatio: 1, objectFit: 'cover' }} />
+        ) : (
+          <img src={r.imagePath} alt={r.template || 'result'} loading="lazy" />
+        )}
+        {working && <div className="spin-overlay"><div className="spinner" /></div>}
+        {vid && (
+          <button className="badge-v" style={{ border: 'none', cursor: 'pointer' }}
+            onClick={() => setShowVid((s) => ({ ...s, [k]: !s[k] }))}>
+            <Icon name="play" size={10} sw={2.4} /> {showVid[k] ? 'image' : 'video'}
+          </button>
+        )}
+        <div className="acts">
+          <button className="icon-btn" title="Edit via prompt" onClick={() => { setEditFor(editFor === k ? null : k); setEditPrompt(''); }}>
+            <Icon name="edit" size={15} />
+          </button>
+          <button className="icon-btn" title="Animate" disabled={working} onClick={() => animateImage(r, k)}>
+            <Icon name="film" size={15} />
+          </button>
+          <PopBtn icon="download" title="Download" items={[
+            { label: 'PNG', onClick: () => downloadAsset(r.imagePath, `marque-${r.id || 'shot'}.png`).catch((e) => say(e.message)) },
+            { label: 'JPEG', onClick: () => downloadAsset(r.imagePath, `marque-${r.id || 'shot'}.jpg`).catch((e) => say(e.message)) },
+            ...(vid ? [{ sep: true }, { label: 'Video (MP4)', onClick: () => downloadAsset(vid, `marque-${r.id || 'shot'}.mp4`).catch((e) => say(e.message)) }] : []),
+          ]} />
+          <PopBtn icon="check" title="Save" items={[
+            { label: 'Save to Business Profile', onClick: () => saveToProfile(r) },
+            { label: 'Save as catalog item', onClick: () => saveAsCatalog(r) },
+          ]} />
+          <span className="pop-wrap">
+            <PopBtn icon="kebab" title="More" items={[
+              { title: 'Resize' },
+              ...['1:1', '4:5', '9:16', '16:9'].map((a) => ({ label: `${a}`, onClick: () => resizeImage(j, r, k, a) })),
+              { sep: true },
+              { label: 'Save to Business Profile', onClick: () => saveToProfile(r) },
+              { label: 'Save as catalog item', onClick: () => saveAsCatalog(r) },
+              { sep: true },
+              { label: 'Delete', danger: true, onClick: () => setHidden((h) => new Set(h).add(k)) },
+            ]} />
+          </span>
+        </div>
+        {editFor === k && (
+          <div className="edit-row">
+            <input
+              autoFocus
+              value={editPrompt}
+              placeholder="Describe the edit…"
+              onChange={(e) => setEditPrompt(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && editImage(j, r, k)}
+            />
+            <button className="icon-btn" title="Generate edit" disabled={working || !editPrompt.trim()}
+              onClick={() => editImage(j, r, k)}>
+              <Icon name="send" size={15} />
+            </button>
+          </div>
+        )}
+        <div className="tpl"><Icon name="sparkle" size={11} /> {r.template || j.mode}</div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="section" style={{ paddingBottom: 80 }}>
+      {header}
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" style={{ display: 'none' }} onChange={upload} />
+
+      {/* mode cards */}
+      {!mode && (
+        <div className="mode-grid">
+          <button className="mode-card" onClick={() => { setMode('product'); setStep(0); }}>
+            <span className="ic"><Icon name="bag" size={22} /></span>
+            <h4>Create a product photoshoot</h4>
+            <p>Choose a product image and templates to get professional shots</p>
+          </button>
+          <button className="mode-card" onClick={() => setMode('free')}>
+            <span className="ic"><Icon name="sparkle" size={22} /></span>
+            <h4>Generate or edit an image</h4>
+            <p>Describe the image you want with a prompt or edit an existing one</p>
+          </button>
+        </div>
+      )}
+
+      {/* product wizard */}
+      {mode === 'product' && (
+        <div style={{ maxWidth: 760, margin: '0 auto' }}>
+          <button className="btn ghost sm mb16" onClick={() => { setMode(null); setStep(0); setInputImage(null); setPicked([]); setCustom(''); }}>
+            ← Back
+          </button>
+          <div className="step-bar">
+            <span className={`step-dot${step === 0 ? ' on' : ''}`}><i>1</i> Product image</span>
+            <span className="step-line" />
+            <span className={`step-dot${step === 1 ? ' on' : ''}`}><i>2</i> Templates</span>
+            <span className="step-line" />
+            <span className="step-dot"><i>3</i> Generate</span>
+          </div>
+
+          {step === 0 && (
+            <div className="card pad">
+              <h4 style={{ marginTop: 0 }}>Select your product image</h4>
+              <p className="muted small">Pick from your catalog or Business Profile assets — or upload a new one. Choose an image that shows one product clearly.</p>
+              <div className="pick-grid">
+                {sources.map((im) => (
+                  <button key={im.path} className={`pick-tile${inputImage?.path === im.path ? ' sel' : ''}`}
+                    onClick={() => setInputImage(im)} title={im.caption}>
+                    <img src={im.path} alt={im.caption || 'product'} />
+                    {im.caption && <span className="cap">{im.caption}</span>}
+                  </button>
+                ))}
+                <button className="pick-tile add" onClick={() => { uploadTarget.current = 'input'; fileRef.current?.click(); }}>
+                  <Icon name="upload" size={20} /> Upload
+                </button>
+              </div>
+              {!sources.length && <p className="muted small mt8">No images yet — upload one to continue.</p>}
+              <div className="row mt16" style={{ justifyContent: 'flex-end' }}>
+                <button className="btn lime" disabled={!inputImage} onClick={() => setStep(1)}>
+                  Choose templates →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {step === 1 && (
+            <div className="card pad">
+              <h4 style={{ marginTop: 0 }}>Choose templates</h4>
+              <p className="muted small">Select up to {MAX_TEMPLATES} preset or custom templates.</p>
+              {inputImage && (
+                <div className="row mb16">
+                  <span className="media-tile" style={{ width: 64, height: 64 }}><img src={inputImage.path} alt="" /></span>
+                  <span className="muted small">{inputImage.caption || 'Selected image'}</span>
+                </div>
+              )}
+              <div className="tpl-grid">
+                {TEMPLATES.map((t) => (
+                  <button key={t.id}
+                    className={`tpl-chip${picked.includes(t.id) ? ' sel' : ''}`}
+                    onClick={() => setPicked((p) => p.includes(t.id) ? p.filter((x) => x !== t.id) : p.length < MAX_TEMPLATES ? [...p, t.id] : p)}>
+                    {picked.includes(t.id) && <Icon name="check" size={13} sw={2.4} />}{t.label}
+                  </button>
+                ))}
+                {customOpen ? (
+                  <span className="tpl-chip custom-input">
+                    <input
+                      autoFocus
+                      value={custom}
+                      placeholder="Describe your own style…"
+                      onChange={(e) => setCustom(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && setCustomOpen(false)}
+                      onBlur={() => !custom.trim() && setCustomOpen(false)}
+                    />
+                    <button className="icon-btn" style={{ width: 28, height: 28 }} onClick={() => setCustomOpen(false)}>
+                      <Icon name="check" size={13} />
+                    </button>
+                  </span>
+                ) : (
+                  <button className="tpl-chip" onClick={() => setCustomOpen(true)}>
+                    <Icon name="plus" size={14} /> Add your own style
+                  </button>
+                )}
+              </div>
+              {custom.trim() && !customOpen && (
+                <div className="mt8"><span className="tpl-chip sel">✦ {custom.trim()}</span></div>
+              )}
+              <div className="row mt24" style={{ justifyContent: 'space-between' }}>
+                <button className="btn ghost" onClick={() => setStep(0)}>← Image</button>
+                <button className="btn lime" disabled={busy || !templates.length} onClick={generateProduct}>
+                  <Icon name="sparkle" /> Generate {templates.length ? `(${templates.length})` : ''}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* free flow */}
+      {mode === 'free' && (
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <button className="btn ghost sm mb16" onClick={() => { setMode(null); setPrompt(''); setRefImage(null); }}>
+            ← Back
+          </button>
+          <div className="composer">
+            <textarea
+              value={prompt}
+              placeholder="Describe the image you want to create…"
+              onChange={(e) => setPrompt(e.target.value)}
+            />
+            <div className="row">
+              {refImage ? (
+                <span className="pill has">
+                  <img src={refImage.path} alt="" style={{ width: 20, height: 20, borderRadius: 5, objectFit: 'cover' }} />
+                  reference
+                  <button style={{ background: 'none', border: 'none', color: 'inherit', padding: 0 }} onClick={() => setRefImage(null)}>✕</button>
+                </span>
+              ) : (
+                <span className="pop-wrap">
+                  <FreeRefPicker profileImgs={profileImgs} onPick={setRefImage}
+                    onUpload={() => { uploadTarget.current = 'ref'; fileRef.current?.click(); }} />
+                </span>
+              )}
+              <span className="grow" />
+              <button className="btn lime" disabled={busy || !prompt.trim()} onClick={generateFree}>
+                <Icon name="sparkle" /> {busy ? 'Working…' : 'Generate'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {note && <div className="gen-note"><span className="spinner" />{note}</div>}
+
+      {/* active results */}
+      {job && !!job.results?.length && (
+        <>
+          <div className="section-label">Results · {job.mode === 'product' ? 'product shoot' : 'free generation'} · {fmtDate(job.createdAt)}</div>
+          <div className="grid c4">
+            {job.results.map((r, i) => resultCard(job, r, i))}
+          </div>
+        </>
+      )}
+      {job && !job.results?.length && job.status !== 'running' && (
+        <div className="empty">That shoot produced no images.</div>
+      )}
+
+      {/* history */}
+      {!!jobs?.length && (
+        <>
+          <div className="section-label">History</div>
+          <div className="grid" style={{ gap: 10 }}>
+            {[...jobs].reverse().map((j) => (
+              <div key={j.id} className={`card job-row${j.id === activeJob ? ' on' : ''}`} onClick={() => setActiveJob(j.id)}>
+                <span className={`status-dot ${j.status || 'done'}`} />
+                <Icon name={j.mode === 'product' ? 'bag' : 'sparkle'} size={17} />
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600 }}>
+                    {j.mode === 'product' ? 'Product shoot' : (j.prompt || 'Free generation')}
+                  </div>
+                  <div className="muted small">
+                    {fmtDate(j.createdAt)}{j.templates?.length ? ` · ${j.templates.length} templates` : ''} · {j.results?.length || 0} images
+                  </div>
+                </div>
+                <div className="thumbs">
+                  {(j.results || []).slice(0, 4).map((r, i) => (
+                    <span key={i} className="media-tile"><img src={r.imagePath} alt="" loading="lazy" /></span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+      {jobs !== null && !jobs?.length && !mode && (
+        <div className="empty" style={{ paddingTop: 30 }}>No photoshoots yet — pick a mode above.</div>
+      )}
+    </div>
+  );
+}
+
+// Reference-image picker pill for the free-flow composer.
+function FreeRefPicker({ profileImgs, onPick, onUpload }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" className="pill" onClick={() => setOpen(!open)}>
+        <Icon name="image" /> Reference image <span className="caret">▾</span>
+      </button>
+      {open && (
+        <>
+          <div className="menu-backdrop" onClick={() => setOpen(false)} />
+          <div className="menu popover" style={{ minWidth: 238 }}>
+            <div className="menu-title">Optional reference</div>
+            {!!profileImgs.length && (
+              <div className="img-pick">
+                {profileImgs.map((im) => (
+                  <button key={im.path} onClick={() => { onPick(im); setOpen(false); }}>
+                    <img src={im.path} alt={im.caption || ''} />
+                  </button>
+                ))}
+              </div>
+            )}
+            <button onClick={() => { setOpen(false); onUpload(); }}>Upload an image…</button>
+          </div>
+        </>
+      )}
+    </>
+  );
 }
