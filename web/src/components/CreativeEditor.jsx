@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import { QlooBadge, SignalChips } from './Qloo.jsx';
 import EvidenceDrawer from './EvidenceDrawer.jsx';
-import { downloadAsset, useStages } from './Composer.jsx';
+import { downloadAsset, fileExt, useStages } from './Composer.jsx';
 import '../views/studio.css';
 
 const ANIM_STAGES = ['Animating with Veo — this takes a minute…', 'Directing the motion…', 'Rendering frames…', 'Polishing the cut…'];
@@ -25,6 +25,13 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
   const [media, setMedia] = useState('image');    // 'image' | 'video'
   const stageNote = useStages(busy === 'anim' ? ANIM_STAGES : REGEN_STAGES, busy === 'anim' || busy === 'regen');
   const aspect = campaign?.aspectRatio || '1:1';
+
+  // Escape closes the editor — but let the evidence drawer take the key first.
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape' && !evi) onClose?.(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose, evi]);
 
   const done = (c, msg) => {
     setCur(c);
@@ -67,7 +74,7 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
     setDl(true);
     try {
       const src = media === 'video' && cur.videoPath ? cur.videoPath : cur.imagePath;
-      await downloadAsset(src, `marque-${cur.id}${src === cur.videoPath ? '.mp4' : '.png'}`);
+      await downloadAsset(src, `marque-${cur.id}.${src === cur.videoPath ? 'mp4' : fileExt(src)}`);
     } catch (e) { say(e.message); }
     setDl(false);
   };

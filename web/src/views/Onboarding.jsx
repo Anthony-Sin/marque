@@ -55,7 +55,7 @@ export default function Onboarding() {
     setStage(0);
     const timer = setInterval(() => setStage((s) => (s < STAGES.length - 1 ? s + 1 : s)), 2600);
     try {
-      await api.buildProfile(/^https?:\/\//i.test(u) ? u : `https://${u}`);
+      await api.buildProfile(/^https?:\/\//i.test(u) ? u : `https://${u}`, listing);
       await finish();
     } catch (e) {
       setErr(e.message || 'build failed');

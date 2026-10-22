@@ -61,7 +61,7 @@
 /* ---------- campaign cards ---------- */
 .camp-card { padding: 18px; display: flex; flex-direction: column; gap: 4px; }
 .camp-card h4 { margin: 0; font-size: 16px; }
-.camp-card .thumbs { display: flex; gap: 8px; margin-top: 12px; }
+.camp-card .thumbs { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; }
 .camp-card .thumbs .media-tile { width: 72px; height: 72px; flex: 0 0 auto; }
 .camp-card .thumbs .more {
   width: 72px; height: 72px; display: flex; align-items: center; justify-content: center;
@@ -70,7 +70,7 @@
 .camp-card .foot { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
 
 /* ---------- creative grid + hover card ---------- */
-.creative-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.creative-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 16px; }
 .creative-card .veil {
   position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center;
   gap: 8px; padding-bottom: 60px;
@@ -142,7 +142,7 @@
 .call-line b { color: var(--lime); font-weight: 600; }
 
 /* ---------- photoshoot ---------- */
-.mode-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; max-width: 940px; margin: 0 auto; }
+.mode-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 18px; max-width: 940px; margin: 0 auto; }
 .mode-card {
   padding: 22px; text-align: left; cursor: pointer; display: block; width: 100%;
   background: var(--card); border: 1px solid var(--line-soft); border-radius: var(--radius);
@@ -177,7 +177,7 @@
   background: none; border: none; outline: none; color: var(--ink);
   font-size: 13.5px; width: 170px; padding: 6px 10px;
 }
-.pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 12px; }
+.pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(118px, 100%), 1fr)); gap: 12px; }
 .pick-tile {
   border: 2px solid transparent; border-radius: 14px; overflow: hidden; background: var(--card-3);
   cursor: pointer; padding: 0; position: relative; aspect-ratio: 1;
@@ -291,5 +291,5 @@
 }
 .type-sample .h { font-size: 34px; margin: 6px 0 2px; }
 .type-sample .b { font-size: 16px; color: var(--ink-2); }
-.book-imgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.book-imgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); gap: 10px; }
 .book-imgs .media-tile { aspect-ratio: 1; }

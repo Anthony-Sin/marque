@@ -72,6 +72,9 @@ export default function App() {
               <div className="brand"><Logo size={22} /> Marque <span className="exp">STUDIO</span></div>
             </div>
           )}
+          {profile === undefined ? (
+            <div className="loading-wrap"><div className="spinner" /></div>
+          ) : (
           <Routes>
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/profile/*" element={<ProfilePage />} />
@@ -82,6 +85,7 @@ export default function App() {
             <Route path="/brandbook" element={<BrandBookPage />} />
             <Route path="*" element={<Navigate to={inApp ? '/profile' : '/onboarding'} replace />} />
           </Routes>
+          )}
         </div>
       </div>
       {toast && <div className="toast">{toast}</div>}

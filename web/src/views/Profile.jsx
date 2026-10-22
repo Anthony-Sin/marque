@@ -491,7 +491,13 @@ function AssetsTab() {
         <div className="grid c4 mt16">
           {imgs.map((im, i) => (
             <div key={im.id || im.path || i} className="media-tile pf-asset">
-              <img src={im.path || im.url} alt={im.caption || 'brand asset'} />
+              {im.path || im.url ? (
+                <img src={im.path || im.url} alt={im.caption || 'brand asset'} />
+              ) : (
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--ink-4)' }}>
+                  <Icon name="image" size={22} />
+                </span>
+              )}
               <Kebab
                 corner
                 items={[

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import { QlooBadge, SignalChips } from './Qloo.jsx';
@@ -11,6 +11,12 @@ export default function EvidenceDrawer({ title = 'Taste evidence', signals = [],
   const bundle = profile?.qloo;
   const calls = bundle?.calls || [];
   const all = [...signals, ...extra];
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
   return (
     <>

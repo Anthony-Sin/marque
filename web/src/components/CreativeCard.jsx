@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Icon from './Icon.jsx';
-import { arCss, downloadAsset } from './Composer.jsx';
+import { arCss, downloadAsset, fileExt } from './Composer.jsx';
 import { useApp } from '../App.jsx';
 
 // Creative thumbnail in the campaign grid. Hover → Edit / Animate (9:16 only) / Download.
@@ -14,14 +14,20 @@ export default function CreativeCard({ creative, aspect = '1:1', animating, onEd
     setDl(true);
     try {
       const src = video ? creative.videoPath : creative.imagePath;
-      await downloadAsset(src, `marque-${creative.id}${video ? '.mp4' : '.png'}`);
+      await downloadAsset(src, `marque-${creative.id}.${video ? 'mp4' : fileExt(creative.imagePath)}`);
     } catch (e) { say(e.message); }
     setDl(false);
   };
 
   return (
     <div className="card creative-card" style={{ '--ar': arCss(aspect) }}>
-      <img src={creative.imagePath} alt={creative.headline || 'creative'} loading="lazy" />
+      {creative.imagePath ? (
+        <img src={creative.imagePath} alt={creative.headline || 'creative'} loading="lazy" />
+      ) : (
+        <div className="media-tile" style={{ width: '100%', aspectRatio: 'var(--ar, 1/1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-4)' }}>
+          <Icon name="image" size={26} />
+        </div>
+      )}
       {video && (
         <span className="badge-v"><Icon name="play" size={10} sw={2.4} /> animated</span>
       )}

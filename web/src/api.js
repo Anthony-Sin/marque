@@ -25,7 +25,7 @@ export const api = {
   status: () => req('GET', '/api/status'),
   // profile / onboarding
   getProfile: () => req('GET', '/api/profile'),
-  buildProfile: (url) => req('POST', '/api/profile/build', { url }),
+  buildProfile: (url, includeListing) => req('POST', '/api/profile/build', { url, includeListing }),
   scratchProfile: (messages, attachments) => req('POST', '/api/profile/scratch', { messages, attachments }),
   templateProfile: (templateId) => req('POST', '/api/profile/template', { templateId }),
   updateProfile: (patch) => req('PUT', '/api/profile', { patch }),
@@ -42,7 +42,8 @@ export const api = {
   deleteCatalog: (id) => req('DELETE', `/api/catalog/${id}`),
   syncCatalogImage: (id) => req('POST', `/api/catalog/${id}/sync-image`),
   // strategy board
-  strategy: (prompt, productId) => req('POST', '/api/strategy', { prompt, productId }),
+  strategy: (prompt, productId, url) => req('POST', '/api/strategy', { prompt, productId, url }),
+  strategyExamples: (strategy, audienceRead) => req('POST', '/api/strategy/examples', { strategy, audienceRead }),
   // campaigns
   listCampaigns: () => req('GET', '/api/campaigns'),
   campaignBrief: (payload) => req('POST', '/api/campaigns/brief', payload),

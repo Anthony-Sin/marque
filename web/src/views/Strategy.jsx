@@ -129,7 +129,7 @@ export default function Strategy() {
       b.angle ? `Angle: ${b.angle}` : '',
       b.audience ? `Audience: ${b.audience}` : '',
       b.keyMessage ? `Key message: ${b.keyMessage}` : '',
-      (s.channels || []).length ? `Channels: ${s.channels.map((c) => c.name).join(', ')}` : '',
+      (s.channels || []).length ? `Channels: ${s.channels.map((c) => c.name || c).join(', ')}` : '',
     ].filter(Boolean).join('\n');
     try {
       sessionStorage.setItem('marque.strategyBrief', JSON.stringify({

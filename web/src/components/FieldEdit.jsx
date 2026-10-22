@@ -229,6 +229,11 @@ export default function FieldEdit({ label, hint, kind = 'text', value, onSave, r
     <div
       className={`field${editing ? ' editing' : ''}`}
       onKeyDown={(e) => {
+        if (e.key === 'Escape' && editing) {
+          e.preventDefault();
+          cancel();
+          return;
+        }
         if (e.key === 'Enter' && e.target.tagName === 'INPUT' && ['text', 'list'].includes(kind)) {
           e.preventDefault();
           apply();

@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
-import { downloadAsset, fmtDate, postJson, useStages } from '../components/Composer.jsx';
+import { downloadAsset, fileExt, fmtDate, postJson, useStages } from '../components/Composer.jsx';
 import './studio.css';
 
 const GEN_STAGES = ['Setting the scene…', 'Composing your shots…', 'Developing the images…', 'Final touch-ups…'];
@@ -22,6 +23,12 @@ const MAX_TEMPLATES = 6; // server currently caps at 4 — extra picks are dropp
 // Small icon-button with a popover menu (action rows on result cards).
 function PopBtn({ icon, label, title, items, disabled }) {
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
   return (
     <span className="pop-wrap">
       <button className="icon-btn" title={title || label} disabled={disabled}
@@ -75,6 +82,21 @@ export default function Photoshoot() {
   const [resBusy, setResBusy] = useState('');          // resultKey currently working
   const fileRef = useRef(null);
   const uploadTarget = useRef('input');                // 'input' | 'ref'
+  const [searchParams] = useSearchParams();
+  const deepLinked = useRef(false);
+
+  // Catalog kebab "Create Photoshoot" hands ?product=<id> — open product mode,
+  // preselecting the item's image when it has one.
+  useEffect(() => {
+    if (deepLinked.current || !profile) return;
+    const pid = searchParams.get('product');
+    if (!pid) return;
+    deepLinked.current = true;
+    setMode('product');
+    setStep(0);
+    const c = (profile.catalog || []).find((x) => x.id === pid);
+    if (c?.image) setInputImage({ path: c.image, caption: c.name });
+  }, [profile, searchParams]);
 
   const reload = async () => {
     try {
@@ -258,8 +280,7 @@ export default function Photoshoot() {
             <Icon name="film" size={15} />
           </button>
           <PopBtn icon="download" title="Download" items={[
-            { label: 'PNG', onClick: () => downloadAsset(r.imagePath, `marque-${r.id || 'shot'}.png`).catch((e) => say(e.message)) },
-            { label: 'JPEG', onClick: () => downloadAsset(r.imagePath, `marque-${r.id || 'shot'}.jpg`).catch((e) => say(e.message)) },
+            { label: `Image (${fileExt(r.imagePath).toUpperCase()})`, onClick: () => downloadAsset(r.imagePath, `marque-${r.id || 'shot'}.${fileExt(r.imagePath)}`).catch((e) => say(e.message)) },
             ...(vid ? [{ sep: true }, { label: 'Video (MP4)', onClick: () => downloadAsset(vid, `marque-${r.id || 'shot'}.mp4`).catch((e) => say(e.message)) }] : []),
           ]} />
           <PopBtn icon="check" title="Save" items={[
@@ -274,7 +295,7 @@ export default function Photoshoot() {
               { label: 'Save to Business Profile', onClick: () => saveToProfile(r) },
               { label: 'Save as catalog item', onClick: () => saveAsCatalog(r) },
               { sep: true },
-              { label: 'Delete', danger: true, onClick: () => setHidden((h) => new Set(h).add(k)) },
+              { label: 'Hide', danger: true, onClick: () => setHidden((h) => new Set(h).add(k)) },
             ]} />
           </span>
         </div>
@@ -547,6 +568,12 @@ function allResults(job, extras) {
 // Reference-image picker pill for the free-flow composer.
 function FreeRefPicker({ profileImgs, onPick, onUpload }) {
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
   return (
     <>
       <button type="button" className="pill" onClick={() => setOpen(!open)}>

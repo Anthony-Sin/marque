@@ -151,6 +151,7 @@ export default function Websites() {
               style={{ width: 320, maxWidth: '80%', marginRight: 10 }}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && create()}
               placeholder="Optional direction (e.g. bold landing for the summer drop)"
             />
             <button className="btn lime" onClick={create}>

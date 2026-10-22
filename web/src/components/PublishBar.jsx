@@ -38,6 +38,7 @@ export default function PublishBar({ publishedSlug, base = '/s/', label = 'this 
             className="slug-in"
             value={slug}
             onChange={(e) => setSlug(e.target.value.replace(/[^a-z0-9-]/gi, '-').toLowerCase())}
+            onKeyDown={(e) => e.key === 'Enter' && !busy && onPublish?.(slug.trim() || undefined)}
             placeholder="custom-slug (optional)"
           />
           <button className="btn lime sm" disabled={busy} onClick={() => onPublish?.(slug.trim() || undefined)}>

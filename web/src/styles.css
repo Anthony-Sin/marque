@@ -148,9 +148,9 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 
 /* ---------- suggestion / content cards ---------- */
 .grid { display: grid; gap: 18px; }
-.grid.c3 { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
-.grid.c2 { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
-.grid.c4 { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+.grid.c3 { grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); }
+.grid.c2 { grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr)); }
+.grid.c4 { grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr)); }
 .section-label { color: var(--ink-3); font-size: 13px; margin: 26px 0 14px; }
 .suggest-card { padding: 20px; position: relative; }
 .suggest-card h4 { margin: 0 0 8px; font-size: 16px; font-weight: 600; }
@@ -257,7 +257,7 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 .ob-hero { text-align: center; margin-bottom: 30px; }
 .ob-hero h1.display { margin-top: 16px; }
 .ob-hero .sub { color: var(--ink-3); max-width: 540px; margin: 0 auto; font-size: 15px; }
-.ob-url-card { width: min(680px, 92vw); }
+.ob-url-card { width: min(680px, 100%); }
 .ob-url-title { font-weight: 600; font-size: 16px; margin-bottom: 12px; }
 .ob-url-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .ob-url-input { flex: 1; min-width: 230px; background: var(--bg-raise); border: 1px solid var(--line); border-radius: var(--radius-pill); padding: 12px 20px; color: var(--ink); font-size: 14.5px; outline: none; }
@@ -268,7 +268,7 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 .ob-error .grow { flex: 1; }
 .ob-noSite { background: none; border: none; color: var(--lime); font-size: 14px; margin-top: 22px; display: inline-flex; align-items: center; gap: 6px; }
 .ob-noSite:hover { text-decoration: underline; }
-.ob-alt { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; width: min(720px, 92vw); margin-top: 16px; }
+.ob-alt { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 18px; width: min(720px, 100%); margin-top: 16px; }
 .ob-opt { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; color: var(--lime); }
 .ob-opt h4 { margin: 4px 0 0; font-size: 16px; color: var(--ink); }
 .ob-opt p { margin: 0 0 8px; color: var(--ink-3); font-size: 13.5px; }
@@ -282,7 +282,7 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 .ob-tpl-sw { display: inline-flex; flex: 0 0 auto; }
 .ob-tpl-sw i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--card-2); margin-left: -6px; }
 .ob-tpl-sw i:first-child { margin-left: 0; }
-.ob-stages { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; min-width: 280px; }
+.ob-stages { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; min-width: min(280px, 100%); }
 .ob-stage { display: flex; align-items: center; gap: 10px; color: var(--ink-4); font-size: 14px; }
 .ob-stage.now { color: var(--ink); }
 .ob-stage.done { color: var(--ink-3); }
@@ -455,4 +455,17 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
   .book-dot { transition: transform .15s, background .15s; }
   .book-dot.on { transform: scale(1.4); }
   .msg { animation: rise-in .22s ease both; }
+}
+
+/* ---------- narrow viewports: keep the pane + grids inside the rail ---------- */
+@media (max-width: 900px) {
+  .profile-wrap { padding-left: 14px; padding-right: 14px; }
+  .section { padding-left: 14px; padding-right: 14px; }
+  /* profile split: the 380px agent rail used to squeeze .left off-screen — stack it below */
+  .split { flex-direction: column; }
+  .agent-pane { width: 100%; flex: 0 0 auto; height: 46%; border-left: none; border-top: 1px solid var(--line-soft); }
+  /* field rows: 190px label column leaves ~50px for values — stack label over value */
+  .field { flex-wrap: wrap; }
+  .field .f-label { flex: 0 0 100%; width: auto; padding-top: 0; }
+  .tabs .tab, .pf-wtabs .tab { padding-left: 14px; padding-right: 14px; font-size: 13px; }
 }

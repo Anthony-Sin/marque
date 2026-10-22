@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import '../views/studio.css';
 
 export const ASPECTS = ['1:1', '4:5', '9:16', '16:9'];
 export const arCss = (ar) => (ar || '1:1').replace(':', '/');
+
+// file extension of an asset path (for honest download filenames — no transcode happens)
+export function fileExt(p, fallback = 'png') {
+  const m = /\.([a-z0-9]+)(?:[?#]|$)/i.exec(String(p || ''));
+  return (m ? m[1] : fallback).toLowerCase();
+}
 
 // Stage-rotating copy for long-running jobs. Returns stages[i], cycling every
 // `ms` while `active`; resets to the first stage each time `active` turns on.
@@ -60,6 +66,12 @@ export async function downloadAsset(path, filename) {
 // Kebab (⋮) + popover menu. Renders fragments so .kebab keeps its card-absolute position.
 export function KebabMenu({ items, icon = 'kebab' }) {
   const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
   return (
     <>
       <button className="kebab" title="More" onClick={(e) => { e.stopPropagation(); setOpen(!open); }}>
@@ -86,6 +98,12 @@ export function KebabMenu({ items, icon = 'kebab' }) {
 
 // Pill with a dropdown menu; used inside the composer row.
 function PillMenu({ icon, label, has, open, onToggle, children, wide }) {
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') onToggle?.(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open, onToggle]);
   return (
     <span className="pop-wrap">
       <button type="button" className={`pill${has ? ' has' : ''}`} onClick={onToggle}>
@@ -113,10 +131,11 @@ export default function Composer({
   disclaimer = 'Marque can make mistakes, so double-check it.',
   onGenerate,
 }) {
-  const { profile } = useApp();
+  const { profile, say } = useApp();
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
   const [prompt, setPrompt] = useState('');
-  const [productId, setProductId] = useState('');
+  const [productId, setProductId] = useState(() => searchParams.get('product') || '');
   const [images, setImages] = useState([]);      // asset paths, ≤3
   const [aspect, setAspect] = useState('4:5');
   const [menu, setMenu] = useState(null);        // 'product' | 'images' | 'aspect'
@@ -152,7 +171,8 @@ export default function Composer({
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit(); }}
         />
-        <button className="icon-btn mic" title="Dictate (coming soon)" type="button">
+        <button className="icon-btn mic" title="Dictate (coming soon)" type="button"
+          onClick={() => say?.('Dictation is coming soon')}>
           <Icon name="mic" />
         </button>
         <div className="row">

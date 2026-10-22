@@ -85,6 +85,7 @@ export default function Campaigns() {
 
   // Generate Brief → brief review card
   const genBrief = async (payload) => {
+    if (busy) return;
     setBusy(true); setNote('Drafting your campaign brief…');
     try {
       const res = await api.campaignBrief(payload);
@@ -297,7 +298,7 @@ export default function Campaigns() {
               {!!c.creatives?.length && (
                 <div className="thumbs">
                   {c.creatives.slice(0, 4).map((cr) => (
-                    <span key={cr.id} className="media-tile"><img src={cr.imagePath} alt="" loading="lazy" /></span>
+                    <span key={cr.id} className="media-tile">{cr.imagePath && <img src={cr.imagePath} alt="" loading="lazy" />}</span>
                   ))}
                   {c.creatives.length > 4 && <span className="more">+{c.creatives.length - 4}</span>}
                 </div>
