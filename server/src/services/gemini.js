@@ -8,6 +8,15 @@ export function geminiConfigured() { return !!ENV.geminiKey; }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// env-pinned model first, then known image-capable fallbacks (deprecation/quota safety)
+const IMAGE_FALLBACKS = [
+  'gemini-3.1-flash-image-preview', 'gemini-3.1-flash-lite-image', 'gemini-2.5-flash-image',
+  'gemini-3-pro-image', 'nano-banana-pro-preview', 'gemini-nano-banana-2.1',
+];
+const VIDEO_FALLBACKS = [
+  'veo-3.1-generate-preview', 'veo-3.0-generate-001', 'veo-3.0-fast-generate-001', 'veo-2.0-generate-001',
+];
+
 function refPart(ref) {
   if (!ref) return null;
   if (ref.inline_data || ref.inlineData) return ref.inline_data ? { inline_data: ref.inline_data } : { inline_data: ref.inlineData };
@@ -28,34 +37,31 @@ async function post(url, body) {
   });
   let data = null;
   try { data = await res.json(); } catch { /* fallthrough */ }
-  if (!res.ok) throw new Error(`gemini ${res.status}: ${JSON.stringify(data)?.slice(0, 400) || res.statusText}`);
+  if (!res.ok) {
+    const e = new Error(`gemini ${res.status}: ${JSON.stringify(data)?.slice(0, 400) || res.statusText}`);
+    e.status = res.status;
+    e.quota = res.status === 429;
+    throw e;
+  }
   return data;
 }
 
-// prompt: string; opts: {aspectRatio, refs:[{path}|{mime,data}], saveExt}
-export async function genImage(prompt, opts = {}) {
-  if (!geminiConfigured()) throw new Error('gemini not configured');
-  const parts = [{ text: prompt }];
-  for (const ref of opts.refs || opts.images || []) {
-    const part = refPart(ref);
-    if (part) parts.push(part);
-  }
+async function tryImageModel(model, prompt, opts, parts) {
   const makeBody = (withAR) => {
     const generationConfig = { responseModalities: ['TEXT', 'IMAGE'] };
     if (withAR && opts.aspectRatio) generationConfig.imageConfig = { aspectRatio: opts.aspectRatio };
-    return { contents: [{ parts }], generationConfig };
+    return { contents: [{ parts: [{ text: prompt }, ...parts] }], generationConfig };
   };
-  const url = `${G}/models/${ENV.geminiImageModel}:generateContent?key=${ENV.geminiKey}`;
+  const url = `${G}/models/${model}:generateContent?key=${ENV.geminiKey}`;
   let data;
   try {
     data = await post(url, makeBody(true));
   } catch (e) {
-    if (opts.aspectRatio && /imageConfig|aspectRatio|invalid|Invalid/i.test(String(e.message))) {
-      data = await post(url, makeBody(false)); // retry without imageConfig
-    } else throw e;
+    if (opts.aspectRatio && e.status === 400) data = await post(url, makeBody(false)); // retry without imageConfig
+    else throw e;
   }
-  const parts2 = data?.candidates?.[0]?.content?.parts || [];
-  for (const p of parts2) {
+  const out = data?.candidates?.[0]?.content?.parts || [];
+  for (const p of out) {
     const inline = p.inlineData || p.inline_data;
     if (inline?.data) {
       const mime = inline.mimeType || inline.mime_type || 'image/png';
@@ -64,6 +70,34 @@ export async function genImage(prompt, opts = {}) {
     }
   }
   throw new Error(`gemini: no image part in response (${JSON.stringify(data)?.slice(0, 300)})`);
+}
+
+// prompt: string; opts: {aspectRatio, refs:[{path}|{mime,data}]}
+export async function genImage(prompt, opts = {}) {
+  if (!geminiConfigured()) throw new Error('gemini not configured');
+  const parts = [];
+  for (const ref of opts.refs || opts.images || []) {
+    const part = refPart(ref);
+    if (part) parts.push(part);
+  }
+  const models = [...new Set([ENV.geminiImageModel, ...IMAGE_FALLBACKS])];
+  const errs = [];
+  for (const model of models) {
+    try {
+      return await tryImageModel(model, prompt, opts, parts);
+    } catch (e) {
+      errs.push(`${model}: ${String(e.message).slice(0, 120)}`);
+      if (e.status === 503) { // transient overload — one retry on the same model
+        await sleep(4000);
+        try { return await tryImageModel(model, prompt, opts, parts); }
+        catch (e2) { errs.push(`${model} retry: ${String(e2.message).slice(0, 120)}`); }
+      }
+    }
+  }
+  const allQuota = errs.length && errs.every((s) => /429|quota|RESOURCE_EXHAUSTED/i.test(s));
+  const e = new Error(`gemini: all image models failed (${allQuota ? 'quota exhausted' : errs.join(' | ').slice(0, 400)})`);
+  e.quota = allQuota;
+  throw e;
 }
 
 // prompt: string; opts: {aspectRatio:'9:16', imagePath?, durationSeconds?}
@@ -77,12 +111,25 @@ export async function genVideo(prompt, opts = {}) {
   }
   const parameters = { aspectRatio: opts.aspectRatio || '9:16' };
   if (opts.durationSeconds) parameters.durationSeconds = opts.durationSeconds;
-  const data = await post(
-    `${G}/models/${ENV.geminiVideoModel}:predictLongRunning?key=${ENV.geminiKey}`,
-    { instances: [instance], parameters },
-  );
-  const opName = data?.name;
-  if (!opName) throw new Error(`gemini video: no operation name (${JSON.stringify(data)?.slice(0, 300)})`);
+
+  let opName = null;
+  const models = [...new Set([ENV.geminiVideoModel, ...VIDEO_FALLBACKS])];
+  const errs = [];
+  for (const model of models) {
+    try {
+      const data = await post(`${G}/models/${model}:predictLongRunning?key=${ENV.geminiKey}`, { instances: [instance], parameters });
+      opName = data?.name;
+      if (opName) break;
+      errs.push(`${model}: no operation name`);
+    } catch (e) {
+      errs.push(`${model}: ${String(e.message).slice(0, 120)}`);
+    }
+  }
+  if (!opName) {
+    const e = new Error(`gemini video: could not start operation (${errs.join(' | ').slice(0, 400)})`);
+    e.quota = errs.length && errs.every((s) => /429|quota|RESOURCE_EXHAUSTED/i.test(s));
+    throw e;
+  }
   const deadline = Date.now() + 6 * 60 * 1000;
   while (Date.now() < deadline) {
     await sleep(10000);

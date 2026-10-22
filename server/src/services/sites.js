@@ -1,5 +1,5 @@
 // marketing site generation/edits — TensorMux writes a complete single-file HTML site
-import { chatJSON } from './tensor.js';
+import { chat, chatJSON } from './tensor.js';
 import { uid, now, push, update, find } from './store.js';
 
 const SITE_SYS = `You are an elite web designer for the Marque studio. Return JSON {"html":"..."} — one complete, self-contained HTML document for a marketing site.
@@ -23,12 +23,38 @@ function siteContext(profile, extraPrompt = '') {
   });
 }
 
+// pull a complete html doc out of model output (fences, prose, or raw)
+function extractHTML(t) {
+  if (!t || typeof t !== 'string') return null;
+  const s = t.replace(/```(?:html)?/gi, '');
+  const start = s.search(/<!doctype|<html/i);
+  if (start < 0) return null;
+  const close = s.toLowerCase().lastIndexOf('</html>');
+  const end = close > start ? close + '</html>'.length : s.length;
+  const html = s.slice(start, end).trim();
+  return html.length > 200 && html.includes('<') ? html : null;
+}
+
+// primary path: chatJSON -> {html}; fallback: raw HTML completion (models are
+// far more reliable emitting markup than JSON-escaped markup)
+async function siteHTML(messages) {
+  try {
+    const out = await chatJSON(messages, { maxTokens: 8000 });
+    const html = extractHTML(out?.html) || (typeof out?.html === 'string' && out.html.includes('<') ? out.html : null);
+    if (html) return html;
+  } catch { /* fall back to raw html */ }
+  const raw = await chat([
+    { role: 'system', content: `${SITE_SYS}\n\nIMPORTANT: ignore the JSON instruction — output the complete HTML document only, starting with <!DOCTYPE html>. No commentary, no code fences.` },
+    ...messages.slice(1),
+  ], { maxTokens: 8000 });
+  return extractHTML(raw);
+}
+
 export async function generateWebsite(profile, prompt = '') {
-  const out = await chatJSON([
+  const html = await siteHTML([
     { role: 'system', content: SITE_SYS },
     { role: 'user', content: siteContext(profile, prompt) },
-  ], { maxTokens: 8000 });
-  const html = typeof out?.html === 'string' && out.html.includes('<') ? out.html : null;
+  ]);
   if (!html) throw new Error('site generation returned no html');
   const version = { id: uid(), html, prompt, createdAt: now() };
   const website = { id: uid(), createdAt: now(), versions: [version], activeVersion: version.id, publishedSlug: null };
@@ -38,12 +64,11 @@ export async function generateWebsite(profile, prompt = '') {
 
 export async function editWebsite(website, prompt, profile) {
   const active = website.versions.find((v) => v.id === website.activeVersion) || website.versions.at(-1);
-  const out = await chatJSON([
+  const html = await siteHTML([
     { role: 'system', content: SITE_SYS },
     { role: 'user', content: siteContext(profile) },
     { role: 'user', content: `Here is the current site HTML. Apply this edit: "${prompt}". Return the FULL updated document as {"html":"..."}.\n\nCURRENT HTML:\n${active?.html || ''}` },
-  ], { maxTokens: 8000 });
-  const html = typeof out?.html === 'string' && out.html.includes('<') ? out.html : null;
+  ]);
   if (!html) throw new Error('site edit returned no html');
   const version = { id: uid(), html, prompt, createdAt: now() };
   const versions = [...website.versions, version];

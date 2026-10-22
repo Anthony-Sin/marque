@@ -14,7 +14,7 @@ from html import unescape
 ENV_FILE = "/home/ANT/marque/.env"
 FLAG = "/tmp/qloo_key_found"
 PULL = "/home/ANT/marque/scripts/gmail_cdp_pull.mjs"
-PORTS = ["9223", "9222"]
+PORTS = ["9224", "9223", "9222"]
 QUERIES = ["from:qloo", "qloo api key", "subject:qloo"]
 KEY_RE = re.compile(r"(?:api[_ -]?key|x-api-key|key is|token)[:\s'\"=]*([A-Za-z0-9][A-Za-z0-9_\-\.]{19,127})", re.I)
 BARE_RE = re.compile(r"\b([A-Za-z0-9]{24,48}\.[A-Za-z0-9_\-\.]{24,64}|[A-Fa-f0-9]{32,64}|sk-[A-Za-z0-9_\-]{16,})\b")
@@ -65,13 +65,33 @@ def find_key(s):
             seen.add(th)
             m = s.get("https://mail.google.com/mail/h/", params={"th": th, "v": "c"}, timeout=30)
             text = unescape(re.sub(r"<[^>]+>", " ", m.text))
+            low = text.lower()
+            # must actually be a qloo thread mentioning a key — not any random hex
+            if "qloo" not in low or ("key" not in low and "token" not in low):
+                continue
+            cands = []
             k = KEY_RE.search(text)
             if k:
-                return k.group(1), th
-            for b in BARE_RE.findall(text):
-                if re.search(r"[a-z]", b) or re.search(r"[A-Z]", b):
-                    return b, th
+                cands.append(k.group(1))
+            cands += [b for b in BARE_RE.findall(text) if re.search(r"[a-z]", b) or re.search(r"[A-Z]", b)]
+            for cand in cands:
+                if verify_key(cand):
+                    return cand, th
+                log(f"candidate {cand[:8]}… rejected by qloo (401)")
     return None, None
+
+def verify_key(key):
+    """Check candidate against the real Qloo endpoint before trusting it."""
+    import urllib.request
+    try:
+        r = urllib.request.urlopen(urllib.request.Request(
+            "https://hackathon.api.qloo.com/v2/insights?filter.type=urn:entity:brand&take=1",
+            headers={"X-Api-Key": key}), timeout=20)
+        return r.status == 200
+    except urllib.error.HTTPError as e:
+        return e.code != 401  # 401 = bad key; 429/5xx = key probably fine
+    except Exception:
+        return False
 
 def write_env(key):
     old = ""

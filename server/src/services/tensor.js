@@ -29,6 +29,35 @@ export async function chat(messages, opts = {}) {
   return (msg.reasoning ?? '').toString();
 }
 
+// fix common model sloppiness inside string literals: raw newlines/tabs and
+// invalid backslash escapes — enough to make loose JSON strict-parseable
+export function repairJSON(s) {
+  let out = '', inStr = false, esc = false;
+  for (const c of s) {
+    if (!inStr) { if (c === '"') inStr = true; out += c; continue; }
+    if (esc) {
+      if ('"\\/bfnrtu'.includes(c)) out += c;
+      else if (c === '\n') out += 'n';
+      else if (c === '\r') out += 'r';
+      else if (c === '\t') out += 't';
+      else out += '\\' + c; // bad escape → literal backslash + char
+      esc = false; continue;
+    }
+    if (c === '\\') { esc = true; out += c; continue; }
+    if (c === '"') { inStr = false; out += c; continue; }
+    if (c === '\n') { out += '\\n'; continue; }
+    if (c === '\r') { out += '\\r'; continue; }
+    if (c === '\t') { out += '\\t'; continue; }
+    out += c;
+  }
+  return out;
+}
+
+function tryParse(s) {
+  try { return { v: JSON.parse(s) }; } catch { /* fallthrough */ }
+  try { return { v: JSON.parse(repairJSON(s)) }; } catch { return { v: undefined }; }
+}
+
 export function extractJSON(text) {
   if (!text) return null;
   const t = String(text).replace(/```(?:json|javascript|js)?/gi, '');
@@ -47,7 +76,9 @@ export function extractJSON(text) {
       else if (c === close) { depth--; if (depth === 0) { end = i; break; } }
     }
     if (end < 0) return null;
-    try { return JSON.parse(t.slice(start, end + 1)); } catch { from = end + 1; }
+    const { v } = tryParse(t.slice(start, end + 1));
+    if (v !== undefined) return v;
+    from = end + 1;
   }
 }
 
