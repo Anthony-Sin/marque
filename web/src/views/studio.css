@@ -68,6 +68,13 @@
   color: var(--ink-3); background: var(--card-3); border-radius: 12px; font-size: 12px;
 }
 .camp-card .foot { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.camp-group { margin-top: 20px; }
+.camp-group-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--ink-4); letter-spacing: .03em; margin-bottom: 12px;
+}
+.camp-group-label svg { color: var(--lime); }
+.camp-group-label b { color: var(--ink-3); font-weight: 600; }
 
 /* ---------- creative grid + hover card ---------- */
 .creative-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 16px; }
@@ -94,6 +101,15 @@
   font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   display: block; flex: 1;
 }
+/* 1–5 grade control on each creative card */
+.creative-card .grade { display: inline-flex; gap: 2px; flex: none; }
+.grade-star {
+  background: none; border: none; padding: 0 1px; line-height: 1;
+  font-size: 14px; color: var(--ink-4); cursor: pointer;
+  transition: color .12s, transform .12s;
+}
+.grade-star.on { color: var(--amber); }
+.grade-star:hover { color: var(--amber); transform: scale(1.2); }
 .spin-overlay {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   background: rgba(0,0,0,.45); z-index: 3;
@@ -219,6 +235,83 @@
 .status-dot.running { background: var(--amber); animation: pulse 1.2s infinite; }
 .status-dot.error { background: #e08080; }
 @keyframes pulse { 50% { opacity: .35; } }
+
+/* ---------- campaigns: strategy handoff banner ---------- */
+.camp-handoff {
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+  max-width: 720px; margin: 0 auto 14px;
+  background: rgba(211, 227, 116, .08); border: 1px solid rgba(211, 227, 116, .35);
+  border-radius: var(--radius-pill); padding: 9px 12px 9px 16px;
+  font-size: 13px; color: var(--ink-2);
+}
+.camp-handoff > svg { color: var(--lime); flex: none; }
+.camp-handoff b { color: var(--ink); }
+.camp-handoff .x {
+  margin-left: auto; background: none; border: none; color: var(--ink-3);
+  font-size: 13px; padding: 3px 8px; border-radius: 8px; flex: none;
+}
+.camp-handoff .x:hover { color: var(--ink); background: var(--card-3); }
+
+/* ---------- websites: improve my site ---------- */
+.imp-wrap { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.imp-ask { padding: 24px; }
+.imp-ask h3 { margin: 0 0 6px; font-size: 25px; }
+.imp-ask p { margin: 0 0 18px; max-width: 58ch; }
+.imp-ask-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.imp-urlwrap {
+  flex: 1; min-width: 230px; display: inline-flex; align-items: center; gap: 8px;
+  background: var(--bg-raise); border: 1px solid var(--line);
+  border-radius: var(--radius-pill); padding: 0 16px; color: var(--ink-4);
+}
+.imp-urlwrap:focus-within { border-color: var(--lime); }
+.imp-urlwrap input {
+  flex: 1; min-width: 0; background: none; border: none; outline: none;
+  color: var(--ink); font-size: 14px; padding: 11px 0;
+}
+.imp-err {
+  display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
+  font-size: 13px; color: var(--rose); padding: 13px 16px;
+  border: 1px dashed rgba(232, 160, 180, .4); border-radius: 14px;
+  background: rgba(232, 160, 180, .05);
+}
+.imp-soc {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 6px 13px; border-radius: 999px;
+  background: rgba(211, 227, 116, .1); border: 1px solid rgba(211, 227, 116, .4);
+  color: var(--lime); text-transform: capitalize;
+}
+.imp-soc:hover { filter: brightness(1.15); }
+.imp-miss {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; padding: 6px 13px; border-radius: 999px;
+  color: var(--amber); border: 1px dashed rgba(232, 200, 143, .45);
+  background: rgba(232, 200, 143, .07); text-transform: capitalize;
+}
+.imp-sug { padding: 18px; display: flex; flex-direction: column; gap: 8px; }
+.imp-sug-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.imp-area {
+  font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--ink-4); font-weight: 700; padding-top: 3px;
+}
+.imp-badges { display: inline-flex; gap: 6px; flex: none; flex-wrap: wrap; justify-content: flex-end; }
+.imp-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+  background: var(--card-3); color: var(--ink-3); border: 1px solid var(--line);
+}
+.imp-badge.impact-high {
+  color: var(--lime); border-color: rgba(211, 227, 116, .45); background: rgba(211, 227, 116, .1);
+}
+.imp-badge.impact-med {
+  color: var(--amber); border-color: rgba(232, 200, 143, .4); background: rgba(232, 200, 143, .08);
+}
+.imp-fix { font-size: 14.5px; font-weight: 600; line-height: 1.4; }
+.imp-why { font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
+.imp-steal { padding: 10px 0; border-bottom: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: 3px; }
+.imp-steal:last-child { border-bottom: none; }
+.imp-steal b { font-size: 13.5px; color: var(--ink-2); font-weight: 600; }
+.imp-steal span { font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
+.imp-note { font-size: 11.5px; color: var(--ink-4); text-align: center; }
 
 /* ---------- websites ---------- */
 .gen-hero {

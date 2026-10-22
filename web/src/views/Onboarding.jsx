@@ -44,7 +44,7 @@ export default function Onboarding() {
 
   const finish = async () => {
     await refresh();
-    nav('/profile');
+    nav('/strategy');   // strategy board is the app's landing + unlocks the rest
   };
 
   const build = async () => {

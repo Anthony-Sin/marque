@@ -68,6 +68,11 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
   padding: 14px 0; gap: 6px; border-right: 1px solid var(--line-soft);
 }
 .rail .logo { width: 40px; height: 40px; margin-bottom: 14px; }
+.rail-group {
+  font-size: 8.5px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--ink-4); margin-top: 10px; user-select: none;
+}
+.rail .logo + .rail-group { margin-top: 0; }
 .rail-item {
   width: 52px; height: 52px; border-radius: 14px; border: none; background: transparent;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -469,3 +474,22 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
   .field .f-label { flex: 0 0 100%; width: auto; padding-top: 0; }
   .tabs .tab, .pf-wtabs .tab { padding-left: 14px; padding-right: 14px; font-size: 13px; }
 }
+
+/* ---------- strategy gate: locked rail items + locked screen ---------- */
+.rail-item.locked { opacity: .38; }
+.rail-item.locked:hover { background: var(--card-2); color: var(--ink-3); }
+.rail-lock {
+  position: absolute; top: 5px; right: 6px; display: inline-flex;
+  color: var(--ink-3);
+}
+.locked-wrap {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 12px; padding: 90px 24px;
+}
+.locked-wrap .locked-ic {
+  width: 62px; height: 62px; border-radius: 18px; color: var(--ink-3);
+  background: var(--card); border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+}
+.locked-wrap h2 { margin: 8px 0 0; }
+.locked-wrap p { color: var(--ink-3); max-width: 420px; margin: 0 0 10px; font-size: 14px; }

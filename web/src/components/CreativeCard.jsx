@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Icon from './Icon.jsx';
+import { api } from '../api.js';
 import { arCss, downloadAsset, fileExt } from './Composer.jsx';
 import { useApp } from '../App.jsx';
 
@@ -8,6 +9,7 @@ export default function CreativeCard({ creative, aspect = '1:1', animating, onEd
   const { say } = useApp();
   const video = !!creative.videoPath;
   const [dl, setDl] = useState(false);
+  const [g, setG] = useState(null); // optimistic grade override until the PATCH lands
 
   const download = async () => {
     if (dl) return;
@@ -17,6 +19,19 @@ export default function CreativeCard({ creative, aspect = '1:1', animating, onEd
       await downloadAsset(src, `marque-${creative.id}.${video ? 'mp4' : fileExt(creative.imagePath)}`);
     } catch (e) { say(e.message); }
     setDl(false);
+  };
+
+  // 1–5 star grading — persisted on the creative via the edit endpoint.
+  // Clicking the active grade clears it (0).
+  const grade = g ?? creative.grade ?? 0;
+  const rate = async (n) => {
+    const v = grade === n ? 0 : n;
+    setG(v);
+    try {
+      await api.editCreative(creative.id, { grade: v });
+      onChanged?.();
+    } catch (e) { say(e.message); }
+    setG(null);
   };
 
   return (
@@ -49,6 +64,15 @@ export default function CreativeCard({ creative, aspect = '1:1', animating, onEd
       </div>
       <div className="meta">
         <span className="ttl" title={creative.headline}>{creative.headline || 'Untitled creative'}</span>
+        <span className="grade" role="radiogroup" aria-label="Grade this creative"
+          title={grade ? `Grade ${grade}/5` : 'Not graded'}>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button key={n} type="button"
+              className={`grade-star${grade >= n ? ' on' : ''}`}
+              aria-label={`${n} star${n > 1 ? 's' : ''}`} aria-checked={grade === n} role="radio"
+              onClick={() => rate(n)}>★</button>
+          ))}
+        </span>
       </div>
     </div>
   );

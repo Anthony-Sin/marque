@@ -127,9 +127,11 @@ export default function BrandBook() {
   };
 
   const previewNewTab = () => {
-    if (book?.publishedSlug) { window.open(`/b/${book.publishedSlug}`, '_blank'); return; }
+    if (book?.publishedSlug) { window.open(`/b/${book.publishedSlug}`, '_blank', 'noopener'); return; }
     const blob = new Blob([bookHtml(profile, book)], { type: 'text/html' });
-    window.open(URL.createObjectURL(blob), '_blank');
+    const u = URL.createObjectURL(blob);
+    window.open(u, '_blank', 'noopener');
+    setTimeout(() => URL.revokeObjectURL(u), 60_000);
   };
 
   const qlooMode = status?.qloo === 'live' ? 'live' : 'demo';

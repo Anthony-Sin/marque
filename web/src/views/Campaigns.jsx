@@ -58,6 +58,7 @@ export default function Campaigns() {
   const [editing, setEditing] = useState(null);      // creative in the editor modal
   const [animating, setAnimating] = useState('');    // creative id currently animating
   const [evi, setEvi] = useState(false);
+  const [handoff, setHandoff] = useState(null);      // {strategy, notes, prompt, productId}
 
   const reload = async () => {
     try { setCampaigns((await api.listCampaigns()).campaigns || []); }
@@ -65,23 +66,77 @@ export default function Campaigns() {
   };
   useEffect(() => { reload(); }, []);
 
-  // Strategy board handoff: 'marque.strategyBrief' prefills the composer once, then is consumed.
+  // Strategy board handoff: 'strategyHandoff' is written by the Strategy view's
+  // "Use this strategy" button. Consume once → banner + auto-start brief generation.
   useEffect(() => {
     try {
-      const raw = sessionStorage.getItem('marque.strategyBrief');
+      const raw = sessionStorage.getItem('strategyHandoff');
       if (!raw) return;
-      sessionStorage.removeItem('marque.strategyBrief');
+      sessionStorage.removeItem('strategyHandoff');
       const data = JSON.parse(raw);
-      const text = typeof data === 'string' ? data : data?.prompt;
-      if (text) {
-        setSeed({ text });
-        say('Strategy loaded — review the prompt and generate the brief');
-      }
+      const s = data?.strategy;
+      if (!s) return;
+      setHandoff(data);
+      const b = s.brief || {};
+      const merged = [
+        `Campaign: ${b.title || s.title}`,
+        b.angle ? `Angle: ${b.angle}` : '',
+        b.audience ? `Audience: ${b.audience}` : '',
+        b.keyMessage ? `Key message: ${b.keyMessage}` : '',
+        (s.channels || []).length ? `Channels: ${s.channels.map((c) => c.name || c).join(', ')}` : '',
+        data.notes ? `Notes from the strategy board: ${data.notes}` : '',
+        data.prompt ? `Original ask: ${data.prompt}` : '',
+      ].filter(Boolean).join('\n');
+      setSeed({ text: merged, productId: data.productId || null });
+      genBrief({ prompt: merged, productId: data.productId || undefined });
+      say('Strategy loaded — drafting your brief');
     } catch { /* malformed stash — ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const suggestions = useMemo(() => buildSuggestions(profile).filter((s) => !dismissed.has(s.id)), [profile, dismissed]);
   const open = (campaigns || []).find((c) => c.id === openId) || null;
+
+  // group "Your campaigns" by the strategy that spawned them (handoff metadata)
+  const groups = useMemo(() => {
+    const byStrat = new Map();  // key → { key, title, items }
+    const other = [];
+    for (const c of campaigns || []) {
+      const key = c.strategyId || c.strategyTitle;
+      if (!key) { other.push(c); continue; }
+      if (!byStrat.has(key)) byStrat.set(key, { key, title: c.strategyTitle || 'strategy', items: [] });
+      byStrat.get(key).items.push(c);
+    }
+    return { strat: [...byStrat.values()], other };
+  }, [campaigns]);
+
+  // one campaign summary card — shared by grouped + ungrouped lists
+  const campCard = (c) => (
+    <div key={c.id} className="card camp-card">
+      <div className="row" style={{ justifyContent: 'space-between' }}>
+        <h4>{c.brief?.title || 'Untitled campaign'}</h4>
+        <span className="chan-chip">{c.aspectRatio || '1:1'}</span>
+      </div>
+      {c.brief?.angle && <p className="muted small" style={{ margin: 0 }}>{c.brief.angle}</p>}
+      <div className="chip-row mt8">
+        {(c.brief?.channels || []).map((ch) => <span key={ch} className="chan-chip">{ch}</span>)}
+        <SignalChips signals={c.qlooSignals || []} max={3} />
+      </div>
+      {!!c.creatives?.length && (
+        <div className="thumbs">
+          {c.creatives.slice(0, 4).map((cr) => (
+            <span key={cr.id} className="media-tile">{cr.imagePath && <img src={cr.imagePath} alt="" loading="lazy" />}</span>
+          ))}
+          {c.creatives.length > 4 && <span className="more">+{c.creatives.length - 4}</span>}
+        </div>
+      )}
+      <div className="foot">
+        <span className="muted small">{c.creatives?.length || 0} creatives</span>
+        <span className="grow" />
+        <button className="btn sm" onClick={() => setOpenId(c.id)}>Open</button>
+      </div>
+    </div>
+  );
 
   // Generate Brief → brief review card
   const genBrief = async (payload) => {
@@ -109,12 +164,16 @@ export default function Campaigns() {
         ingredients: draft?.ingredients,
         aspectRatio: draft?.aspectRatio,
         qlooSignals: brief.qlooSignals,   // server persists these onto the campaign
+        notes: handoff?.notes || '',      // keep board notes for creative generation
+        strategyId: handoff?.strategyId || handoff?.strategy?.id || undefined,
+        strategyTitle: handoff?.strategyTitle || handoff?.strategy?.title || undefined,
       });
       if (job?.id) {
         await pollJob(job.id).catch((e) => say(e.message));
       }
       await reload();
       setBrief(null);
+      setHandoff(null);
       if (campaign?.id) setOpenId(campaign.id);
       say('Campaign ready');
     } catch (e) { say(e.message); }
@@ -162,6 +221,7 @@ export default function Campaigns() {
               animating={animating === cr.id}
               onEdit={setEditing}
               onAnimate={animateOne}
+              onChanged={reload}
             />
           ))}
         </div>
@@ -193,6 +253,17 @@ export default function Campaigns() {
         <h1 className="display">Campaigns</h1>
         <p className="sub">Start from our suggestions or prompt to create a new campaign.</p>
       </div>
+
+      {handoff && (
+        <div className="camp-handoff">
+          <Icon name="sparkle" size={14} />
+          <span>Campaign from strategy: <b>{handoff.strategy?.title || 'untitled'}</b></span>
+          {(handoff.strategy?.channels || []).slice(0, 4).map((c) => (
+            <span key={c.name || c} className="chan-chip">{c.name || c}</span>
+          ))}
+          <button className="x" title="Dismiss" onClick={() => setHandoff(null)}>✕</button>
+        </div>
+      )}
 
       <Composer seed={seed} busy={busy} note={note} onGenerate={genBrief} />
 
@@ -230,7 +301,7 @@ export default function Campaigns() {
             </div>
           )}
           <div className="row mt16" style={{ justifyContent: 'flex-end', gap: 10 }}>
-            <button className="btn ghost" onClick={() => setBrief(null)}>Discard</button>
+            <button className="btn ghost" onClick={() => { setBrief(null); setHandoff(null); }}>Discard</button>
             <button className="btn lime" disabled={busy} onClick={confirmBrief}>
               <Icon name="check" /> Confirm — generate creatives
             </button>
@@ -283,34 +354,22 @@ export default function Campaigns() {
           ))}
         </div>
       ) : campaigns.length ? (
-        <div className="grid c2">
-          {campaigns.map((c) => (
-            <div key={c.id} className="card camp-card">
-              <div className="row" style={{ justifyContent: 'space-between' }}>
-                <h4>{c.brief?.title || 'Untitled campaign'}</h4>
-                <span className="chan-chip">{c.aspectRatio || '1:1'}</span>
+        <>
+          {groups.strat.map((g) => (
+            <div key={g.key} className="camp-group">
+              <div className="camp-group-label">
+                <Icon name="sparkle" size={11} /> from strategy: <b>{g.title}</b>
               </div>
-              {c.brief?.angle && <p className="muted small" style={{ margin: 0 }}>{c.brief.angle}</p>}
-              <div className="chip-row mt8">
-                {(c.brief?.channels || []).map((ch) => <span key={ch} className="chan-chip">{ch}</span>)}
-                <SignalChips signals={c.qlooSignals || []} max={3} />
-              </div>
-              {!!c.creatives?.length && (
-                <div className="thumbs">
-                  {c.creatives.slice(0, 4).map((cr) => (
-                    <span key={cr.id} className="media-tile">{cr.imagePath && <img src={cr.imagePath} alt="" loading="lazy" />}</span>
-                  ))}
-                  {c.creatives.length > 4 && <span className="more">+{c.creatives.length - 4}</span>}
-                </div>
-              )}
-              <div className="foot">
-                <span className="muted small">{c.creatives?.length || 0} creatives</span>
-                <span className="grow" />
-                <button className="btn sm" onClick={() => setOpenId(c.id)}>Open</button>
-              </div>
+              <div className="grid c2">{g.items.map(campCard)}</div>
             </div>
           ))}
-        </div>
+          {!!groups.other.length && (
+            <div className="camp-group">
+              {!!groups.strat.length && <div className="camp-group-label">Other campaigns</div>}
+              <div className="grid c2">{groups.other.map(campCard)}</div>
+            </div>
+          )}
+        </>
       ) : (
         <div className="empty">
           <p>No campaigns yet — generate a brief above to get started.</p>

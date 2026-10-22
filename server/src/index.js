@@ -85,7 +85,7 @@ app.put('/api/profile', h(async (req, res) => {
 }));
 app.delete('/api/profile', h(async (_req, res) => {
   set('profile', null); set('catalog', []); set('campaigns', []); set('photoshoots', []);
-  set('websites', []); set('brandbook', null);
+  set('websites', []); set('brandbook', null); set('lastStrategy', null);
   ok(res, { profile: null });
 }));
 app.post('/api/agent', h(async (req, res) => ok(res, await agentChat(req.body?.messages))));
@@ -168,12 +168,22 @@ app.post('/api/strategy', h(async (req, res) => {
     } catch { urlContext = { url: inlineUrl }; }
   }
   const finalPrompt = raw || `analyze this product/site and suggest campaign strategies: ${inlineUrl}`;
-  ok(res, await generateStrategies({ prompt: finalPrompt, profile: brand.currentProfile(), product, urlContext }));
+  const result = await generateStrategies({ prompt: finalPrompt, profile: brand.currentProfile(), product, urlContext });
+  result.sub = { prompt: finalPrompt, productId: productId || '', url: inlineUrl || '' };
+  set('lastStrategy', result);   // persist so the board survives navigation
+  ok(res, result);
 }));
+app.get('/api/strategy', h(async (_req, res) => ok(res, { board: get('lastStrategy') || null })));
+const exCache = new Map(); // in-memory per-board cache — re-visiting a card doesn't re-scrape
 app.post('/api/strategy/examples', h(async (req, res) => {
   const { strategy, audienceRead } = req.body || {};
   if (!strategy?.id && !strategy?.title) return res.status(400).json({ error: 'strategy required' });
-  ok(res, await generateExamples({ strategy, profile: brand.currentProfile(), audienceRead }));
+  const key = strategy.id || strategy.title;
+  if (exCache.has(key)) return ok(res, exCache.get(key));
+  const data = await generateExamples({ strategy, profile: brand.currentProfile(), audienceRead });
+  if (exCache.size > 30) exCache.clear();
+  exCache.set(key, data);
+  ok(res, data);
 }));
 
 // ---------- campaigns + creatives ----------
@@ -191,7 +201,7 @@ app.post('/api/campaigns/brief', h(async (req, res) => {
   ok(res, await campaigns.generateBrief(req.body || {}, brand.currentProfile()));
 }));
 app.post('/api/campaigns', h(async (req, res) => {
-  const { brief, productId, ingredients, aspectRatio, qlooSignals } = req.body || {};
+  const { brief, productId, ingredients, aspectRatio, qlooSignals, notes, strategyId, strategyTitle } = req.body || {};
   if (!brief?.title) return res.status(400).json({ error: 'brief required' });
   const campaign = {
     id: uid(), createdAt: now(), brief,
@@ -200,6 +210,9 @@ app.post('/api/campaigns', h(async (req, res) => {
     aspectRatio: ['1:1', '4:5', '9:16', '16:9'].includes(aspectRatio) ? aspectRatio : '1:1',
     creatives: [],
     qlooSignals: qlooSignals || [],
+    notes: notes || '',
+    strategyId: strategyId || null,
+    strategyTitle: strategyTitle || '',
   };
   push('campaigns', campaign);
   const profile = brand.currentProfile();
@@ -219,10 +232,11 @@ app.get('/api/campaigns/:id', h(async (req, res) => {
 app.post('/api/creatives/:id/edit', h(async (req, res) => {
   const hit = findCreative(req.params.id);
   if (!hit) return res.status(404).json({ error: 'not found' });
-  const { headline, body, cta, layout } = req.body || {};
+  const { headline, body, cta, layout, grade } = req.body || {};
   if (headline != null) hit.creative.headline = headline;
   if (body != null) hit.creative.body = body;
   if (cta != null) hit.creative.cta = cta;
+  if (grade != null) hit.creative.grade = Math.max(0, Math.min(5, +grade || 0));
   if (layout && typeof layout === 'object') hit.creative.layout = { ...hit.creative.layout, ...layout };
   saveCampaign(hit.campaign);
   ok(res, { creative: hit.creative });
@@ -412,6 +426,28 @@ app.post('/api/websites/:id/unpublish', h(async (req, res) => {
   if (!w) return res.status(404).json({ error: 'not found' });
   update('websites', w.id, { publishedSlug: null });
   ok(res, { ok: true });
+}));
+// analyze the current site vs audience/competitor taste signals → fix-list
+app.post('/api/websites/improve', h(async (req, res) => {
+  const profile = brand.currentProfile();
+  if (!profile) return res.status(400).json({ error: 'build a profile first' });
+  const { url } = req.body || {};
+  const target = url || profile.source?.url;
+  if (!target) return res.status(422).json({ error: 'no site on file — add a website URL first' });
+  let site = null;
+  try { site = await fetchSite(target); } catch { /* continue w/o scrape */ }
+  const brandAffs = (profile.qloo?.affinities || []).find((a) => a.type === 'urn:entity:brand')?.entities || [];
+  const competitors = brandAffs.slice(0, 4).map((e) => e.name);
+  const j = await chatJSON([
+    { role: 'system', content: 'You are a conversion-focused web strategist. Strict JSON only.' },
+    { role: 'user', content: [
+      `Brand: ${profile.name} — ${profile.tagline || ''}. Site: ${target || 'unknown'}.`,
+      site ? `Site title: ${site.title}. Description: ${site.description}. Socials found: ${Object.keys(site.socials || {}).join(', ') || 'none'}. Missing socials: ${(site.missingSocials || []).join(', ') || 'none'}.` : '',
+      `Audience-adjacent brands (taste graph): ${competitors.join(', ') || 'unknown'}.`,
+      `Return {"suggestions":[{"area","fix","why","effort":"low|med|high","impact":"low|med|high"}],"competitorNotes":[{"brand","steal"}]} — 5-8 concrete fixes ranked by impact, each tied to the audience data or a competitor pattern. competitorNotes = what to steal from each adjacent brand.`,
+    ].filter(Boolean).join('\n') },
+  ], { maxTokens: 2600 });
+  ok(res, { url: target, scraped: !!site, socials: site?.socials || {}, missingSocials: site?.missingSocials || [], suggestions: j.suggestions || [], competitorNotes: j.competitorNotes || [], competitors });
 }));
 app.delete('/api/websites/:id/versions/:vid', h(async (req, res) => {
   const w = find('websites', req.params.id);

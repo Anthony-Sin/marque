@@ -140,7 +140,11 @@ export default function Composer({
   const [aspect, setAspect] = useState('4:5');
   const [menu, setMenu] = useState(null);        // 'product' | 'images' | 'aspect'
 
-  useEffect(() => { if (seed && seed.text != null) setPrompt(seed.text); }, [seed]);
+  useEffect(() => {
+    if (!seed) return;
+    if (seed.text != null) setPrompt(seed.text);
+    if (seed.productId != null) setProductId(seed.productId);
+  }, [seed]);
 
   const catalog = profile?.catalog || [];
   const profileImages = profile?.images || [];

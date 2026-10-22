@@ -72,6 +72,8 @@ export async function buildProfileFromWebsite(url, { includeListing } = {}) {
     return { id, path: im.path, url: im.url, caption: im.caption || im.alt || '' };
   });
   const profile = normalizeProfile({ ...dna, images }, { source: { type: 'website', url } });
+  profile.socials = scraped.socials || {};
+  profile.missingSocials = scraped.missingSocials || [];
   profile.qloo = await enrichProfile(profile);
   persistProfile(profile);
   return { profile, evidence: { qloo: qlooEvidence(profile.qloo) } };

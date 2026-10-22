@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Marque — design directions</title>
+<style>
+  body { margin:0; font-family: ui-sans-serif, system-ui, sans-serif; background:#111; color:#eee; }
+  header { padding:28px 32px 8px; }
+  h1 { margin:0; font-size:22px; font-weight:600; }
+  p.sub { color:#999; margin:6px 0 0; font-size:14px; max-width:720px; }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.14em; color:#d3e374; margin:34px 32px 0; font-weight:600; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(420px,1fr)); gap:22px; padding:16px 32px 40px; }
+  a.card { display:block; background:#1b1b1d; border:1px solid #2c2c30; border-radius:16px; overflow:hidden; color:#eee; text-decoration:none; transition:transform .15s, border-color .15s; }
+  a.card:hover { transform:translateY(-3px); border-color:#d3e374; }
+  a.card img { width:100%; height:280px; object-fit:cover; object-position:top; display:block; background:#222; }
+  .meta { padding:14px 18px; display:flex; align-items:center; gap:10px; }
+  .meta b { font-size:15px; white-space:nowrap; }
+  .meta span { color:#999; font-size:12.5px; }
+  .tag { margin-left:auto; font-size:11px; padding:3px 9px; border:1px solid #3a3a3a; border-radius:999px; color:#d3e374; white-space:nowrap; }
+  .tag.dark { color:#9adcf0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Marque — pick a direction</h1>
+  <p class="sub">Five complete re-renders of the whole studio — every view (Onboarding, Business DNA, Strategy Board, Campaigns, Photoshoot, Websites, Brand Book, Agent rail) driven by the same live <code>window.DATA</code>. Click a card to walk it full-size; the winner gets ported onto the real backend.</p>
+</header>
+<h2>Full-app directions — same data, five languages</h2>
+<div class="grid">
+  <a class="card" href="mockup-app-cinema.html" target="_blank">
+    <img src="shot-app-cinema.png" alt="cinema">
+    <div class="meta"><b>Director's Cut</b><span>film-production suite · sprocket rail · scene title cards · intercom agent</span><span class="tag">dark · amber</span></div>
+  </a>
+  <a class="card" href="mockup-app-bloom.html" target="_blank">
+    <img src="shot-app-bloom.png" alt="bloom">
+    <div class="meta"><b>Bloom</b><span>apple-page light · ultra-rounded · count-up stats · spring-lime accent</span><span class="tag dark">light</span></div>
+  </a>
+  <a class="card" href="mockup-app-atelier.html" target="_blank">
+    <img src="shot-app-atelier.png" alt="atelier">
+    <div class="meta"><b>Atelier</b><span>printed brand book · cream paper · Didone serif · style-guide sections</span><span class="tag dark">light · olive</span></div>
+  </a>
+  <a class="card" href="mockup-app-console.html" target="_blank">
+    <img src="shot-app-console.png" alt="console">
+    <div class="meta"><b>Ops Deck</b><span>mission-control console · radar scope · mono telemetry · cyan phosphor</span><span class="tag">dark · cyan</span></div>
+  </a>
+  <a class="card" href="mockup-app-masonry.html" target="_blank">
+    <img src="shot-app-masonry.png" alt="masonry">
+    <div class="meta"><b>Pinboard</b><span>media-first masonry · lightbox + ‹ › controls · quote tiles · closest to current</span><span class="tag">dark · lime</span></div>
+  </a>
+</div>
+<h2>Earlier — strategy-board directions (bento won, now live)</h2>
+<div class="grid">
+  <a class="card" href="mockup-bento.html" target="_blank">
+    <img src="shot-bento.png" alt="bento">
+    <div class="meta"><b>Bento Board</b><span>modular tiles · the picked direction — shipped in the app</span><span class="tag">shipped</span></div>
+  </a>
+  <a class="card" href="mockup-ops-console.html" target="_blank">
+    <img src="shot-ops-console.png" alt="ops console">
+    <div class="meta"><b>Ops Console</b><span>dark telemetry deck · mono metrics · lime</span><span class="tag">alt</span></div>
+  </a>
+  <a class="card" href="mockup-editorial.html" target="_blank">
+    <img src="shot-editorial.png" alt="editorial">
+    <div class="meta"><b>Strategy Dossier</b><span>editorial magazine · Didone serif · print-spread</span><span class="tag">alt</span></div>
+  </a>
+</div>
+</body>
+</html>

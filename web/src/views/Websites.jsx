@@ -10,15 +10,29 @@ import './studio.css';
 
 const CREATE_STAGES = ['Reading your Business Profile…', 'Drafting copy & layout…', 'Styling with your palette…', 'Putting the pages together…'];
 const EDIT_STAGES = ['Reworking the layout…', 'Rewriting the copy…', 'Polishing the details…'];
+const IMPROVE_STAGES = ['Scraping your site…', 'Checking linked socials…', 'Reading audience-adjacent brands…', 'Ranking fixes by impact…'];
+
+const absUrl = (u) => (!u ? '' : /^https?:\/\//i.test(u) ? u : `https://${u}`);
+const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : '');
+const SOC_ICON = { instagram: 'image', tiktok: 'film', youtube: 'play', x: 'share', twitter: 'share', facebook: 'share', linkedin: 'book', pinterest: 'image' };
+const socIcon = (p) => SOC_ICON[String(p || '').toLowerCase()] || 'link';
+const IMPACT_ORD = { high: 0, med: 1, medium: 1, low: 2 };
+const impOrd = (v) => IMPACT_ORD[String(v || '').toLowerCase()] ?? 3;
 
 export default function Websites() {
-  const { say, status } = useApp();
+  const { say, status, profile } = useApp();
+  const [tab, setTab] = useState('improve');       // 'improve' (primary) | 'site' (generate/manage)
   const [sites, setSites] = useState(null);
   const [vid, setVid] = useState(null);
   const [prompt, setPrompt] = useState('');
   const [editOpen, setEditOpen] = useState(false);
   const [busy, setBusy] = useState('');            // 'create' | 'edit' | 'del' | 'pub'
+  const [impUrl, setImpUrl] = useState('');
+  const [imp, setImp] = useState(null);            // improveWebsite result
+  const [impErr, setImpErr] = useState('');
+  const [impBusy, setImpBusy] = useState(false);
   const stageNote = useStages(busy === 'edit' ? EDIT_STAGES : CREATE_STAGES, busy === 'create' || busy === 'edit');
+  const impStage = useStages(IMPROVE_STAGES, impBusy, 2000);
   const site = sites?.[0] || null;
 
   const reload = async () => {
@@ -26,6 +40,12 @@ export default function Websites() {
     catch (e) { say(e.message); setSites([]); }
   };
   useEffect(() => { reload(); }, []);
+
+  // prefill the audit input with the profile's source site once it loads
+  useEffect(() => {
+    if (!impUrl && profile?.source?.url) setImpUrl(profile.source.url);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile]);
 
   const versions = site?.versions || [];
   const active = versions.find((v) => v.id === vid)
@@ -63,7 +83,9 @@ export default function Websites() {
 
   const previewNewTab = () => {
     const blob = new Blob([active?.html || ''], { type: 'text/html' });
-    window.open(URL.createObjectURL(blob), '_blank');
+    const u = URL.createObjectURL(blob);
+    window.open(u, '_blank', 'noopener');
+    setTimeout(() => URL.revokeObjectURL(u), 60_000);
   };
 
   const delVersion = async () => {
@@ -97,50 +119,154 @@ export default function Websites() {
     setBusy('');
   };
 
-  // ---------- generating hero ----------
-  if (busy === 'create') {
-    return (
-      <div className="section">
-        <div className="page-head" style={{ paddingBottom: 0 }}>
-          <p className="sub" style={{ maxWidth: 'none' }}>Your site is built from your Business Profile. Feel free to edit anytime.</p>
+  // ---------- improve my site ----------
+  const analyze = async () => {
+    if (impBusy) return;
+    setImpBusy(true); setImpErr('');
+    try {
+      setImp(await api.improveWebsite(impUrl.trim() || undefined));
+    } catch (e) {
+      setImpErr(e.message || 'analysis failed');
+      say(e.message);
+    }
+    setImpBusy(false);
+  };
+
+  const impSugs = (Array.isArray(imp?.suggestions) ? imp.suggestions : [])
+    .slice().sort((a, b) => impOrd(a.impact) - impOrd(b.impact) || impOrd(a.effort) - impOrd(b.effort));
+  const impSocials = Object.entries(imp?.socials || {}).filter(([, u]) => u);
+  const impMissing = Array.isArray(imp?.missingSocials) ? imp.missingSocials : [];
+  const impSteals = Array.isArray(imp?.competitorNotes) ? imp.competitorNotes : [];
+  const impComps = Array.isArray(imp?.competitors) ? imp.competitors : [];
+
+  const renderImprove = () => (
+    <div className="imp-wrap">
+      <div className="card imp-ask">
+        <h3 className="display">Improve my site</h3>
+        <p className="muted small">
+          We scrape your live site, check which socials it links, then rank concrete fixes —
+          benchmarked against the brands your audience already loves.
+        </p>
+        <div className="imp-ask-row">
+          <span className="imp-urlwrap">
+            <Icon name="globe" size={14} />
+            <input
+              value={impUrl}
+              placeholder="https://yoursite.com"
+              onChange={(e) => setImpUrl(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') analyze(); }}
+            />
+          </span>
+          <button className="btn lime" disabled={impBusy} onClick={analyze}>
+            {impBusy ? <span className="spinner" /> : <Icon name="sparkle" />}
+            {impBusy ? 'Analyzing…' : 'Analyze vs competitors'}
+          </button>
         </div>
+      </div>
+
+      {impBusy && (
+        <div className="gen-note"><span className="spinner" />{impStage}</div>
+      )}
+
+      {impErr && !impBusy && (
+        <div className="imp-err">
+          <Icon name="x" size={14} /> Couldn't analyze that site — {impErr}
+          <button className="btn ghost sm" onClick={analyze}><Icon name="refresh" size={13} /> Retry</button>
+        </div>
+      )}
+
+      {imp && !impBusy && (
+        <>
+          {(!!impSocials.length || !!impMissing.length) && (
+            <div className="card pad">
+              <div className="section-label" style={{ margin: '0 0 12px' }}>Socials</div>
+              <div className="chip-row">
+                {impSocials.map(([plat, href]) => (
+                  <a key={plat} className="imp-soc" href={absUrl(href)} target="_blank" rel="noopener noreferrer">
+                    <Icon name={socIcon(plat)} size={13} /> {plat}
+                  </a>
+                ))}
+                {impMissing.map((p) => (
+                  <span key={p} className="imp-miss" title={`Link ${cap(p)} on your site so we can plan for it`}>
+                    <Icon name="x" size={11} /> No {cap(p)} linked on your site
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!!impSugs.length && (
+            <div>
+              <div className="section-label">Fix list — ranked by impact</div>
+              <div className="grid c2">
+                {impSugs.map((s, i) => (
+                  <div key={i} className="card imp-sug">
+                    <div className="imp-sug-top">
+                      <span className="imp-area">{s.area || 'site'}</span>
+                      <span className="imp-badges">
+                        {!!s.impact && <span className={`imp-badge impact-${String(s.impact).toLowerCase()}`}>impact {s.impact}</span>}
+                        {!!s.effort && <span className="imp-badge">effort {s.effort}</span>}
+                      </span>
+                    </div>
+                    {!!s.fix && <div className="imp-fix">{s.fix}</div>}
+                    {!!s.why && <div className="imp-why">{s.why}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!!impSteals.length && (
+            <div className="card pad">
+              <div className="section-label" style={{ margin: '0 0 6px' }}>What to steal</div>
+              {impSteals.map((n, i) => (
+                <div className="imp-steal" key={i}>
+                  <b>What to steal from {n.brand}</b>
+                  <span>{n.steal}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {!!impComps.length && (
+            <div className="imp-note">Benchmarked against: {impComps.join(', ')}</div>
+          )}
+        </>
+      )}
+    </div>
+  );
+
+  // ---------- generate / manage site ----------
+  const renderSite = () => {
+    if (busy === 'create') {
+      return (
         <div className="gen-hero">
           <div className="icon-hero"><Icon name="site" size={28} /></div>
           <div className="big">Generating your Website …</div>
           <div className="muted">{stageNote}</div>
           <div className="mt16"><div className="spinner" style={{ margin: '0 auto' }} /></div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  // ---------- initial load skeleton ----------
-  if (sites === null) {
-    return (
-      <div className="section" style={{ paddingBottom: 80 }}>
-        <div className="page-head" style={{ textAlign: 'left', padding: '26px 0 8px' }}>
-          <span className="skel skel-line" style={{ width: 210, height: 30, borderRadius: 14 }} />
-          <span className="skel skel-line w55" style={{ maxWidth: 460, marginTop: 10 }} />
-        </div>
-        <div className="ver-tabs">
-          {[0, 1, 2].map((i) => (
-            <span key={i} className="ver-tab" style={{ cursor: 'default' }}>
-              <span className="thumb skel" />
-              <span className="skel skel-line w55" style={{ margin: '7px auto 0' }} />
-            </span>
-          ))}
-        </div>
-        <span className="skel" style={{ height: '62vh', borderRadius: 16 }} />
-      </div>
-    );
-  }
+    if (sites === null) {
+      return (
+        <>
+          <div className="ver-tabs">
+            {[0, 1, 2].map((i) => (
+              <span key={i} className="ver-tab" style={{ cursor: 'default' }}>
+                <span className="thumb skel" />
+                <span className="skel skel-line w55" style={{ margin: '7px auto 0' }} />
+              </span>
+            ))}
+          </div>
+          <span className="skel" style={{ height: '62vh', borderRadius: 16, display: 'block' }} />
+        </>
+      );
+    }
 
-  if (!site) {
-    return (
-      <div className="section">
-        <div className="page-head" style={{ paddingBottom: 0 }}>
-          <p className="sub" style={{ maxWidth: 'none' }}>Your site is built from your Business Profile. Feel free to edit anytime.</p>
-        </div>
+    if (!site) {
+      return (
         <div className="gen-hero">
           <div className="icon-hero"><Icon name="site" size={28} /></div>
           <div className="big">Your site is built from your Business Profile</div>
@@ -159,91 +285,103 @@ export default function Websites() {
             </button>
           </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  // ---------- site view ----------
-  return (
-    <div className="section" style={{ paddingBottom: 80 }}>
-      <div className="page-head" style={{ textAlign: 'left', padding: '26px 0 8px' }}>
-        <div className="row wrap">
-          <h2 className="display" style={{ fontSize: 32, margin: 0 }}>Your Website</h2>
-          <span className="grow" />
+    return (
+      <>
+        <div className="row wrap" style={{ justifyContent: 'flex-end', marginBottom: 4 }}>
           <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'demo'} />
         </div>
-        <p className="sub" style={{ margin: '6px 0 0', maxWidth: 640, textAlign: 'left' }}>
-          Built from your Business Profile — copy grounded in your Taste Signature.
-        </p>
-      </div>
 
-      <VersionTabs
-        versions={versions}
-        activeId={active?.id}
-        onPick={setVid}
-        busy={busy === 'edit'}
-        onRegenerate={() => edit('Regenerate the site with a fresh variation of layout and copy')}
-      />
-
-      <div className="toolbar mb16">
-        {editOpen ? (
-          <>
-            <input
-              className="site-prompt"
-              autoFocus
-              value={prompt}
-              placeholder="Describe the change (e.g. darker hero, add testimonials section)…"
-              onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && edit()}
-            />
-            <button className="btn lime sm" disabled={busy === 'edit'} onClick={() => edit()}>
-              {busy === 'edit' ? <span className="spinner" /> : <Icon name="send" />} {busy === 'edit' ? 'Editing…' : 'Apply'}
-            </button>
-            <button className="btn ghost sm" onClick={() => setEditOpen(false)}>Cancel</button>
-          </>
-        ) : (
-          <>
-            <button className="btn ghost sm" disabled={busy === 'edit'} onClick={() => setEditOpen(true)}>
-              <Icon name="edit" /> Edit
-            </button>
-            <button className="btn ghost sm" disabled={busy === 'edit'}
-              onClick={() => edit('Regenerate the site with a fresh variation of layout and copy')}>
-              {busy === 'edit' ? <span className="spinner" /> : <Icon name="refresh" />} Regenerate
-            </button>
-            <button className="btn ghost sm" onClick={previewNewTab}>
-              <Icon name="eye" /> Preview in New Tab
-            </button>
-            <span className="grow" />
-            <button className="btn ghost sm" disabled={busy === 'del'} onClick={delVersion}>
-              {busy === 'del' ? <span className="spinner" /> : <Icon name="trash" />} Delete version
-            </button>
-          </>
-        )}
-      </div>
-
-      <div className="preview-frame">
-        {busy === 'edit' ? (
-          <div className="loading-wrap" style={{ height: '100%', background: 'var(--card)' }}>
-            <div className="spinner" />
-            <div className="muted">{stageNote}</div>
-          </div>
-        ) : active ? (
-          <iframe title="site preview" srcDoc={active.html} sandbox="allow-same-origin allow-scripts" />
-        ) : (
-          <div className="empty" style={{ height: '100%', background: 'var(--card)' }}>No version selected — pick one above.</div>
-        )}
-      </div>
-
-      <div className="mt16">
-        <PublishBar
-          publishedSlug={site.publishedSlug}
-          base="/s/"
-          label="this site"
-          busy={busy === 'pub'}
-          onPublish={publish}
-          onUnpublish={unpublish}
+        <VersionTabs
+          versions={versions}
+          activeId={active?.id}
+          onPick={setVid}
+          busy={busy === 'edit'}
+          onRegenerate={() => edit('Regenerate the site with a fresh variation of layout and copy')}
         />
+
+        <div className="toolbar mb16">
+          {editOpen ? (
+            <>
+              <input
+                className="site-prompt"
+                autoFocus
+                value={prompt}
+                placeholder="Describe the change (e.g. darker hero, add testimonials section)…"
+                onChange={(e) => setPrompt(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && edit()}
+              />
+              <button className="btn lime sm" disabled={busy === 'edit'} onClick={() => edit()}>
+                {busy === 'edit' ? <span className="spinner" /> : <Icon name="send" />} {busy === 'edit' ? 'Editing…' : 'Apply'}
+              </button>
+              <button className="btn ghost sm" onClick={() => setEditOpen(false)}>Cancel</button>
+            </>
+          ) : (
+            <>
+              <button className="btn ghost sm" disabled={busy === 'edit'} onClick={() => setEditOpen(true)}>
+                <Icon name="edit" /> Edit
+              </button>
+              <button className="btn ghost sm" disabled={busy === 'edit'}
+                onClick={() => edit('Regenerate the site with a fresh variation of layout and copy')}>
+                {busy === 'edit' ? <span className="spinner" /> : <Icon name="refresh" />} Regenerate
+              </button>
+              <button className="btn ghost sm" onClick={previewNewTab}>
+                <Icon name="eye" /> Preview in New Tab
+              </button>
+              <span className="grow" />
+              <button className="btn ghost sm" disabled={busy === 'del'} onClick={delVersion}>
+                {busy === 'del' ? <span className="spinner" /> : <Icon name="trash" />} Delete version
+              </button>
+            </>
+          )}
+        </div>
+
+        <div className="preview-frame">
+          {busy === 'edit' ? (
+            <div className="loading-wrap" style={{ height: '100%', background: 'var(--card)' }}>
+              <div className="spinner" />
+              <div className="muted">{stageNote}</div>
+            </div>
+          ) : active ? (
+            <iframe title="site preview" srcDoc={active.html} sandbox="" />
+          ) : (
+            <div className="empty" style={{ height: '100%', background: 'var(--card)' }}>No version selected — pick one above.</div>
+          )}
+        </div>
+
+        <div className="mt16">
+          <PublishBar
+            publishedSlug={site.publishedSlug}
+            base="/s/"
+            label="this site"
+            busy={busy === 'pub'}
+            onPublish={publish}
+            onUnpublish={unpublish}
+          />
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <div className="section" style={{ paddingBottom: 80 }}>
+      <div className="page-head" style={{ paddingBottom: 18 }}>
+        <h1 className="display">Websites</h1>
+        <p className="sub">Audit your live site against competitors — or generate a new one from your Business Profile.</p>
       </div>
+
+      <div className="row" style={{ justifyContent: 'center', marginBottom: 20 }}>
+        <div className="seg-tabs" role="tablist" aria-label="Websites sections">
+          <button role="tab" aria-selected={tab === 'improve'} className={tab === 'improve' ? 'on' : ''}
+            onClick={() => setTab('improve')}>Improve my site</button>
+          <button role="tab" aria-selected={tab === 'site'} className={tab === 'site' ? 'on' : ''}
+            onClick={() => setTab('site')}>Your website</button>
+        </div>
+      </div>
+
+      {tab === 'improve' ? renderImprove() : renderSite()}
     </div>
   );
 }

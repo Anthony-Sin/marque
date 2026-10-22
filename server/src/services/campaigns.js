@@ -102,6 +102,7 @@ async function oneCreative(campaign, profile, product, angle) {
       content: JSON.stringify({
         brand: { name: profile?.name, tone: profile?.tone, audience: profile?.audience },
         brief: campaign.brief, product: product ? { name: product.name, description: product.description } : null,
+        notes: campaign.notes || undefined,
         angle,
       }),
     },

@@ -43,6 +43,7 @@ export const api = {
   syncCatalogImage: (id) => req('POST', `/api/catalog/${id}/sync-image`),
   // strategy board
   strategy: (prompt, productId, url) => req('POST', '/api/strategy', { prompt, productId, url }),
+  getStrategy: () => req('GET', '/api/strategy'),
   strategyExamples: (strategy, audienceRead) => req('POST', '/api/strategy/examples', { strategy, audienceRead }),
   // campaigns
   listCampaigns: () => req('GET', '/api/campaigns'),
@@ -60,6 +61,7 @@ export const api = {
   // websites
   listWebsites: () => req('GET', '/api/websites'),
   createWebsite: (prompt) => req('POST', '/api/websites', { prompt }),
+  improveWebsite: (url) => req('POST', '/api/websites/improve', { url }),
   editWebsite: (id, prompt) => req('POST', `/api/websites/${id}/edit`, { prompt }),
   publishWebsite: (id, slug) => req('POST', `/api/websites/${id}/publish`, { slug }),
   unpublishWebsite: (id) => req('POST', `/api/websites/${id}/unpublish`),

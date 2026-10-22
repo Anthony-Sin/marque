@@ -1,17 +1,31 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
-import { QlooBadge, SignalChips } from '../components/Qloo.jsx';
+import { SignalChips } from '../components/Qloo.jsx';
 import './strategy.css';
 
-const STAGES = [
-  'Reading your audience…',
-  'Scanning Instagram & TikTok signals…',
-  'Pulling TV & media affinities…',
-  'Scoring channel fit…',
-  'Stress-testing cultural match…',
+// typed out one line at a time while /api/strategy runs — the scan coverage is real:
+// the server scores fit across every channel below from the taste bundle.
+const TYPE_LINES = [
+  'Reading your taste graph…',
+  'Scanning Instagram · TikTok · YouTube · TV · Streaming · Podcasts · OOH · Press · Email…',
+  'Scoring channel fit against your audience…',
+  'Drafting strategies…',
+];
+
+// the textarea opens with this default — editable; chips below swap in alternates.
+const DEFAULT_PROMPT = 'Help me build a campaign for this product to market to adults';
+
+// audience/task-shaped alternates — click to fill the prompt. A chip may also set
+// the site-URL field (url) so the scrape context comes along with the prompt.
+const PROMPT_IDEAS = [
+  { label: '…to kids', text: 'Help me build a campaign for this product to market to kids' },
+  { label: '…to Gen Z', text: 'Help me build a campaign for this product to market to Gen Z' },
+  { label: 'Position this brand against bigger competitors', text: 'Position this brand against bigger competitors' },
+  { label: 'Find the best channels to reach my audience', text: 'Find the best channels to reach my audience' },
+  { label: 'Analyze allbirds.com', text: 'Analyze allbirds.com — suggest campaign strategies for this store', url: 'https://allbirds.com' },
 ];
 
 const ALL_CHANNELS = ['instagram', 'tiktok', 'youtube', 'tv', 'streaming', 'podcast', 'ooh', 'guerrilla', 'email', 'press'];
@@ -25,9 +39,15 @@ const CHAN_ICON = {
 };
 const chanIcon = (c) => CHAN_ICON[String(c || '').toLowerCase()] || 'sparkle';
 const pct = (v) => Math.round(Math.max(0, Math.min(1, +v || 0)) * 100);
-const badgeMode = (m) => (m === 'live' ? 'live' : m === 'simulated' ? 'simulated' : 'demo');
 const findUrl = (t) => (String(t || '').match(URL_RE) || [])[0] || '';
 const host = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch { return u; } };
+// "42K est. views" — reach badges
+const fmtViews = (n) => {
+  const v = +n || 0;
+  if (v >= 1e6) return `${(v / 1e6).toFixed(1).replace(/\.0$/, '')}M`;
+  if (v >= 1e3) return `${Math.round(v / 1e3)}K`;
+  return `${v}`;
+};
 const REDUCED = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 // count-up for ring numerals (skipped under reduced-motion)
@@ -49,13 +69,14 @@ function CountUp({ v = 0 }) {
   return <>{n}</>;
 }
 
-// animated score ring — stroke-dashoffset animates via stgRing keyframe (from full offset → inline value)
-function Ring({ value = 0, label }) {
+// animated score ring — stroke-dashoffset animates via stgRing keyframe (from full offset → inline value).
+// small = compact variant used on strategy pick cards.
+function Ring({ value = 0, label, small }) {
   const R = 40;
   const C = +(2 * Math.PI * R).toFixed(2); // 251.33 — matches @keyframes stgRing
   const v = Math.max(0, Math.min(1, +value || 0));
   return (
-    <div className="stg-ring" role="img" aria-label={`${label} ${pct(v)}%`}>
+    <div className={`stg-ring${small ? ' sm' : ''}`} role="img" aria-label={`${label} ${pct(v)}%`}>
       <svg viewBox="0 0 96 96">
         <circle className="stg-ring-bg" cx="48" cy="48" r={R} />
         <circle className="stg-ring-fg" cx="48" cy="48" r={R}
@@ -66,26 +87,43 @@ function Ring({ value = 0, label }) {
   );
 }
 
-// staged Pomelli-style wait — advances every 2.5s, holds on the last stage
-function Loader({ stage, mode }) {
+// LLM-style staged progress — each status line types out character-by-character,
+// then the next one starts. Previous lines stay, checked. No spinner.
+function Typer({ lines = TYPE_LINES }) {
+  const [li, setLi] = useState(0);
+  const [cc, setCc] = useState(0);
+  useEffect(() => {
+    if (REDUCED) { setLi(lines.length - 1); setCc(9999); return undefined; }
+    const line = lines[li] || '';
+    if (cc < line.length) {
+      const ch = line[cc];
+      const d = ch === ' ' ? 12 : 15 + Math.random() * 34; // uneven cadence — feels written
+      const t = setTimeout(() => setCc((c) => c + 1), d);
+      return () => clearTimeout(t);
+    }
+    if (li < lines.length - 1) {
+      const t = setTimeout(() => { setLi((l) => l + 1); setCc(0); }, 420);
+      return () => clearTimeout(t);
+    }
+    return undefined;
+  }, [li, cc, lines]);
+
   return (
-    <div className="card stg-loader">
-      <div className="stg-loader-head">
-        <span className="lbl">
-          <span className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
-          Building your strategy board — the agent is slow on purpose…
-        </span>
-        <QlooBadge mode={mode} />
+    <div className="card stg-typer" aria-live="polite">
+      <div className="stg-typer-head">
+        <span className="stg-typer-dot" />
+        Marque is working
       </div>
-      <div className="stg-stages">
-        {STAGES.map((s, i) => (
-          <div key={s} className={`stg-stage${i < stage ? ' done' : i === stage ? ' now' : ''}`}>
-            <span className="stg-stage-ic">
-              {i < stage ? <Icon name="check" size={12} /> : i + 1}
-            </span>
-            {s}
+      <div className="stg-typer-lines">
+        {lines.slice(0, li).map((l) => (
+          <div className="stg-tw done" key={l}>
+            <Icon name="check" size={12} sw={2.4} /><span>{l}</span>
           </div>
         ))}
+        <div className="stg-tw now">
+          <span>{(lines[li] || '').slice(0, cc)}</span>
+          <span className="stg-tw-caret" />
+        </div>
       </div>
       <div className="stg-shimmer"><i /></div>
     </div>
@@ -102,73 +140,93 @@ function PullStatus() {
   }, []);
   return (
     <span>
-      pulling examples from <b className="stg-pull-src" key={i}>{PULL_SOURCES[i]}</b> — live scrape, can take a minute…
+      pulling examples from <b className="stg-pull-src" key={i}>{PULL_SOURCES[i]}</b> — live scrape, can take a couple of minutes…
     </span>
   );
 }
 
 const SRC_LABEL = { scraped: 'scraped', 'catalog-art': 'catalog art', 'concept-art': 'concept art' };
 
-// one "in the wild" example card — embed iframe if we got a safe player URL,
-// thumbnail otherwise; whole card links out when there's no embed.
+// one "in the wild" example card. Embed-capable items (YouTube/TikTok player URLs)
+// open an inline collapsible player; everything else links out in a NEW TAB.
 function WildCard({ e, i }) {
+  const [open, setOpen] = useState(false);
   const tt = /tiktok/i.test(e.embed || '');
-  const inner = (
-    <>
-      {e.embed ? (
-        <span className={`stg-wx-media${tt ? ' tt' : ''}`}>
-          <iframe src={e.embed} title={e.title || 'example'} loading="lazy"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
-        </span>
-      ) : e.image ? (
-        <span className="stg-wx-media"><img src={e.image} alt="" loading="lazy" /></span>
-      ) : null}
-      <span className="stg-wx-body">
-        <span className="stg-wx-plat">
-          <Icon name={chanIcon(e.platform)} size={12} />{e.platform || 'web'}
-          <span className={`stg-src ${e.source || 'scraped'}`}>{SRC_LABEL[e.source] || e.source || 'scraped'}</span>
-        </span>
-        <span className="stg-wx-title">{e.title}</span>
-        {!!e.author && <span className="stg-wx-author">{e.author}</span>}
-        {!!e.note && <span className="stg-wx-note">“{e.note}”</span>}
+  const media = e.embed && open ? (
+    <span className={`stg-wx-media${tt ? ' tt' : ''}`}>
+      <iframe src={e.embed} title={e.title || 'example'} loading="lazy"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+        referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
+    </span>
+  ) : e.image ? (
+    <span className="stg-wx-media"><img src={e.image} alt="" loading="lazy" /></span>
+  ) : null;
+
+  const body = (
+    <span className="stg-wx-body">
+      <span className="stg-wx-plat">
+        <Icon name={chanIcon(e.platform)} size={12} />{e.platform || 'web'}
+        <span className={`stg-src ${e.source || 'scraped'}`}>{SRC_LABEL[e.source] || e.source || 'scraped'}</span>
+      </span>
+      <span className="stg-wx-title">{e.title}</span>
+      {!!e.author && <span className="stg-wx-author">{e.author}</span>}
+      {!!e.note && <span className="stg-wx-note">“{e.note}”</span>}
+      <span className="stg-wx-acts">
+        {!!e.embed && (
+          <button type="button" className="stg-wx-play"
+            onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); setOpen((o) => !o); }}>
+            <Icon name={open ? 'x' : 'play'} size={10} /> {open ? 'hide player' : 'play inline'}
+          </button>
+        )}
         {!!e.url && !!e.embed && (
-          <a className="stg-wx-open" href={e.url} target="_blank" rel="noreferrer">
+          <a className="stg-wx-open" href={e.url} target="_blank" rel="noopener noreferrer">
             open original <Icon name="link" size={10} />
           </a>
         )}
       </span>
-    </>
+    </span>
   );
+
   const cls = `stg-wx${e.url && !e.embed ? ' link' : ''}`;
   return e.url && !e.embed
-    ? <a className={cls} style={{ '--i': i }} href={e.url} target="_blank" rel="noreferrer">{inner}</a>
-    : <div className={cls} style={{ '--i': i }}>{inner}</div>;
+    ? <a className={cls} style={{ '--i': i }} href={e.url} target="_blank" rel="noopener noreferrer">{media}{body}</a>
+    : <div className={cls} style={{ '--i': i }}>{media}{body}</div>;
 }
 
 export default function Strategy() {
-  const { profile, say, status } = useApp();
+  const { profile, say, board, setBoard } = useApp();
   const nav = useNavigate();
-  const [prompt, setPrompt] = useState('');
+  // /strategy → the board list; /strategy/:idx → one strategy's full page.
+  const { '*': seg = '' } = useParams();
+  const isDetail = seg !== '';
+  const sel = isDetail && /^\d+$/.test(seg) ? parseInt(seg, 10) : null;
+
+  const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [siteUrl, setSiteUrl] = useState('');
   const [productId, setProductId] = useState('');
   const [busy, setBusy] = useState(false);
-  const [stage, setStage] = useState(0);
-  const [res, setRes] = useState(null);
+  const [resL, setResL] = useState(undefined); // local override; undefined → follow ctx board
   const [err, setErr] = useState('');
-  const [sel, setSel] = useState(0);          // selected strategy index
-  const [view, setView] = useState('rec');    // 'rec' recommended | 'nope' wouldn't-work
-  const [eviOpen, setEviOpen] = useState(false);
-  const [ex, setEx] = useState({});           // strategyId -> {status, data, err}
-  const [sub, setSub] = useState(null);       // submitted {prompt, productId, url}
-  const detailRef = useRef(null);
+  const [notes, setNotes] = useState('');      // "add notes for the campaign"
+  const [ex, setEx] = useState({});            // strategyId -> {status, data, err}
+  const [sub, setSub] = useState(null);        // submitted {prompt, productId, url}
 
+  // the board lives in app Ctx (loaded via api.getStrategy on app mount) so it
+  // survives navigation; resL lets this view clear it locally for a new prompt
+  // without revoking the global unlock.
+  const res = resL === undefined ? board : resL;
+  const setRes = (v) => { setResL(v); if (v) setBoard(v); };
+
+  // restore the submitted prompt for a persisted board (selection is the URL now)
   useEffect(() => {
-    if (!busy) return;
-    setStage(0);
-    const t = setInterval(() => setStage((s) => Math.min(s + 1, STAGES.length - 1)), 2500);
-    return () => clearInterval(t);
-  }, [busy]);
+    if (!res) return;
+    try {
+      const sj = sessionStorage.getItem('marque.strategySub');
+      const restored = res.sub || (sj ? JSON.parse(sj) : null); // server-persisted sub is authoritative
+      if (restored) setSub((s) => s || restored);
+    } catch { /* storage unavailable — board still renders */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [res]);
 
   const generate = async (text) => {
     const raw = String(text ?? prompt);
@@ -176,10 +234,13 @@ export default function Strategy() {
     const url = siteUrl.trim() || findUrl(raw);
     if ((!p && !url) || busy) return;
     if (text) setPrompt(p);
-    setBusy(true); setErr(''); setRes(null); setSel(0); setView('rec'); setEviOpen(false); setEx({});
-    setSub({ prompt: p, productId, url });
+    setBusy(true); setErr(''); setNotes(''); setEx({});
     try {
-      setRes(await api.strategy(p, productId || undefined, url || undefined));
+      const out = await api.strategy(p, productId || undefined, url || undefined);
+      setRes(out);
+      const s = { prompt: p, productId, url };
+      setSub(s);
+      try { sessionStorage.setItem('marque.strategySub', JSON.stringify(s)); } catch { /* storage unavailable */ }
     } catch (e) {
       setErr(e.message || 'strategy generation failed');
       say?.(e.message);
@@ -187,8 +248,11 @@ export default function Strategy() {
     setBusy(false);
   };
 
-  // collapse back to the composer (chip bar "new prompt")
-  const reset = () => { setRes(null); setErr(''); setSel(0); setView('rec'); setEx({}); setSub(null); };
+  // pill click → collapse back to the composer (ctx board stays → app stays unlocked)
+  const reset = () => {
+    setResL(null); setErr(''); setNotes(''); setEx({});
+    if (isDetail) nav('/strategy');
+  };
 
   // lazy pull of real-world examples for a strategy — cached per strategy id
   const loadExamples = async (s, force = false) => {
@@ -205,63 +269,55 @@ export default function Strategy() {
     }
   };
 
-  // hand a strategy to Campaigns: stash its brief, then open /campaigns?strategy=<id>
+  // hand the strategy to Campaigns: stash the handoff, then open /campaigns
   const useStrategy = (s) => {
-    const b = s.brief || {};
-    const briefPrompt = [
-      `Campaign: ${b.title || s.title}`,
-      b.angle ? `Angle: ${b.angle}` : '',
-      b.audience ? `Audience: ${b.audience}` : '',
-      b.keyMessage ? `Key message: ${b.keyMessage}` : '',
-      (s.channels || []).length ? `Channels: ${s.channels.map((c) => c.name).join(', ')}` : '',
-    ].filter(Boolean).join('\n');
     try {
-      sessionStorage.setItem('marque.strategyBrief', JSON.stringify({
-        strategyId: s.id, title: s.title, prompt: briefPrompt, brief: b,
+      sessionStorage.setItem('strategyHandoff', JSON.stringify({
+        strategy: s,
+        strategyId: s.id || '',
+        strategyTitle: s.title || '',
+        notes,
+        prompt: sub?.prompt || '',
+        productId: sub?.productId || productId || '',
       }));
-    } catch { /* storage unavailable — navigation still carries the strategy id */ }
-    say?.(`"${s.title}" loaded into Campaigns`);
-    nav(`/campaigns?strategy=${encodeURIComponent(s.id)}`);
+    } catch { /* storage unavailable — Campaigns just won't prefill */ }
+    say?.(`"${s.title}" handed to Campaigns`);
+    nav('/campaigns');
   };
-
-  const examples = useMemo(() => {
-    const out = [];
-    const prod = (profile?.catalog || [])[0];
-    if (prod?.name) out.push(`Launch ${prod.name} to the people most likely to care`);
-    if (profile?.name) out.push(`A seasonal push for ${profile.name} that borrows from what our audience already loves`);
-    out.push('Sharpen how we talk about what makes us different');
-    out.push('Reach new customers without discounting');
-    return out.slice(0, 4);
-  }, [profile]);
 
   const read = res?.audienceRead || {};
   const lean = read.lean || {};
-  const evi = res?.evidence || {};
   const strats = res?.strategies || [];
-  const cur = strats.length ? strats[Math.min(sel, strats.length - 1)] : null;
+  const cur = sel !== null && sel >= 0 && sel < strats.length ? strats[sel] : null;
   const chans = cur ? [...(cur.channels || [])].sort((a, b) => (+b.fit || 0) - (+a.fit || 0)) : [];
-  const drivers = (evi.drivers?.length ? evi.drivers : read.mediaHabits) || [];
-  const qmode = evi.qlooMode || status?.qloo;
   const exState = cur ? ex[cur.id || cur.title] : null;
+  const calls = res?.evidence?.calls || [];
 
-  // lazy-pull examples the first time a strategy's dashboard opens
+  // lazy-pull examples whenever a strategy detail page is open
   useEffect(() => {
-    if (res && !busy && cur && view === 'rec') loadExamples(cur);
+    if (res && !busy && cur) loadExamples(cur);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [res, busy, sel, view]);
+  }, [res, busy, sel]);
 
-  // select a card → open its campaign dashboard below
-  const pick = (i) => {
-    setSel(i); setView('rec');
-    if (!REDUCED) {
-      setTimeout(() => detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 140);
-    }
+  // fresh card → fresh notes
+  useEffect(() => { setNotes(''); }, [sel]);
+
+  // "wouldn't work" bullets for a channel-fit row: media-habit note + cited affinities
+  const fitBullets = (c) => {
+    const bits = String(c.why || '').split(/\s*[,;]\s*/).filter(Boolean);
+    const habit = (read.mediaHabits || []).find((m) => m.channel === c.name)?.note;
+    const out = habit && !bits.includes(habit) ? [habit, ...bits] : bits;
+    return out.length ? out : [`matches the ${lean.label || 'audience'} read`];
   };
 
-  // "Wouldn't work" — channels nobody suggested or that score <0.35 everywhere,
-  // plus one lean-derived gimmick the audience read penalizes.
-  const rejected = useMemo(() => {
+  // "What we ruled out" — the board's antiStrategies, else derive from fit priors
+  const anti = useMemo(() => {
     if (!res) return [];
+    if (Array.isArray(res.antiStrategies) && res.antiStrategies.length) {
+      return res.antiStrategies.slice(0, 6).map((a) => ({
+        title: a.title || a.channel || 'tactic', channel: a.channel, why: a.whyNot || a.why || '',
+      }));
+    }
     const fitsBy = {};
     for (const s of strats) for (const c of s.channels || []) {
       (fitsBy[c.name] = fitsBy[c.name] || []).push(+c.fit || 0);
@@ -269,21 +325,21 @@ export default function Strategy() {
     const out = [];
     const leanLabel = lean.label || '';
     if (/craft|heritage|indie/i.test(leanLabel)) {
-      out.push({ name: 'AI-hologram stunt', reason: `penalized for this lean (${leanLabel}) — reads as gimmicky; keep generated assets subtle` });
+      out.push({ title: 'AI-hologram stunt', why: `penalized for this lean (${leanLabel}) — reads as gimmicky; keep generated assets subtle` });
     } else if (/early|adopter|tech/i.test(leanLabel)) {
-      out.push({ name: 'Static print-only push', reason: `undersells a ${leanLabel} crowd — they reward interactive, AI-native formats` });
+      out.push({ title: 'Static print-only push', why: `undersells a ${leanLabel} crowd — they reward interactive, AI-native formats` });
     } else if (leanLabel) {
-      out.push({ name: 'Edgy niche-collab drop', reason: `too narrow for a ${leanLabel} audience — broad, value-led channels carry it` });
+      out.push({ title: 'Edgy niche-collab drop', why: `too narrow for a ${leanLabel} audience — broad, value-led channels carry it` });
     }
     for (const ch of ALL_CHANNELS) {
       const fits = fitsBy[ch];
-      if (!fits) out.push({ name: ch, reason: 'no supporting signal in the audience taste data' });
+      if (!fits) out.push({ title: ch, channel: ch, why: 'no supporting signal in the audience taste data' });
       else if (Math.max(...fits) < 0.35) {
-        out.push({ name: ch, reason: `weak fit in every concept (best ${pct(Math.max(...fits))}%) — spend would be speculative` });
+        out.push({ title: ch, channel: ch, why: `weak fit in every concept (best ${pct(Math.max(...fits))}%) — spend would be speculative` });
       }
     }
     return out.slice(0, 7);
-  }, [res]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [res, strats, lean.label]);
 
   const inlineUrl = findUrl(prompt);
   const effUrl = siteUrl.trim() || inlineUrl;
@@ -291,51 +347,64 @@ export default function Strategy() {
   const subProduct = sub?.productId ? (profile?.catalog || []).find((p) => p.id === sub.productId) : null;
   const subHost = sub?.url ? host(sub.url) : '';
 
-  if (profile === undefined) {
+  if (profile === undefined || res === undefined) {
     return <div className="loading-wrap"><div className="spinner" /></div>;
   }
 
+  // detail URL without a valid board/card → back to the board list
+  if (isDetail && !busy && !cur) {
+    return <Navigate to="/strategy" replace />;
+  }
+
+  const pageHead = (
+    <div className="page-head">
+      <h1 className="display">Strategy board</h1>
+      <p className="sub">
+        Say what you're trying to do — or paste a product/site URL — we read your audience's
+        taste graph, pitch strategies with the evidence behind every call, and flag what wouldn't work.
+      </p>
+    </div>
+  );
+
   return (
     <div className="section stg-wrap">
-      <div className="page-head">
-        <h1 className="display">Strategy board</h1>
-        <p className="sub">
-          Say what you're trying to do — or paste a product/site URL — we read your audience's
-          taste graph, pitch strategies with the evidence behind every call, and flag what wouldn't work.
-        </p>
-      </div>
-
       {!profile ? (
-        <div className="card stg-nudge">
-          <h3 className="display">First, your brand</h3>
-          <p>
-            Strategies are grounded in your Business Profile's taste signature.
-            Set it up and this board lights up — it takes about a minute.
-          </p>
-          <Link className="btn lime" to="/onboarding">
-            <Icon name="dna" size={16} /> Set up Business Profile
-          </Link>
-        </div>
+        <>
+          {pageHead}
+          <div className="card stg-nudge">
+            <h3 className="display">First, your brand</h3>
+            <p>
+              Strategies are grounded in your Business Profile's taste signature.
+              Set it up and this board lights up — it takes about a minute.
+            </p>
+            <Link className="btn lime" to="/onboarding">
+              <Icon name="dna" size={16} /> Set up Business Profile
+            </Link>
+          </div>
+        </>
       ) : (
         <>
-          {/* ---- collapsed prompt chip — the board owns the screen once results land ---- */}
-          {res && !busy && (
-            <div className="stg-chipbar">
+          {/* ---- collapsed prompt pill — click to re-open the composer ---- */}
+          {(busy || res) && (
+            <div className="stg-chipbar" role="button" tabIndex={0} title="Edit this prompt"
+              onClick={reset} onKeyDown={(e) => { if (e.key === 'Enter') reset(); }}>
               <span className="stg-chipbar-ic"><Icon name="sparkle" size={14} /></span>
               <span className="stg-chipbar-prompt" title={sub?.prompt || sub?.url}>
                 {sub?.prompt || sub?.url || 'strategy board'}
               </span>
               {!!subProduct && <span className="stg-tag"><Icon name="bag" size={11} />{subProduct.name}</span>}
               {!!subHost && <span className="stg-tag"><Icon name="globe" size={11} />{subHost}</span>}
-              <button className="btn ghost sm stg-chipbar-new" onClick={reset}>
+              <button className="btn ghost sm stg-chipbar-new" disabled={busy}
+                onClick={(e) => { e.stopPropagation(); if (!busy) reset(); }}>
                 <Icon name="edit" size={13} /> New prompt
               </button>
             </div>
           )}
 
-          {/* ---- composer — animates shut once strategies arrive ---- */}
-          <div className={`stg-compose${res && !busy ? ' shut' : ''}`} aria-hidden={!!(res && !busy)}>
+          {/* ---- heading + composer — slide up + fade once submitted ---- */}
+          <div className={`stg-compose${busy || res ? ' shut' : ''}`} aria-hidden={!!(busy || res)}>
             <div className="stg-compose-in">
+              {pageHead}
               <div className="card stg-ask">
                 <textarea
                   value={prompt}
@@ -353,7 +422,7 @@ export default function Strategy() {
                   )}
                   <span className={`stg-urlwrap${siteUrl.trim() ? ' has' : ''}`} title="Optional — we'll scrape this as product/site context">
                     <Icon name="link" size={13} />
-                    <input className="stg-url" value={siteUrl} placeholder="or paste a product/site URL"
+                    <input className="stg-url" value={siteUrl} placeholder="or paste a product/store URL"
                       onChange={(e) => setSiteUrl(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') generate(); }} />
                   </span>
@@ -364,26 +433,24 @@ export default function Strategy() {
                   )}
                   <span className="grow" />
                   <button className="btn lime" disabled={!canGo} onClick={() => generate()}>
-                    {busy
-                      ? <span className="spinner stg-btnspin" />
-                      : <Icon name="sparkle" />}
-                    {busy ? 'Working…' : 'Generate strategies'}
+                    <Icon name="sparkle" /> Generate strategies
                   </button>
                 </div>
                 <div className="stg-hint">prompt, or paste a product/website URL — we'll scrape it for context</div>
               </div>
 
-              {!res && !busy && !err && (
+              {!err && (
                 <div className="stg-examples">
-                  {examples.map((x) => (
-                    <button key={x} className="stg-ex" onClick={() => setPrompt(x)}>{x}</button>
+                  {PROMPT_IDEAS.map((idea) => (
+                    <button key={idea.text} className="stg-ex" title={idea.url ? `${idea.text} · ${idea.url}` : idea.text}
+                      onClick={() => { setPrompt(idea.text); if (idea.url) setSiteUrl(idea.url); }}>{idea.label}</button>
                   ))}
                 </div>
               )}
             </div>
           </div>
 
-          {busy && <Loader stage={stage} mode={badgeMode(status?.qloo)} />}
+          {busy && <Typer />}
 
           {err && !busy && (
             <div className="card stg-err">
@@ -395,250 +462,235 @@ export default function Strategy() {
             </div>
           )}
 
-          {res && !busy && (
-            <div className="stg-board">
-              {/* ---- audience read ---- */}
-              <section className="card stg-tile stg-aud" style={{ '--i': 0 }}>
-                <div className="stg-tile-head">
-                  <span className="stg-ml">Audience read</span>
-                  <QlooBadge mode={badgeMode(qmode)} label="Qloo read" />
-                </div>
-                <div className="stg-aud-main">
-                  <div className="stg-aud-left">
-                    <div className="stg-lean display">{lean.label || 'Unclear'}</div>
-                    <div className="stg-heur">heuristic read — not a fact</div>
-                    {!!lean.signals?.length && (
-                      <ul className="stg-sigs">
-                        {lean.signals.map((s, i) => <li key={i}>{s}</li>)}
-                      </ul>
-                    )}
+          {res && !busy && !isDetail && (
+            <>
+              <div className="stg-board">
+                {/* ---- audience read ---- */}
+                <section className="card stg-tile stg-aud" style={{ '--i': 0 }}>
+                  <div className="stg-tile-head">
+                    <span className="stg-ml">Audience read</span>
                   </div>
-                  <Ring value={lean.confidence} label="conf" />
-                </div>
-                {!!read.mediaHabits?.length && (
-                  <div>
-                    <span className="stg-ml">Media habits</span>
-                    <div className="stg-habits" style={{ marginTop: 8 }}>
-                      {read.mediaHabits.map((h, i) => (
-                        <div className="stg-habit" key={i}>
-                          <span className="stg-hchip"><Icon name={chanIcon(h.channel)} />{h.channel}</span>
-                          <span className="stg-hnote">{h.note}</span>
-                        </div>
-                      ))}
+                  <div className="stg-aud-main">
+                    <div className="stg-aud-left">
+                      <div className="stg-lean display">{lean.label || 'Unclear'}</div>
+                      <div className="stg-heur">heuristic read — not a fact</div>
+                      {!!lean.signals?.length && (
+                        <ul className="stg-sigs">
+                          {lean.signals.map((s, i) => <li key={i}>{s}</li>)}
+                        </ul>
+                      )}
                     </div>
+                    <Ring value={lean.confidence} label="conf" />
                   </div>
-                )}
-                {!!read.vibeWords?.length && (
-                  <div>
-                    <span className="stg-ml">Vibe</span>
-                    <div className="stg-chiprow" style={{ marginTop: 7 }}>
-                      {read.vibeWords.map((w) => <span key={w} className="stg-chip vibe">{w}</span>)}
-                    </div>
-                  </div>
-                )}
-              </section>
-
-              {/* ---- channel scans (the scrape evidence) ---- */}
-              <section className="card stg-tile stg-scans" style={{ '--i': 1 }}>
-                <div className="stg-tile-head">
-                  <span className="stg-ml">Channel scans</span>
-                  <span className="stg-live-dot"><i /> taste-graph evidence</span>
-                </div>
-                {drivers.length ? drivers.map((d, i) => (
-                  <div className="stg-scan" key={`${d.channel}-${i}`} style={{ '--i': i }}>
-                    <span className="stg-scan-ic"><Icon name={chanIcon(d.channel)} /></span>
-                    <div className="stg-scan-body">
-                      <div className="stg-scan-line">
-                        <b>{d.channel}</b><span className="stg-scan-arrow">←</span>{d.note}
+                  {!!read.mediaHabits?.length && (
+                    <div>
+                      <span className="stg-ml">Media habits</span>
+                      <div className="stg-habits" style={{ marginTop: 8 }}>
+                        {read.mediaHabits.map((h, i) => (
+                          <div className="stg-habit" key={i}>
+                            <span className="stg-hchip"><Icon name={chanIcon(h.channel)} />{h.channel}</span>
+                            <span className="stg-hnote">{h.note}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <span className="stg-scan-dot" />
-                  </div>
-                )) : (
-                  <div className="stg-empty-note">No channel drivers returned — strategies fall back to generic priors.</div>
-                )}
+                  )}
+                  {!!read.vibeWords?.length && (
+                    <div>
+                      <span className="stg-ml">Vibe</span>
+                      <div className="stg-chiprow" style={{ marginTop: 7 }}>
+                        {read.vibeWords.map((w) => <span key={w} className="stg-chip vibe">{w}</span>)}
+                      </div>
+                    </div>
+                  )}
 
-                <div className="stg-evi">
-                  <button className="btn ghost sm" onClick={() => setEviOpen(!eviOpen)}>
-                    <Icon name="qloo" size={14} />
-                    {eviOpen ? 'Hide evidence' : 'Qloo evidence'}
-                    {!!evi.calls?.length && ` · ${evi.calls.length} calls`}
-                  </button>
-                  {eviOpen && (
-                    <div className="stg-evi-body">
-                      {!!evi.signals?.length && (
-                        <div className="stg-evi-group">
-                          <span className="stg-ml">Top affinities driving this</span>
-                          {evi.signals.map((s, i) => <div className="stg-evi-line" key={i}>{s}</div>)}
-                        </div>
+                  {/* ---- ruled out — collapsed accordion inside the audience card ---- */}
+                  {!!anti.length && (
+                    <details className="stg-ruled">
+                      <summary className="stg-ruled-sum">
+                        <span className="stg-ml rose">What we ruled out, and why</span>
+                        <span className="stg-ruled-meta">
+                          {anti.length} <span className="stg-fit-caret">▾</span>
+                        </span>
+                      </summary>
+                      <div className="stg-nope-list">
+                        {anti.map((r, i) => (
+                          <div className="stg-rej" key={`${r.title}-${i}`}>
+                            <span className="stg-rej-x"><Icon name="x" /></span>
+                            <div>
+                              <b>{r.title}</b>
+                              {!!r.channel && <span className="stg-rej-chan">{r.channel}</span>}
+                              <span className="stg-rej-why">{r.why}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+
+                  {/* ---- data sources — where the board's evidence came from ---- */}
+                  <div>
+                    <span className="stg-ml">Data sources</span>
+                    <div className="stg-srcs" style={{ marginTop: 7 }}>
+                      <span className="stg-src-item"><Icon name="qloo" size={11} />Qloo taste graph</span>
+                      <span className="stg-src-item"><Icon name="sparkle" size={11} />TensorMux strategy model</span>
+                      {!!(sub?.url || res?.sub?.url) && (
+                        <span className="stg-src-item"><Icon name="globe" size={11} />site scrape · {host(sub?.url || res?.sub?.url)}</span>
                       )}
-                      {!!evi.qlooEvidence?.length && (
-                        <div className="stg-evi-group">
-                          <span className="stg-ml">Qloo evidence</span>
-                          {evi.qlooEvidence.map((e, i) => (
-                            <div className="stg-evi-line" key={i}><b>{e.label}</b> — {e.detail}</div>
-                          ))}
-                        </div>
-                      )}
-                      {!!evi.calls?.length && (
-                        <div className="stg-evi-group">
-                          <span className="stg-ml">Calls</span>
-                          {evi.calls.map((c, i) => (
-                            <div className="stg-call" key={i}>
-                              <code>{c.endpoint}</code>
-                              {c.tookMs != null && <span>{c.tookMs}ms</span>}
-                              {c.n != null && <span className="n">→ {c.n} results</span>}
-                              <span className={`stg-mode ${String(qmode)}`}>{qmode || 'unknown'}</span>
+                      <span className="stg-src-item"><Icon name="film" size={11} />public video/catalog examples</span>
+                    </div>
+                    {!!calls.length && (
+                      <details className="stg-calls">
+                        <summary className="stg-calls-sum">
+                          <span className="stg-calls-lbl">
+                            <Icon name="qloo" size={12} /> Qloo taste-graph calls · {calls.length}
+                          </span>
+                          <span className="stg-fit-caret">▾</span>
+                        </summary>
+                        <div className="stg-calls-list">
+                          {calls.map((c, i) => (
+                            <div className="stg-call-line" key={i}>
+                              <b>{c.endpoint}</b>{' '}
+                              {Object.entries(c.params || {}).map(([k, v]) => `${k}=${String(v).slice(0, 36)}`).join(' ')}
+                              {c.n != null && <span className="n"> → {c.n} results</span>}
+                              {c.mode && <span> · {c.mode}</span>}
                             </div>
                           ))}
                         </div>
-                      )}
-                      {!evi.signals?.length && !evi.qlooEvidence?.length && !evi.calls?.length && (
-                        <div className="stg-empty-note">No Qloo calls were recorded for this run.</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-                {!!evi.source && (
-                  <span className="stg-empty-note">
-                    ideation: {evi.source === 'tensor' ? 'agent-generated' : 'deterministic fallback'}
-                  </span>
-                )}
-              </section>
-
-              {/* ---- strategy picker: recommended cards vs rejected tactics ---- */}
-              <section className="card stg-tile stg-picks" style={{ '--i': 2 }}>
-                <div className="stg-tile-head">
-                  <span className="stg-ml">Strategies · {strats.length}</span>
-                  <div className="stg-seg" role="tablist" aria-label="Recommended or rejected">
-                    <button role="tab" aria-selected={view === 'rec'} className={view === 'rec' ? 'on' : ''}
-                      onClick={() => setView('rec')}>Recommended · {strats.length}</button>
-                    <button role="tab" aria-selected={view === 'nope'} className={view === 'nope' ? 'on' : ''}
-                      onClick={() => setView('nope')}>Wouldn't work · {rejected.length}</button>
-                  </div>
-                </div>
-
-                {view === 'nope' ? (
-                  <div className="stg-nope-list">
-                    <p className="stg-nope-sub">
-                      Rejected before it costs you money — same evidence, opposite conclusion.
-                    </p>
-                    {rejected.length ? rejected.map((r) => (
-                      <div className="stg-rej" key={r.name}>
-                        <span className="stg-rej-x"><Icon name="x" /></span>
-                        <div>
-                          <b>{r.name}</b>
-                          <span className="stg-rej-why">{r.reason}</span>
-                        </div>
-                      </div>
-                    )) : (
-                      <div className="stg-empty-note">Nothing ruled out — this audience reads broad-channel.</div>
+                      </details>
                     )}
                   </div>
-                ) : !strats.length ? (
-                  <div className="stg-empty-note">The agent didn't return any strategies — try a more specific prompt.</div>
-                ) : (
-                  <div className="stg-pick-grid">
-                    {strats.map((s, i) => (
-                      <button key={s.id || i} className={`stg-pick${i === sel ? ' sel' : ''}`}
-                        style={{ '--i': i }} onClick={() => pick(i)}
-                        aria-pressed={i === sel} title={s.title}>
-                        <span className="stg-pick-top">
-                          <span className="stg-idx">STRATEGY {String(i + 1).padStart(2, '0')}</span>
-                          {i === sel && <span className="stg-pick-check"><Icon name="check" size={11} sw={2.4} /></span>}
-                        </span>
-                        <b className="stg-pick-title">{s.title}</b>
-                        {!!s.angle && <span className="stg-pick-angle">{s.angle}</span>}
-                        {!!(s.channels || []).length && (
-                          <span className="stg-pick-chans">
-                            {[...(s.channels || [])].sort((a, b) => (+b.fit || 0) - (+a.fit || 0)).slice(0, 3).map((c) => (
-                              <span className="stg-pick-chan" key={c.name}>
-                                <Icon name={chanIcon(c.name)} size={11} />{c.name}
-                                <em><i style={{ width: `${pct(c.fit)}%` }} /></em>
-                              </span>
-                            ))}
+                </section>
+
+                {/* ---- strategy cards — the board's main area ---- */}
+                <section className="card stg-tile stg-picks" style={{ '--i': 1 }}>
+                  <div className="stg-tile-head">
+                    <span className="stg-ml">Strategies · {strats.length}</span>
+                    <span className="stg-empty-note">pick a card for the full breakdown</span>
+                  </div>
+                  {!strats.length ? (
+                    <div className="stg-empty-note">The agent didn't return any strategies — try a more specific prompt.</div>
+                  ) : (
+                    <div className="stg-pick-grid">
+                      {strats.map((s, i) => (
+                        <Link key={s.id || i} className="stg-pick"
+                          style={{ '--i': i }} to={`/strategy/${i}`} title={s.title}>
+                          <span className="stg-pick-top">
+                            <span className="stg-idx">STRATEGY {String(i + 1).padStart(2, '0')}</span>
+                            <Ring value={s.audienceFit?.score} label="fit" small />
                           </span>
-                        )}
-                        <span className="stg-pick-foot">
-                          <span className="stg-pick-fit">{pct(s.audienceFit?.score)}% audience fit</span>
-                          <span className="stg-pick-go">{i === sel ? 'selected' : 'open board →'}</span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              {/* ---- campaign dashboard for the selected strategy ---- */}
-              {cur && view === 'rec' && (
-                <section ref={detailRef} key={cur.id || sel}
-                  className="card stg-tile stg-detail" style={{ '--i': 3 }}>
-                  <div className="stg-detail-top">
-                    <div className="stg-strat-id">
-                      <span className="stg-idx">STRATEGY {String(sel + 1).padStart(2, '0')} · CAMPAIGN BOARD</span>
-                      <h3 className="display">{cur.title}</h3>
-                      {!!cur.angle && <p className="stg-angle">{cur.angle}</p>}
-                      {!!cur.audienceFit?.notes?.length && (
-                        <div className="stg-fitnotes">{cur.audienceFit.notes.join(' · ')}</div>
-                      )}
-                    </div>
-                    <Ring value={cur.audienceFit?.score} label="audience fit" />
-                  </div>
-
-                  <div className="stg-detail-cols">
-                    <div className="stg-detail-left">
-                      {!!cur.brief && (
-                        <div className="stg-brief">
-                          <span className="stg-ml">Brief summary</span>
-                          {!!cur.brief.keyMessage && (
-                            <div className="stg-brief-row"><b>Key message</b>{cur.brief.keyMessage}</div>
+                          <b className="stg-pick-title stg-fill" style={{ '--fo': '90ms' }}>{s.title}</b>
+                          {!!s.angle && <span className="stg-pick-angle stg-fill" style={{ '--fo': '170ms' }}>{s.angle}</span>}
+                          {!!(s.channels || []).length && (
+                            <span className="stg-pick-chips stg-fill" style={{ '--fo': '240ms' }}>
+                              {[...(s.channels || [])].sort((a, b) => (+b.fit || 0) - (+a.fit || 0)).slice(0, 4).map((c) => (
+                                <span className="stg-chip stg-pick-chip" key={c.name}>
+                                  <Icon name={chanIcon(c.name)} size={10} />{c.name}
+                                </span>
+                              ))}
+                            </span>
                           )}
-                          {!!cur.brief.audience && (
-                            <div className="stg-brief-row"><b>Audience</b>{cur.brief.audience}</div>
-                          )}
-                          {!!cur.brief.angle && (
-                            <div className="stg-brief-row"><b>Angle</b>{cur.brief.angle}</div>
-                          )}
-                        </div>
-                      )}
-
-                      {!!cur.formats?.length && (
-                        <div>
-                          <span className="stg-ml">Formats</span>
-                          <div className="stg-chiprow" style={{ marginTop: 7 }}>
-                            {cur.formats.map((f) => <span key={f} className="stg-chip">{f}</span>)}
-                          </div>
-                        </div>
-                      )}
-
-                      {(!!cur.heroSignal || !!cur.qlooSignals?.length) && (
-                        <div>
-                          <span className="stg-ml">Grounded in</span>
-                          <div className="stg-chiprow" style={{ marginTop: 7, alignItems: 'center' }}>
-                            {!!cur.heroSignal && (
-                              <span className="stg-hero-sig" title="hero signal">
-                                <Icon name="qloo" />{cur.heroSignal}
+                          <span className="stg-pick-foot">
+                            {!!s.reach && (
+                              <span className="stg-reach" title={s.reach.basis || 'estimated reach'}>
+                                <Icon name="eye" size={11} />{fmtViews(s.reach.estViews)} est. views
                               </span>
                             )}
-                            <SignalChips signals={(cur.qlooSignals || []).filter((q) => q.entity !== cur.heroSignal)} max={5} />
-                          </div>
-                        </div>
-                      )}
-
-                      {!!cur.watchouts?.length && (
-                        <div className="stg-watch">
-                          <span className="stg-ml rose">Watchouts</span>
-                          <ul>{cur.watchouts.map((w, i) => <li key={i}>{w}</li>)}</ul>
-                        </div>
-                      )}
+                            <span className="stg-pick-go">open →</span>
+                          </span>
+                        </Link>
+                      ))}
                     </div>
+                  )}
+                </section>
+              </div>
 
-                    <div className="stg-detail-right">
+              <div className="stg-attrib">
+                Strategy generated with TensorMux · cultural signals via Qloo taste graph ·
+                examples scraped from public video &amp; catalog sources
+              </div>
+            </>
+          )}
+
+          {/* ---- /strategy/:idx — full-page strategy detail ---- */}
+          {res && !busy && isDetail && cur && (
+            <div className="stg-detailpage">
+              <Link className="btn ghost sm stg-back" to="/strategy">← all strategies</Link>
+              <section className="card stg-tile stg-detail" key={cur.id || sel}>
+                <div className="stg-detail-top">
+                  <div className="stg-strat-id">
+                    <span className="stg-idx">STRATEGY {String(sel + 1).padStart(2, '0')} · CAMPAIGN BOARD</span>
+                    <h3 className="display">{cur.title}</h3>
+                    {!!cur.angle && <p className="stg-angle">{cur.angle}</p>}
+                    {!!cur.audienceFit?.notes?.length && (
+                      <div className="stg-fitnotes">{cur.audienceFit.notes.join(' · ')}</div>
+                    )}
+                    {!!cur.reach && (
+                      <div style={{ marginTop: 9 }}>
+                        <span className="stg-reach" title={cur.reach.basis || 'estimated reach'}>
+                          <Icon name="eye" size={11} />{fmtViews(cur.reach.estViews)} est. views
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <Ring value={cur.audienceFit?.score} label="audience fit" />
+                </div>
+
+                <div className="stg-detail-cols">
+                  <div className="stg-detail-left">
+                    {!!cur.brief && (
+                      <div className="stg-brief">
+                        <span className="stg-ml">Brief summary</span>
+                        {!!cur.brief.audience && (
+                          <div className="stg-brief-row"><b>Audience</b>{cur.brief.audience}</div>
+                        )}
+                        {!!cur.brief.keyMessage && (
+                          <div className="stg-brief-row"><b>Key message</b>{cur.brief.keyMessage}</div>
+                        )}
+                        {!!cur.brief.angle && (
+                          <div className="stg-brief-row"><b>Angle</b>{cur.brief.angle}</div>
+                        )}
+                      </div>
+                    )}
+
+                    {!!cur.formats?.length && (
                       <div>
-                        <span className="stg-ml">Channel fit</span>
-                        <div className="stg-chans" style={{ marginTop: 9 }}>
-                          {chans.length ? chans.map((c, i) => (
-                            <div className="stg-chan" key={c.name}>
+                        <span className="stg-ml">Formats</span>
+                        <div className="stg-chiprow" style={{ marginTop: 7 }}>
+                          {cur.formats.map((f) => <span key={f} className="stg-chip">{f}</span>)}
+                        </div>
+                      </div>
+                    )}
+
+                    {(!!cur.heroSignal || !!cur.qlooSignals?.length) && (
+                      <div>
+                        <span className="stg-ml">Grounded in</span>
+                        <div className="stg-chiprow" style={{ marginTop: 7, alignItems: 'center' }}>
+                          {!!cur.heroSignal && (
+                            <span className="stg-hero-sig" title="hero signal">
+                              <Icon name="qloo" />{cur.heroSignal}
+                            </span>
+                          )}
+                          <SignalChips signals={(cur.qlooSignals || []).filter((q) => q.entity !== cur.heroSignal)} max={5} />
+                        </div>
+                      </div>
+                    )}
+
+                    {!!cur.watchouts?.length && (
+                      <div className="stg-watch">
+                        <span className="stg-ml rose">Watchouts</span>
+                        <ul>{cur.watchouts.map((w, i) => <li key={i}>{w}</li>)}</ul>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="stg-detail-right">
+                    <div>
+                      <span className="stg-ml">Channel fit</span>
+                      <div className="stg-fits" style={{ marginTop: 9 }}>
+                        {chans.length ? chans.map((c, i) => (
+                          <details key={c.name} className="stg-fit" open={i === 0}>
+                            <summary className="stg-fit-sum">
                               <span className="stg-chan-ic"><Icon name={chanIcon(c.name)} /></span>
                               <span className="stg-chan-name">{c.name}</span>
                               <span className="stg-bar">
@@ -646,75 +698,96 @@ export default function Strategy() {
                                   style={{ width: `${pct(c.fit)}%`, '--d': `${0.15 + i * 0.09}s` }} />
                               </span>
                               <span className="stg-chan-val">{pct(c.fit)}</span>
-                              {!!c.why && <div className="stg-why">{c.why}</div>}
+                              <span className="stg-fit-caret">▾</span>
+                            </summary>
+                            <div className="stg-fit-body">
+                              <span className="stg-ml">Your audience likes</span>
+                              <ul className="stg-fit-likes">
+                                {fitBullets(c).map((b, j) => <li key={j}>{b}</li>)}
+                              </ul>
                             </div>
-                          )) : <div className="stg-empty-note">No channel mix attached.</div>}
-                        </div>
+                          </details>
+                        )) : <div className="stg-empty-note">No channel mix attached.</div>}
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* ---- in the wild: real examples scraped per strategy ---- */}
-                  <div className="stg-wild">
-                    <div className="stg-wild-head">
-                      <span className="stg-ml">In the wild — pulled from the open web</span>
-                      <span className="stg-wild-tools">
-                        {exState?.status === 'done' && !!(exState.data?.hunts || []).length && (
-                          <span className="stg-wild-hunts">
-                            hunts: {[...new Set(exState.data.hunts.map((h) => h.platform))].join(' · ')}
-                          </span>
-                        )}
-                        <button className="btn ghost sm" onClick={() => loadExamples(cur, true)}
-                          disabled={exState?.status === 'loading'}>
-                          <Icon name="refresh" size={13} />
-                          {exState?.status === 'loading' ? 'Pulling…' : 'Re-pull'}
-                        </button>
-                      </span>
-                    </div>
-
-                    {(!exState || exState.status === 'loading') && (
-                      <>
-                        <div className="stg-wild-status">
-                          <span className="spinner stg-btnspin" /><PullStatus />
-                        </div>
-                        <div className="stg-wild-grid">
-                          {[0, 1, 2, 3].map((i) => (
-                            <div className="stg-wx skel" key={i} style={{ '--i': i }}>
-                              <i className="m" /><i className="t" /><i className="t s" />
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-
-                    {exState?.status === 'error' && (
-                      <div className="stg-wild-err">
-                        <span><Icon name="x" size={14} /> Couldn't pull live examples — {exState.err}</span>
-                        <button className="btn ghost sm" onClick={() => loadExamples(cur, true)}>
-                          <Icon name="refresh" size={13} /> Retry
-                        </button>
-                      </div>
-                    )}
-
-                    {exState?.status === 'done' && (
-                      (exState.data?.examples || []).length ? (
-                        <div className="stg-wild-grid">
-                          {exState.data.examples.map((e, i) => <WildCard key={i} e={e} i={i} />)}
-                        </div>
-                      ) : (
-                        <div className="stg-empty-note">No examples surfaced for this strategy — try re-pulling.</div>
-                      )
-                    )}
-                  </div>
-
+                {/* ---- notes → handoff ---- */}
+                <div className="stg-handoff">
+                  <textarea
+                    className="stg-notes"
+                    rows={3}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Add notes for the campaign — tone, must-haves, things to avoid…"
+                  />
                   <div className="stg-strat-foot">
                     <span className="hint">Hands its brief to the Campaigns composer</span>
                     <button className="btn lime" onClick={() => useStrategy(cur)}>
                       Use this strategy <Icon name="send" size={15} />
                     </button>
                   </div>
-                </section>
-              )}
+                </div>
+
+                {/* ---- in the wild: real examples scraped per strategy ---- */}
+                <div className="stg-wild">
+                  <div className="stg-wild-head">
+                    <span className="stg-ml">In the wild — pulled from the open web</span>
+                    <span className="stg-wild-tools">
+                      {exState?.status === 'done' && !!(exState.data?.hunts || []).length && (
+                        <span className="stg-wild-hunts">
+                          hunts: {[...new Set(exState.data.hunts.map((h) => h.platform))].join(' · ')}
+                        </span>
+                      )}
+                      <button className="btn ghost sm" onClick={() => loadExamples(cur, true)}
+                        disabled={exState?.status === 'loading'}>
+                        <Icon name="refresh" size={13} />
+                        {exState?.status === 'loading' ? 'Pulling…' : 'Re-pull'}
+                      </button>
+                    </span>
+                  </div>
+
+                  {(!exState || exState.status === 'loading') && (
+                    <>
+                      <div className="stg-wild-status">
+                        <span className="spinner stg-btnspin" /><PullStatus />
+                      </div>
+                      <div className="stg-wild-grid">
+                        {[0, 1, 2, 3].map((i) => (
+                          <div className="stg-wx skel" key={i} style={{ '--i': i }}>
+                            <i className="m" /><i className="t" /><i className="t s" />
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {exState?.status === 'error' && (
+                    <div className="stg-wild-err">
+                      <span><Icon name="x" size={14} /> Couldn't pull live examples — {exState.err}</span>
+                      <button className="btn ghost sm" onClick={() => loadExamples(cur, true)}>
+                        <Icon name="refresh" size={13} /> Retry
+                      </button>
+                    </div>
+                  )}
+
+                  {exState?.status === 'done' && (
+                    (exState.data?.examples || []).length ? (
+                      <div className="stg-wild-grid">
+                        {exState.data.examples.map((e, i) => <WildCard key={i} e={e} i={i} />)}
+                      </div>
+                    ) : (
+                      <div className="stg-empty-note">No examples surfaced for this strategy — try re-pulling.</div>
+                    )
+                  )}
+                </div>
+              </section>
+
+              <div className="stg-attrib">
+                Strategy generated with TensorMux · cultural signals via Qloo taste graph ·
+                examples scraped from public video &amp; catalog sources
+              </div>
             </div>
           )}
         </>

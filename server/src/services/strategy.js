@@ -100,7 +100,7 @@ function channelFit(bundle, lean) {
   return fit;
 }
 
-const SCHEMA = `Respond with strict JSON: {"strategies":[{ "title","angle","channels":[channel names],"formats":[],"brief":{"title","angle","audience","keyMessage"},"watchouts":[],"heroSignal" }]} — 3-4 strategies. Each channels[] picks from: ${ALL_CHANNELS.join(', ')}. Base every call on the audience data given; never suggest a channel with no evidence.`;
+const SCHEMA = `Respond with strict JSON: {"strategies":[{ "title","angle","channels":[channel names],"formats":[],"brief":{"title","angle","audience","keyMessage"},"watchouts":[],"heroSignal","reach":{"estViews":number,"basis":"one line"}},"antiStrategies":[{"title","channel","whyNot"}]]} — 3-4 strategies + 3-6 antiStrategies (tactics that would NOT work for this audience and why). Each channels[] picks from: ${ALL_CHANNELS.join(', ')}. reach.estViews = plausible organic impressions estimate for a small/mid brand (be honest, 1k-500k range). Base every call on the audience data given; never suggest a channel with no evidence.`;
 
 export async function generateStrategies({ prompt, profile, product = null, urlContext = null }) {
   const bundle = profile?.qloo || null;
@@ -134,8 +134,25 @@ export async function generateStrategies({ prompt, profile, product = null, urlC
   const strategies = (modelList?.length ? modelList : fallbackStrategies(prompt, read))
     .slice(0, 4).map((s, i) => normalizeStrategy(s, i, fitMap, read, bundle, prompt));
 
+  // rejected tactics: LLM's own list, else derive from the lowest-fit channels
+  let anti = Array.isArray(raw?.antiStrategies) ? raw.antiStrategies : null;
+  if (!anti?.length) {
+    const used = new Set(strategies.flatMap((s) => s.channels.map((c) => c.name)));
+    anti = ALL_CHANNELS.filter((c) => !used.has(c))
+      .sort((a, b) => fitMap[a].fit - fitMap[b].fit)
+      .slice(0, 5)
+      .map((c) => ({
+        title: `${c.charAt(0).toUpperCase() + c.slice(1)}-led push`,
+        channel: c,
+        whyNot: fitMap[c].why.length
+          ? `weak fit (${fitMap[c].fit.toFixed(2)}) — nearest signal: ${fitMap[c].why[0]}`
+          : `no taste-graph signal supports ${c} for this audience`,
+      }));
+  }
+
   return {
     strategies,
+    antiStrategies: anti.slice(0, 6),
     audienceRead: read,
     evidence: {
       source: modelNote,
@@ -154,18 +171,22 @@ function normalizeStrategy(s, i, fitMap, read, bundle, prompt) {
   const channels = (names.length ? names : ['instagram', 'tiktok']).filter((c) => fitMap[c] !== undefined)
     .map((c) => ({ name: c, fit: +fitMap[c].fit.toFixed(2), why: fitMap[c].why.join(', ') || `${read.lean.label} audience` }));
   const cited = Object.values(topByType(bundle)).flat()
-    .filter((e) => JSON.stringify(s).toLowerCase().includes((e.name || '').toLowerCase().slice(0, 12)))
+    .filter((e) => (e.name || '').length >= 8 && JSON.stringify(s).toLowerCase().includes(e.name.toLowerCase().slice(0, 12)))
     .slice(0, 4).map((e) => ({ entity: e.name, type: e.type || '', affinity: e.affinity }));
   const fitScore = channels.length ? channels.reduce((a, c) => a + c.fit, 0) / channels.length : 0.2;
-  const watchouts = [...(s.watchouts || [])];
+  const watchouts = Array.isArray(s.watchouts) ? [...s.watchouts] : [];
   const leanW = LEAN_RULES[read.lean.label]?.watchout;
   if (leanW && !watchouts.some((w) => w.includes(leanW.slice(0, 25)))) watchouts.push(leanW);
   return {
     id: `st${i + 1}`, title: s.title || `Strategy ${i + 1}`, angle: s.angle || '',
-    channels, formats: s.formats || [],
+    channels, formats: Array.isArray(s.formats) ? s.formats : [],
     brief: { title: s.brief?.title || s.title || prompt, angle: s.brief?.angle || s.angle || '', audience: s.brief?.audience || read.lean.label, keyMessage: s.brief?.keyMessage || '' },
     audienceFit: { score: +Math.min(0.98, fitScore).toFixed(2), notes: [read.lean.label, ...(read.mediaHabits[0] ? [read.mediaHabits[0].note] : [])] },
     watchouts, qlooSignals: cited, heroSignal: s.heroSignal || cited[0]?.entity || '',
+    reach: {
+      estViews: Math.max(0, Number.isFinite(+s.reach?.estViews) ? Math.round(+s.reach.estViews) : Math.round(3000 + fitScore * 90000)),
+      basis: s.reach?.basis || `modeled from ${channels.length} channel${channels.length > 1 ? 's' : ''} at ${(fitScore * 100 | 0)}% fit`,
+    },
   };
 }
 

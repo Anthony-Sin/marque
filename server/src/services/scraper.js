@@ -3,13 +3,22 @@ import { downloadToAsset } from './store.js';
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 
+const PRIVATE_HOST = /^(localhost|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|::1|\[::1\]|.*\.local$)/i;
+function assertPublicHttp(url) {
+  const u = new URL(url);
+  if (!/^https?:$/.test(u.protocol)) throw new Error('only http/https URLs can be scraped');
+  if (PRIVATE_HOST.test(u.hostname)) throw new Error('cannot scrape private/local addresses');
+}
+
 async function fetchText(url, timeoutMs = 15000) {
+  assertPublicHttp(url);
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
     const res = await fetch(url, { signal: ctrl.signal, headers: { 'user-agent': UA, accept: 'text/html,*/*' }, redirect: 'follow' });
     if (!res.ok) throw new Error(`fetch ${res.status} ${url}`);
-    const html = await res.text();
+    assertPublicHttp(res.url || url); // re-validate after redirects
+    const html = (await res.text()).slice(0, 2_000_000);
     return { html, finalUrl: res.url || url };
   } finally { clearTimeout(t); }
 }
@@ -158,6 +167,24 @@ export async function fetchSite(url) {
     if (saved.length >= 8) break;
   }
 
+  // social accounts linked from the site (any origin — outbound links)
+  const SOCIAL_HOST = {
+    'instagram.com': 'instagram', 'instagr.am': 'instagram',
+    'tiktok.com': 'tiktok', 'x.com': 'x', 'twitter.com': 'x',
+    'facebook.com': 'facebook', 'fb.com': 'facebook',
+    'youtube.com': 'youtube', 'youtu.be': 'youtube',
+    'linkedin.com': 'linkedin', 'pinterest.com': 'pinterest', 'threads.net': 'threads',
+  };
+  const socials = {};
+  for (const m of html.matchAll(/href\s*=\s*["'](https?:\/\/[^"'<>\s]+)["']/gi)) {
+    try {
+      const h = new URL(m[1]).hostname.replace(/^www\.|^m\./, '');
+      const plat = SOCIAL_HOST[h] || SOCIAL_HOST[h.split('.').slice(-2).join('.')];
+      if (plat && !socials[plat] && !/share|intent|sharer|\/p\/|plugins|dialog/i.test(m[1])) socials[plat] = m[1].split('?')[0];
+    } catch { /* bad url */ }
+  }
+  const missingSocials = ['instagram', 'tiktok', 'x', 'youtube'].filter((p) => !socials[p]);
+
   return {
     title: meta.title || '',
     description: meta.description || '',
@@ -167,6 +194,8 @@ export async function fetchSite(url) {
     fonts: extractFonts(html),
     images: saved,
     links: followed,
+    socials,
+    missingSocials,
     htmlLen: html.length,
   };
 }

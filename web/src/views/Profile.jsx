@@ -14,6 +14,7 @@ const uid = () => (crypto.randomUUID ? crypto.randomUUID() : `id-${Date.now()}-$
 const absUrl = (u) => (!u ? '' : /^https?:\/\//i.test(u) ? u : `https://${u}`);
 const hostOf = (u) => { try { return new URL(absUrl(u)).hostname.replace(/^www\./, ''); } catch { return u; } };
 const isUrlish = (s) => /\./.test(String(s)) && !/\s/.test(String(s));
+const capFirst = (s) => (s ? s[0].toUpperCase() + s.slice(1) : '');
 
 // profile.colors arrives as either [hex…] (API.md) or {primary,…} (server normalize) — display either, always PATCH an array (applyPatch replaces arrays wholesale).
 const COLOR_ORDER = ['primary', 'secondary', 'accent', 'background', 'surface', 'text'];
@@ -71,7 +72,7 @@ function ProfileTabs() {
 
 // ============================== OVERVIEW ==============================
 function Overview() {
-  const { profile: p, refresh, setProfile, say } = useApp();
+  const { profile: p, refresh, setProfile, setBoard, say } = useApp();
   const nav = useNavigate();
   const [sub, setSub] = useState('brand'); // 'brand' | 'details'
   const [confirmReset, setConfirmReset] = useState(false);
@@ -95,6 +96,8 @@ function Overview() {
     setConfirmReset(false);
     setResetting(false);
     setProfile(null);
+    setBoard?.(null);
+    try { sessionStorage.removeItem('marque.strategySel'); sessionStorage.removeItem('marque.strategySub'); } catch { /* noop */ }
     nav('/onboarding');
   };
 
@@ -125,6 +128,27 @@ function Overview() {
               <a href={absUrl(v)} target="_blank" rel="noreferrer"><Icon name="link" size={13} /> {hostOf(v)}</a>
             ) : <span className="muted">—</span>)}
           />
+          {(Object.keys(p.socials || {}).length > 0 || (p.missingSocials || []).length > 0) && (
+            <div className="field">
+              <span className="f-label">Detected socials</span>
+              <span className="f-val">
+                {Object.keys(p.socials || {}).length > 0 ? (
+                  <span className="taglist">
+                    {Object.entries(p.socials).map(([plat, href]) => (
+                      <a key={plat} className="tag pf-taglink" href={absUrl(href)} target="_blank" rel="noopener noreferrer">
+                        <Icon name="link" size={11} /> {capFirst(plat)}
+                      </a>
+                    ))}
+                  </span>
+                ) : <span className="muted">—</span>}
+                {!!(p.missingSocials || []).length && (
+                  <div className="pf-hint" style={{ marginTop: 8 }}>
+                    No {p.missingSocials.map(capFirst).join(', ')} found on your site — your strategy will fill that gap.
+                  </div>
+                )}
+              </span>
+            </div>
+          )}
           <FieldEdit label="Colors" kind="colors" value={colorList(p.colors)} onSave={(v) => save({ colors: v })} />
           <FieldEdit label="Fonts" kind="fonts" value={p.fonts} onSave={(v) => save({ fonts: v })} />
           <FieldEdit label="Tagline" kind="text" value={p.tagline} onSave={(v) => save({ tagline: v })} />
