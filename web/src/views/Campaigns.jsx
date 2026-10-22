@@ -89,6 +89,7 @@ export default function Campaigns() {
         productId: draft?.productId,
         ingredients: draft?.ingredients,
         aspectRatio: draft?.aspectRatio,
+        qlooSignals: brief.qlooSignals,   // server persists these onto the campaign
       });
       if (job?.id) {
         await pollJob(job.id, { onTick: () => setNote('Crafting your creatives…') })
@@ -188,6 +189,20 @@ export default function Campaigns() {
             <div className="brief-field">
               <span className="k">Taste signals</span>
               <span className="v"><SignalChips signals={brief.qlooSignals} max={6} /></span>
+            </div>
+          )}
+          {!!brief.suggestions?.length && (
+            <div className="brief-field">
+              <span className="k">Alternatives</span>
+              <span className="v" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {brief.suggestions.map((s, i) => (
+                  <button key={i} className="btn ghost sm" style={{ justifyContent: 'flex-start' }}
+                    title={s.keyMessage}
+                    onClick={() => setBrief((b) => ({ ...b, brief: { ...b.brief, title: s.title || b.brief.title, angle: s.angle || b.brief.angle, keyMessage: s.keyMessage || b.brief.keyMessage } }))}>
+                    {s.title}{s.angle ? ` — ${s.angle}` : ''}
+                  </button>
+                ))}
+              </span>
             </div>
           )}
           <div className="row mt16" style={{ justifyContent: 'flex-end', gap: 10 }}>

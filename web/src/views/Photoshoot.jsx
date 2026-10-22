@@ -5,15 +5,17 @@ import Icon from '../components/Icon.jsx';
 import { downloadAsset, fmtDate, postJson } from '../components/Composer.jsx';
 import './studio.css';
 
+// Scene text is sent as the template value — the server maps known keys
+// (studio/lifestyle/flat-lay/detail/outdoor) and passes anything else through as prompt text.
 const TEMPLATES = [
-  { id: 'studio-white-sweep', label: 'Studio · white sweep' },
-  { id: 'lifestyle-kitchen', label: 'Lifestyle · kitchen' },
-  { id: 'lifestyle-desk', label: 'Lifestyle · desk' },
-  { id: 'outdoor-golden', label: 'Outdoor · golden hour' },
-  { id: 'flat-lay', label: 'Flat lay' },
-  { id: 'moody-dark', label: 'Moody · dark' },
+  { id: 'studio', label: 'Studio · white sweep', scene: 'studio' },
+  { id: 'lifestyle-kitchen', label: 'Lifestyle · kitchen', scene: 'in-use lifestyle scene in a bright kitchen, candid editorial feel' },
+  { id: 'lifestyle-desk', label: 'Lifestyle · desk', scene: 'lifestyle scene styled on a tidy desk, soft window light' },
+  { id: 'outdoor', label: 'Outdoor · golden hour', scene: 'outdoor' },
+  { id: 'flat-lay', label: 'Flat lay', scene: 'flat-lay' },
+  { id: 'moody-dark', label: 'Moody · dark', scene: 'moody dark backdrop, dramatic low-key lighting' },
 ];
-const MAX_TEMPLATES = 6;
+const MAX_TEMPLATES = 6; // server currently caps at 4 — extra picks are dropped there
 
 // Small icon-button with a popover menu (action rows on result cards).
 function PopBtn({ icon, label, title, items, disabled }) {
@@ -63,6 +65,7 @@ export default function Photoshoot() {
   const [refImage, setRefImage] = useState(null);
   // per-result state
   const [hidden, setHidden] = useState(new Set());
+  const [extras, setExtras] = useState({});            // shootId -> extra result cards (resize output)
   const [vids, setVids] = useState({});                // resultKey -> videoPath
   const [showVid, setShowVid] = useState({});          // resultKey -> bool
   const [editFor, setEditFor] = useState(null);        // resultKey
@@ -83,13 +86,11 @@ export default function Photoshoot() {
   const runAndTrack = async (createCall, doneNote) => {
     setBusy(true); setNote('Generating — this can take a minute…');
     try {
-      const { job } = await createCall();
-      if (job?.id) {
-        // POST may return a Job (status) or the PhotoshootJob record itself —
-        // poll only the former; a 404 there shouldn't lose the results.
-        await pollJob(job.id, { onTick: () => {} }).catch((e) => say(e.message));
-        setActiveJob(job.id);
-      }
+      const res = await createCall();
+      // POST returns { job: Job, shoot: PhotoshootJob } — job.id ≠ shoot.id;
+      // the job result carries { shootId }.
+      const out = res.job?.id ? await pollJob(res.job.id, { onTick: () => {} }).catch((e) => { say(e.message); return null; }) : null;
+      setActiveJob(res.shoot?.id || out?.shootId || res.job?.id || null);
       await reload();
       say(doneNote || 'Images ready');
     } catch (e) { say(e.message); }
@@ -115,7 +116,10 @@ export default function Photoshoot() {
   };
 
   // ---------- flows ----------
-  const templates = [...picked, ...(custom.trim() ? [`custom:${custom.trim()}`] : [])];
+  const templates = [
+    ...picked.map((id) => TEMPLATES.find((t) => t.id === id)?.scene || id),
+    ...(custom.trim() ? [custom.trim()] : []),
+  ];
   const generateProduct = () =>
     runAndTrack(() => api.createPhotoshoot({ mode: 'product', inputImage: inputImage.path, templates }));
   const generateFree = () =>
@@ -124,8 +128,17 @@ export default function Photoshoot() {
   const job = (jobs || []).find((j) => j.id === activeJob);
 
   // ---------- result ops ----------
-  const key = (j, r, i) => `${j.id}:${r.id || i}`;
-  const imgId = (r) => encodeURIComponent(r.id || r.imagePath || '');
+  const key = (j, r, i) => `${j.id}:${r.id || r.imagePath || i}`;
+  // /api/images/:id resolves by registry id OR asset path — the result uid is not
+  // the registry id, so pass the path (encoded) for a reliable lookup.
+  const imgId = (r) => encodeURIComponent(r.imagePath || r.id || '');
+  const putImage = async (r, body) => {
+    const res = await fetch(`/api/images/${imgId(r)}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    if (!res.ok) { const e = new Error(`PUT /api/images/:id → ${res.status}`); e.status = res.status; throw e; }
+    return res.json();
+  };
 
   const editImage = async (j, r, k) => {
     if (!editPrompt.trim()) return;
@@ -159,7 +172,11 @@ export default function Photoshoot() {
   const resizeImage = async (j, r, k, aspect) => {
     setResBusy(k);
     try {
-      await postJson(`/api/images/${imgId(r)}/resize`, { aspect });
+      const res = await postJson(`/api/images/${imgId(r)}/resize`, { aspect });
+      // resize returns a detached {image} — show it in this shoot's grid
+      if (res?.image?.imagePath) {
+        setExtras((x) => ({ ...x, [j.id]: [...(x[j.id] || []), { ...res.image, template: `resized ${aspect}` }] }));
+      }
       await reload();
       say('Resized');
     } catch (e) {
@@ -178,16 +195,30 @@ export default function Photoshoot() {
 
   const saveToProfile = async (r) => {
     try {
-      const { profile: p } = await api.updateProfile({
-        patch: { images: [...(profile?.images || []), { path: r.imagePath, caption: 'Studio shot' }] },
-      });
+      // canonical route: PUT /api/images/:id { target:'profile' }
+      const { profile: p } = await putImage(r, { target: 'profile', caption: 'Studio shot' });
       if (p) setProfile(p);
       say('Saved to Business Profile');
-    } catch (e) { say(e.message); }
+    } catch (e) {
+      if (e.status !== 404) return say(e.message);
+      try {
+        const { profile: p } = await api.updateProfile({
+          patch: { images: [...(profile?.images || []), { id: `img-${Math.random().toString(36).slice(2, 9)}`, path: r.imagePath, caption: 'Studio shot' }] },
+        });
+        if (p) setProfile(p);
+        say('Saved to Business Profile');
+      } catch (e2) { say(e2.message); }
+    }
   };
   const saveAsCatalog = async (r) => {
-    try { await api.addCatalog({ name: 'Studio shot', image: r.imagePath }); say('Added to catalog'); }
-    catch (e) { say(e.message); }
+    try {
+      await putImage(r, { target: 'catalog', name: 'Studio shot' });
+      say('Added to catalog');
+    } catch (e) {
+      if (e.status !== 404) return say(e.message);
+      try { await api.addCatalog({ name: 'Studio shot', image: r.imagePath }); say('Added to catalog'); }
+      catch (e2) { say(e2.message); }
+    }
   };
 
   // ---------- render ----------
@@ -413,16 +444,16 @@ export default function Photoshoot() {
 
       {note && <div className="gen-note"><span className="spinner" />{note}</div>}
 
-      {/* active results */}
-      {job && !!job.results?.length && (
+      {/* active results — results[] + prompt edits[] + local resize extras */}
+      {job && !!allResults(job, extras).length && (
         <>
           <div className="section-label">Results · {job.mode === 'product' ? 'product shoot' : 'free generation'} · {fmtDate(job.createdAt)}</div>
           <div className="grid c4">
-            {job.results.map((r, i) => resultCard(job, r, i))}
+            {allResults(job, extras).map((r, i) => resultCard(job, r, i))}
           </div>
         </>
       )}
-      {job && !job.results?.length && job.status !== 'running' && (
+      {job && !allResults(job, extras).length && !busy && (
         <div className="empty">That shoot produced no images.</div>
       )}
 
@@ -440,11 +471,11 @@ export default function Photoshoot() {
                     {j.mode === 'product' ? 'Product shoot' : (j.prompt || 'Free generation')}
                   </div>
                   <div className="muted small">
-                    {fmtDate(j.createdAt)}{j.templates?.length ? ` · ${j.templates.length} templates` : ''} · {j.results?.length || 0} images
+                    {fmtDate(j.createdAt)}{j.templates?.length ? ` · ${j.templates.length} templates` : ''} · {(j.results || []).filter((r) => r.imagePath).length} images
                   </div>
                 </div>
                 <div className="thumbs">
-                  {(j.results || []).slice(0, 4).map((r, i) => (
+                  {(j.results || []).filter((r) => r.imagePath).slice(0, 4).map((r, i) => (
                     <span key={i} className="media-tile"><img src={r.imagePath} alt="" loading="lazy" /></span>
                   ))}
                 </div>
@@ -458,6 +489,16 @@ export default function Photoshoot() {
       )}
     </div>
   );
+}
+
+// Merge a shoot's generated results with prompt edits (stored under edits[])
+// and any locally-tracked resize output. Entries with no imagePath are failed
+// generations — skip them.
+function allResults(job, extras) {
+  const res = (job?.results || []).filter((r) => r.imagePath);
+  const edits = (job?.edits || []).filter((e) => e.imagePath)
+    .map((e) => ({ id: `edit:${e.imagePath}`, imagePath: e.imagePath, template: `edit — ${e.prompt}` }));
+  return [...res, ...edits, ...(extras[job?.id] || [])];
 }
 
 // Reference-image picker pill for the free-flow composer.

@@ -9,6 +9,15 @@ import './studio.css';
 
 const MAX_IMGS = 7;
 
+// profile.colors is a keyed object ({primary, secondary, accent, background,
+// surface, text}) on the server — normalize to [{label, hex}] (array-safe too).
+const colorList = (p) => {
+  const c = p?.colors;
+  if (!c) return [];
+  if (Array.isArray(c)) return c.filter(Boolean).map((hex, i) => ({ label: ['primary', 'secondary', 'accent'][i] || `color ${i + 1}`, hex }));
+  return Object.entries(c).filter(([, v]) => typeof v === 'string' && v.startsWith('#')).map(([label, hex]) => ({ label, hex }));
+};
+
 export default function BrandBook() {
   const { profile, setProfile, say, status } = useApp();
   const [book, setBook] = useState(undefined);       // undefined=loading, null=none
@@ -40,11 +49,14 @@ export default function BrandBook() {
   const ensureImageId = async (path, caption) => {
     const found = (profile?.images || []).find((i) => i.path === path || i.id === path);
     if (found) return found.id || found.path;
+    // PUT /api/profile applies the patch verbatim — mint the id client-side so
+    // the book's coverImageId/imageIds lookups resolve.
+    const nid = `img-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
     const { profile: p } = await api.updateProfile({
-      patch: { images: [...(profile?.images || []), { path, caption }] },
+      patch: { images: [...(profile?.images || []), { id: nid, path, caption }] },
     });
     if (p) setProfile(p);
-    return (p?.images || []).find((i) => i.path === path)?.id || path;
+    return (p?.images || []).find((i) => i.path === path)?.id || nid || path;
   };
 
   const upload = async (e) => {
@@ -64,7 +76,7 @@ export default function BrandBook() {
     try {
       const { job } = await api.createPhotoshoot({
         mode: 'free',
-        prompt: `Brand book cover for ${profile?.name || 'the brand'} — ${(profile?.aesthetic || []).join(', ') || 'clean'} aesthetic, palette ${(profile?.colors || []).slice(0, 3).join(' ')}, elegant editorial layout space`,
+        prompt: `Brand book cover for ${profile?.name || 'the brand'} — ${(profile?.tone || []).slice(0, 3).join(', ') || 'clean'} style, palette ${colorList(profile).slice(0, 3).map((c) => c.hex).join(' ')}, elegant editorial layout space`,
       });
       if (job?.id) await pollJob(job.id).catch(() => {});
       const { jobs } = await api.listPhotoshoot();
@@ -279,8 +291,10 @@ export default function BrandBook() {
             <div className="page-in">
               <div className="pg-label">Palette</div>
               <div className="palette-strip">
-                {(profile?.colors || []).map((hex, i) => (
-                  <span key={hex + i} className="sw" style={{ background: hex }}>{hex}</span>
+                {colorList(profile).map(({ label, hex }) => (
+                  <span key={label + hex} className="sw" style={{ background: hex }}>
+                    <span>{label}<br />{hex}</span>
+                  </span>
                 ))}
               </div>
               {book.paletteNote && <p className="muted small mt16">{book.paletteNote}</p>}
@@ -354,7 +368,7 @@ function bookHtml(profile, book) {
 <style>body{margin:0;background:#161616;color:#f2f2f0;font-family:Georgia,serif}section{padding:60px 8%;border-bottom:1px solid #333}h1{font-style:italic;font-size:52px;margin:0}h2{font-style:italic}.muted{color:#9a9a94}.cover{min-height:70vh;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(180deg,transparent, rgba(0,0,0,.75)),url('${img(book?.coverImage)}') center/cover}.sw{display:inline-block;width:90px;height:90px;border-radius:14px;margin-right:12px;vertical-align:bottom;font-size:11px;padding:8px;color:#fff;text-shadow:0 1px 3px #000;box-sizing:border-box}.tag{display:inline-block;background:#2e2e2e;border-radius:999px;padding:6px 14px;margin:4px 6px 0 0;font-size:14px}img.t{width:150px;height:150px;object-fit:cover;border-radius:12px;margin:0 8px 8px 0}</style></head><body>
 <section class="cover"><div><div class="muted">BRAND BOOK</div><h1>${esc(p.name)}</h1><p>${esc(p.tagline)}</p></div></section>
 <section><h2>Our story</h2><p style="max-width:560px">${esc(p.description)}</p><p class="muted">${esc(p.audience)}</p>${(p.values || []).map((v) => `<span class="tag">${esc(v)}</span>`).join('')}</section>
-<section><h2>Palette</h2>${(p.colors || []).map((c) => `<span class="sw" style="background:${esc(c)}">${esc(c)}</span>`).join('')}${book?.paletteNote ? `<p class="muted">${esc(book.paletteNote)}</p>` : ''}</section>
+<section><h2>Palette</h2>${colorList(p).map(({ label, hex }) => `<span class="sw" style="background:${esc(hex)}">${esc(label)} · ${esc(hex)}</span>`).join('')}${book?.paletteNote ? `<p class="muted">${esc(book.paletteNote)}</p>` : ''}</section>
 <section><h2>Typography</h2><p class="muted">Heading · ${esc(p.fonts?.heading)}</p><h1 style="font-size:34px">The quick brown fox</h1><p class="muted">Body · ${esc(p.fonts?.body)}</p><p style="font-family:system-ui">The quick brown fox jumps over the lazy dog.</p></section>
 <section><h2>Imagery</h2>${imgs.map((s) => `<img class="t" src="${s}">`).join('')}</section>
 </body></html>`;
