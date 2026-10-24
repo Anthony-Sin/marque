@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fight Night — Marque Promotions</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23B32B1E'/%3E%3Ccircle cx='32' cy='26' r='15' fill='%23F4ECD7'/%3E%3Crect x='20' y='36' width='24' height='14' rx='6' fill='%23F4ECD7'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4ECD7;--paper2:#EDE1C4;--ink:#221B12;--mut:#7D7057;
+  --red:#B32B1E;--red-d:#8E2115;--line:#C9B98F;
+  --f:'Barlow Condensed','Arial Narrow','Helvetica Neue',Arial,sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#1B1510 radial-gradient(ellipse at 50% 0%,rgba(179,43,30,.14),transparent 60%);
+  color:var(--ink);font-family:var(--f);font-size:16px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(179,43,30,.22)}
+a{color:var(--red);text-decoration:none;border-bottom:1.5px solid var(--red)}
+a:hover{color:var(--ink);border-color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+
+.poster{
+  max-width:920px;margin:26px auto 70px;background:var(--paper);
+  border:3px solid var(--ink);
+  box-shadow:0 0 0 7px var(--paper),0 0 0 9px var(--ink),0 34px 80px rgba(0,0,0,.55);
+}
+.inner{border:2px solid var(--ink);margin:9px;position:relative}
+.inner::before{content:"";position:absolute;inset:5px;border:1px solid var(--ink);pointer-events:none}
+
+.mast{padding:clamp(18px,4vw,34px) clamp(16px,4vw,40px) clamp(14px,3vw,22px);text-align:center;border-bottom:3px double var(--ink);position:relative}
+.present{font-family:var(--mono);font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut)}
+.mast h1{font-size:clamp(44px,9.5vw,92px);font-weight:700;text-transform:uppercase;letter-spacing:.01em;line-height:.92;margin:10px 0 6px}
+.mast h1 em{font-style:italic;color:var(--red)}
+.dateline{display:flex;justify-content:center;gap:clamp(12px,3vw,34px);flex-wrap:wrap;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink)}
+.attraction{margin-top:14px}
+.attraction .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--red)}
+.attraction .ask{font-size:clamp(21px,4vw,30px);font-weight:600;font-style:italic;margin-top:4px}
+.attraction .url{font-family:var(--mono);font-size:10.5px;margin-top:6px;overflow-wrap:anywhere}
+.attraction .film{font-size:14px;font-style:italic;color:var(--mut);margin-top:4px}
+section{padding:clamp(16px,3.4vw,30px) clamp(16px,4vw,40px);border-bottom:1.5px solid var(--line)}
+section:last-of-type{border-bottom:none}
+.sec-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sec-h .no{font-family:var(--mono);font-size:10px;font-weight:700;color:#fff;background:var(--red);padding:3px 9px;letter-spacing:.16em}
+.sec-h h2{font-size:clamp(24px,4.4vw,36px);font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.sec-h .sub{margin-left:auto;font-style:italic;color:var(--mut);font-size:14px}
+
+/* tale of the tape */
+.tale{border:2px solid var(--ink);background:var(--paper2)}
+.tale .corner{display:flex;justify-content:space-between;gap:10px;padding:8px 14px;border-bottom:2px solid var(--ink);font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase}
+.tale .corner .rc{color:var(--red)}
+.tt{width:100%;border-collapse:collapse}
+.tt td{padding:7px 14px;border-bottom:1px dashed var(--line);font-size:16.5px;vertical-align:top}
+.tt tr:last-child td{border-bottom:none}
+.tt td.k{font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);width:118px;padding-top:12px}
+.tt td .big{font-size:clamp(22px,3.6vw,30px);font-weight:700;text-transform:uppercase}
+.tt .bar{height:10px;border:1.5px solid var(--ink);background:#fff;margin-top:5px;max-width:260px}
+.tt .bar i{display:block;height:100%;background:var(--red)}
+.idols{padding:10px 14px;border-top:2px solid var(--ink);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.idols b{font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+.idols span{font-size:15px;font-weight:600;border:1.5px solid var(--ink);padding:2px 12px;border-radius:999px;background:var(--paper)}
+
+/* bouts */
+.bout{display:grid;grid-template-columns:86px 1fr auto;gap:16px;align-items:center;padding:16px 0;border-bottom:1.5px dashed var(--line)}
+.bout:last-child{border-bottom:none;padding-bottom:2px}
+.bout .num{text-align:center}
+.bout .num .r{font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut)}
+.bout .num .n{font-size:44px;font-weight:700;line-height:1;color:var(--red)}
+.bout h3{font-size:clamp(22px,4vw,32px);font-weight:700;text-transform:uppercase;line-height:1}
+.bout h3 .aka{font-size:.6em;font-style:italic;font-weight:500;color:var(--mut);text-transform:none}
+.bout .stats{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:6px;font-size:15px}
+.bout .stats b{font-weight:700}
+.bout .stats .fit b{color:var(--red)}
+.bout .watch{font-style:italic;color:var(--mut);font-size:13.5px;margin-top:3px}
+.bout .purse{text-align:right}
+.bout .purse .pv{font-size:clamp(24px,4vw,34px);font-weight:700;line-height:1}
+.bout .purse .pl{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+.bout .record{display:flex;align-items:center;gap:8px;margin-top:5px;justify-content:flex-end}
+.bout .record .tg{width:110px;height:9px;border:1.5px solid var(--ink);background:#fff}
+.bout .record .tg i{display:block;height:100%;background:var(--red)}
+.bout .record .rv{font-family:var(--mono);font-size:10px}
+.bout.main{background:linear-gradient(180deg,rgba(179,43,30,.07),transparent);border:2.5px solid var(--ink);padding:18px 16px;grid-template-columns:96px 1fr auto;position:relative}
+.bout.main::after{content:"MAIN EVENT";position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-family:var(--mono);font-size:9.5px;letter-spacing:.3em;padding:4px 14px}
+.bout.main h3{font-size:clamp(30px,6vw,48px)}
+.bout .hero{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);margin-top:6px}
+@media(max-width:600px){
+  .bout,.bout.main{grid-template-columns:1fr;gap:8px}
+  .bout .num{display:flex;align-items:baseline;gap:8px}
+  .bout .purse{text-align:left}
+  .bout .record{justify-content:flex-start}
+}
+
+/* scratched */
+.scr{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.scr{grid-template-columns:1fr}}
+.off{border:2px solid var(--ink);padding:12px 16px;position:relative;background:repeating-linear-gradient(-45deg,rgba(179,43,30,.05) 0 10px,transparent 10px 20px)}
+.off .stamp{display:inline-block;border:2.5px solid var(--red);color:var(--red);font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.24em;padding:3px 10px;text-transform:uppercase;transform:rotate(-2deg);margin-bottom:6px}
+.off h4{font-size:20px;font-weight:700;text-transform:uppercase}
+.off h4 s{text-decoration-color:var(--red);text-decoration-thickness:2.5px}
+.off .ch{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+.off p{font-size:14.5px;font-style:italic;color:#5E5442;margin-top:5px}
+
+/* referee + plates */
+.orders{display:grid;grid-template-columns:1fr;gap:18px}
+.ordercard{border:2.5px solid var(--ink);background:var(--paper2);padding:16px 20px;position:relative}
+.ordercard::after{content:"REFEREE'S ORDERS";position:absolute;top:-11px;right:16px;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:9px;letter-spacing:.24em;padding:3px 10px}
+.ordercard h3{font-size:clamp(26px,4.6vw,40px);font-weight:700;text-transform:uppercase;line-height:1}
+.ordercard .lede{font-style:italic;font-size:16px;margin:8px 0 12px}
+.ordercard dl{display:grid;grid-template-columns:120px 1fr;gap:5px 14px;font-size:15.5px}
+.ordercard dt{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--red);padding-top:5px}
+.ordercard dd{border-bottom:1px dashed var(--line);padding-bottom:6px}
+.ordercard .km{font-weight:600;font-size:18px}
+.plates{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:4px}
+@media(max-width:860px){.plates{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:430px){.plates{grid-template-columns:1fr}}
+.plate{background:#fff;border:1.8px solid var(--ink);padding:7px 7px 0;box-shadow:4px 4px 0 rgba(34,27,18,.16);transform:rotate(-.7deg);transition:transform .15s ease}
+.plate:nth-child(2n){transform:rotate(.6deg)}
+.plate:hover{transform:rotate(0) scale(1.03)}
+.plate .iw{aspect-ratio:1/1;overflow:hidden;border:1px solid var(--line);background:var(--paper2)}
+.plate .iw img{width:100%;height:100%;object-fit:cover}
+.plate figcaption{padding:8px 3px 9px}
+.plate .h{font-size:14.5px;font-weight:600;line-height:1.3}
+.plate .p{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--red);text-transform:uppercase;margin-top:3px}
+
+/* corner pads = palette */
+.pads{display:flex;flex-wrap:wrap;gap:16px}
+.pad{width:120px;text-align:center}
+.pad .sw{height:64px;border:2.5px solid var(--ink);border-radius:8px 8px 14px 14px;position:relative;box-shadow:inset 0 -10px 0 rgba(0,0,0,.12)}
+.pad .sw::before,.pad .sw::after{content:"";position:absolute;top:-7px;width:8px;height:8px;border:2px solid var(--ink);border-radius:50%;background:var(--paper)}
+.pad .sw::before{left:14%}.pad .sw::after{right:14%}
+.pad .n{font-size:15px;font-weight:600;margin-top:8px;line-height:1.2}
+.pad .h{font-family:var(--mono);font-size:9.5px;color:var(--mut);letter-spacing:.08em}
+
+/* commission */
+.comm{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(16px,3vw,30px)}
+@media(max-width:780px){.comm{grid-template-columns:1fr}}
+.comm .mem{font-style:italic;font-size:15px;margin-bottom:12px}
+.comm .mem b{color:var(--red)}
+.log{font-family:var(--mono);font-size:10.5px}
+.log .lr{padding:7px 0;border-bottom:1px dashed var(--line)}
+.log .lr b{color:var(--red);font-size:11px}
+.log .lr .pm{color:var(--mut);overflow-wrap:anywhere;display:block;margin-top:2px}
+.log .lr .me{display:flex;gap:14px;color:var(--mut);margin-top:2px;flex-wrap:wrap}
+.rank{border:2px solid var(--ink);background:#fff;padding:12px 16px}
+.rank h4{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.rank .dv{font-size:16px;font-weight:700;text-transform:uppercase;border-bottom:2px solid var(--ink);padding:8px 0 4px}
+.rank .rw{display:flex;justify-content:space-between;gap:10px;font-size:14.5px;padding:4px 0;border-bottom:1px dotted var(--line)}
+.rank .rw:last-child{border-bottom:none}
+.rank .rw .v{font-family:var(--mono);font-size:11px;color:var(--mut)}
+
+/* next */
+.nextrow{display:flex;flex-wrap:wrap;gap:10px}
+.nextrow button{
+  border:2px solid var(--ink);background:var(--paper);padding:10px 22px;
+  font-family:var(--f);font-weight:600;font-size:17px;text-transform:uppercase;letter-spacing:.04em;
+  transition:background .12s ease,color .12s ease,transform .12s ease;
+}
+.nextrow button:hover{background:var(--red);border-color:var(--red);color:#fff}
+.nextrow button:active{transform:translateY(2px)}
+.nextrow .sub{width:100%;font-style:italic;color:var(--mut);font-size:14px}
+.roster{margin-top:14px;font-size:14.5px;color:var(--mut)}
+.roster b{font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:5px}
+.roster span{display:inline-block;margin-right:14px;font-style:italic;border-bottom:1px dashed var(--mut)}
+.colophon{background:var(--ink);color:var(--paper);text-align:center;font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;padding:12px}
+.empty{padding:44px;text-align:center;font-style:italic;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="poster">
+ <div class="inner">
+  <header class="mast">
+    <div class="present">Marque Promotions Inc · under licence of the Qloo Athletic Commission</div>
+    <h1>Fight <em>Night</em></h1>
+    <div class="dateline"><span id="s-date"></span><span>The Campaign Hall</span><span>Door No. <b id="s-door"></b></span></div>
+    <div class="attraction">
+      <div class="lbl">The attraction — one night only</div>
+      <div class="ask" id="s-ask"></div>
+      <div class="url" id="s-url"></div>
+      <div class="film" id="s-film"></div>
+    </div>
+  </header>
+  <main id="app"></main>
+ </div>
+ <div class="colophon" id="foot"></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dt=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Crème Fraîche',h:'#F3E6CE'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Espresso Bean',h:'#4E362B'}
+];
+const CREAT=[0,5,9,13].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+
+document.getElementById('s-date').textContent=dt(B.createdAt||B.fetchedAt);
+document.getElementById('s-door').textContent=String(B.id||'—').slice(0,8).toUpperCase();
+document.getElementById('s-ask').textContent='“'+((B.sub&&B.sub.prompt)||B.title||'')+'”';
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+document.getElementById('s-url').innerHTML=U?'scouting film: <a href="'+esc(U)+'">'+esc(U)+'</a>':'';
+document.getElementById('s-film').textContent=(B.urlContext&&B.urlContext.title)?('the fighter’s camp says — '+B.urlContext.title+': '+(B.urlContext.description||'').slice(0,96)+'…'):'';
+document.getElementById('foot').textContent='MARQUE PROMOTIONS · POSTED PURSUANT TO COMMISSION RULE '+String(B.id||'—').slice(0,8).toUpperCase()+' · NO DECISIONS LEFT TO THE JUDGES';
+
+const M=document.getElementById('app');
+const sec=(no,title,sub,body)=>{if(!body)return;M.appendChild(el('<section><div class="sec-h"><span class="no">'+esc(no)+'</span><h2>'+esc(title)+'</h2><span class="sub">'+esc(sub)+'</span></div>'+body+'</section>'))};
+
+/* ——— tale of the tape : audience ——— */
+if(AR&&AR.lean){
+  sec('WEIGH-IN','Tale of the Tape','the challenger in the red corner',
+  '<div class="tale"><div class="corner"><span class="rc">FIGHTING OUT OF THE RED CORNER</span><span>OFFICIAL WEIGH-IN</span></div>'+
+  '<table class="tt">'+
+  '<tr><td class="k">Fighter</td><td><span class="big">Gen Z</span> — campaigning as an <b>'+esc(AR.lean.label)+'</b></td></tr>'+
+  '<tr><td class="k">Record</td><td><b>'+Math.round((AR.lean.confidence||0)*100)+'%</b> read confidence <span class="bar"><i style="width:'+Math.round((AR.lean.confidence||0)*100)+'%"></i></span></td></tr>'+
+  '<tr><td class="k">Style</td><td>'+(AR.lean.signals||[]).map(esc).join(' · ')+'</td></tr>'+
+  '<tr><td class="k">Trains at</td><td>'+(AR.mediaHabits||[]).map(h=>'<b>'+esc(h.channel)+'</b> — '+esc(h.note)).join('<br>')+'</td></tr>'+
+  '</table>'+
+  '<div class="idols"><b>Idols on the wall</b>'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div>');
+}
+
+/* ——— the card : strategies ——— */
+if(strats.length){
+  const boutLine=(s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    return '<div class="stats">'+(s.channels||[]).map(c=>'<span class="fit">'+esc(c.name)+' lands <b>'+f2(c.fit)+'</b> <span style="color:var(--mut)">'+esc(c.why||'')+'</span></span>').join('')+'</div>'+
+    '<div class="stats">'+(s.formats||[]).map(f=>'<span style="font-style:italic">'+esc(f)+'</span>').join(' <span style="color:var(--mut)">/</span> ')+'</div>'+
+    '<div class="hero">trainer in the corner · '+esc(s.heroSignal||'—')+'</div>'+
+    ((s.watchouts&&s.watchouts[0])?'<div class="watch">cutman warns — '+esc(s.watchouts[0])+'</div>':'');
+  };
+  const mainS=sel!=null?strats[sel]:strats[0];
+  const under=strats.map((s,i)=>({s:s,i:i})).filter(x=>x.i!==sel);
+  let h='<div class="bout main"><div class="num"><div class="r">Bout</div><div class="n">'+((sel!=null?sel:0)+1)+'</div><div class="r">12 rds</div></div><div>'+
+    '<h3>'+esc(mainS.title)+' <span class="aka">“'+esc(mainS.angle||'')+'”</span></h3>'+
+    boutLine(mainS,sel!=null?sel:0)+'</div>'+
+    '<div class="purse"><div class="pv">'+views(mainS.reach&&mainS.reach.estViews)+'</div><div class="pl">winner’s purse · est. views</div>'+
+    '<div class="record"><span class="rv">'+f2((mainS.audienceFit&&mainS.audienceFit.score)||0)+'</span><span class="tg"><i style="width:'+Math.round(((mainS.audienceFit&&mainS.audienceFit.score)||0)*100)+'%"></i></span></div></div></div>';
+  h+=under.map(x=>{
+    const s=x.s;const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    return '<div class="bout"><div class="num"><div class="r">Bout</div><div class="n">'+(x.i+1)+'</div></div><div>'+
+    '<h3>'+esc(s.title)+' <span class="aka">“'+esc(s.angle||'')+'”</span></h3>'+boutLine(s,x.i)+'</div>'+
+    '<div class="purse"><div class="pv">'+views(s.reach&&s.reach.estViews)+'</div><div class="pl">purse · est. views</div>'+
+    '<div class="record"><span class="rv">'+f2(fit)+'</span><span class="tg"><i style="width:'+Math.round(fit*100)+'%"></i></span></div></div></div>';
+  }).join('');
+  sec('THE CARD','Tonight’s Bouts','four sanctioned contests, ranked by purse',h);
+}
+
+/* ——— scratched ——— */
+if(anti.length){
+  sec('SCRATCHED','Bouts Cancelled','called off by the commission — no refunds owed',
+  '<div class="scr">'+anti.map(a=>'<div class="off"><span class="stamp">Bout off</span><h4><s>'+esc(a.title)+'</s></h4><div class="ch">division: '+esc(a.channel)+'</div><p>'+esc(a.whyNot)+'</p></div>').join('')+'</div>');
+}
+
+/* ——— referee's orders + programme plates ——— */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('INSTRUCTIONS','The Referee’s Orders','given in the centre of the ring',
+  '<div class="orders"><div class="ordercard">'+
+  (br?'<h3>'+esc(br.title)+'</h3><div class="lede">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Defend</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Protect</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Corner</dt><dd>'+esc(selS.heroSignal||'—')+' — carried over from Bout '+((sel!=null?sel:0)+1)+', '+esc(selS.title)+'</dd></dl>'
+  :'<div class="lede">The referee has no orders on file for this bout.</div>')+
+  '</div>'+
+  '<div class="plates">'+CREAT.map(m=>'<figure class="plate"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">ringside photo · '+esc(m.provider)+'</div></figcaption></figure>').join('')+'</div></div>');
+}
+
+/* ——— corner colors ——— */
+sec('COLORS','Corner Pads','the canvas reads these colors at the bell',
+  '<div class="pads">'+PALETTE.map(s=>'<div class="pad"><div class="sw" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="h">'+s.h.toUpperCase()+'</div></div>').join('')+'</div>');
+
+/* ——— commission records : qloo ——— */
+if(calls.length||affs.length){
+  sec('SANCTION','Commission Records','every bout weighed against the Qloo rankings — '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' mode',
+  '<div class="comm"><div><p class="mem"><b>Clerk’s note.</b> The commission ran <b>'+calls.length+' official weigh-ins</b> against the Qloo rankings, all in <b>'+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' mode</b>, before a single bout was posted.</p>'+
+  '<div class="log">'+calls.map(c=>'<div class="lr"><b>'+esc(c.endpoint)+'</b><span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,34)).join(' · '))+'</span><span class="me"><span>'+esc((c.at||'').slice(11,19))+'Z</span><span>'+esc(c.tookMs)+' ms on the scale</span><span>n = '+esc(c.n)+'</span><span>'+esc(c.mode)+'</span></span></div>').join('')+'</div></div>'+
+  '<div class="rank"><h4>Rankings by division</h4>'+affs.map(g=>'<div class="dv">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+  g.entities.slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('')+'</div></div>');
+}
+
+/* ——— next bout ——— */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('REMATCH','Promote the Rematch','hand the belt to the next deliverable',
+  '<div class="nextrow">'+['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  '<div class="sub">Pick a corner — every route carries tonight’s numbers forward.</div></div>'+
+  (others.length?'<div class="roster"><b>Also on the roster</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':''));
+
+if(!M.children.length)M.appendChild(el('<section><div class="empty">The card is off — data.js never reached the venue. Check the promoter’s office.</div></section>'));
+})();
+</script>
+</body>
+</html>

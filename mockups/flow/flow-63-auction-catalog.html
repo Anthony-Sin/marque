@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque &amp; Sons — Catalogue of the Campaign Sale</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23FAF6EE'/%3E%3Crect x='8' y='8' width='48' height='48' fill='none' stroke='%236E1423' stroke-width='3'/%3E%3Cpath d='M20 40 L32 18 L44 40' fill='none' stroke='%23221E18' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ivory:#FAF6EE;--ivory2:#F3ECDC;--ink:#221E18;--mut:#83796A;
+  --ox:#6E1423;--gilt:#A9822F;--line:#D8CCAF;
+  --f:'EB Garamond',Georgia,'Times New Roman',serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#2A241B;color:var(--ink);font-family:var(--f);font-size:16.5px;line-height:1.55;-webkit-font-smoothing:antialiased}
+::selection{background:rgba(110,20,35,.18)}
+a{color:var(--ox);text-decoration:none;border-bottom:1px solid var(--ox)}
+a:hover{color:var(--ink);border-color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--ox);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+
+.book{max-width:860px;margin:30px auto 80px;background:var(--ivory);box-shadow:0 0 0 1px #4A4231,0 30px 80px rgba(0,0,0,.5)}
+.page{border:1.5px solid var(--line);margin:10px;position:relative}
+.page::before{content:"";position:absolute;inset:5px;border:.5px solid var(--line);pointer-events:none}
+
+/* cover */
+.cover{padding:clamp(24px,5vw,46px) clamp(18px,5vw,44px);text-align:center;border-bottom:2.5px double var(--ink)}
+.cover .firm{font-family:var(--mono);font-size:10px;letter-spacing:.44em;text-transform:uppercase;color:var(--mut)}
+.cover .rule{width:120px;height:1.5px;background:var(--gilt);margin:14px auto}
+.cover h1{font-size:clamp(30px,5.6vw,50px);font-weight:600;letter-spacing:.02em;line-height:1.1}
+.cover h1 em{font-style:italic;color:var(--ox)}
+.cover .saleno{font-family:var(--mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;margin-top:10px;color:var(--ink)}
+.cover .consignor{margin-top:18px;max-width:560px;margin-left:auto;margin-right:auto}
+.cover .consignor .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.32em;text-transform:uppercase;color:var(--ox)}
+.cover .consignor .ask{font-size:clamp(19px,3.4vw,26px);font-style:italic;margin-top:5px}
+.cover .consignor .url{font-family:var(--mono);font-size:10.5px;margin-top:6px;overflow-wrap:anywhere}
+.cover .viewing{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);margin-top:14px}
+
+section{padding:clamp(18px,3.6vw,32px) clamp(18px,5vw,44px);border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:none}
+.sec-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.sec-h .no{font-family:var(--mono);font-size:10px;color:var(--ox);letter-spacing:.24em}
+.sec-h h2{font-size:clamp(24px,4.4vw,34px);font-weight:600;letter-spacing:.01em}
+.sec-h .sub{margin-left:auto;font-style:italic;color:var(--mut);font-size:14.5px}
+
+/* bidders = audience */
+.room{border:1.5px solid var(--gilt);background:var(--ivory2);padding:16px 20px}
+.room .head{display:flex;justify-content:space-between;gap:10px;border-bottom:1px solid var(--gilt);padding-bottom:8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--mut)}
+.room .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 30px;margin-top:12px}
+@media(max-width:640px){.room .grid{grid-template-columns:1fr}}
+.room .it .k{font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ox);margin-bottom:4px}
+.room .it .big{font-size:clamp(21px,3.4vw,28px);font-weight:600}
+.room .it .conf{display:flex;align-items:center;gap:10px;margin-top:4px;font-size:14px}
+.room .it .conf .tg{flex:1;max-width:200px;height:8px;border:1px solid var(--ink);background:#fff}
+.room .it .conf .tg i{display:block;height:100%;background:var(--gilt)}
+.room ul{list-style:none}
+.room li{padding:4px 0;border-bottom:1px dotted var(--line);font-size:15px}
+.room li:last-child{border-bottom:none}
+.room li b{font-weight:600}
+.room .habits td{padding:4px 8px 4px 0;font-size:14.5px;border-bottom:1px dotted var(--line);vertical-align:top}
+.room .habits td:first-child{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ox);width:82px;padding-top:7px}
+.room .collects{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.room .collects span{font-style:italic;border:1px solid var(--gilt);color:var(--ox);padding:1px 11px;border-radius:999px;font-size:13.5px;background:#fff}
+
+/* lots */
+.lot{display:grid;grid-template-columns:74px 1fr auto;gap:16px;padding:20px 0;border-bottom:1px solid var(--line);position:relative}
+.lot:last-child{border-bottom:none;padding-bottom:4px}
+.lot .ln{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--mut);text-align:right;padding-top:4px}
+.lot .ln b{display:block;font-size:30px;color:var(--ox);font-weight:700;letter-spacing:0;line-height:1}
+.lot h3{font-size:clamp(22px,3.8vw,30px);font-weight:600;line-height:1.1}
+.lot h3 .attr{font-size:.72em;font-style:italic;font-weight:400;color:var(--mut)}
+.lot .cat{font-size:15px;margin-top:6px}
+.lot .cat b{border-bottom:1px solid var(--ox)}
+.lot .prov{font-size:14px;font-style:italic;color:#5A5342;margin-top:6px}
+.lot .prov::before{content:"Provenance — ";font-style:normal;font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox)}
+.lot .cond{font-size:13.5px;font-style:italic;color:var(--mut);margin-top:4px}
+.lot .cond::before{content:"Condition — ";font-style:normal;font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+.lot .fmt{margin-top:6px}
+.lot .fmt span{font-size:12.5px;font-style:italic;border:1px solid var(--mut);color:var(--mut);padding:1px 9px;border-radius:999px;margin-right:5px;display:inline-block;margin-bottom:4px}
+.lot .est{text-align:right;min-width:120px}
+.lot .est .ev{font-size:clamp(24px,4vw,34px);font-weight:700;color:var(--ox);line-height:1}
+.lot .est .el{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+.lot .est .basis{font-size:12.5px;font-style:italic;color:var(--mut);margin-top:4px;max-width:170px}
+.lot .cert{display:flex;align-items:center;gap:8px;justify-content:flex-end;margin-top:6px}
+.lot .cert .tg{width:90px;height:8px;border:1px solid var(--ink);background:#fff}
+.lot .cert .tg i{display:block;height:100%;background:var(--ox)}
+.lot .cert .rv{font-family:var(--mono);font-size:10px}
+.lot.cover-lot{background:linear-gradient(90deg,rgba(169,130,47,.08),transparent 65%)}
+.lot.cover-lot::before{content:"THE COVER LOT";position:absolute;top:8px;left:74px;transform:translateX(0);background:var(--gilt);color:#fff;font-family:var(--mono);font-size:8px;letter-spacing:.3em;padding:3px 10px}
+@media(max-width:620px){
+  .lot{grid-template-columns:1fr;gap:8px}
+  .lot .ln{text-align:left;display:flex;align-items:baseline;gap:8px}
+  .lot .ln b{font-size:26px}
+  .lot .est{text-align:left}
+  .lot .est .basis{max-width:none}
+  .lot .cert{justify-content:flex-start}
+  .lot.cover-lot::before{left:0;top:-8px}
+}
+
+/* withdrawn */
+.withd{border:1.5px solid var(--ink);padding:12px 16px;margin-bottom:12px;background:repeating-linear-gradient(-45deg,rgba(110,20,35,.04) 0 12px,transparent 12px 24px);position:relative}
+.withd:last-child{margin-bottom:0}
+.withd .stamp{position:absolute;top:10px;right:14px;border:2px solid var(--ox);color:var(--ox);font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;padding:3px 9px;text-transform:uppercase;transform:rotate(2deg)}
+.withd h4{font-size:19px;font-weight:600}
+.withd h4 s{text-decoration-color:var(--ox)}
+.withd .lotno{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--mut);text-transform:uppercase}
+.withd p{font-size:14px;font-style:italic;color:#5A5342;margin-top:4px;max-width:88%}
+
+/* essay + plates */
+.essay{display:grid;grid-template-columns:1fr;gap:18px}
+.essaycard{border:2px solid var(--gilt);background:var(--ivory2);padding:18px 22px}
+.essaycard h3{font-size:clamp(26px,4.6vw,38px);font-weight:600;line-height:1.08}
+.essaycard .lede{font-style:italic;font-size:17px;margin:8px 0 14px}
+.essaycard dl{display:grid;grid-template-columns:130px 1fr;gap:5px 16px;font-size:15.5px}
+.essaycard dt{font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);padding-top:5px}
+.essaycard dd{border-bottom:1px dotted var(--line);padding-bottom:7px}
+.essaycard .km{font-size:19px;font-weight:600}
+.plates{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:860px){.plates{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:430px){.plates{grid-template-columns:1fr}}
+.plate{background:#fff;border:1px solid var(--line);padding:10px 10px 0;box-shadow:0 8px 18px rgba(34,30,24,.14);transition:transform .15s ease}
+.plate:hover{transform:translateY(-4px)}
+.plate .iw{aspect-ratio:1/1;overflow:hidden;border:1px solid var(--gilt)}
+.plate .iw img{width:100%;height:100%;object-fit:cover}
+.plate figcaption{padding:9px 2px}
+.plate .h{font-size:14px;font-weight:600;line-height:1.35}
+.plate .p{font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--ox);text-transform:uppercase;margin-top:3px}
+
+/* cabinet = palette */
+.cab{display:flex;flex-wrap:wrap;gap:18px}
+.sw{width:118px;text-align:center}
+.sw .mount{height:88px;border:1.5px solid var(--gilt);background:#fff;padding:7px}
+.sw .mount i{display:block;height:100%}
+.sw .n{font-size:14.5px;font-weight:600;margin-top:7px}
+.sw .h{font-family:var(--mono);font-size:9px;color:var(--mut);letter-spacing:.08em}
+
+/* archive */
+.arch{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(16px,3vw,30px)}
+@media(max-width:780px){.arch{grid-template-columns:1fr}}
+.arch .mem{font-style:italic;font-size:15.5px;margin-bottom:12px}
+.arch .mem b{color:var(--ox)}
+.ledger{font-family:var(--mono);font-size:10.5px}
+.ledger .lr{padding:7px 0;border-bottom:1px dotted var(--line)}
+.ledger b{color:var(--ox);font-size:11px}
+.ledger .pm{color:var(--mut);overflow-wrap:anywhere;display:block}
+.ledger .me{display:flex;gap:14px;color:var(--mut);flex-wrap:wrap}
+.comps{border:1.5px solid var(--gilt);background:#fff;padding:12px 18px}
+.comps h4{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--ox);margin-bottom:8px}
+.comps .dv{font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-bottom:1.5px solid var(--ink);padding:8px 0 4px}
+.comps .rw{display:flex;justify-content:space-between;gap:10px;font-size:14.5px;padding:4px 0;border-bottom:1px dotted var(--line)}
+.comps .rw:last-child{border-bottom:none}
+.comps .rw .v{font-family:var(--mono);font-size:11px;color:var(--mut)}
+
+/* post-sale */
+.nextrow{display:flex;flex-wrap:wrap;gap:10px}
+.nextrow button{border:1.5px solid var(--ink);background:var(--ivory);padding:10px 22px;font-style:italic;font-size:16px;font-weight:500;transition:background .12s ease,color .12s ease,transform .12s ease}
+.nextrow button:hover{background:var(--ox);border-color:var(--ox);color:#fff}
+.nextrow button:active{transform:translateY(2px)}
+.nextrow .sub{width:100%;font-style:italic;color:var(--mut);font-size:14px}
+.sales{margin-top:14px;font-size:14.5px;color:var(--mut)}
+.sales b{font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ox);display:block;margin-bottom:5px}
+.sales span{display:inline-block;margin-right:14px;font-style:italic;border-bottom:1px dotted var(--mut)}
+.colophon{background:var(--ink);color:var(--ivory);text-align:center;font-family:var(--mono);font-size:9px;letter-spacing:.28em;text-transform:uppercase;padding:12px}
+.empty{padding:44px;text-align:center;font-style:italic;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="book">
+ <div class="page">
+  <header class="cover">
+    <div class="firm">Marque &amp; Sons · Auctioneers of Campaign Property</div>
+    <div class="rule"></div>
+    <h1>Catalogue of the<br><em>Strategy → Campaign</em><br>Sale</h1>
+    <div class="saleno" id="s-saleno"></div>
+    <div class="consignor">
+      <div class="lbl">By instruction of the consignor</div>
+      <div class="ask" id="s-ask"></div>
+      <div class="url" id="s-url"></div>
+    </div>
+    <div class="viewing" id="s-viewing"></div>
+  </header>
+  <main id="app"></main>
+ </div>
+ <div class="colophon" id="foot"></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dt=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Crème Fraîche',h:'#F3E6CE'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Espresso Bean',h:'#4E362B'}
+];
+const CREAT=[2,6,8,11].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+
+document.getElementById('s-saleno').textContent='Sale № '+String(B.id||'—').slice(0,8).toUpperCase()+' · '+dt(B.createdAt||B.fetchedAt);
+document.getElementById('s-ask').textContent='“'+((B.sub&&B.sub.prompt)||B.title||'')+'”';
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+document.getElementById('s-url').innerHTML=U?'acquired directly from: <a href="'+esc(U)+'">'+esc(U)+'</a>':'';
+document.getElementById('s-viewing').textContent=(B.urlContext&&B.urlContext.title)?('Viewing note — '+B.urlContext.title+': '+(B.urlContext.description||'').slice(0,90)+'…'):'';
+document.getElementById('foot').textContent='MARQUE & SONS · SALE № '+String(B.id||'—').slice(0,8).toUpperCase()+' · ALL LOTS SOLD WITH QLOO PROVENANCE · E&OE';
+
+const M=document.getElementById('app');
+const sec=(no,title,sub,body)=>{if(!body)return;M.appendChild(el('<section><div class="sec-h"><span class="no">'+esc(no)+'</span><h2>'+esc(title)+'</h2><span class="sub">'+esc(sub)+'</span></div>'+body+'</section>'))};
+
+/* the room = audience */
+if(AR&&AR.lean){
+  sec('I.','The Registered Bidders','paddle 7 — known to this house',
+  '<div class="room"><div class="head"><span>REGISTER OF THE ROOM</span><span>INSPECTED BEFORE BIDDING</span></div>'+
+  '<div class="grid"><div class="it"><div class="k">Bidder of record</div><div class="big">Gen Z</div>'+
+  '<div class="it" style="margin-top:6px"><div class="k">Bidding style</div><div>'+esc(AR.lean.label)+'</div>'+
+  '<div class="conf"><span class="tg"><i style="width:'+Math.round((AR.lean.confidence||0)*100)+'%"></i></span> '+Math.round((AR.lean.confidence||0)*100)+'% certain</div></div></div>'+
+  '<div class="it"><div class="k">Known to follow</div><ul>'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></div>'+
+  '<div class="it"><div class="k">Habitual salerooms</div><table class="habits">'+(AR.mediaHabits||[]).map(h=>'<tr><td>'+esc(h.channel)+'</td><td>'+esc(h.note)+'</td></tr>').join('')+'</table></div>'+
+  '<div class="it"><div class="k">Collects</div><div class="collects">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div>'+
+  '</div></div>');
+}
+
+/* lots = strategies */
+if(strats.length){
+  sec('II.','The Lots','offered in catalogue order — estimates in impressions',
+  strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    const prov=(s.qlooSignals||[]).map(q=>esc(q.entity)+' ('+f2(q.affinity)+')').join(', ');
+    return '<div class="lot'+(i===sel?' cover-lot':'')+'"><div class="ln">LOT<b>'+(i+1)+'</b></div><div>'+
+    '<h3>'+esc(s.title)+' <span class="attr">attributed to '+esc(s.angle||'the house')+'</span></h3>'+
+    '<div class="cat">Documented to hang best on '+(s.channels||[]).map(c=>'<b>'+esc(c.name)+'</b> ('+f2(c.fit)+' — '+esc(c.why||'recorded')+')').join(', ')+'.</div>'+
+    (prov?'<div class="prov">'+prov+'; carried over from the consignor’s collection.</div>':'')+
+    '<div class="fmt">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join('')+'</div>'+
+    ((s.watchouts&&s.watchouts[0])?'<div class="cond">'+esc(s.watchouts[0])+'</div>':'')+
+    '</div>'+
+    '<div class="est"><div class="ev">'+views(s.reach&&s.reach.estViews)+'</div><div class="el">estimate</div>'+
+    '<div class="basis">'+esc(s.reach&&s.reach.basis||'')+'</div>'+
+    '<div class="cert"><span class="rv">'+f2(fit)+'</span><span class="tg"><i style="width:'+Math.round(fit*100)+'%"></i></span></div>'+
+    '<div class="el" style="margin-top:2px">expertise certificate</div></div></div>';
+  }).join(''));
+}
+
+/* withdrawn */
+if(anti.length){
+  sec('III.','Lots Withdrawn','not offered — struck from the sale by the cataloguer',
+  anti.map((a,i)=>'<div class="withd"><span class="stamp">Withdrawn</span><div class="lotno">would-be lot '+(strats.length+i+1)+' · channel: '+esc(a.channel)+'</div><h4><s>'+esc(a.title)+'</s></h4><p>'+esc(a.whyNot)+'</p></div>').join(''));
+}
+
+/* essay + plates */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('IV.','The Cover Lot — an Essay','and the plates that accompany it',
+  '<div class="essay"><div class="essaycard">'+
+  (br?'<h3>'+esc(br.title)+'</h3><div class="lede">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Consigned for</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>The house line</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Companion to</dt><dd>Lot '+((sel!=null?sel:0)+1)+', '+esc(selS.title)+' — signal '+esc(selS.heroSignal||'—')+'</dd></dl>'
+  :'<div class="lede">No essay accompanies this sale.</div>')+
+  '</div>'+
+  '<div class="plates">'+CREAT.map((m,i)=>'<figure class="plate"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">plate '+(i+1)+' · '+esc(m.provider)+' studio</div></figcaption></figure>').join('')+'</div></div>');
+}
+
+/* cabinet = palette */
+sec('V.','The Cabinet','five swatches offered without reserve',
+  '<div class="cab">'+PALETTE.map(s=>'<div class="sw"><div class="mount"><i style="background:'+s.h+'"></i></div><div class="n">'+esc(s.n)+'</div><div class="h">'+s.h.toUpperCase()+'</div></div>').join('')+'</div>');
+
+/* archive = qloo */
+if(calls.length||affs.length){
+  sec('VI.','Saleroom Archive','how the estimates were set — Qloo records, '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' session',
+  '<div class="arch"><div><p class="mem"><b>Clerk’s memorandum.</b> Before cataloguing, the house consulted the Qloo index <b>'+calls.length+' times</b>, each consultation entered in the day-book below in <b>'+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' mode</b>.</p>'+
+  '<div class="ledger">'+calls.map(c=>'<div class="lr"><b>'+esc(c.endpoint)+'</b><span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,34)).join(' · '))+'</span><span class="me"><span>entered '+esc((c.at||'').slice(11,19))+'Z</span><span>answered in '+esc(c.tookMs)+' ms</span><span>'+esc(c.n)+' comparables</span><span>'+esc(c.mode)+'</span></span></div>').join('')+'</div></div>'+
+  '<div class="comps"><h4>Comparable sales — hammer reads</h4>'+affs.map(g=>'<div class="dv">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+  g.entities.slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('')+'</div></div>');
+}
+
+/* post-sale */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('VII.','Post-Sale Services','the porters stand ready',
+  '<div class="nextrow">'+['Invoice & settlement','Condition photography','Private treaty offer','Consign the next lot'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  '<div class="sub">Every service carries the sale results forward — nothing leaves the book.</div></div>'+
+  (others.length?'<div class="sales"><b>Other sales this season</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':''));
+
+if(!M.children.length)M.appendChild(el('<section><div class="empty">The sale is postponed — the consignment never reached the saleroom.</div></section>'));
+})();
+</script>
+</body>
+</html>
