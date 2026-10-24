@@ -129,7 +129,7 @@ export function KebabMenu({ items, icon = 'kebab' }) {
   }, [open]);
   return (
     <>
-      <button className="kebab" title="More" onClick={(e) => { e.stopPropagation(); setOpen(!open); }}>
+      <button className="kebab" title="More" aria-label="More" onClick={(e) => { e.stopPropagation(); setOpen(!open); }}>
         <Icon name={icon} size={18} />
       </button>
       {open && (
@@ -231,7 +231,7 @@ export default function Composer({
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit(); }}
         />
-        <button className="icon-btn mic" title="Dictate (coming soon)" type="button"
+        <button className="icon-btn mic" title="Dictate (coming soon)" aria-label="Dictate (coming soon)" type="button"
           onClick={() => say?.('Dictation is coming soon')}>
           <Icon name="mic" />
         </button>

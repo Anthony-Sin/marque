@@ -233,11 +233,11 @@ export default function Dashboard() {
                     )}
                     {!!b.id && renaming !== b.id && (
                       <span className="dash-plan-acts" onClick={(e) => e.stopPropagation()}>
-                        <button type="button" className="icon-btn" title="Rename plan"
+                        <button type="button" className="icon-btn" title="Rename plan" aria-label="Rename plan"
                           onClick={() => { setRenameVal(b.title || ''); setRenaming(b.id); }}>
                           <Icon name="edit" size={13} />
                         </button>
-                        <button type="button" className="icon-btn danger" title="Delete plan"
+                        <button type="button" className="icon-btn danger" title="Delete plan" aria-label="Delete plan"
                           onClick={() => setDeleting(b)}>
                           <Icon name="trash" size={13} />
                         </button>

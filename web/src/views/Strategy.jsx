@@ -986,7 +986,7 @@ export default function Strategy() {
                   </span>
                 )}
                 {!renaming && !!res.id && (
-                  <button type="button" className="stg-plan-edit" title="Rename plan"
+                  <button type="button" className="stg-plan-edit" title="Rename plan" aria-label="Rename plan"
                     onClick={() => { setRenameVal(res.title || ''); setRenaming(true); }}>
                     <Icon name="edit" size={12} />
                   </button>

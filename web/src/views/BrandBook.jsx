@@ -367,11 +367,11 @@ export default function BrandBook() {
         </div>
 
         <div className="book-nav">
-          <button className="icon-btn" onClick={() => setPage((p) => Math.max(0, p - 1))}>←</button>
+          <button className="icon-btn" aria-label="Previous page" onClick={() => setPage((p) => Math.max(0, p - 1))}>←</button>
           {pages.map((p, i) => (
             <button key={p.id} className={`book-dot${i === page ? ' on' : ''}`} title={p.label} aria-current={i === page ? 'page' : undefined} onClick={() => setPage(i)} />
           ))}
-          <button className="icon-btn" onClick={() => setPage((p) => Math.min(pages.length - 1, p + 1))}>→</button>
+          <button className="icon-btn" aria-label="Next page" onClick={() => setPage((p) => Math.min(pages.length - 1, p + 1))}>→</button>
         </div>
 
         <div className="mt16">

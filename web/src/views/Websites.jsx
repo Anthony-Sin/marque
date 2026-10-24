@@ -7,7 +7,7 @@ import VersionTabs from '../components/VersionTabs.jsx';
 import PublishBar from '../components/PublishBar.jsx';
 import Wayfind from '../components/Wayfind.jsx';
 import { QlooBadge } from '../components/Qloo.jsx';
-import { useStages } from '../components/Composer.jsx';
+import { useStages, fmtDate } from '../components/Composer.jsx';
 import './studio.css';
 
 const CREATE_STAGES = ['Reading your Business Profile…', 'Drafting copy & layout…', 'Styling with your palette…', 'Putting the pages together…'];
@@ -190,6 +190,9 @@ export default function Websites() {
 
       {imp && !impBusy && (
         <>
+          <div className="muted small" style={{ margin: '-4px 0 4px' }}>
+            Audit of {imp.url || 'your site'}{imp.at ? ` · from ${fmtDate(imp.at)}` : ''}
+          </div>
           {(!!impSocials.length || !!impMissing.length) && (
             <div className="card pad">
               <div className="section-label" style={{ margin: '0 0 12px' }}>Socials</div>

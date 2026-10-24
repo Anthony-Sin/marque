@@ -128,7 +128,7 @@ function ColorsEditor({ draft, setDraft }) {
                 style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
               />
             </label>
-            <button type="button" className="pf-swatch-x" title="Remove color" onClick={() => rm(i)}>
+            <button type="button" className="pf-swatch-x" title="Remove color" aria-label="Remove color" onClick={() => rm(i)}>
               <Icon name="x" size={9} sw={2.6} />
             </button>
             <span className="pf-hex">{c}</span>
@@ -174,7 +174,7 @@ function PairsEditor({ draft, setDraft, keys, placeholders, addLabel }) {
         <div className="pf-pair" key={i}>
           <input value={x[a] || ''} placeholder={placeholders[0]} onChange={(e) => set(i, a, e.target.value)} />
           <input value={x[b] || ''} placeholder={placeholders[1]} onChange={(e) => set(i, b, e.target.value)} />
-          <button type="button" className="icon-btn" title="Remove" onClick={() => setDraft(draft.filter((_, j) => j !== i))}>
+          <button type="button" className="icon-btn" title="Remove" aria-label="Remove" onClick={() => setDraft(draft.filter((_, j) => j !== i))}>
             <Icon name="x" size={13} />
           </button>
         </div>
@@ -260,7 +260,7 @@ export default function FieldEdit({ label, hint, kind = 'text', value, onSave, r
         )}
       </div>
       {!editing && (
-        <button type="button" className="f-edit" title={`Edit ${label || 'field'}`} onClick={start}>
+        <button type="button" className="f-edit" title={`Edit ${label || 'field'}`} aria-label={`Edit ${label || 'field'}`} onClick={start}>
           <Icon name="edit" size={15} />
         </button>
       )}

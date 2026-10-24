@@ -205,7 +205,7 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
           <div className="promote-panel" onClick={(e) => e.stopPropagation()}>
             <div className="promote-head">
               <span className="promote-label">Publish lane — per platform</span>
-              <button type="button" className="x" title="Close kit" onClick={() => setPromote(false)}>✕</button>
+              <button type="button" className="x" title="Close kit" aria-label="Close kit" onClick={() => setPromote(false)}>✕</button>
             </div>
             {(pubOrder.length ? pubOrder : ['tiktok', 'instagram', 'youtube']).map((pk) => {
               const ps = pubStatus?.platforms?.[pk];
@@ -215,6 +215,12 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
                   <div className="pub-row-head">
                     <span className="pub-plat">{ps?.label || pk}</span>
                     <span className="pub-aspect">{ps?.aspect || ''}</span>
+                    {!!ps?.aspect && aspect !== ps.aspect && (
+                      <span className="pub-mismatch"
+                        title={`This creative is ${aspect} — ${ps.label || pk} prefers ${ps.aspect}; it will be letterboxed or cropped by the platform`}>
+                        creative is {aspect}
+                      </span>
+                    )}
                     {ps ? (
                       ps.connected
                         ? <span className="pub-conn on">connected</span>

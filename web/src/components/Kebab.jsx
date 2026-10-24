@@ -31,6 +31,7 @@ export default function Kebab({ items = [], up = false, corner = false, align = 
         type="button"
         className="pf-kbtn"
         title={title}
+        aria-label={title}
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}

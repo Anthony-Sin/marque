@@ -305,7 +305,7 @@ function ScratchChat({ onClose, onDone, say }) {
         )}
         <div className="ob-scratch-input">
           <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={onPick} />
-          <button type="button" className="icon-btn" title="Attach brand images" onClick={() => fileRef.current?.click()}>
+          <button type="button" className="icon-btn" title="Attach brand images" aria-label="Attach brand images" onClick={() => fileRef.current?.click()}>
             <Icon name="upload" size={15} />
           </button>
           <input
@@ -314,7 +314,7 @@ function ScratchChat({ onClose, onDone, say }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && send()}
           />
-          <button type="button" className="send" onClick={send} disabled={busy || (!input.trim() && !atts.length)} title="Send">
+          <button type="button" className="send" onClick={send} disabled={busy || (!input.trim() && !atts.length)} title="Send" aria-label="Send">
             <Icon name="send" size={16} />
           </button>
         </div>

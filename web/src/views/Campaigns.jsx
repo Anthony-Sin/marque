@@ -202,7 +202,7 @@ export default function Campaigns() {
       <div className="foot">
         <span className="muted small">{c.creatives?.length || 0} creative{(c.creatives?.length || 0) === 1 ? '' : 's'}</span>
         <span className="grow" />
-        <button className="icon-btn sm camp-del" title="Delete campaign" onClick={(e) => {
+        <button className="icon-btn sm camp-del" title="Delete campaign" aria-label="Delete campaign" onClick={(e) => {
           e.stopPropagation();
           setDeleting(c);
         }}><Icon name="trash" size={13} /></button>
@@ -480,7 +480,7 @@ export default function Campaigns() {
               from strategy: <b>{handoff.strategy?.title || handoff.strategyTitle || 'untitled'}</b>
               {!!chans.length && <i> · {chans.slice(0, 3).join(' · ')}</i>}
             </span>
-            <button className="x" title="Dismiss" onClick={() => setHandoff(null)}>✕</button>
+            <button className="x" title="Dismiss" aria-label="Dismiss" onClick={() => setHandoff(null)}>✕</button>
           </div>
         )}
         <Composer seed={seed} busy={busy} onGenerate={genBrief} onAspect={setLiveAspect} />
@@ -491,7 +491,7 @@ export default function Campaigns() {
           <div className="starter-row">
             <span className="starter-eng" title="Image engine for this campaign's creatives">
               <b>Engine</b>
-              {[['auto', 'auto'], ['local', 'local'], ['gemini', 'gemini']].map(([id, label]) => (
+              {[['auto', 'Auto'], ['local', 'Local'], ['gemini', 'Gemini'], ['pollinations', 'Pollinations']].map(([id, label]) => (
                 <button key={id} type="button" className={`starter-chip eng${engine === id ? ' on' : ''}`}
                   title={id === 'auto' ? 'Default chain — local first, escalate on failure' : `Force ${label} for all creatives in this campaign`}
                   onClick={() => setEngine(id)}>{label}</button>
