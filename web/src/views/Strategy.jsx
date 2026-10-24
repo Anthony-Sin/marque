@@ -476,7 +476,8 @@ export default function Strategy() {
   // survives navigation; resL lets this view clear it locally for a new prompt
   // without revoking the global unlock.
   const res = resL === undefined ? board : resL;
-  const setRes = (v) => { setResL(v); if (v) setBoard(v); };
+  const resRef = useRef(res);
+  const setRes = (v) => { resRef.current = v; setResL(v); if (v) setBoard(v); };
 
   // restore the submitted prompt for a persisted board (selection is the URL now)
   useEffect(() => {
@@ -546,7 +547,7 @@ export default function Strategy() {
       }
       // the stream can end quietly (server restart, provider hiccup) — a null
       // board must not render as "finished but empty"; say what happened
-      if (!gotBoard?.strategies?.length && !res?.strategies?.length) {
+      if (!gotBoard?.strategies?.length && !resRef.current?.strategies?.length) {
         setRes(null);
         throw new Error('the run ended without strategies — likely a provider hiccup. Retry?');
       }
@@ -556,6 +557,7 @@ export default function Strategy() {
     } catch (e) {
       setErr(e.message || 'strategy generation failed');
       say?.(e.message);
+      setBoard(board?.strategies?.length ? board : null); // drop any partial board a failed run pushed into ctx
     }
     setBusy(false);
   };
@@ -628,7 +630,7 @@ export default function Strategy() {
       strategy: s,
       strategyId: s.id || '',
       strategyTitle: s.title || '',
-      boardId: board?.id || '',
+      boardId: res?.id || board?.id || '',
       strategyIdx: sel,
       notes,
       prompt: sub?.prompt || '',
@@ -646,7 +648,7 @@ export default function Strategy() {
               `Site for the "${s.title}" strategy${s.brief?.keyMessage ? ` — lead with "${s.brief.keyMessage}"` : ''}.`,
               notes ? `Notes: ${notes}` : '',
             ].filter(Boolean).join(' '),
-            boardId: board?.id || undefined,
+            boardId: res?.id || board?.id || undefined,
             strategyIdx: sel ?? undefined,
             strategyId: s.id || undefined,
           });
