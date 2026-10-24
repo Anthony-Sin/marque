@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque &amp; Cie — Horological Campaign Division</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2314161C'/%3E%3Ccircle cx='32' cy='34' r='22' fill='%23F2ECDD' stroke='%23B28A3C' stroke-width='3'/%3E%3Cpath d='M32 34V18M32 34l10 6' stroke='%232E4E8F' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --show:#14161C;
+  --case:#23262E;
+  --ivory:#F2ECDD;
+  --ivory2:#EAE2CE;
+  --ink:#1E2A45;
+  --blue:#2E4E8F;
+  --gilt:#B28A3C;
+  --mut:#9A9484;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--show);
+  background-image:radial-gradient(ellipse at 50% 0%,rgba(178,138,60,.08),transparent 55%),repeating-linear-gradient(90deg,rgba(255,255,255,.015) 0 1px,transparent 1px 60px);
+  color:var(--ivory);font-family:var(--serif);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(178,138,60,.35)}
+a{color:var(--gilt);text-decoration:none;border-bottom:1px solid var(--gilt)}
+a:hover{color:var(--ivory)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--gilt);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+
+.wrap{max-width:1160px;margin:0 auto;padding:clamp(16px,3vw,34px) clamp(14px,3vw,30px) 70px}
+
+/* ---- maison head ---- */
+.mhd{text-align:center;padding:clamp(18px,4vw,40px) 0 clamp(14px,3vw,26px);border-bottom:1px solid rgba(178,138,60,.4);position:relative}
+.mhd::after{content:"";position:absolute;left:0;right:0;bottom:-6px;border-bottom:1px solid rgba(178,138,60,.4)}
+.mhd .mas{font-size:10.5px;letter-spacing:.55em;text-transform:uppercase;color:var(--mut);font-family:var(--mono)}
+.mhd h1{font-weight:600;letter-spacing:.14em;font-size:clamp(28px,5.4vw,52px);text-transform:uppercase;margin:10px 0 2px}
+.mhd h1 em{font-style:italic;text-transform:none;color:var(--gilt);letter-spacing:.02em}
+.mhd .cal{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--mut);text-transform:uppercase}
+.mhd .ask{margin:16px auto 0;max-width:640px;font-size:clamp(17px,2.6vw,22px);font-style:italic}
+.mhd .ask b{font-style:normal;font-weight:600;color:var(--gilt)}
+.mhd .url{font-family:var(--mono);font-size:10.5px;margin-top:8px;overflow-wrap:anywhere}
+.mhd .src{font-style:italic;font-size:13px;color:var(--mut);margin-top:4px}
+
+/* ---- hero: dial + spec plate ---- */
+.piece{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr);gap:clamp(18px,3.4vw,40px);align-items:center;margin-top:clamp(20px,3.4vw,36px)}
+@media(max-width:900px){.piece{grid-template-columns:1fr}}
+.dialwrap{display:flex;justify-content:center}
+.dial{position:relative;width:min(540px,86vw);aspect-ratio:1;border-radius:50%;flex:0 0 auto;
+  background:radial-gradient(circle at 50% 42%,#F8F3E4,var(--ivory) 55%,#DDD3B8 100%);
+  box-shadow:0 0 0 12px #1B1E26,0 0 0 14px #3B3F4C,0 0 0 15px #0C0E12,0 24px 60px rgba(0,0,0,.6),inset 0 0 60px rgba(30,42,69,.12);
+}
+.dial .min{position:absolute;inset:3.2%;border-radius:50%;
+  background:repeating-conic-gradient(from 0deg,rgba(30,42,69,.85) 0 .5deg,transparent .5deg 6deg);
+  -webkit-mask:radial-gradient(circle,transparent 88%,#000 88.5%);
+          mask:radial-gradient(circle,transparent 88%,#000 88.5%);
+}
+.dial .guil{position:absolute;inset:8%;border-radius:50%;opacity:.5;
+  background:repeating-radial-gradient(circle,transparent 0 7px,rgba(30,42,69,.07) 7px 8px)}
+.dial .mk{position:absolute;transform:translate(-50%,-50%);text-align:center;font-family:var(--mono);color:var(--ink);width:96px;pointer-events:auto}
+.dial .mk .nm{display:block;font-size:8px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dial .mk .af{display:block;font-size:7.5px;color:var(--gilt);letter-spacing:.06em}
+.dial .mk.card .nm{font-family:var(--serif);font-size:15px;letter-spacing:.18em;color:var(--ink);font-weight:700}
+.dial .mk.card .af{font-size:8.5px}
+.dial .ctr{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;width:44%}
+.dial .ctr .m{font-size:clamp(13px,2.2vw,19px);letter-spacing:.34em;text-transform:uppercase;color:var(--ink);font-weight:700}
+.dial .ctr .g{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut);font-family:var(--mono);margin-top:2px}
+.dial .ctr .ap{
+  margin:12px auto 0;width:74%;background:#16181E;color:var(--ivory);border-radius:6px;
+  padding:8px 10px;border:2px solid var(--gilt);
+}
+.dial .ctr .ap .k{font-family:var(--mono);font-size:7.5px;letter-spacing:.24em;color:var(--gilt);text-transform:uppercase}
+.dial .ctr .ap .v{font-family:var(--serif);font-size:clamp(14px,2.2vw,18px);font-weight:600;text-transform:capitalize}
+.dial .ctr .ap .c{font-family:var(--mono);font-size:8.5px;color:#9FB4D8}
+.dial .hand{position:absolute;left:calc(50% - 1.5px);top:9%;width:3px;height:41%;background:var(--blue);transform-origin:50% 100%;border-radius:3px;box-shadow:0 0 6px rgba(46,78,143,.5)}
+.dial .hand::after{content:"";position:absolute;bottom:-7px;left:-5px;width:13px;height:13px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px var(--ivory)}
+.dial .cap2{position:absolute;left:0;right:0;bottom:17%;text-align:center;font-family:var(--mono);font-size:8px;letter-spacing:.24em;color:var(--mut);text-transform:uppercase}
+
+.spec{border:1px solid rgba(178,138,60,.45);padding:clamp(16px,2.6vw,26px);background:linear-gradient(180deg,rgba(178,138,60,.06),transparent 40%);position:relative}
+.spec::before,.spec::after,.spec .c3,.spec .c4{content:"";position:absolute;width:14px;height:14px;border:1.5px solid var(--gilt)}
+.spec::before{top:-1px;left:-1px;border-right:none;border-bottom:none}
+.spec::after{top:-1px;right:-1px;border-left:none;border-bottom:none}
+.spec .c3{bottom:-1px;left:-1px;border-right:none;border-top:none}
+.spec .c4{bottom:-1px;right:-1px;border-left:none;border-top:none}
+.spec h3{font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--gilt);font-family:var(--mono);font-weight:400;margin-bottom:12px}
+.spec .lean{font-size:clamp(22px,3vw,30px);font-weight:600;text-transform:capitalize}
+.spec .conf{font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:var(--mut);margin:2px 0 12px}
+.spec ul{list-style:none}
+.spec li{font-size:14.5px;font-style:italic;padding:6px 0;border-bottom:1px dashed rgba(178,138,60,.35)}
+.spec li::before{content:"· ";color:var(--gilt)}
+.spec .hb{margin-top:12px;font-size:13px}
+.spec .hb b{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gilt);display:block;margin-bottom:4px}
+.spec .hb .rw{display:flex;gap:8px;font-size:12.5px;color:#CFC8B4}
+.spec .hb .rw b{display:inline;color:#9FB4D8;font-family:var(--mono);letter-spacing:.06em;min-width:78px}
+.spec .vb{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.spec .vb span{font-size:11.5px;font-style:italic;border:1px solid rgba(178,138,60,.5);color:var(--gilt);padding:1px 9px;border-radius:99px}
+
+/* ---- section titles ---- */
+.sec{margin-top:clamp(26px,4.4vw,48px)}
+.sec-h{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid rgba(178,138,60,.4);padding-bottom:8px;margin-bottom:18px;flex-wrap:wrap}
+.sec-h .rn{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--gilt)}
+.sec-h h2{font-size:clamp(19px,3vw,27px);font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+.sec-h .nt{margin-left:auto;font-style:italic;font-size:12.5px;color:var(--mut)}
+
+/* ---- complications (subdials) ---- */
+.comps{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(14px,2.2vw,22px)}
+@media(max-width:980px){.comps{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.comps{grid-template-columns:1fr}}
+.comp{border:1px solid rgba(178,138,60,.45);background:linear-gradient(180deg,#1B1E26,#16181F);padding:16px 14px 15px;text-align:center;position:relative;transition:border-color .15s ease,transform .15s ease}
+.comp:hover{border-color:var(--gilt);transform:translateY(-3px)}
+.comp.sel::after{content:"PIÈCE CHOISIE";position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--gilt);color:#1A1408;font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.2em;padding:2px 9px}
+.comp .sd{position:relative;width:min(140px,58%);margin:0 auto;aspect-ratio:1}
+.comp .sd svg{width:100%;height:100%;display:block}
+.comp .reg{font-family:var(--mono);font-size:9px;letter-spacing:.3em;color:var(--gilt);text-transform:uppercase;margin-top:10px}
+.comp h3{font-size:18px;font-weight:700;letter-spacing:.04em;margin:2px 0 1px}
+.comp .ang{font-style:italic;font-size:12.5px;color:var(--mut)}
+.comp .fn{font-size:11.5px;color:#CFC8B4;margin-top:8px;line-height:1.6}
+.comp .fn b{color:#9FB4D8;font-family:var(--mono);font-size:10.5px}
+.comp .pr{margin-top:8px;font-size:14px;font-weight:600;color:var(--ivory)}
+.comp .pr span{font-family:var(--mono);font-size:9.5px;color:var(--mut);letter-spacing:.14em;text-transform:uppercase;display:block}
+.comp .sv{margin-top:8px;font-size:11px;font-style:italic;color:#8C8674;border-top:1px dashed rgba(178,138,60,.3);padding-top:7px}
+.comp .fmt{margin-top:7px}
+.comp .fmt span{font-size:10px;font-style:italic;border:1px solid rgba(178,138,60,.4);color:var(--gilt);border-radius:99px;padding:1px 8px;margin:0 2px 3px;display:inline-block}
+
+/* ---- rejected at bench ---- */
+.bench{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,2vw,20px)}
+@media(max-width:700px){.bench{grid-template-columns:1fr}}
+.rej{border:1px dashed rgba(178,138,60,.5);padding:14px 16px;background:rgba(178,138,60,.04)}
+.rej h4{font-size:16px;font-weight:600}
+.rej h4 s{text-decoration-color:var(--gilt);text-decoration-thickness:1.5px}
+.rej .ch{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+.rej p{font-size:12.5px;font-style:italic;color:#B5AE9A;margin-top:5px}
+.rej .rd{margin-top:6px;font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--gilt)}
+
+/* ---- certificate + caseback ---- */
+.cert{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(16px,3vw,30px);align-items:start}
+@media(max-width:860px){.cert{grid-template-columns:1fr}}
+.plate2{border:1.5px solid var(--gilt);background:linear-gradient(180deg,#1D2029,#181B22);padding:18px 20px;position:relative;box-shadow:inset 0 0 0 4px #14161C,inset 0 0 0 5px rgba(178,138,60,.35)}
+.plate2 .bh{font-family:var(--mono);font-size:9px;letter-spacing:.3em;color:var(--gilt);text-transform:uppercase;text-align:center;border-bottom:1px solid rgba(178,138,60,.4);padding-bottom:8px;margin-bottom:12px}
+.plate2 h3{font-size:clamp(21px,3vw,28px);font-weight:700;text-align:center}
+.plate2 .lede{text-align:center;font-style:italic;color:#CFC8B4;font-size:13.5px;margin:6px 0 12px}
+.plate2 dl{display:grid;grid-template-columns:104px 1fr;gap:5px 14px;font-size:13.5px}
+.plate2 dt{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gilt);padding-top:4px}
+.plate2 dd{border-bottom:1px dashed rgba(178,138,60,.3);padding-bottom:6px}
+.plate2 .km{font-weight:600;font-size:15px;font-style:italic;color:var(--ivory)}
+.caseback{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:980px){.caseback{grid-template-columns:repeat(2,1fr)}}
+.case{display:flex;flex-direction:column;align-items:center;text-align:center}
+.case .cf{width:100%;aspect-ratio:1;max-width:190px;border-radius:50%;overflow:hidden;border:4px solid #1B1E26;box-shadow:0 0 0 1.5px var(--gilt),inset 0 0 20px rgba(0,0,0,.3);background:#0E1013;transition:box-shadow .15s ease,transform .15s ease}
+.case:hover .cf{box-shadow:0 0 0 3px var(--gilt),0 10px 24px rgba(0,0,0,.5);transform:scale(1.03)}
+.case .cf img{width:100%;height:100%;object-fit:cover}
+.case .h{font-size:13px;font-weight:600;margin-top:9px;max-width:190px}
+.case .p{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;color:var(--gilt);text-transform:uppercase;margin-top:3px}
+
+/* ---- enamel dials ---- */
+.enamels{display:flex;flex-wrap:wrap;gap:clamp(16px,3vw,30px)}
+.ena{text-align:center}
+.ena .d{width:84px;height:84px;border-radius:50%;border:3px solid #1B1E26;box-shadow:0 0 0 1.5px var(--gilt),inset 0 -8px 16px rgba(0,0,0,.18);margin:0 auto}
+.ena .n{font-size:13px;font-weight:600;margin-top:8px}
+.ena .h{font-family:var(--mono);font-size:8.5px;color:var(--mut);letter-spacing:.14em}
+
+/* ---- bulletin de marche ---- */
+.bull{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(16px,3vw,30px)}
+@media(max-width:840px){.bull{grid-template-columns:1fr}}
+.bull .mem{font-style:italic;font-size:14.5px;color:#CFC8B4;margin-bottom:12px;max-width:60ch}
+.bull .mem b{color:var(--gilt);font-weight:600}
+.timing{border:1px solid rgba(178,138,60,.4)}
+.timing .tr{display:grid;grid-template-columns:76px 1fr 70px 74px 54px;gap:8px;padding:8px 12px;border-bottom:1px dashed rgba(178,138,60,.3);font-size:12px;align-items:baseline}
+.timing .tr:last-child{border-bottom:none}
+.timing .ps{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--gilt);text-transform:uppercase}
+.timing .ep{font-family:var(--mono);font-size:10.5px;color:var(--ivory);overflow-wrap:anywhere}
+.timing .ep small{display:block;color:#6E6A5C;font-size:8.5px}
+.timing .rt{font-family:var(--mono);font-size:10px;text-align:right}
+.timing .am{font-family:var(--mono);font-size:10px;text-align:right;color:#9FB4D8}
+.timing .md{font-family:var(--mono);font-size:8.5px;text-align:center;border:1px solid var(--gilt);color:var(--gilt);border-radius:3px}
+.jewels{border:1px solid rgba(178,138,60,.4);padding:14px 16px}
+.jewels h4{font-family:var(--mono);font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--gilt);margin-bottom:10px}
+.jewels .rw{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:4px 0;border-bottom:1px dashed rgba(178,138,60,.3)}
+.jewels .rw:last-child{border-bottom:none}
+.jewels .rw .v{font-family:var(--mono);font-size:10px;color:var(--mut)}
+.jewels .rw i{width:6px;height:6px;border-radius:50%;background:#9E3B2E;display:inline-block;margin-right:8px;vertical-align:2px}
+.jewels .g{font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;color:var(--mut);text-transform:uppercase;margin-top:10px}
+
+/* ---- reserve ---- */
+.resv{display:flex;flex-wrap:wrap;gap:12px}
+.resv button{
+  background:transparent;border:1px solid var(--gilt);color:var(--gilt);padding:11px 24px;
+  font-family:var(--serif);font-size:15px;font-style:italic;letter-spacing:.06em;border-radius:999px;
+  transition:background .14s ease,color .14s ease,transform .1s ease;
+}
+.resv button:hover{background:var(--gilt);color:#1A1408;font-style:normal;font-weight:600}
+.resv button:active{transform:translateY(2px)}
+.resv .oth{width:100%;margin-top:14px;font-size:13px;font-style:italic;color:var(--mut)}
+.resv .oth b{font-family:var(--mono);font-style:normal;font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--gilt);display:block;margin-bottom:5px}
+.resv .oth span{display:inline-block;margin-right:14px;border-bottom:1px dashed rgba(178,138,60,.4);color:#CFC8B4}
+.col{margin-top:clamp(30px,5vw,50px);text-align:center;font-family:var(--mono);font-size:8.5px;letter-spacing:.34em;color:var(--mut);text-transform:uppercase;border-top:1px solid rgba(178,138,60,.4);padding-top:16px}
+.empty{padding:50px;text-align:center;color:var(--mut);font-style:italic}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mhd">
+    <div class="mas">Marque &amp; Cie — Horological Division · Maison fondée MMXXVI</div>
+    <h1>Le Garde-Temps <em>de Campagne</em></h1>
+    <div class="cal" id="s-cal"></div>
+    <div class="ask" id="s-ask"></div>
+    <div class="url" id="s-url"></div>
+    <div class="src" id="s-src"></div>
+  </header>
+  <main id="app"></main>
+  <div class="col" id="foot"></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dt=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Grand Feu Ivory',h:'#F2ECDD'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Blued Steel',h:'#2E4E8F'}
+];
+const CREAT=[3,4,7,12].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const selS=strats[sel>=0?sel:0]||null;
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dt(B.createdAt||B.fetchedAt);
+
+document.getElementById('s-cal').textContent='CALIBRE MK-'+String(B.id||'—').slice(0,8).toUpperCase()+' · COMMISSIONED '+DATE+' · PIÈCE UNIQUE';
+document.getElementById('s-ask').innerHTML='Commissioned upon the instruction <b>“'+esc((B.sub&&B.sub.prompt)||B.title||'')+'”</b>';
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+document.getElementById('s-url').innerHTML=U?'extract from the archives: <a href="'+esc(U)+'">'+esc(U)+'</a>':'';
+document.getElementById('s-src').textContent=(B.urlContext&&B.urlContext.title)?('Donor of record: '+B.urlContext.title+' — '+(B.urlContext.description||'').slice(0,86)+'…'):'';
+document.getElementById('foot').textContent='RÉF. MARQUE-'+String(B.id||'—').slice(0,8).toUpperCase()+' · RÉGLÉ EN '+calls.length+' POSITIONS · '+DATE;
+
+const M=document.getElementById('app');
+const sec=(rn,title,note,body)=>{
+  if(!body)return;
+  M.appendChild(el('<section class="sec"><div class="sec-h"><span class="rn">'+esc(rn)+'</span><h2>'+esc(title)+'</h2><span class="nt">'+esc(note)+'</span></div>'+body+'</section>'));
+};
+
+/* ---------- the dial ---------- */
+/* 12 chapter indices drawn from top qloo affinities */
+const idx12=[];
+affs.forEach(g=>g.entities.slice(0,3).forEach(e=>idx12.push({n:e.name,a:e.affinity,t:g.type.replace('urn:entity:','')})));
+idx12.sort((x,y)=>y.a-x.a);
+const ring=idx12.slice(0,12);
+const heroIdx=Math.max(0,ring.findIndex(r=>selS&&r.n===selS.heroSignal));
+const handDeg=heroIdx*30;
+
+let markers='';
+const ROMAN=['XII','I','II','III','IV','V','VI','VII','VIII','IX','X','XI'];
+for(let i=0;i<12;i++){
+  const ang=i*30*Math.PI/180;
+  const R=41.5;
+  const x=50+R*Math.sin(ang), y=50-R*Math.cos(ang);
+  const e=ring[i];
+  if(e){
+    markers+='<div class="mk'+(i%3===0?' card':'')+'" style="left:'+x.toFixed(2)+'%;top:'+y.toFixed(2)+'%">'+
+      '<span class="nm">'+esc(e.n)+'</span><span class="af">'+e.a.toFixed(2)+' · '+esc(e.t)+'</span></div>';
+  }else{
+    markers+='<div class="mk card" style="left:'+x.toFixed(2)+'%;top:'+y.toFixed(2)+'%"><span class="nm">'+ROMAN[i]+'</span></div>';
+  }
+}
+const dialHTML='<div class="dialwrap"><div class="dial"><div class="guil"></div><div class="min"></div>'+markers+
+ '<div class="hand" style="transform:rotate('+handDeg+'deg)"></div>'+
+ '<div class="ctr"><div class="m">Marque</div><div class="g">Genève · Gen Z</div>'+
+ '<div class="ap"><span class="k">Wearer of record</span><div class="v">'+esc((AR&&AR.lean&&AR.lean.label)||'—')+'</div><div class="c">assurance '+f2(AR&&AR.lean&&AR.lean.confidence)+' · moonphase aperture</div></div></div>'+
+ '<div class="cap2">indicator set to '+esc((selS&&selS.heroSignal)||'XII')+' · réserve '+views(selS&&selS.reach&&selS.reach.estViews)+'</div></div></div>';
+
+let specHTML='';
+if(AR&&AR.lean){
+  specHTML='<div class="spec"><i class="c3"></i><i class="c4"></i><h3>Wearing Profile</h3>'+
+  '<div class="lean">'+esc(AR.lean.label)+'</div><div class="conf">ATTITUDE ASSURED AT '+f2(AR.lean.confidence)+'</div>'+
+  '<ul>'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>'+
+  '<div class="hb"><b>Worn upon</b>'+(AR.mediaHabits||[]).map(h=>'<div class="rw"><b>'+esc(h.channel)+'</b><span>'+esc(h.note)+'</span></div>').join('')+'</div>'+
+  '<div class="vb">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div>';
+}
+M.appendChild(el('<div class="piece">'+dialHTML+specHTML+'</div>'));
+
+/* ---------- complications ---------- */
+const polar=(cx,cy,r,deg)=>{const a=(deg-90)*Math.PI/180;return[cx+r*Math.cos(a),cy+r*Math.sin(a)]};
+const arc=(cx,cy,r,a0,a1)=>{const p0=polar(cx,cy,r,a0),p1=polar(cx,cy,r,a1);const laf=a1-a0>180?1:0;
+  return 'M'+p0[0].toFixed(1)+' '+p0[1].toFixed(1)+' A'+r+' '+r+' 0 '+laf+' 1 '+p1[0].toFixed(1)+' '+p1[1].toFixed(1)};
+const gauge=(sc)=>{
+  const A0=-135,SW=270,v=A0+SW*Math.min(1,Math.max(0,sc||0));
+  const np=polar(70,70,42,v);
+  return '<svg viewBox="0 0 140 140">'+
+  '<circle cx="70" cy="70" r="64" fill="#F2ECDD" stroke="#B28A3C" stroke-width="1.5"/>'+
+  '<circle cx="70" cy="70" r="56" fill="none" stroke="#D8CFBB" stroke-width="1"/>'+
+  '<path d="'+arc(70,70,48,A0,A0+SW)+'" fill="none" stroke="#D8CFBB" stroke-width="4"/>'+
+  '<path d="'+arc(70,70,48,A0,v)+'" fill="none" stroke="#2E4E8F" stroke-width="4" stroke-linecap="round"/>'+
+  '<line x1="70" y1="70" x2="'+np[0].toFixed(1)+'" y2="'+np[1].toFixed(1)+'" stroke="#2E4E8F" stroke-width="2.4"/>'+
+  '<circle cx="70" cy="70" r="4.5" fill="#2E4E8F"/>'+
+  '<text x="70" y="98" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#1E2A45" font-weight="bold">'+f2(sc)+'</text>'+
+  '<text x="70" y="110" text-anchor="middle" font-family="ui-monospace,monospace" font-size="6" letter-spacing="2" fill="#8C8674">AUDIENCE FIT</text></svg>';
+};
+if(strats.length){
+  sec('COMP. I–IV','The Four Complications','each register driven by the same mainspring — the wearer',
+  '<div class="comps">'+strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    return '<div class="comp'+(i===sel?' sel':'')+'"><div class="sd">'+gauge(fit)+'</div>'+
+    '<div class="reg">Register '+['I','II','III','IV'][i]+' · '+esc(s.angle||'')+'</div>'+
+    '<h3>'+esc(s.title)+'</h3><div class="ang">driven by '+esc(s.heroSignal||'—')+'</div>'+
+    '<div class="fn">'+(s.channels||[]).map(c=>'<b>'+esc(c.name)+'</b> '+f2(c.fit)+' — '+esc(c.why||'')).join('<br>')+'</div>'+
+    '<div class="pr"><span>réserve de marche</span>'+views(s.reach&&s.reach.estViews)+'</div>'+
+    '<div class="fmt">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join('')+'</div>'+
+    ((s.watchouts&&s.watchouts[0])?'<div class="sv">service note — '+esc(s.watchouts[0])+'</div>':'')+'</div>';
+  }).join('')+'</div>');
+}
+
+/* ---------- rejected at the bench ---------- */
+if(anti.length){
+  sec('BANC','Rejected at the Bench','movements that failed chronometric certification',
+  '<div class="bench">'+anti.map(a=>
+    '<div class="rej"><h4><s>'+esc(a.title)+'</s></h4><div class="ch">escapement · '+esc(a.channel)+'</div><p>'+esc(a.whyNot)+'</p><div class="rd">verdict: returned to supplier</div></div>').join('')+'</div>');
+}
+
+/* ---------- certificate + caseback ---------- */
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('CERT.','Certificate & Exhibition Caseback','the chosen register, engraved and warranted',
+  '<div class="cert"><div class="plate2"><div class="bh">Certificate of Origin · Cal. MK-'+String(B.id||'—').slice(0,8).toUpperCase()+'</div>'+
+  (br?'<h3>'+esc(br.title)+'</h3><div class="lede">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Fashioned for</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Engraving</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Set with</dt><dd>'+esc(selS.heroSignal||'—')+' — register '+['I','II','III','IV'][sel>=0?sel:0]+'</dd></dl>':'<div class="lede">No engraving applied.</div>')+
+  '</div>'+
+  '<div class="caseback">'+CREAT.map((m,i)=>
+    '<div class="case"><div class="cf"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'.case\').style.display=\'none\'"></div>'+
+    '<div class="h">'+esc(m.head)+'</div><div class="p">hallmark · '+esc(m.provider)+'</div></div>').join('')+'</div></div>');
+}
+
+/* ---------- enamel dials ---------- */
+sec('ÉMAIL','Enamel Dial Variants','five grand feu blanks, fired for this calibre',
+  '<div class="enamels">'+PALETTE.map(s=>
+    '<div class="ena"><div class="d" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="h">'+s.h.toUpperCase()+'</div></div>').join('')+'</div>');
+
+/* ---------- bulletin de marche ---------- */
+if(B.evidence||affs.length){
+  sec('BULL.','Bulletin de Marche','timed in '+calls.length+' positions by the Qloo observatory — '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' mode',
+  '<div class="bull"><div><p class="mem">The Maison submits each calibre to the <b>Qloo observatory</b>, which times it in <b>'+calls.length+' positions</b> under <b>'+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' conditions</b>. Rates are recorded below and sealed with the movement.</p>'+
+  '<div class="timing">'+calls.map((c,i)=>
+    '<div class="tr"><span class="ps">POS '+['I','II','III','IV','V','VI'][i]+'</span><span class="ep">'+esc(c.endpoint)+'<small>'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,24)).join(' · '))+'</small></span><span class="rt">'+esc(c.tookMs)+' ms</span><span class="am">n = '+esc(c.n)+'</span><span class="md">'+esc(c.mode)+'</span></div>').join('')+'</div></div>'+
+  '<div class="jewels"><h4>Jewel bearings · '+esc(String(affs.reduce((n,g)=>n+Math.min(4,g.entities.length),0)))+' set</h4>'+
+  affs.map(g=>'<div class="g">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+    g.entities.slice(0,4).map(e=>'<div class="rw"><span><i></i>'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('')+'</div></div>');
+}
+
+/* ---------- reserve ---------- */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('RÉSERV.','Reserve This Piece','the Maison undertakes further works upon request',
+  '<div class="resv">'+['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  (others.length?'<div class="oth"><b>Other commissions in the atelier</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':'')+'</div>');
+
+if(!M.children.length)M.appendChild(el('<div class="empty">The bench is bare — data.js never reached the atelier.</div>'));
+})();
+</script>
+</body>
+</html>

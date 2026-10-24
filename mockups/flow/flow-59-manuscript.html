@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Codex Marquensis — The Making of a Campaign</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23E8DDBE'/%3E%3Crect x='10' y='8' width='44' height='48' fill='none' stroke='%2337281B' stroke-width='2.5'/%3E%3Crect x='16' y='14' width='14' height='14' fill='%238E1F14'/%3E%3Cpath d='M34 18h14M34 24h14M16 34h32M16 40h32M16 46h22' stroke='%2337281B' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+<style>
+:root{
+  --vellum:#E8DDBE;
+  --vellum2:#DCCDA6;
+  --ink:#37281B;
+  --rub:#8E1F14;
+  --gold:#A87E23;
+  --mut:#7A6A50;
+  --hair:#B8A87E;
+  --frak:'UnifrakturMaguntia',Georgia,serif;
+  --body:Georgia,'Times New Roman',serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#241C12;
+  background-image:radial-gradient(ellipse at 50% 0%,rgba(232,221,190,.06),transparent 60%);
+  color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(142,31,20,.25)}
+a{color:var(--rub);text-decoration:none;border-bottom:1px solid var(--rub)}
+a:hover{color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:3px double var(--rub);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+
+.leaf{
+  max-width:1080px;margin:28px auto 70px;position:relative;
+  background:
+    radial-gradient(ellipse at 20% 10%,rgba(255,248,220,.5),transparent 40%),
+    radial-gradient(ellipse at 85% 90%,rgba(168,126,35,.14),transparent 45%),
+    radial-gradient(ellipse at 70% 20%,rgba(122,106,80,.10),transparent 35%),
+    linear-gradient(175deg,var(--vellum) 0%,var(--vellum2) 130%);
+  border:1px solid #6E5C3C;
+  box-shadow:0 30px 70px rgba(0,0,0,.6),inset 0 0 90px rgba(122,90,40,.22);
+  padding:clamp(18px,4vw,52px) clamp(16px,4.4vw,56px) clamp(26px,4vw,48px);
+}
+.leaf::before{content:"";position:absolute;inset:10px;border:1.5px solid rgba(142,31,20,.5);pointer-events:none}
+.leaf::after{content:"";position:absolute;inset:14px;border:1px solid rgba(168,126,35,.55);pointer-events:none}
+.leaf>*{position:relative}
+
+/* running head */
+.rh{display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);border-bottom:1.5px solid var(--ink);padding-bottom:10px;margin-bottom:8px;flex-wrap:wrap}
+.rh .f{color:var(--rub)}
+.tit{text-align:center;margin:clamp(14px,3vw,28px) 0}
+.tit h1{font-family:var(--frak);font-weight:400;font-size:clamp(34px,6.5vw,62px);color:var(--ink);line-height:1.05;text-shadow:0 1px 0 rgba(168,126,35,.4)}
+.tit h1 em{font-style:normal;color:var(--rub)}
+.tit .rubric{font-family:var(--mono);font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--rub);margin-top:8px}
+.tit .orn{color:var(--gold);font-size:18px;letter-spacing:.6em;margin-top:10px}
+
+/* the opening with illuminated drop-cap */
+.incip{max-width:76ch;margin:clamp(16px,3vw,26px) auto 0;font-size:clamp(15px,2.2vw,18px)}
+.incip .dcap{
+  float:left;width:clamp(64px,10vw,96px);height:clamp(64px,10vw,96px);margin:6px 14px 6px 0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--frak);font-size:clamp(44px,7vw,64px);color:var(--vellum);
+  background:
+    radial-gradient(circle at 30% 30%,rgba(255,255,255,.25),transparent 45%),
+    linear-gradient(140deg,var(--rub),#6E160E);
+  border:3px double var(--gold);box-shadow:0 4px 12px rgba(60,30,10,.35),inset 0 0 12px rgba(0,0,0,.3);
+}
+.incip .rub{color:var(--rub);font-weight:700}
+.incip .url{font-family:var(--mono);font-size:11px;margin-top:10px;overflow-wrap:anywhere;clear:both;padding-top:8px;border-top:1px dashed var(--hair)}
+.incip .src{font-style:italic;font-size:12.5px;color:var(--mut);margin-top:5px}
+
+/* chapters grid with marginalia */
+.capit{display:grid;grid-template-columns:1fr 200px;gap:clamp(12px,2.6vw,30px);margin-top:clamp(20px,3.4vw,34px);border-top:1.5px solid var(--ink);padding-top:14px}
+@media(max-width:760px){.capit{grid-template-columns:1fr}}
+.cap-h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.cap-h .ini{
+  width:46px;height:46px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  font-family:var(--frak);font-size:30px;color:var(--vellum);
+  background:linear-gradient(140deg,var(--gold),#8A6414);border:2px solid var(--ink);
+  box-shadow:inset 0 0 8px rgba(0,0,0,.25);
+}
+.cap-h .rt{font-family:var(--frak);font-size:clamp(20px,3.4vw,29px);color:var(--rub)}
+.cap-h .cn{font-family:var(--mono);font-size:9px;letter-spacing:.28em;color:var(--mut);text-transform:uppercase;width:100%}
+.cap .pt{margin-top:6px;font-size:14.5px}
+.cap .pt b{border-bottom:1px solid var(--rub)}
+.cap .pt .r{color:var(--rub);font-weight:700}
+.cap .souls{font-size:13.5px;margin-top:6px}
+.cap .souls b{font-size:15px}
+.cap .fmt{margin-top:8px}
+.cap .fmt span{font-size:11px;font-style:italic;border:1px solid var(--mut);color:var(--mut);border-radius:99px;padding:1px 9px;margin:0 4px 4px 0;display:inline-block}
+.marg{font-size:12px;font-style:italic;color:#5E4E36;border-left:1.5px solid var(--hair);padding-left:14px}
+@media(max-width:760px){.marg{border-left:none;border-top:1px dashed var(--hair);padding:10px 0 0}}
+.marg .mh{font-style:normal;font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;color:var(--rub);text-transform:uppercase;display:block;margin-bottom:6px}
+.marg .fit{display:block;margin-top:8px}
+.marg .fit .dots{letter-spacing:2px;font-size:12px;color:var(--gold)}
+.marg .fit .dots .e{color:#C9BB95}
+.marg .fit .v{font-family:var(--mono);font-size:10px;color:var(--mut);margin-left:4px}
+.marg .wo{margin-top:8px}
+.marg .wo::before{content:"❧ ";color:var(--rub);font-style:normal}
+.marg .hero{margin-top:8px;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+
+/* rubricated section heads */
+.rub-h{display:flex;align-items:center;gap:16px;margin-top:clamp(24px,4vw,40px);flex-wrap:wrap}
+.rub-h::before{content:"";flex:0 0 30px;border-top:1.5px solid var(--rub)}
+.rub-h .fl{color:var(--gold);font-size:18px}
+.rub-h h2{font-family:var(--frak);font-weight:400;font-size:clamp(22px,4vw,34px);color:var(--rub)}
+.rub-h .nt{font-style:italic;font-size:12.5px;color:var(--mut);margin-left:auto}
+.rub-b{margin-top:14px}
+
+/* damnatio */
+.damn{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.damn{grid-template-columns:1fr}}
+.dam{padding:12px 14px;border:1px solid var(--hair);background:rgba(142,31,20,.05);position:relative}
+.dam h4{font-size:15px}
+.dam h4 s{text-decoration-color:var(--rub);text-decoration-thickness:2px}
+.dam .ch{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--rub)}
+.dam p{font-size:12.5px;font-style:italic;color:#5E4E36;margin-top:5px}
+.dam .ver{margin-top:6px;font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+
+/* the rubric (brief) + miniatures */
+.rubr{display:grid;grid-template-columns:.92fr 1.08fr;gap:clamp(16px,3vw,30px);align-items:start}
+@media(max-width:860px){.rubr{grid-template-columns:1fr}}
+.rubrica{border:2.5px double var(--rub);padding:16px 20px;background:rgba(255,248,220,.35)}
+.rubrica .rk{font-family:var(--mono);font-size:8.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--rub);text-align:center;border-bottom:1.5px solid var(--rub);padding-bottom:8px;margin-bottom:12px}
+.rubrica h3{font-family:var(--frak);font-size:clamp(24px,3.6vw,34px);font-weight:400;text-align:center;color:var(--ink)}
+.rubrica .lede{text-align:center;font-style:italic;font-size:13.5px;margin:6px 0 12px}
+.rubrica dl{display:grid;grid-template-columns:96px 1fr;gap:5px 14px;font-size:13.5px}
+.rubrica dt{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--rub);padding-top:4px}
+.rubrica dd{border-bottom:1px dashed var(--hair);padding-bottom:6px}
+.rubrica .km{font-weight:700}
+.minis{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,2.4vw,22px)}
+@media(max-width:430px){.minis{grid-template-columns:1fr}}
+.mini{text-align:center}
+.mini .arch{
+  border:3px double var(--gold);border-radius:90px 90px 6px 6px;overflow:hidden;background:#F6EFD8;
+  aspect-ratio:3/3.6;box-shadow:0 8px 20px rgba(60,40,15,.3);transition:transform .18s ease,box-shadow .18s ease;
+}
+.mini .arch img{width:100%;height:100%;object-fit:cover;filter:saturate(.92) sepia(.08)}
+.mini:hover .arch{transform:scale(1.025);box-shadow:0 12px 28px rgba(60,40,15,.4)}
+.mini .cap{font-style:italic;font-size:12.5px;margin-top:8px}
+.mini .pic{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;color:var(--rub);text-transform:uppercase;margin-top:2px}
+
+/* pigments */
+.pigs{display:flex;flex-wrap:wrap;gap:clamp(14px,3vw,28px)}
+.pig{text-align:center;width:104px}
+.pig .pot{width:56px;height:56px;margin:0 auto;border-radius:50%;border:2.5px solid var(--ink);box-shadow:inset 0 -8px 14px rgba(0,0,0,.2),0 4px 10px rgba(60,40,15,.3)}
+.pig .n{font-size:13px;font-style:italic;margin-top:8px}
+.pig .h{font-family:var(--mono);font-size:8.5px;color:var(--mut);letter-spacing:.12em}
+
+/* provenance / colophon */
+.prov{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(16px,3vw,30px)}
+@media(max-width:820px){.prov{grid-template-columns:1fr}}
+.prov .mem{font-size:14.5px;font-style:italic;margin-bottom:12px}
+.prov .mem b{color:var(--rub)}
+.scrib{font-family:var(--mono);font-size:10.5px}
+.scrib .lr{display:grid;grid-template-columns:110px 1fr;gap:3px 12px;padding:7px 0;border-bottom:1px dashed var(--hair)}
+.scrib .lr b{color:var(--rub);font-weight:400}
+.scrib .pm{grid-column:2;color:var(--mut);font-size:9.5px;overflow-wrap:anywhere}
+.scrib .me{grid-column:2;display:flex;gap:14px;color:var(--mut);font-size:9.5px}
+.auct{border:1px solid var(--hair);background:rgba(255,248,220,.3);padding:14px 16px}
+.auct h4{font-family:var(--mono);font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--rub);margin-bottom:8px}
+.auct .rw{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;padding:4px 0;border-bottom:1px dotted var(--hair)}
+.auct .rw:last-child{border-bottom:none}
+.auct .rw .v{font-family:var(--mono);font-size:10px;color:var(--mut)}
+.auct .g{font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;color:var(--mut);text-transform:uppercase;margin-top:10px}
+
+/* commendations */
+.com{display:flex;flex-wrap:wrap;gap:12px}
+.com button{
+  border:1.5px solid var(--rub);color:var(--rub);background:rgba(255,248,220,.4);
+  font-family:var(--body);font-style:italic;font-size:14px;padding:10px 22px;border-radius:999px;
+  transition:background .14s ease,color .14s ease,transform .1s ease;
+}
+.com button:hover{background:var(--rub);color:var(--vellum)}
+.com button:active{transform:translateY(2px)}
+.com .oth{width:100%;margin-top:12px;font-style:italic;font-size:13px;color:var(--mut)}
+.com .oth b{font-family:var(--mono);font-style:normal;font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--rub);display:block;margin-bottom:5px}
+.com .oth span{display:inline-block;margin-right:14px;border-bottom:1px dashed var(--hair)}
+.colophon{margin-top:clamp(26px,4vw,44px);text-align:center;border-top:1.5px solid var(--ink);padding-top:16px}
+.colophon .x{font-family:var(--frak);font-size:clamp(18px,3vw,26px);color:var(--rub)}
+.colophon .sig{font-family:var(--mono);font-size:8.5px;letter-spacing:.3em;color:var(--mut);text-transform:uppercase;margin-top:8px}
+.empty{padding:60px;text-align:center;font-style:italic;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="leaf">
+  <div class="rh"><span>Codex Marquensis</span><span class="f">Folium I · de arte campaniae</span><span id="rh-date"></span></div>
+  <div class="tit">
+    <h1>Here Beginneth <em>ye Making</em><br>of a Campaign</h1>
+    <div class="rubric">compiled by the scribes of Marque · let the reader attend</div>
+    <div class="orn">❦ ❦ ❦</div>
+  </div>
+  <div class="incip" id="incip"></div>
+  <main id="app"></main>
+  <div class="colophon"><div class="x">Explicit · feliciter</div><div class="sig" id="foot"></div></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content};
+const dt=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}catch(e){return '—'}};
+const ROM=['I','II','III','IV','V','VI'];
+const souls=n=>{n=n||0;if(n>=1e6)return (n/1e6).toFixed(1)+' million';if(n>=1e3){return String(Math.round(n/1e3)).replace(/(\d)(?=(\d{3})+$)/g,'$1,')+' thousand'}return String(n)};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Malvern Gold',h:'#A87E23'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Iron-Gall Brown',h:'#37281B'}
+];
+const CREAT=[1,6,10,13].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dt(B.createdAt||B.fetchedAt);
+
+document.getElementById('rh-date').textContent='Anno '+DATE;
+document.getElementById('foot').textContent='SCRIPTUM PER MARQUE · ANNO MMXXVI · SIGLUM '+String(B.id||'—').slice(0,8).toUpperCase()+' · COLLATIONATUM '+calls.length+' VICIBUS';
+
+/* incipit with drop cap */
+const prompt=((B.sub&&B.sub.prompt)||B.title||'').trim();
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+const first=prompt.charAt(0)||'H',rest=prompt.slice(1);
+document.getElementById('incip').innerHTML=
+  '<span class="dcap">'+esc(first)+'</span>'+
+  '<p><span class="rub">ere beginneth the commission:</span> it was ordered that <b>'+esc(rest)+'</b> be made manifest unto the people; and the scribes, being diligent, did enquire of the registers before setting pen to parchment.</p>'+
+  (U?'<div class="url">whence the exemplar was fetched: <a href="'+esc(U)+'">'+esc(U)+'</a></div>':'')+
+  '<div class="src">'+((B.urlContext&&B.urlContext.title)?('the exemplar being: '+B.urlContext.title+' — '+(B.urlContext.description||'').slice(0,90)+'…'):'')+'</div>';
+
+const M=document.getElementById('app');
+const rubh=(fl,title,note)=>'<div class="rub-h"><span class="fl">❧</span><h2>'+title+'</h2><span class="nt">'+esc(note)+'</span></div>';
+const dots=s=>{const f=Math.round((s||0)*10);let o='';for(let i=0;i<10;i++)o+='<span'+(i<f?'':' class="e"')+'>◆</span>';return o};
+
+/* ---------- de auditorio ---------- */
+if(AR&&AR.lean){
+  M.appendChild(el(rubh('','De Auditorio','of the audience, first examined')+
+  '<div class="capit"><div class="cap"><p class="pt" style="margin-top:0">'+
+  'Know first that the assembly here addressed is of the <span class="rub">'+esc(AR.lean.label)+'</span> sort, and of this the registers assure us to the fraction <b>'+f2(AR.lean.confidence)+'</b>. Their characters, faithfully observed:</p>'+
+  '<ul style="list-style:none;margin-top:8px">'+(AR.lean.signals||[]).map(s=>'<li style="padding:4px 0;border-bottom:1px dashed '+ '#B8A87E'+'">¶ '+esc(s)+'</li>').join('')+'</ul>'+
+  '<p class="pt" style="margin-top:10px">Wherein they pass their hours: '+(AR.mediaHabits||[]).map(h=>'at <b>'+esc(h.channel)+'</b>, being '+esc(h.note)).join('; ')+'.</p>'+
+  '<div class="fmt">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div>'+
+  '<aside class="marg"><span class="mh">Nota bene</span>The whole disposition of this codex followeth from this reading; let no chapter be judged apart from it.<span class="fit"><span class="dots">'+dots(AR.lean.confidence)+'</span><span class="v">'+f2(AR.lean.confidence)+'</span></span></aside></div>'));
+}
+
+/* ---------- capitula: strategies ---------- */
+if(strats.length){
+  let cap='';
+  strats.forEach((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    cap+='<div class="capit"><div class="cap"><div class="cap-h"><span class="ini">'+ROM[i]+'</span><span class="rt">'+esc(s.title)+(i===sel?' <span style="font-size:.55em;color:#A87E23">— the favoured device</span>':'')+'</span><span class="cn">Capitulum '+ROM[i]+' · in the manner of '+esc(s.angle||'—')+'</span></div>'+
+    '<p class="pt">Let the device be worked through '+(s.channels||[]).map(c=>'<b>'+esc(c.name)+'</b> <span class="r">('+f2(c.fit)+')</span>, for '+esc(c.why||'it pleaseth')).join('; and through ')+'. So doing, it shall reach some <b>'+souls(s.reach&&s.reach.estViews)+' souls</b>.</p>'+
+    '<div class="souls"><b>'+views(s.reach&&s.reach.estViews)+'</b> — '+esc(s.reach&&s.reach.basis||'')+'</div>'+
+    '<div class="fmt">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join('')+'</div></div>'+
+    '<aside class="marg"><span class="mh">Marginalia</span>Witnessed by '+esc(s.heroSignal||'—')+'.'+
+    '<span class="fit"><span class="dots">'+dots(fit)+'</span><span class="v">fit '+f2(fit)+'</span></span>'+
+    ((s.watchouts&&s.watchouts[0])?'<div class="wo">'+esc(s.watchouts[0])+'</div>':'')+
+    '<div class="hero">hero sigillum · '+esc(s.heroSignal||'—')+'</div></aside></div>';
+  });
+  M.appendChild(el(rubh('','Capitula Quattuor','four devices, argued in order')+cap));
+}
+
+/* ---------- damnatio ---------- */
+if(anti.length){
+  M.appendChild(el(rubh('','Damnatio Memoriae','devices struck from the record')+
+  '<div class="damn">'+anti.map(a=>
+    '<div class="dam"><h4><s>'+esc(a.title)+'</s></h4><div class="ch">the '+esc(a.channel)+' road</div><p>'+esc(a.whyNot)+'</p><div class="ver">¶ let it be scraped from the parchment</div></div>').join('')+'</div>'));
+}
+
+/* ---------- the rubric + miniatures ---------- */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  M.appendChild(el(rubh('','De Imagine','the brief writ large, and four miniatures painted')+
+  '<div class="rubr"><div class="rubrica"><div class="rk">Rubrica · the favoured brief</div>'+
+  (br?'<h3>'+esc(br.title)+'</h3><div class="lede">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Made for</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>The saying</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Sigillum</dt><dd>'+esc(selS.heroSignal||'—')+' — from Capitulum '+ROM[sel>=0?sel:0]+'</dd></dl>':'<div class="lede">No rubric survives.</div>')+
+  '</div>'+
+  '<div class="minis">'+CREAT.map((m,i)=>
+    '<figure class="mini"><div class="arch"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+    '<figcaption><div class="cap">'+esc(m.head)+'</div><div class="pic">pictor · '+esc(m.provider)+'</div></figcaption></figure>').join('')+'</div></div>'));
+}
+
+/* ---------- pigments ---------- */
+M.appendChild(el(rubh('','De Pigmentis','ground and mixed in the workshop')+
+  '<div class="pigs">'+PALETTE.map(s=>
+    '<div class="pig"><div class="pot" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="h">'+s.h.toUpperCase()+'</div></div>').join('')+'</div>'));
+
+/* ---------- provenance ---------- */
+if(B.evidence||affs.length){
+  M.appendChild(el(rubh('','Provenantia','whence each signal was copied')+
+  '<div class="prov"><div><p class="mem">The scribes declare that this codex was collated against the <b>registers of Qloo</b> in <b>'+calls.length+' passes</b>, in the manner called <b>'+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+'</b>; each pass is recorded below, that no signal be received on faith alone.</p>'+
+  '<div class="scrib">'+calls.map((c,i)=>
+    '<div class="lr"><b>'+esc(c.endpoint)+'</b><span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,32)).join(' · '))+'</span><span class="me"><span>hora '+esc((c.at||'').slice(11,19))+'Z</span><span>'+esc(c.tookMs)+' heartbeats</span><span>n = '+esc(c.n)+'</span><span>'+esc(c.mode)+'</span></span></div>').join('')+'</div></div>'+
+  '<div class="auct"><h4>Auctores Citati</h4>'+affs.map(g=>'<div class="g">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+    g.entities.slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('')+'</div></div>'));
+}
+
+/* ---------- commendations ---------- */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+M.appendChild(el(rubh('','Commendationes','works the scriptorium may next undertake')+
+  '<div class="com">'+['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  (others.length?'<div class="oth"><b>Other codices upon the shelf</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':'')+'</div>'));
+
+if(!M.children.length)M.appendChild(el('<div class="empty">The leaf is blank — data.js never reached the scriptorium.</div>'));
+})();
+</script>
+</body>
+</html>
