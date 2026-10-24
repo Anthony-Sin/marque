@@ -207,9 +207,10 @@ app.post('/api/catalog/:id/sync-image', h(async (req, res) => {
 // ---------- strategy boards (plans) ----------
 function boardTitle(prompt) {
   const t = String(prompt || '').replace(/\s+/g, ' ').trim();
-  if (t.length <= 48) return t || 'Untitled plan';
-  // cut at a word boundary, mark the truncation — no mid-word stumps
-  return `${t.slice(0, 48).replace(/\s+\S*$/, '')}…`;
+  // keep the whole ask — CSS clamps render length; a stored "…" leaks into
+  // rename inputs and makes two boards look identical
+  if (t.length <= 140) return t || 'Untitled plan';
+  return t.slice(0, 140).replace(/\s+\S*$/, '');
 }
 function boardSummary(b) {
   const strats = b.strategies || [];
@@ -279,7 +280,11 @@ app.post('/api/strategy', h(async (req, res) => {
   if (inlineUrl) {
     try {
       const s = await fetchSite(inlineUrl);
-      urlContext = { url: inlineUrl, title: s.title, description: s.description || s.meta?.description || '' };
+      urlContext = {
+        url: inlineUrl, title: s.title, description: s.description || s.meta?.description || '',
+        colors: (s.colors || []).slice(0, 5), fonts: (s.fonts || []).slice(0, 4),
+        image: s.images?.[0]?.src || s.og?.image || null, siteName: s.og?.site_name || '',
+      };
     } catch { urlContext = { url: inlineUrl, scrapeFailed: true }; }
   }
   const finalPrompt = raw || `analyze this product/site and suggest campaign strategies: ${inlineUrl}`;
@@ -317,7 +322,11 @@ app.post('/api/strategy/stream', async (req, res) => {
       send('stage', { stage: 'scraping', url: inlineUrl });
       try {
         const s = await fetchSite(inlineUrl);
-        urlContext = { url: inlineUrl, title: s.title, description: s.description || s.meta?.description || '' };
+        urlContext = {
+          url: inlineUrl, title: s.title, description: s.description || s.meta?.description || '',
+          colors: (s.colors || []).slice(0, 5), fonts: (s.fonts || []).slice(0, 4),
+          image: s.images?.[0]?.src || s.og?.image || null, siteName: s.og?.site_name || '',
+        };
       } catch { urlContext = { url: inlineUrl, scrapeFailed: true }; }
       send('stage', { stage: 'scraped', urlContext });
     }
@@ -373,6 +382,8 @@ app.get('/api/boards/:id/strategies/:idx', h(async (req, res) => {
   ok(res, {
     strategy: s,
     audienceRead: b.audienceRead || null,
+    urlContext: b.urlContext || null,
+    sub: b.sub || null,
     evidence: ev ? {
       qlooMode: ev.qlooMode, signals: ev.signals,
       drivers: ev.drivers, calls: ev.calls,
@@ -427,6 +438,7 @@ app.get('/api/dashboard', h(async (_req, res) => {
     boards,
     campaigns: list('campaigns').map((c) => ({
       id: c.id,
+      boardId: c.boardId || null,
       title: c.brief?.title || 'Untitled campaign',
       createdAt: c.createdAt || null,
       creativeCount: (c.creatives || []).length,

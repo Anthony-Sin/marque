@@ -110,6 +110,7 @@ export async function genVideoResilient(prompt, opts = {}) {
   } catch (e) {
     if (!opts.imagePath) throw e;
     const path = await ffmpegAnimate(opts.imagePath, opts);
-    return { path, provider: 'ffmpeg-render', note: `veo failed: ${String(e.message || e).slice(0, 160)}` };
+    console.warn(`[media] veo failed, ffmpeg fallback used: ${String(e?.message || e).slice(0, 300)}`);
+    return { path, provider: 'ffmpeg-render', note: 'veo unavailable — animated locally with ffmpeg' };
   }
 }

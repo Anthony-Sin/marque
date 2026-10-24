@@ -33,6 +33,10 @@ const P = {
   eye: 'M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Zm10 2.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z',
   layout: 'M4 4h16v16H4zM4 10h16M10 10v10',
   lock: 'M6 10.5V8a6 6 0 0 1 12 0v2.5M5 10.5h14V21H5zM12 14.5v2.5',
+  'chevron-up': 'M6 15l6-6 6 6',
+  'chevron-down': 'M6 9l6 6 6-6',
+  info: 'M12 8h.01M11 12h1v4h1M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z',
+  copy: 'M9 9h10v12H9zM5 15H4V3h12v1',
 };
 
 export default function Icon({ name, size = 24, sw = 1.7 }) {

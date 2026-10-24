@@ -13,6 +13,22 @@ export function fileExt(p, fallback = 'png') {
   return (m ? m[1] : fallback).toLowerCase();
 }
 
+// stored notes from provider failures can carry raw JSON blobs and model
+// identifiers — keep the human-readable lead-in only.
+export function cleanNote(note) {
+  if (!note) return '';
+  const s = String(note)
+    .split('{')[0]
+    .replace(/\bmodels\/[^\s,}"']+/g, 'the model')
+    .replace(/\b(veo|imagen|gemini|pollinations|sd-turbo|stabilityai)[\w.-]*/gi, 'the provider')
+    .replace(/(the provider[\s:(]*?){2,}/gi, 'the provider ')
+    .replace(/\b[45]\d{2}\b/g, '')
+    .replace(/\s*\(.*$/, '')
+    .replace(/(\bthe provider\b[\s:—\-–,.]*)+$/i, '')
+    .replace(/["'`]+$/, '').replace(/[—\-–:,.\s]+$/, '');
+  return s.length > 110 ? `${s.slice(0, 110).replace(/\s+\S*$/, '')}…` : s;
+}
+
 // Stage-rotating copy for long-running jobs. Returns stages[i], cycling every
 // `ms` while `active`; resets to the first stage each time `active` turns on.
 export function useStages(stages, active, ms = 2800) {

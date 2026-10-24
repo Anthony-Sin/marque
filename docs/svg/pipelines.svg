@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 950" font-family="ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace">
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#e8e6df"/>
+    </marker>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ff4d00"/>
+    </marker>
+  </defs>
+  <rect width="1240" height="950" fill="#121212"/>
+
+  <text x="40" y="42" fill="#e8e6df" font-size="17" font-weight="700" letter-spacing="3">MARQUE — GENERATION PIPELINES</text>
+  <text x="40" y="64" fill="#8f8d84" font-size="11.5">two request flows · dashed orange = escalation / fallback path · every artifact keeps a provider badge</text>
+
+  <!-- ================= LANE A: STRATEGY ================= -->
+  <text x="52" y="98" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">① STRATEGY BOARD — POST /api/strategy/stream (SSE)</text>
+  <rect x="40" y="108" width="1160" height="360" rx="8" fill="#161615" stroke="#3a3a36"/>
+
+  <!-- row of 5 steps -->
+  <g>
+    <rect x="58" y="130" width="180" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>
+    <text x="72" y="152" fill="#ff4d00" font-size="11" font-weight="700">1 · ASK</text>
+    <text x="72" y="174" fill="#e8e6df" font-size="10">prompt text, or a pasted</text>
+    <text x="72" y="190" fill="#e8e6df" font-size="10">product/site URL</text>
+    <text x="72" y="212" fill="#8f8d84" font-size="9.5">+ optional productId</text>
+    <text x="72" y="228" fill="#8f8d84" font-size="9.5">(catalog item)</text>
+
+    <rect x="263" y="130" width="180" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>
+    <text x="277" y="152" fill="#ff4d00" font-size="11" font-weight="700">2 · SCRAPE</text>
+    <text x="277" y="174" fill="#e8e6df" font-size="10">fetchSite(url)</text>
+    <text x="277" y="190" fill="#8f8d84" font-size="9.5">public hosts only —</text>
+    <text x="277" y="206" fill="#8f8d84" font-size="9.5">SSRF guard</text>
+    <text x="277" y="228" fill="#8f8d84" font-size="9.5">title + description →</text>
+    <text x="277" y="244" fill="#8f8d84" font-size="9.5">urlContext</text>
+
+    <rect x="468" y="130" width="210" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>
+    <text x="482" y="152" fill="#ff4d00" font-size="11" font-weight="700">3 · PER-ASK TASTE PULL</text>
+    <text x="482" y="174" fill="#e8e6df" font-size="10">qloo.enrichProfile (lite)</text>
+    <text x="482" y="192" fill="#8f8d84" font-size="9.5">/search entity (name-match gate)</text>
+    <text x="482" y="208" fill="#8f8d84" font-size="9.5">→ /v2/tags → /v2/insights ×types</text>
+    <text x="482" y="230" fill="#e8e6df" font-size="9.5">bundle: live | partial | error</text>
+    <text x="482" y="246" fill="#8f8d84" font-size="9.5">every call logged w/ mode+ms</text>
+
+    <rect x="703" y="130" width="210" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>
+    <text x="717" y="152" fill="#ff4d00" font-size="11" font-weight="700">4 · DETERMINISTIC READ</text>
+    <text x="717" y="174" fill="#e8e6df" font-size="10">audienceRead</text>
+    <text x="717" y="190" fill="#8f8d84" font-size="9.5">lean · mediaHabits · vibeWords</text>
+    <text x="717" y="212" fill="#e8e6df" font-size="10">channelFit map</text>
+    <text x="717" y="228" fill="#8f8d84" font-size="9.5">type→channel × mean affinity</text>
+    <text x="717" y="244" fill="#8f8d84" font-size="9.5">± leanRules boost/penalize</text>
+
+    <rect x="938" y="130" width="244" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>
+    <text x="952" y="152" fill="#ff4d00" font-size="11" font-weight="700">5 · LLM DRAFT</text>
+    <text x="952" y="174" fill="#e8e6df" font-size="10">chatJSON → 3–4 strategies</text>
+    <text x="952" y="190" fill="#e8e6df" font-size="10">+ antiStrategies</text>
+    <text x="952" y="212" fill="#8f8d84" font-size="9.5">title · angle · channels · formats</text>
+    <text x="952" y="228" fill="#8f8d84" font-size="9.5">brief · watchouts · heroSignal</text>
+    <text x="952" y="246" fill="#8f8d84" font-size="9.5">fallback: deterministic top-up</text>
+  </g>
+
+  <!-- step arrows row 1 -->
+  <line x1="238" y1="195" x2="256" y2="195" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="443" y1="195" x2="461" y2="195" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="678" y1="195" x2="696" y2="195" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="913" y1="195" x2="931" y2="195" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+
+  <!-- step 6 -->
+  <rect x="938" y="292" width="244" height="120" rx="5" fill="#1f1f1e" stroke="#454540"/>
+  <text x="952" y="314" fill="#ff4d00" font-size="11" font-weight="700">6 · NORMALIZE + PERSIST</text>
+  <text x="952" y="336" fill="#e8e6df" font-size="10">fit overwritten from fitMap</text>
+  <text x="952" y="352" fill="#8f8d84" font-size="9.5">signals re-matched to real entities</text>
+  <text x="952" y="368" fill="#8f8d84" font-size="9.5">reach = fit × channel priors</text>
+  <text x="952" y="388" fill="#e8e6df" font-size="10">→ boards.push + activeBoardId</text>
+  <line x1="1060" y1="260" x2="1060" y2="284" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+
+  <!-- SSE ribbon -->
+  <rect x="58" y="292" width="840" height="120" rx="5" fill="#1a1a19" stroke="#3a3a36"/>
+  <text x="72" y="314" fill="#8f8d84" font-size="10" letter-spacing="1.5">WHAT THE CLIENT SEES — SSE FRAMES, IN ORDER</text>
+  <g font-size="10">
+    <rect x="72" y="328" width="128" height="30" rx="15" fill="#232322" stroke="#454540"/>
+    <text x="88" y="348" fill="#8f8d84">stage: scraping</text>
+    <rect x="214" y="328" width="128" height="30" rx="15" fill="#232322" stroke="#454540"/>
+    <text x="230" y="348" fill="#8f8d84">stage: scraped</text>
+    <rect x="356" y="328" width="110" height="30" rx="15" fill="#232322" stroke="#454540"/>
+    <text x="377" y="348" fill="#e8e6df">audience</text>
+    <rect x="480" y="328" width="110" height="30" rx="15" fill="#232322" stroke="#454540"/>
+    <text x="499" y="348" fill="#e8e6df">strategies</text>
+    <rect x="604" y="328" width="80" height="30" rx="15" fill="#232322" stroke="#454540"/>
+    <text x="629" y="348" fill="#e8e6df">anti</text>
+    <rect x="698" y="328" width="120" height="30" rx="15" fill="#232322" stroke="#ff4d00"/>
+    <text x="716" y="348" fill="#ff4d00">done {board}</text>
+    <rect x="72" y="370" width="746" height="30" rx="4" fill="none" stroke="#3a3a36"/>
+    <text x="84" y="390" fill="#8f8d84" font-size="9.5">board sections fill live as each frame lands · a failed frame = 'error' — partial results still shown honestly</text>
+  </g>
+  <line x1="938" y1="352" x2="826" y2="352" stroke="#ff4d00" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#a2)"/>
+
+  <!-- ================= LANE B: CAMPAIGNS ================= -->
+  <text x="52" y="508" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">② CAMPAIGN CREATIVES — POST /api/campaigns → runJob (4 creatives)</text>
+  <rect x="40" y="518" width="1160" height="400" rx="8" fill="#161615" stroke="#3a3a36"/>
+
+  <rect x="58" y="540" width="180" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>
+  <text x="72" y="562" fill="#ff4d00" font-size="11" font-weight="700">1 · BRIEF</text>
+  <text x="72" y="584" fill="#e8e6df" font-size="10">generateBrief (LLM) or</text>
+  <text x="72" y="600" fill="#e8e6df" font-size="10">strategy handoff</text>
+  <text x="72" y="622" fill="#8f8d84" font-size="9.5">pasted URL → urlContext</text>
+  <text x="72" y="638" fill="#8f8d84" font-size="9.5">board bundle + evidence</text>
+  <text x="72" y="654" fill="#8f8d84" font-size="9.5">snapshotted when linked</text>
+
+  <rect x="263" y="540" width="180" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>
+  <text x="277" y="562" fill="#ff4d00" font-size="11" font-weight="700">2 · PLAN</text>
+  <text x="277" y="584" fill="#e8e6df" font-size="10">planCreatives — LLM</text>
+  <text x="277" y="600" fill="#e8e6df" font-size="10">assigns per slot:</text>
+  <text x="277" y="622" fill="#8f8d84" font-size="9.5">medium image|video|copy</text>
+  <text x="277" y="638" fill="#8f8d84" font-size="9.5">angle · overlayStyle</text>
+  <text x="277" y="654" fill="#8f8d84" font-size="9.5">est. thumbstop score</text>
+
+  <rect x="468" y="540" width="180" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>
+  <text x="482" y="562" fill="#ff4d00" font-size="11" font-weight="700">3 · COPY</text>
+  <text x="482" y="584" fill="#e8e6df" font-size="10">chatJSON per creative:</text>
+  <text x="482" y="606" fill="#8f8d84" font-size="9.5">headline ≤ 10 words</text>
+  <text x="482" y="622" fill="#8f8d84" font-size="9.5">body ≤ 24 words</text>
+  <text x="482" y="638" fill="#8f8d84" font-size="9.5">cta ≤ 5 words</text>
+  <text x="482" y="654" fill="#8f8d84" font-size="9.5">+ layout {vpos, hpos}</text>
+
+  <!-- image escalation chain -->
+  <rect x="673" y="540" width="250" height="196" rx="5" fill="#1f1f1e" stroke="#454540"/>
+  <text x="687" y="562" fill="#ff4d00" font-size="11" font-weight="700">4 · IMAGE — genImageResilient</text>
+  <text x="687" y="582" fill="#8f8d84" font-size="9.5">engine override? → single provider run</text>
+  <rect x="687" y="592" width="222" height="26" rx="13" fill="#232322" stroke="#ff4d00"/>
+  <text x="703" y="609" fill="#e8e6df" font-size="10">localgen · sd-turbo (:8807)</text>
+  <line x1="798" y1="618" x2="798" y2="630" stroke="#ff4d00" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#a2)"/>
+  <rect x="687" y="630" width="222" height="26" rx="13" fill="#232322" stroke="#454540"/>
+  <text x="703" y="647" fill="#e8e6df" font-size="10">gemini (key pool + model list)</text>
+  <line x1="798" y1="656" x2="798" y2="668" stroke="#ff4d00" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#a2)"/>
+  <rect x="687" y="668" width="222" height="26" rx="13" fill="#232322" stroke="#454540"/>
+  <text x="703" y="685" fill="#e8e6df" font-size="10">pollinations.ai</text>
+  <line x1="798" y1="694" x2="798" y2="706" stroke="#ff4d00" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#a2)"/>
+  <rect x="687" y="706" width="222" height="24" rx="4" fill="none" stroke="#3a3a36"/>
+  <text x="699" y="722" fill="#8f8d84" font-size="9.5">all failed → SVG placeholder + flag</text>
+
+  <!-- overlay -->
+  <rect x="948" y="540" width="234" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>
+  <text x="962" y="562" fill="#ff4d00" font-size="11" font-weight="700">5 · OVERLAY</text>
+  <text x="962" y="584" fill="#e8e6df" font-size="10">copy composited as DOM</text>
+  <text x="962" y="600" fill="#e8e6df" font-size="10">overlay — never baked in</text>
+  <text x="962" y="622" fill="#8f8d84" font-size="9.5">6 presets: performance · ugc ·</text>
+  <text x="962" y="638" fill="#8f8d84" font-size="9.5">editorial · marker · brutalist · glass</text>
+  <text x="962" y="656" fill="#8f8d84" font-size="9.5">canvas mirror → PNG export</text>
+
+  <!-- video chain -->
+  <rect x="673" y="762" width="250" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>
+  <text x="687" y="784" fill="#ff4d00" font-size="11" font-weight="700">6 · VIDEO — genVideoResilient</text>
+  <text x="687" y="806" fill="#8f8d84" font-size="9.5">medium=video → demo-ish brief?</text>
+  <rect x="687" y="816" width="222" height="26" rx="13" fill="#232322" stroke="#ff4d00"/>
+  <text x="699" y="833" fill="#e8e6df" font-size="10">site capture (playwright+ffmpeg)</text>
+  <line x1="798" y1="842" x2="798" y2="854" stroke="#ff4d00" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#a2)"/>
+  <rect x="687" y="854" width="222" height="26" rx="13" fill="#232322" stroke="#454540"/>
+  <text x="703" y="871" fill="#e8e6df" font-size="10">veo → ffmpeg-render (note kept)</text>
+
+  <!-- persist -->
+  <rect x="948" y="762" width="234" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>
+  <text x="962" y="784" fill="#ff4d00" font-size="11" font-weight="700">7 · PERSIST</text>
+  <text x="962" y="806" fill="#e8e6df" font-size="10">creative → campaign.creatives[]</text>
+  <text x="962" y="826" fill="#8f8d84" font-size="9.5">imagePath + imageProvider</text>
+  <text x="962" y="842" fill="#8f8d84" font-size="9.5">videoPath + videoProvider</text>
+  <text x="962" y="858" fill="#8f8d84" font-size="9.5">registerImage → /assets/&lt;uuid&gt;</text>
+  <text x="962" y="876" fill="#8f8d84" font-size="9.5">job.progress polls till done</text>
+
+  <!-- step arrows lane B -->
+  <line x1="238" y1="605" x2="256" y2="605" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="443" y1="605" x2="461" y2="605" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="648" y1="605" x2="666" y2="605" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="923" y1="605" x2="941" y2="605" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="798" y1="736" x2="798" y2="754" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="810" y="750" fill="#8f8d84" font-size="9.5">if medium=video</text>
+  <line x1="1065" y1="670" x2="1065" y2="754" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+  <line x1="923" y1="827" x2="941" y2="827" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+</svg>

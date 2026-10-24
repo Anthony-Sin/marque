@@ -11,6 +11,9 @@ function assertPublicHttp(url) {
 }
 
 async function fetchText(url, timeoutMs = 15000) {
+  // users paste bare domains ("liquiddeath.com") — assume https, keep the
+  // explicit-scheme contract for everything else
+  if (url && !/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) url = `https://${url}`;
   assertPublicHttp(url);
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);

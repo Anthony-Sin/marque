@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, createContext, useContext } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate, NavLink } from 'react-router-dom';
 import api from './api.js';
-import Icon from './components/Icon.jsx';
+import Icon, { Logo } from './components/Icon.jsx';
 import Wayfind from './components/Wayfind.jsx';
 import Onboarding from './views/Onboarding.jsx';
 import DashboardPage from './views/Dashboard.jsx';
@@ -15,12 +15,16 @@ import BrandBookPage from './views/BrandBook.jsx';
 export const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
 
-// Logo-only top bar. Section links live inside the Strategy workflow so they
-// carry board context — routes still work when visited directly.
+// Brand-mark top bar — the studio mark lives here so pages don't repeat it.
+// Section links live inside the Strategy workflow; routes still work directly.
 function TopNav() {
   return (
     <nav className="topnav">
-      <NavLink to="/dashboard" className="topnav-logo">marque</NavLink>
+      <NavLink to="/dashboard" className="topnav-brand">
+        <Logo size={22} />
+        <span className="topnav-brand-name">Marque</span>
+        <span className="topnav-brand-tag">STUDIO</span>
+      </NavLink>
     </nav>
   );
 }

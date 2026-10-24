@@ -26,6 +26,27 @@ async function getJson(url, timeout = 12000, retries = 1) {
   throw lastErr;
 }
 
+// Wikimedia rate-limits bursts from one IP (a single pull can fire a dozen
+// calls across parallel hunts) — serialize those calls with a small gap and
+// give 429s a real cooldown instead of one instant retry.
+let wikiGate = Promise.resolve();
+function wikiJson(url, timeout = 12000) {
+  const p = wikiGate.then(async () => {
+    let lastErr;
+    for (let i = 0; i < 3; i++) {
+      try {
+        const res = await fetch(url, { headers: UA, signal: AbortSignal.timeout(timeout) });
+        if (res.status === 429) { lastErr = new Error('fetch 429'); if (i < 2) { await new Promise((s) => setTimeout(s, 2000 * (i + 1))); continue; } throw lastErr; }
+        if (!res.ok) throw new Error(`fetch ${res.status}`);
+        return await res.json();
+      } catch (e) { lastErr = e; if (i < 2) await new Promise((s) => setTimeout(s, 700)); }
+    }
+    throw lastErr;
+  });
+  wikiGate = p.catch(() => {}).then(() => new Promise((s) => setTimeout(s, 250)));
+  return p;
+}
+
 // ---- resolvers (each returns a normalized example card or null) ----
 
 async function youtubeExamples(query, note, n = 2) {
@@ -116,8 +137,34 @@ async function itunesExamples(query, media, platform, note, n = 3) {
   }));
 }
 
+// LLM hunt queries are phrases, not page titles — full-text search resolves
+// "Invader Zim Vol. 3" → the Invader Zim article where opensearch (prefix
+// match) returns nothing; opensearch stays as a second attempt, then the
+// query gets progressively trimmed.
+async function wikiSearchExample(query, platform, note) {
+  const variants = [...new Set([
+    query,
+    query.replace(/\s+(vol\.?\s*\w+|vol(ume)?\s*\d+|issue\s*\d+|#\d+|edition\s*\w+)\s*$/i, ''),
+    query.split(/\s+/).slice(0, 4).join(' '),
+    query.split(/\s+/).slice(0, 3).join(' '),
+  ])].filter((v) => v.length > 2);
+  for (const v of variants) {
+    const s = await wikiJson(`https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(v)}&srlimit=3&format=json`).catch(() => null);
+    for (const hit of s?.query?.search || []) {
+      const ex = await wikiExample(hit.title, platform, note).catch(() => null);
+      if (ex) return ex;
+    }
+    const o = await wikiJson(`https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(v)}&limit=3&namespace=0&format=json`).catch(() => null);
+    for (const t of o?.[1] || []) {
+      const ex = await wikiExample(t, platform, note).catch(() => null);
+      if (ex) return ex;
+    }
+  }
+  return null;
+}
+
 async function wikiExample(title, platform, note) {
-  const j = await getJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+  const j = await wikiJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
   // never surface a disambiguation page — it's not campaign reference material
   if (!j?.title || j.type === 'disambiguation') return null;
   // svg thumbs are almost always logos/flags/wordmarks — keep the card, drop the art
@@ -134,7 +181,7 @@ async function wikiExample(title, platform, note) {
 const COMMONS_JUNK = /logo|seal|coat of arms|flag of|map of|diagram|chart|icon|emblem|insignia|wordmark|monogram|specimen|taxon|holotype|pinned|preserved|feather|plumage|bird of paradise|paradisaea|cicinnurus|dissect|skeleton|fossil|herbarium|scan of|page \d|illustration from|engraving/i;
 
 async function commonsExamples(query, platform, note, n = 3) {
-  const j = await getJson(`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrnamespace=6&gsrlimit=${n + 4}&prop=imageinfo&iiprop=url%7Cmime&iiurlwidth=640&format=json`);
+  const j = await wikiJson(`https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrnamespace=6&gsrlimit=${n + 4}&prop=imageinfo&iiprop=url%7Cmime&iiurlwidth=640&format=json`);
   const pages = Object.values(j.query?.pages || {});
   const items = [];
   for (const page of pages) {
@@ -363,17 +410,17 @@ function normalizeHunts(raw, ctx) {
     perChan[platform] = (perChan[platform] || 0) + 1;
     out.push({ platform, query, note: String(h.note || '') || `reference for the ${platform} lane` });
   }
-  // backfill: 2 varied seeds per channel so even a one-lane strategy pulls deep
+  // backfill: 3 varied seeds per channel so even a one-lane strategy pulls deep
   for (const c of chanNames) {
-    for (let slot = 0; slot < 2 && out.length < 8; slot++) {
-      if ((perChan[c] || 0) >= 2) break;
+    for (let slot = 0; slot < 3 && out.length < 12; slot++) {
+      if ((perChan[c] || 0) >= 3) break;
       const s = seedHunt(c, ctx, (perChan[c] || 0) + slot);
       if (s && !seenQ.has(`${c}:${s.query.toLowerCase()}`)) {
         seenQ.add(`${c}:${s.query.toLowerCase()}`); perChan[c] = (perChan[c] || 0) + 1; out.push(s);
       }
     }
   }
-  return out.slice(0, 8);
+  return out.slice(0, 12);
 }
 
 // ---- relevance ranking: score resolved items against the strategy's terms ----
@@ -462,7 +509,7 @@ export async function generateExamples({ strategy, profile, product = null, audi
     }
   }
 
-  const huntList = [...steerHunts, ...hunts].slice(0, 8);
+  const huntList = [...steerHunts, ...hunts].slice(0, 12);
   const jobs = huntList.map(async (h) => {
     const q = String(h.query || '').trim();
     const note = h.note || '';
@@ -477,7 +524,7 @@ export async function generateExamples({ strategy, profile, product = null, audi
           if (!candidates.length) return null;
           return await tryAll(...candidates.map((v) => () => tiktokExamples(v, note)));
         }
-        case 'youtube': return await youtubeExamples(q, note);
+        case 'youtube': return await youtubeExamples(q, note, 4);
         // iTunes movie/tv search is dead upstream — try it, then honest wiki cards
         case 'tv': return await tryAll(
           () => itunesExamples(q, 'tvShow', 'tv', note, 2),
@@ -490,16 +537,27 @@ export async function generateExamples({ strategy, profile, product = null, audi
         case 'podcast': return await tryAll(
           () => itunesExamples(q, 'podcast', 'podcast', note, 3),
           async () => [await wikiExample(q, 'podcast', note)].filter(Boolean));
-        case 'press': return [await wikiExample(q, 'press', note)].filter(Boolean);
+        case 'press': return await tryAll(
+          () => wikiExample(q, 'press', note),
+          () => wikiSearchExample(q, 'press', note));
         case 'instagram': {
           // scrape the entity's real IG frontpage — candidate handles are the
-          // hunt query plus squashed brand/entity names; all fail = failed hunt
+          // hunt query plus squashed brand/entity names. IG login-walls most
+          // datacenter pulls, so fall back to real photography of the same
+          // subject rather than a dead lane.
           const candidates = [...new Set([q, ...(ctx.byType['urn:entity:brand'] || []).slice(0, 3)
             .map((e) => `@${squash(e.name)}`)])]
             .map((v) => v.replace(/^@/, ''))
             .filter((v) => /^[A-Za-z0-9_.]{2,30}$/.test(v));
-          if (!candidates.length) return null;
-          return await tryAll(...candidates.map((v) => () => instagramExamples(v, note)));
+          const igRes = candidates.length
+            ? await tryAll(...candidates.map((v) => () => instagramExamples(v, note)))
+            : null;
+          if (igRes) return igRes;
+          const subj = ctx.entityNames.find((n) => q.toLowerCase().includes(squash(n).toLowerCase()))
+            || ctx.entityNames[0];
+          return await tryAll(
+            () => commonsExamples(subj || q, 'instagram', note, 3),
+            () => wikiSearchExample(subj || q, 'instagram', note));
         }
         case 'maps': {
           // local-presence medium — Devin finds the real listing (it can browse
@@ -535,8 +593,9 @@ export async function generateExamples({ strategy, profile, product = null, audi
           // lane returns nothing — no generated stand-in.
           const anchor = ctx.entityNames.find((n) => q.toLowerCase().includes(n.toLowerCase()));
           const items = (await collect(
-            () => commonsExamples(q, h.platform, note),
-            async () => [await wikiExample(anchor || q, h.platform, note)].filter(Boolean))).flat();
+            () => commonsExamples(q, h.platform, note, 6),
+            async () => [await wikiExample(anchor || q, h.platform, note)].filter(Boolean),
+            async () => [await wikiSearchExample(q, h.platform, note)].filter(Boolean))).flat();
           return items.length ? items : null;
         }
         default: return null;
@@ -567,8 +626,13 @@ export async function generateExamples({ strategy, profile, product = null, audi
   // real artifacts only. zero-score scraped junk is dropped entirely — an
   // empty hand with the hunts listed is honest; padded concept art was not.
   let picked = positive.map((s) => s.e);
-  if (!picked.length) picked = scored.filter((s) => s.score === 0).map((s) => s.e);
+  // fill out the board to ~15 cards with real (if looser) artifacts — a thin
+  // pull reads as broken; label honesty comes from the per-card match tag
+  if (picked.length < 15) {
+    const zeros = scored.filter((s) => s.score === 0).map((s) => s.e);
+    picked = picked.concat(zeros.slice(0, 15 - picked.length));
+  }
   const matchOf = new Map(scored.map((s) => [s.e, s.match]));
-  const examples = picked.slice(0, 10).map((e) => ({ ...e, match: matchOf.get(e) || `matches channel: ${e.platform}` }));
+  const examples = picked.slice(0, 16).map((e) => ({ ...e, match: matchOf.get(e) || `matches channel: ${e.platform}` }));
   return { examples, hunts: huntList, fetchedAt: new Date().toISOString() };
 }

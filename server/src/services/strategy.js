@@ -1,7 +1,7 @@
 // Strategy Board: prompt + profile Qloo bundle -> candidate strategies.
 // TensorMux ideates; channel fit + audience read are computed deterministically
 // from real bundle data so "why" is always honest (see docs/STRATEGY.md).
-import { chatJSON } from './tensor.js';
+import { chatJSON, chatStream, extractJSON } from './tensor.js';
 import * as qloo from './qloo.js';
 import { tuning } from '../tuning.js';
 
@@ -89,10 +89,14 @@ function channelFit(bundle, lean) {
     const ch = TYPE_CHANNEL[type];
     if (!ch) continue;
     const m = meanAffinity(ents);
-    const top = ents[0];
     fit[ch].fit = Math.min(0.95, 0.35 + m * 0.6);
     fit[ch].noSignal = false;
-    if (top) fit[ch].why.push(`${top.name}${typeof top.affinity === 'number' ? ` (${top.affinity.toFixed(2)})` : ''}`);
+    (fit[ch].types ||= []).push(type);
+    // every cited entity lands in why — the UI expands each into a real
+    // affinity row, so a channel never shows a lone like
+    for (const e of ents.slice(0, 6)) {
+      fit[ch].why.push(`${e.name}${typeof e.affinity === 'number' ? ` (${e.affinity.toFixed(2)})` : ''}`);
+    }
   }
   // guerrilla ties to place affinity + instagram buzz adjacency
   if (fit.instagram.fit > 0.5 && fit.guerrilla.fit < 0.5) { fit.guerrilla.fit = Math.max(fit.guerrilla.fit, fit.instagram.fit - 0.15); }
@@ -132,23 +136,22 @@ export async function generateStrategies({ prompt, profile, product = null, urlC
   const fitMap = channelFit(bundle, read.lean);
   const byType = topByType(bundle);
   const signalLines = Object.entries(byType).flatMap(([type, ents]) =>
-    ents.slice(0, 4).map((e) => `${type.replace('urn:entity:', '')}: ${e.name} (${(e.affinity ?? 0).toFixed(2)})`));
+    ents.slice(0, 6).map((e) => `${type.replace('urn:entity:', '')}: ${e.name} (${(e.affinity ?? 0).toFixed(2)})`));
 
   // STAGE 1 — everything the taste graph already knows, emitted before the
   // model call so the board starts filling while strategies are being written
   const evidence = {
     source: 'pending', qlooMode: bundle?.mode || 'none',
-    signals: signalLines.slice(0, 14), drivers: read.mediaHabits,
+    signals: signalLines.slice(0, 40), drivers: read.mediaHabits,
     calls: bundle?.calls || [], qlooEvidence: qloo.qlooEvidence(bundle),
   };
   onStage?.('audience', { audienceRead: read, evidence, channelFit: fitMap });
 
   let raw = null, modelNote = 'deterministic';
-  try {
-    raw = await chatJSON([
-      { role: 'system', content: `You are a campaign strategist for ${profile?.name || 'a brand'}. ${SCHEMA}` },
-      {
-        role: 'user', content: [
+  const msgs = [
+    { role: 'system', content: `You are a campaign strategist for ${profile?.name || 'a brand'}. ${SCHEMA}` },
+    {
+      role: 'user', content: [
           `Campaign prompt: ${prompt}`,
           `Brand: ${profile?.name} — ${profile?.tagline || ''}. Tone: ${(profile?.tone || []).join(', ')}. Overview: ${(profile?.overview || '').slice(0, 300)}`,
           product ? `Focus product: ${product.name}${product.description ? ` — ${product.description.slice(0, 200)}` : ''}${product.price ? ` (${product.price})` : ''}` : null,
@@ -159,7 +162,22 @@ export async function generateStrategies({ prompt, profile, product = null, urlC
           `Lean guidance: ${LEAN_RULES[read.lean.label]?.watchout || LEAN_RULES[read.lean.label]?.note || ''}`,
         ].join('\n\n'),
       },
-    ], { maxTokens: 6000, timeoutMs: 100000 });
+    ];
+    try {
+    if (onStage) {
+      // streaming board — the model's own tokens ride the SSE pipe so the UI
+      // can type them in live while strategies are still being written
+      onStage('stage', { stage: 'writing' });
+      const full = await chatStream(msgs, {
+        maxTokens: 6000, timeoutMs: 100000,
+        onToken: (d) => onStage('tok', { d }),
+        onReasoning: (d) => onStage('think', { d }),
+      });
+      raw = extractJSON(full);
+      if (raw === null) raw = await chatJSON(msgs, { maxTokens: 6000, timeoutMs: 100000 });
+    } else {
+      raw = await chatJSON(msgs, { maxTokens: 6000, timeoutMs: 100000 });
+    }
   } catch { /* fall through to deterministic */ }
 
   const modelList = raw?.strategies || raw?.strategy || (Array.isArray(raw) ? raw : null);
@@ -234,7 +252,7 @@ export async function generateStrategies({ prompt, profile, product = null, urlC
       mode: bundle?.mode || 'none',
       affinities: (bundle?.affinities || []).map((a) => ({
         type: a.type,
-        entities: (a.entities || []).slice(0, 6).map((e) => ({
+        entities: (a.entities || []).slice(0, 10).map((e) => ({
           name: e.name, affinity: e.affinity, popularity: e.popularity,
           image: e.image, tagline: e.tagline, keywords: e.keywords, industries: e.industries,
         })),
@@ -248,7 +266,7 @@ export async function generateStrategies({ prompt, profile, product = null, urlC
 function normalizeStrategy(s, i, fitMap, read, bundle, prompt) {
   const names = (Array.isArray(s.channels) ? s.channels : []).map((c) => String(c).toLowerCase());
   const channels = (names.length ? names : ['instagram', 'tiktok']).filter((c) => fitMap[c] !== undefined)
-    .map((c) => ({ name: c, fit: +fitMap[c].fit.toFixed(2), noSignal: !!fitMap[c].noSignal, why: fitMap[c].why.join(', ') || `${read.lean.label} audience` }));
+    .map((c) => ({ name: c, fit: +fitMap[c].fit.toFixed(2), noSignal: !!fitMap[c].noSignal, types: fitMap[c].types || [], why: fitMap[c].why.join(', ') || `${read.lean.label} audience` }));
   const allEnts = Object.values(topByType(bundle)).flat();
   const cited = allEnts
     .filter((e) => (e.name || '').length >= 8 && JSON.stringify(s).toLowerCase().includes(e.name.toLowerCase().slice(0, 12)))

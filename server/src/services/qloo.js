@@ -29,6 +29,7 @@ async function qget(path, params) {
   }
   const res = await fetch(`${ENV.qlooBase}${path}?${qs.toString()}`, {
     headers: { 'X-Api-Key': ENV.qlooKey },
+    signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
@@ -154,11 +155,24 @@ function relevantHit(query, e) {
 export async function enrichProfile(profile, opts = {}) {
   const calls = [];
   let entity = null;
-  const query = profile.name || 'brand';
-  const s = await searchEntities(query);
+  // site titles arrive decorated — "Liquid Death | Murder Your Thirst" searches
+  // as murder-fiction. The brand token is the segment before the first
+  // | · – — : ( separator; fall back to the raw name when cleaning yields air.
+  const rawName = String(profile.name || 'brand');
+  const query = (rawName.split(/\s*[|·–—:(]\s*|\s+-\s+/)[0].trim() || rawName).slice(0, 60);
+  let s = await searchEntities(query);
   calls.push(s.call);
+  let hitQuery = query;
+  // a cleaned query can still miss — retry once on the first 3 raw tokens
+  if (!(s.results || []).some((e) => relevantHit(query, e)) && query !== rawName) {
+    const alt = rawName.replace(/[|·–—:(]/g, ' ').split(/\s+/).filter(Boolean).slice(0, 3).join(' ');
+    if (alt !== query) {
+      const s2 = await searchEntities(alt); calls.push(s2.call);
+      if ((s2.results || []).some((e) => relevantHit(alt, e))) { s = s2; hitQuery = alt; }
+    }
+  }
   // pick the first hit whose name actually overlaps the query — not results[0]
-  const best = (s.results || []).find((e) => relevantHit(query, e));
+  const best = (s.results || []).find((e) => relevantHit(hitQuery, e));
   if (best) entity = { id: best.id, name: best.name, popularity: best.popularity };
 
   const tagList = [];
@@ -186,13 +200,22 @@ export async function enrichProfile(profile, opts = {}) {
   const hint = `${query} audience — fans of ${entity?.name || query}${profile.audience ? `; ask: ${String(profile.audience).slice(0, 120)}` : ''}${tagList.length ? `; taste tags: ${tagList.slice(0, 5).map((t) => t.name).join(', ')}` : ''}`;
   const types = pickCategories(profile);
   const affinities = [];
-  // anchor: live tags first (proven reliable); the entity id only when it is a
-  // genuine name match — a wrong entity poisons every insights call
-  const signal = liveTagIds.length
-    ? { tags: liveTagIds.slice(0, 3) }
-    : entity?.id ? { entities: [entity.id] } : {};
-  const insResults = await Promise.all(types.map((type) =>
+  // anchor: a confidently-matched entity is the strongest signal — pair it
+  // with live tags so results stay grounded in the brand's real fanbase.
+  // Tags alone drift generic (a "water" tag pulls resort/restaurant affinity);
+  // an entity alone 400s when irrelevant, so it only rides when relevantHit
+  // passed, and tags still tag along as backup signal.
+  const signal = entity?.id
+    ? { entities: [entity.id], tags: liveTagIds.slice(0, 2) }
+    : liveTagIds.length ? { tags: liveTagIds.slice(0, 3) } : {};
+  let insResults = await Promise.all(types.map((type) =>
     insights({ type, ...signal, take: 10, hint })));
+  // combined entity+tag signal can over-constrain — if nothing came back at
+  // all and tags exist, retry once on tags alone rather than ship an empty map
+  if (signal.entities && liveTagIds.length && !insResults.some((r) => (r?.entities || []).length)) {
+    insResults = await Promise.all(types.map((type) =>
+      insights({ type, tags: liveTagIds.slice(0, 3), take: 10, hint })));
+  }
   insResults.forEach((r, i) => {
     if (!r) return;
     calls.push(r.call);

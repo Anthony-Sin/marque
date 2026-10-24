@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 880" font-family="ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace">
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#e8e6df"/>
+    </marker>
+  </defs>
+  <rect width="1240" height="880" fill="#121212"/>
+
+  <text x="40" y="42" fill="#e8e6df" font-size="17" font-weight="700" letter-spacing="3">MARQUE — DATA MODEL</text>
+  <text x="40" y="64" fill="#8f8d84" font-size="11.5">data/state.json top-level keys · nested [] = embedded arrays · →asset = a path like /assets/&lt;uuid&gt;.png</text>
+
+  <!-- ============ PROFILE ============ -->
+  <rect x="40" y="96" width="270" height="290" rx="6" fill="#1a1a19" stroke="#454540"/>
+  <rect x="40" y="96" width="270" height="28" rx="6" fill="#232322"/>
+  <text x="54" y="115" fill="#ff4d00" font-size="11.5" font-weight="700" letter-spacing="1.5">profile</text>
+  <text x="230" y="115" fill="#8f8d84" font-size="9">object | null</text>
+  <g font-size="10" fill="#e8e6df">
+    <text x="54" y="144">id · createdAt · updatedAt</text>
+    <text x="54" y="162">source {type, url|templateId}</text>
+    <text x="54" y="180">name · tagline · description</text>
+    <text x="54" y="198">tone[] · values[] · audience</text>
+    <text x="54" y="216">colors {primary…text}</text>
+    <text x="54" y="234">fonts {heading, body}</text>
+    <text x="54" y="252">images[] {id, path→asset, caption}</text>
+    <text x="54" y="270">socials · missingSocials</text>
+    <text x="54" y="288" fill="#ff4d00">qloo → QlooBundle</text>
+  </g>
+  <line x1="54" y1="300" x2="296" y2="300" stroke="#33332f"/>
+  <g font-size="9.5" fill="#8f8d84">
+    <text x="54" y="318">built by scrape→LLM DNA→enrich,</text>
+    <text x="54" y="334">chat scratch, or a template</text>
+    <text x="54" y="356">profile.catalog mirrors catalog[]</text>
+    <text x="54" y="372">on every read (syncProfileCatalog)</text>
+  </g>
+
+  <!-- ============ CATALOG ============ -->
+  <rect x="40" y="420" width="270" height="110" rx="6" fill="#1a1a19" stroke="#454540"/>
+  <rect x="40" y="420" width="270" height="28" rx="6" fill="#232322"/>
+  <text x="54" y="439" fill="#ff4d00" font-size="11.5" font-weight="700" letter-spacing="1.5">catalog</text>
+  <text x="240" y="439" fill="#8f8d84" font-size="9">array</text>
+  <g font-size="10" fill="#e8e6df">
+    <text x="54" y="468">item {id, name, description}</text>
+    <text x="54" y="486">image→asset · url · price</text>
+    <text x="54" y="508" fill="#8f8d84" font-size="9.5">manual, /from-url scrape, or</text>
+    <text x="54" y="522" fill="#8f8d84" font-size="9.5">saved from a photoshoot result</text>
+  </g>
+  <line x1="175" y1="420" x2="175" y2="394" stroke="#e8e6df" stroke-width="1.2" marker-end="url(#a1)"/>
+  <text x="187" y="410" fill="#8f8d84" font-size="9">mirrors ↑</text>
+
+  <!-- ============ BRANDBOOK ============ -->
+  <rect x="40" y="560" width="270" height="130" rx="6" fill="#1a1a19" stroke="#454540"/>
+  <rect x="40" y="560" width="270" height="28" rx="6" fill="#232322"/>
+  <text x="54" y="579" fill="#ff4d00" font-size="11.5" font-weight="700" letter-spacing="1.5">brandbook</text>
+  <text x="226" y="579" fill="#8f8d84" font-size="9">object | null</text>
+  <g font-size="10" fill="#e8e6df">
+    <text x="54" y="608">id · createdAt · paletteNote</text>
+    <text x="54" y="626">coverImage → profile.images id</text>
+    <text x="54" y="644">images[] → profile.images ids</text>
+    <text x="54" y="662">publishedSlug → GET /b/:slug</text>
+    <text x="54" y="680" fill="#8f8d84" font-size="9.5">rendered as printable HTML book</text>
+  </g>
+
+  <!-- ============ BOARDS ============ -->
+  <rect x="350" y="96" width="290" height="400" rx="6" fill="#1a1a19" stroke="#454540"/>
+  <rect x="350" y="96" width="290" height="28" rx="6" fill="#232322"/>
+  <text x="364" y="115" fill="#ff4d00" font-size="11.5" font-weight="700" letter-spacing="1.5">boards</text>
+  <text x="545" y="115" fill="#8f8d84" font-size="9">array — "plans"</text>
+  <g font-size="10" fill="#e8e6df">
+    <text x="364" y="144">id · title · createdAt</text>
+    <text x="364" y="162">sub {prompt, productId, url}</text>
+    <text x="364" y="180">urlContext {url, title, description}</text>
+    <text x="364" y="204" fill="#ff4d00">strategies[] →</text>
+    <text x="380" y="222" font-size="9.5" fill="#e8e6df">{id "st1"…, title, angle, formats[]}</text>
+    <text x="380" y="238" font-size="9.5" fill="#e8e6df">channels[{name, fit, why, noSignal}]</text>
+    <text x="380" y="254" font-size="9.5" fill="#e8e6df">brief{title,angle,audience,keyMsg}</text>
+    <text x="380" y="270" font-size="9.5" fill="#e8e6df">audienceFit · watchouts[]</text>
+    <text x="380" y="286" font-size="9.5" fill="#e8e6df">qlooSignals[] · heroSignal · reach</text>
+    <text x="364" y="310" fill="#ff4d00">antiStrategies[] →</text>
+    <text x="380" y="328" font-size="9.5" fill="#e8e6df">{title, channel, whyNot}</text>
+    <text x="364" y="352">audienceRead {lean, mediaHabits,</text>
+    <text x="364" y="368">  vibeWords}</text>
+    <text x="364" y="392" fill="#ff4d00">qlooBundle · evidence {signals,</text>
+    <text x="364" y="408" fill="#ff4d00">  drivers, calls[]}</text>
+  </g>
+  <line x1="364" y1="420" x2="626" y2="420" stroke="#33332f"/>
+  <g font-size="9.5" fill="#8f8d84">
+    <text x="364" y="438">pointers: activeBoardId + lastStrategy</text>
+    <text x="364" y="454">(legacy mirror of the active board)</text>
+    <text x="364" y="476">qlooMode recomputed from calls[] on</text>
+    <text x="364" y="490">every read — honestBoard()</text>
+  </g>
+
+  <!-- ============ CAMPAIGNS ============ -->
+  <rect x="680" y="96" width="280" height="400" rx="6" fill="#1a1a19" stroke="#454540"/>
+  <rect x="680" y="96" width="280" height="28" rx="6" fill="#232322"/>
+  <text x="694" y="115" fill="#ff4d00" font-size="11.5" font-weight="700" letter-spacing="1.5">campaigns</text>
+  <text x="880" y="115" fill="#8f8d84" font-size="9">array</text>
+  <g font-size="10" fill="#e8e6df">
+    <text x="694" y="144">id · createdAt · aspectRatio</text>
+    <text x="694" y="162">brief {title, angle, audience,</text>
+    <text x="694" y="178">  keyMessage, channels[]}</text>
+    <text x="694" y="200">productId → catalog item</text>
+    <text x="694" y="218">boardId → boards · strategyId/Title</text>
+    <text x="694" y="236">imageProvider (engine override)</text>
+    <text x="694" y="254">qlooSignals[] · notes · ingredients</text>
+    <text x="694" y="272" fill="#ff4d00">qlooBundle + evidence snapshot</text>
+    <text x="694" y="288" fill="#8f8d84" font-size="9.5">(copied from the source board —</text>
+    <text x="694" y="302" fill="#8f8d84" font-size="9.5"> only when boardId is passed)</text>
+    <text x="694" y="326" fill="#ff4d00">creatives[] →</text>
+    <text x="710" y="344" font-size="9.5" fill="#e8e6df">{id, headline, body, cta}</text>
+    <text x="710" y="360" font-size="9.5" fill="#e8e6df">layout{vpos,hpos} · overlayStyle</text>
+    <text x="710" y="376" font-size="9.5" fill="#e8e6df">imagePath→asset · imageProvider</text>
+    <text x="710" y="392" font-size="9.5" fill="#e8e6df">videoPath→asset · videoProvider</text>
+    <text x="710" y="408" font-size="9.5" fill="#e8e6df">videoNote · grade · score · badge</text>
+  </g>
+  <line x1="694" y1="420" x2="946" y2="420" stroke="#33332f"/>
+  <g font-size="9.5" fill="#8f8d84">
+    <text x="694" y="438">genStatus running|done|error</text>
+    <text x="694" y="454">genError kept when it fails</text>
+    <text x="694" y="476">placeholder SVG + imageError flag</text>
+    <text x="694" y="490">when every provider fails</text>
+  </g>
+
+  <!-- ============ WEBSITES ============ -->
+  <rect x="990" y="96" width="210" height="180" rx="6" fill="#1a1a19" stroke="#454540"/>
+  <rect x="990" y="96" width="210" height="28" rx="6" fill="#232322"/>
+  <text x="1004" y="115" fill="#ff4d00" font-size="11.5" font-weight="700" letter-spacing="1.5">websites</text>
+  <text x="1130" y="115" fill="#8f8d84" font-size="9">array</text>
+  <g font-size="10" fill="#e8e6df">
+    <text x="1004" y="144">id · createdAt</text>
+    <text x="1004" y="162">versions[] → {id, html,</text>
+    <text x="1004" y="178">  prompt, createdAt}</text>
+    <text x="1004" y="196">activeVersion → version id</text>
+    <text x="1004" y="214">publishedSlug → /s/:slug</text>
+    <text x="1004" y="232">demoVideo → asset mp4</text>
+  </g>
+  <text x="1004" y="258" fill="#8f8d84" font-size="9.5">lastSiteAudit {suggestions[],</text>
+  <text x="1004" y="272" fill="#8f8d84" font-size="9.5">competitorNotes[]} — top level</text>
+
+  <!-- ============ PHOTOSHOOTS ============ -->
+  <rect x="990" y="306" width="210" height="190" rx="6" fill="#1a1a19" stroke="#454540"/>
+  <rect x="990" y="306" width="210" height="28" rx="6" fill="#232322"/>
+  <text x="1004" y="325" fill="#ff4d00" font-size="11.5" font-weight="700" letter-spacing="1.5">photoshoots</text>
+  <text x="1130" y="325" fill="#8f8d84" font-size="9">array</text>
+  <g font-size="10" fill="#e8e6df">
+    <text x="1004" y="354">id · createdAt</text>
+    <text x="1004" y="372">mode: product | free</text>
+    <text x="1004" y="390">inputImage→asset · prompt</text>
+    <text x="1004" y="408">templates[] (studio, lifestyle…)</text>
+    <text x="1004" y="430">results[] → {imagePath→asset,</text>
+    <text x="1004" y="446">  template, provider}</text>
+    <text x="1004" y="468">edits[] → {prompt, spec,</text>
+    <text x="1004" y="484">  imagePath→asset, directed}</text>
+  </g>
+
+  <!-- ============ EDGES ============ -->
+  <line x1="680" y1="200" x2="648" y2="200" stroke="#e8e6df" stroke-width="1.2" marker-end="url(#a1)"/>
+  <text x="652" y="192" fill="#8f8d84" font-size="9">boardId</text>
+
+  <polyline points="700,496 700,522 318,522 318,510" fill="none" stroke="#8f8d84" stroke-width="1.2" marker-end="url(#a1)"/>
+  <text x="420" y="514" fill="#8f8d84" font-size="9">productId → catalog</text>
+
+  <polyline points="40,640 24,640 24,240 40,240" fill="none" stroke="#55554f" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#a1)"/>
+
+  <!-- ============ BOTTOM BAR ============ -->
+  <rect x="40" y="730" width="1160" height="106" rx="8" fill="#161615" stroke="#3a3a36"/>
+
+  <text x="56" y="756" fill="#ff4d00" font-size="11" font-weight="700" letter-spacing="1.5">images — registry</text>
+  <text x="56" y="776" fill="#e8e6df" font-size="9.5">every generated / scraped / uploaded image: {id, path, source, provider, createdAt}</text>
+  <text x="56" y="794" fill="#8f8d84" font-size="9.5">registerImage() dedupes by path · lets /api/images/:id resolve any asset</text>
+  <text x="56" y="814" fill="#8f8d84" font-size="9.5">creative.imagePath · photoshoot results · website demoVideo all land here</text>
+
+  <line x1="490" y1="744" x2="490" y2="824" stroke="#33332f"/>
+
+  <text x="506" y="756" fill="#ff4d00" font-size="11" font-weight="700" letter-spacing="1.5">data/assets/ — media files</text>
+  <text x="506" y="776" fill="#e8e6df" font-size="9.5">server-named UUIDs only: {uuid}.{png|jpg|webp|svg|mp4}</text>
+  <text x="506" y="794" fill="#8f8d84" font-size="9.5">served immutable 7d + CSP sandbox + nosniff · writes are atomic (tmp+rename)</text>
+  <text x="506" y="814" fill="#8f8d84" font-size="9.5">assetAbs() basename-guards every lookup — no traversal</text>
+
+  <line x1="940" y1="744" x2="940" y2="824" stroke="#33332f"/>
+
+  <text x="956" y="756" fill="#8f8d84" font-size="11" font-weight="700" letter-spacing="1.5">jobs — NOT persisted</text>
+  <text x="956" y="776" fill="#e8e6df" font-size="9.5">in-memory Map: {id, kind, status,</text>
+  <text x="956" y="792" fill="#e8e6df" font-size="9.5">  progress{stage,done,total}, result, error}</text>
+  <text x="956" y="812" fill="#8f8d84" font-size="9.5">returned by campaigns, photoshoots,</text>
+  <text x="956" y="826" fill="#8f8d84" font-size="9.5">animate, site-video — polled via /api/jobs/:id</text>
+
+  <!-- footnote -->
+  <text x="40" y="866" fill="#8f8d84" font-size="9.5">QlooBundle = {entity, tags[], affinities[{type, entities[{name, affinity, popularity}]}], calls[{endpoint, params, at, tookMs, n, mode, error?}], mode: live | partial | error | off}</text>
+</svg>

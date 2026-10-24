@@ -13,14 +13,15 @@
   --ink-2: #333333;
   --ink-3: #777777;
   --ink-4: #888888;
-  --lime: #ff4d00;
-  --lime-2: #e64600;
+  --lime: #e04500;
+  --lime-2: #c23d00;
+  --lime-text: #b53a00;
   --lime-ink: #ffffff;
   --violet: #111111;
   --violet-2: #333333;
-  --rose: #ff9e80;
-  --sky: #90caf9;
-  --amber: #ffd54f;
+  --rose: #c2410c;
+  --sky: #1d4ed8;
+  --amber: #b45309;
   --radius: 0px;
   --radius-sm: 0px;
   --radius-pill: 2px;
@@ -43,13 +44,13 @@ body {
 img { max-width: 100%; display: block; }
 button { font-family: inherit; cursor: pointer; }
 input, textarea, select { font-family: inherit; }
-a { color: var(--lime); text-decoration: none; }
+a { color: var(--lime-text); text-decoration: none; }
 ::placeholder { color: var(--ink-4); }
 /* thin styled scrollbars — hidden chrome strands content offscreen */
-* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.14) transparent; }
+* { scrollbar-width: thin; scrollbar-color: rgba(0,0,0,.22) transparent; }
 *::-webkit-scrollbar { width: 8px; height: 8px; }
-*::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius:0; }
-*::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.2); }
+*::-webkit-scrollbar-thumb { background: rgba(0,0,0,.18); border-radius:0; }
+*::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.32); }
 *::-webkit-scrollbar-track { background: transparent; }
 *::-webkit-scrollbar-corner { background: transparent; }
 
@@ -84,6 +85,15 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 .topnav-logo {
   font-family: var(--font-display, inherit); font-size: 17px; font-weight: 700;
   letter-spacing: .02em; color: var(--ink); text-decoration: none;
+}
+.topnav-brand {
+  display: inline-flex; align-items: center; gap: 9px;
+  color: var(--ink); text-decoration: none;
+}
+.topnav-brand-name { font-weight: 700; letter-spacing: .02em; font-size: 15px; }
+.topnav-brand-tag {
+  font-size: 8.5px; font-weight: 800; letter-spacing: .18em; color: var(--ink-4);
+  border: 1px solid var(--line); padding: 2px 5px; border-radius: 3px;
 }
 .topnav-links {
   display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none;
@@ -266,7 +276,7 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
   position: absolute; left: 8px; bottom: 8px;
   display: inline-flex; align-items: center; gap: 5px;
   font-size: 10px; font-weight: 600; letter-spacing: .03em; text-transform: capitalize;
-  color: var(--ink-2); background: rgba(0, 0, 0, .42);
+  color: rgba(255, 255, 255, .92); background: rgba(0, 0, 0, .42);
   padding: 3px 9px; border-radius:0; backdrop-filter: blur(3px);
   max-width: calc(100% - 16px); white-space: nowrap;
 }
@@ -278,6 +288,8 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
   display: flex; flex-direction: column; background: var(--bg-raise); height: 100%;
 }
 .agent-head { padding: 14px 18px; border-bottom: 1px solid var(--line-soft); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.agent-collapse { background: none; border: none; color: var(--ink-3); cursor: pointer; padding: 4px; display: none; }
+@media (max-width: 900px) { .agent-collapse { display: inline-flex; } }
 .agent-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .msg { max-width: 88%; padding: 11px 14px; border-radius:0; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .msg.user { align-self: flex-end; background: var(--card-3); border-bottom-right-radius: 4px; }
@@ -528,6 +540,9 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
   /* profile split: the 380px agent rail used to squeeze .left off-screen — stack it below */
   .split { flex-direction: column; }
   .agent-pane { width: 100%; flex: 0 0 auto; height: 46%; border-left: none; border-top: 1px solid var(--line-soft); }
+  /* collapsible on small screens — 46% of the viewport is too much chrome */
+  .agent-pane--collapsed { height: auto; max-height: 58px; overflow: hidden; }
+  .agent-pane--collapsed .agent-body, .agent-pane--collapsed .agent-input { display: none; }
   /* field rows: 190px label column leaves ~50px for values — stack label over value */
   .field { flex-wrap: wrap; }
   .field .f-label { flex: 0 0 100%; width: auto; padding-top: 0; }

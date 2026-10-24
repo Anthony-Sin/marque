@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../App.jsx';
-import Icon, { Logo } from '../components/Icon.jsx';
+import Icon from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
 import { isRaster, MediaFallback } from '../components/Composer.jsx';
 import { chanLabel } from '../labels.js';
@@ -62,7 +62,9 @@ export default function Dashboard() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { load(); }, []);
 
-  const boards = (dash?.boards?.length ? dash.boards : ctxBoards) || [];
+  // ctx is a *loading* stand-in only — once the dashboard payload lands it's
+  // authoritative, so a deleted board can't flash back in from cached ctx
+  const boards = (dash ? dash.boards : ctxBoards) || [];
   const campaigns = dash?.campaigns || [];
 
   // plan cards list strategy titles — summaries don't carry them, so lazy-pull
@@ -84,13 +86,13 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boards, board?.id]);
 
-  // recent-work strip: /api/dashboard campaigns carry no images — pull full
+  // campaign thumbs: /api/dashboard campaigns carry no images — pull full
   // campaigns and grab the first creative thumbnail + best grade per campaign.
+  // Grouped by boardId so each plan card shows the work it produced.
   useEffect(() => {
     if (dash === undefined) return;
     const recent = [...campaigns]
-      .sort((a, b) => +new Date(b.createdAt || 0) - +new Date(a.createdAt || 0))
-      .slice(0, 4);
+      .sort((a, b) => +new Date(b.createdAt || 0) - +new Date(a.createdAt || 0));
     if (!recent.length) { setWork([]); return; }
     let dead = false;
     (async () => {
@@ -100,18 +102,20 @@ export default function Dashboard() {
         setWork(recent.map((c) => {
           const f = full.find((x) => x.id === c.id) || {};
           const crs = f.creatives || [];
-          const shot = crs.find((cr) => isRaster(creativeImg(cr)));
+          const shots = crs.filter((cr) => isRaster(creativeImg(cr))).map(creativeImg);
           return {
             ...c,
+            boardId: c.boardId || f.boardId || null,
             title: c.title || f.brief?.title || 'Untitled campaign',
             strategyTitle: c.strategyTitle || f.strategyTitle || '',
             channel: (f.brief?.channels || [])[0] || '',
-            img: shot ? creativeImg(shot) : '',
+            img: shots[0] || '',
+            thumbs: shots.slice(0, 4),
             grade: Math.max(0, ...crs.map((cr) => +cr.grade || 0)),
           };
         }));
       } catch {
-        if (!dead) setWork(recent.map((c) => ({ ...c, img: '', channel: '', grade: 0 })));
+        if (!dead) setWork(recent.map((c) => ({ ...c, img: '', thumbs: [], channel: '', grade: 0 })));
       }
     })();
     return () => { dead = true; };
@@ -175,16 +179,10 @@ export default function Dashboard() {
 
   return (
     <div className="section dash-wrap">
-      {/* ---------- header — the mark + name live here, not in a bar ---------- */}
+      {/* ---------- header — mark + name live in the top bar ---------- */}
       <header className="dash-head">
-        <div className="dash-brand">
-          <Logo size={30} />
-          <span className="dash-brand-name">Marque</span>
-          <span className="dash-brand-tag">STUDIO</span>
-        </div>
         <h1 className="display dash-title">Dashboard</h1>
         <p className="dash-greet">What are we making today?</p>
-
       </header>
 
       {!boards.length ? (
@@ -209,11 +207,12 @@ export default function Dashboard() {
               const active = board?.id && b.id === board.id;
               const titles = stratTitles(b);
               const extra = (b.strategyCount ?? 0) - titles.length;
+              const planWork = work.filter((c) => c.boardId === b.id);
               return (
                 <div key={b.id || b.title} className={`card dash-plan${active ? ' on' : ''}`}
                   role="button" tabIndex={0}
                   onClick={() => open(b)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') open(b); }}>
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(b); } }}>
                   <div className="dash-plan-top">
                     {renaming === b.id ? (
                       <input
@@ -265,6 +264,27 @@ export default function Dashboard() {
                       ))}
                     </div>
                   )}
+                  {!!planWork.length && (
+                    <div className="dash-plan-work" onClick={(e) => e.stopPropagation()}>
+                      {planWork
+                        .flatMap((c) => (c.thumbs?.length ? c.thumbs : [c.img]).filter(Boolean)
+                          .map((src) => ({ src, c })))
+                        .slice(0, 5)
+                        .map(({ src, c }, i) => (
+                          <Link key={`${c.id}:${i}`} to={`/campaigns?open=${c.id}`} className="dash-pw" title={c.title}>
+                            {!badImg[`${c.id}:${i}`] ? (
+                              <img src={src} alt="" loading="lazy"
+                                onError={() => setBadImg((m) => ({ ...m, [`${c.id}:${i}`]: true }))} />
+                            ) : (
+                              <MediaFallback className="dash-pw-fb" seed={c.title} channel={c.channel} />
+                            )}
+                          </Link>
+                        ))}
+                      <span className="dash-pw-n-static" title={`${planWork.length} campaign${planWork.length === 1 ? '' : 's'} from this plan`}>
+                        {planWork.length} campaign{planWork.length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+                  )}
                   <div className="dash-plan-foot">
                     {!!b.topReach && (
                       <span className="dash-reach" title="estimated reach">
@@ -281,12 +301,12 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* ---------- recent work — media-first ---------- */}
-          {!!work.length && (
+          {/* ---------- other work — campaigns not tied to a shown plan ---------- */}
+          {!!work.filter((c) => !boards.some((b) => b.id === c.boardId)).length && (
             <>
-              <div className="section-label">Recent work</div>
+              <div className="section-label">Other work</div>
               <div className="dash-work">
-                {work.map((c) => {
+                {work.filter((c) => !boards.some((b) => b.id === c.boardId)).map((c) => {
                   const showImg = c.img && !badImg[c.id];
                   return (
                     <Link key={c.id} to={`/campaigns?open=${c.id}`} className="card dash-work-card">

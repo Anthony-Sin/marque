@@ -7,23 +7,52 @@ const JSON_SYS = 'You respond with raw JSON only. No markdown, no code fences, n
 
 export function tensorConfigured() { return !!(ENV.tensorBase && ENV.tensorKey); }
 
+// key pool — TENSOR_API_KEY first, then the GEMINI_API_KEYS pool. When the
+// endpoint is Google's OpenAI-compat shim every key works on it; a 429 free-
+// tier burn on one key rolls the request onto the next instead of failing.
+let tKeyIdx = 0;
+function keyPool() {
+  const seen = new Set();
+  return [ENV.tensorKey, ...(ENV.geminiKeys || [])].filter((k) => k && !seen.has(k) && seen.add(k));
+}
+
+async function postCompletions(payload, timeoutMs) {
+  const keys = keyPool();
+  let lastErr = null;
+  for (let i = 0; i < Math.max(1, keys.length); i++) {
+    const key = keys[(tKeyIdx + i) % keys.length];
+    try {
+      const res = await fetch(`${ENV.tensorBase}/chat/completions`, {
+        signal: AbortSignal.timeout(timeoutMs),
+        method: 'POST',
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
+        body: JSON.stringify(payload),
+      });
+      if (res.status === 429 || res.status === 403) {
+        lastErr = new Error(`tensor ${res.status}: quota/auth on key #${(tKeyIdx + i) % keys.length + 1}`);
+        continue; // next key
+      }
+      tKeyIdx = (tKeyIdx + i) % Math.max(1, keys.length);
+      return res;
+    } catch (e) {
+      lastErr = e; // timeout/network — still worth trying the next key
+    }
+  }
+  throw lastErr || new Error('tensor: no API keys configured');
+}
+
 // streaming variant — OpenAI-compatible SSE; onToken(delta) per chunk,
 // resolves with the full concatenated text (same post-processing as chat()).
 export async function chatStream(messages, opts = {}) {
   if (!tensorConfigured()) throw new Error('tensor not configured');
-  const res = await fetch(`${ENV.tensorBase}/chat/completions`, {
-    signal: AbortSignal.timeout(opts.timeoutMs ?? 120000),
-    method: 'POST',
-    headers: { 'content-type': 'application/json', authorization: `Bearer ${ENV.tensorKey}` },
-    body: JSON.stringify({
+  const res = await postCompletions({
       model: ENV.tensorModel,
       messages,
       temperature: opts.temperature ?? 0.7,
       max_tokens: opts.maxTokens ?? 3000,
       stream: true,
       ...(opts.extra || {}),
-    }),
-  });
+    }, opts.timeoutMs ?? 120000);
   if (!res.ok || !res.body) {
     let data = null;
     try { data = await res.json(); } catch { /* fallthrough */ }
@@ -61,18 +90,13 @@ export async function chatStream(messages, opts = {}) {
 
 export async function chat(messages, opts = {}) {
   if (!tensorConfigured()) throw new Error('tensor not configured');
-  const res = await fetch(`${ENV.tensorBase}/chat/completions`, {
-    signal: AbortSignal.timeout(opts.timeoutMs ?? 90000),
-    method: 'POST',
-    headers: { 'content-type': 'application/json', authorization: `Bearer ${ENV.tensorKey}` },
-    body: JSON.stringify({
+  const res = await postCompletions({
       model: ENV.tensorModel,
       messages,
       temperature: opts.temperature ?? 0.7,
       max_tokens: opts.maxTokens ?? 3000,
       ...(opts.extra || {}),
-    }),
-  });
+    }, opts.timeoutMs ?? 90000);
   let data = null;
   try { data = await res.json(); } catch { /* fallthrough */ }
   if (!res.ok) throw new Error(`tensor ${res.status}: ${JSON.stringify(data)?.slice(0, 300) || res.statusText}`);

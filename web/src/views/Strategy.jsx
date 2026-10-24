@@ -126,6 +126,7 @@ const GHOST_PICKS = [
   ['drafting lead channel play…', 'fitting formats to the audience…', 'scoring reach…'],
   ['testing a culture-collab angle…', 'matching taste entities…', 'scoring reach…'],
   ['trying counter-positioning…', 'weighing press vs social…', 'scoring reach…'],
+  ['drafting a fourth play…', 'reading channel fit…', 'scoring reach…'],
 ];
 
 function GhostWriter({ phrases, delay = 0, big = false }) {
@@ -189,7 +190,7 @@ function AudSkeleton() {
 function PicksSkeleton() {
   return (
     <div className="stg-pick-grid">
-      {[0, 1, 2].map((i) => (
+      {[0, 1, 2, 3].map((i) => (
         <div className="stg-pick stg-pick-skel" key={i} style={{ '--i': i }}>
           <span className="stg-pick-top">
             {skelBar('92px', '9px')}
@@ -319,7 +320,7 @@ const exKey = (e) => e.url || e.embed || `${e.platform || 'web'}:${e.title || ''
 // in a fold under the card — youtube iframe, tiktok poster, image, audio, or a
 // sandboxed page peek. Nothing ever links out of the app (no target=_blank).
 function WildCard({ e, i, sel, onToggle }) {
-  const [open, setOpen] = useState(true);   // the media fold is always visible — collapse is opt-out
+  const [open, setOpen] = useState(false);   // media fold opens on demand — open-by-default doubled every card and spammed iframe loads
   const [imgDead, setImgDead] = useState(false);   // upstream image flaked → hide thumb
   const img = imgDead ? '' : (e.image || e.thumb || '');
   const vid = ytIdOf(e.embed || e.embedUrl || e.url) || e.videoId || '';
@@ -409,11 +410,9 @@ function WildCard({ e, i, sel, onToggle }) {
             <span className="stg-wx-poster-cap"><Icon name="image" size={12} /> image unavailable upstream — the reference card still carries the source link context</span>
           ))}
           {kind === 'page' && (
-            <span className="stg-wx-embed page">
-              <iframe src={e.url} title={e.title || 'source page'} loading="lazy"
-                sandbox="allow-scripts allow-same-origin" referrerPolicy="strict-origin-when-cross-origin" />
-              <span className="stg-wx-poster-cap"><Icon name="globe" size={12} />{host(e.url)} — live page in a sandbox</span>
-            </span>
+            <a className="stg-wx-poster-cap stg-wx-outlink" href={e.url} target="_blank" rel="noreferrer">
+              <Icon name="globe" size={12} />{host(e.url)} — opens in a new tab (sites block embedding)
+            </a>
           )}
         </span>
       )}
@@ -433,6 +432,8 @@ export default function Strategy() {
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [siteUrl, setSiteUrl] = useState('');
   const [busy, setBusy] = useState(false);
+  const [stok, setStok] = useState('');    // live model tokens (raw JSON writing)
+  const [sthink, setSthink] = useState(''); // live reasoning tokens
   const [editingPrompt, setEditingPrompt] = useState(false); // chipbar inline edit
   const [editPrompt, setEditPrompt] = useState('');
   const [resL, setResL] = useState(undefined); // local override; undefined → follow ctx board
@@ -479,7 +480,9 @@ export default function Strategy() {
     try {
       const sj = sessionStorage.getItem('marque.strategySub');
       const restored = res.sub || (sj ? JSON.parse(sj) : null); // server-persisted sub is authoritative
-      if (restored) setSub((s) => s || restored);
+      // always adopt the current board's sub — a stale pill from the previous
+      // board is worse than none
+      if (restored) setSub(restored); else setSub(null);
     } catch { /* storage unavailable — board still renders */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [res]);
@@ -509,7 +512,7 @@ export default function Strategy() {
     const url = siteUrl.trim() || findUrl(raw);
     if ((!p && !url) || busy) return;
     if (text) setPrompt(p);
-    setBusy(true); setErr(''); setNotes(''); setEx({});
+    setBusy(true); setErr(''); setNotes(''); setEx({}); setStok(''); setSthink('');
     // stream the build — each stage lands and its section starts typing in
     // while the next is still generating. Falls back to the one-shot call.
     try {
@@ -521,9 +524,11 @@ export default function Strategy() {
         const stream = api.strategyStream(p, undefined, url || undefined, (ev, data) => {
           if (ev === 'stage' && data?.urlContext) setRes((r) => ({ ...(r || {}), urlContext: data.urlContext }));
           if (ev === 'audience') setRes((r) => ({ ...(r || {}), audienceRead: data.audienceRead, evidence: data.evidence, sub: s }));
-          if (ev === 'strategies') setRes((r) => ({ ...(r || {}), strategies: data.strategies }));
+          if (ev === 'strategies') { setRes((r) => ({ ...(r || {}), strategies: data.strategies })); setStok(''); }
           if (ev === 'anti') setRes((r) => ({ ...(r || {}), antiStrategies: data.antiStrategies }));
-          if (ev === 'done' && data?.board) setRes(data.board);
+          if (ev === 'tok' && data?.d) setStok((t) => (t + data.d).slice(-4000));
+          if (ev === 'think' && data?.d) setSthink((t) => (t + data.d).slice(-2400));
+          if (ev === 'done' && data?.board) { setRes(data.board); setStok(''); setSthink(''); }
         });
         gotBoard = await Promise.race([
           stream,
@@ -534,6 +539,12 @@ export default function Strategy() {
         const out = await api.strategy(p, undefined, url || undefined);   // SSE unsupported → one-shot
         gotBoard = out;
         setRes(out);
+      }
+      // the stream can end quietly (server restart, provider hiccup) — a null
+      // board must not render as "finished but empty"; say what happened
+      if (!gotBoard?.strategies?.length && !res?.strategies?.length) {
+        setRes(null);
+        throw new Error('the run ended without strategies — likely a provider hiccup. Retry?');
       }
       try { sessionStorage.setItem('marque.strategySub', JSON.stringify(s)); } catch { /* storage unavailable */ }
       // a new board now exists — refresh the plans switcher
@@ -622,7 +633,8 @@ export default function Strategy() {
   // page must fetch the full strategy; nothing below may read brief/watchouts/etc
   // off it until boardStrategy() resolves.
   const cur = sel !== null && sel >= 0 && sel < strats.length ? strats[sel] : null;
-  const detKey = res?.id && sel !== null ? `${res.id}:${sel}` : null;
+  // out-of-range idx → no fetch, no 404 in console; the guard below redirects
+  const detKey = res?.id && cur ? `${res.id}:${sel}` : null;
   const detState = detKey ? det[detKey] : null;
   const full = detState?.status === 'done' ? detState.strategy : null;
   // the detail fetch returns its own audienceRead + evidence — prefer them
@@ -657,7 +669,7 @@ export default function Strategy() {
   const curScope = cur ? wildScope(cur) : '';
   const exState = cur ? ex[curScope] : null;
   const curSel = new Set(selEx[curScope] || []);
-  const wildList = (exState?.data?.examples || []).slice(0, 8);
+  const wildList = (exState?.data?.examples || []).slice(0, 16);
   const selExamples = wildList.filter((e) => curSel.has(exKey(e)));
   const toggleWild = (e) => {
     if (!curScope) return;
@@ -726,10 +738,13 @@ export default function Strategy() {
   const pullAnim = useRef(null);
   const [pullPhase, setPullPhase] = useState(0);
   useEffect(() => {
-    const s = detState?.status === 'done' ? detState.strategy : cur;
+    // hold the pull until the detail fetch lands — the full strategy carries
+    // channel types/brief context the slim card lacks, and it resolves hunts better
+    if (detState?.status !== 'done' && detState?.status !== 'error') return;
+    const s = detState.strategy || cur;   // error → pull on the slim card rather than never
     if (s && !ex[wildScope(s)]) loadExamples(s, '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detState?.status, cur?.id]);
+  }, [detState?.status]);
   useEffect(() => {
     if (exState?.status === 'loading') {
       pullAnim.current = setInterval(() => setPullPhase((p) => p + 1), 900);
@@ -748,7 +763,7 @@ export default function Strategy() {
     const habit = (detRead.mediaHabits || []).find((m) => m.channel === c.name)?.note;
     if (habit) out.push({ text: habit });
     const pushEnt = (r) => {
-      if (!r || seen.has(r.name.toLowerCase()) || out.length >= 6) return;
+      if (!r || seen.has(r.name.toLowerCase()) || out.length >= 12) return;
       seen.add(r.name.toLowerCase());
       out.push({ ent: r });
     };
@@ -760,9 +775,15 @@ export default function Strategy() {
       else if (m) pushEnt({ name, type: '', affinity: +m[2] });
       else if (!seen.has(bit.toLowerCase())) { seen.add(bit.toLowerCase()); out.push({ text: bit }); }
     }
-    // driver type for this channel (mediaHabits carries the urn) → its entities
+    // every entity type driving this channel → all its real affinity rows
+    // (server tags the channel with its feeding types; mediaHabits is the fallback)
+    const types = new Set((c.types || []).map(qtype));
     const drvType = qtype((detEv.drivers || []).find((d) => d.channel === c.name)?.type);
-    if (drvType) for (const r of entRows) if (r.type === drvType) pushEnt(r);
+    if (drvType) types.add(drvType);
+    for (const t of types) for (const r of entRows) if (r.type === t) pushEnt(r);
+    // a channel with no typed driver still cites the graph — top affinities
+    // across types beat a bare "matches the read" line with zero entities
+    if (!out.some((o) => o.ent)) for (const r of entRows.slice(0, 4)) pushEnt(r);
     return out.length ? out : [{ text: `matches the ${detRead.lean?.label || 'audience'} read` }];
   };
 
@@ -800,10 +821,10 @@ export default function Strategy() {
     }
     for (const ch of ALL_CHANNELS) {
       const fits = fitsBy[ch];
-      if (!fits) out.push({ title: ch, channel: ch, why: 'no supporting signal in the audience taste data' });
-      else if (Math.max(...fits) < 0.35) {
-        out.push({ title: ch, channel: ch, why: `weak fit in every concept (best ${pct(Math.max(...fits))}%) — spend would be speculative` });
-      }
+      // never "rule out" a channel a strategy actually runs on — that's the
+      // contradiction this section exists to explain
+      if (fits) continue;
+      out.push({ title: ch, channel: ch, why: 'no supporting signal in the audience taste data' });
     }
     return out.slice(0, 7);
   }, [res, strats, lean.label, busy]);
@@ -948,8 +969,21 @@ export default function Strategy() {
               <span className="stg-stage-dot" />
               {res?.antiStrategies ? 'scoring what we ruled out…'
                 : res?.strategies ? 'ranking ruled-out tactics…'
-                : res?.audienceRead ? 'model is drafting strategies…'
+                : res?.audienceRead ? (sthink ? 'model is reasoning…' : 'model is drafting strategies…')
                 : 'pulling Qloo taste data + reading the site…'}
+            </div>
+          )}
+
+          {/* the model's own tokens, typing live while the board builds —
+              reasoning first (dimmed), then the strategy JSON it writes */}
+          {busy && (sthink || stok) && (
+            <div className="stg-stream" aria-hidden="true">
+              {!!sthink && !stok && (
+                <span className="stg-stream-think">{sthink.slice(-340)}<i className="stg-caret" /></span>
+              )}
+              {!!stok && (
+                <span className="stg-stream-tok">{stok.slice(-420)}<i className="stg-caret" /></span>
+              )}
             </div>
           )}
 
@@ -1104,11 +1138,43 @@ export default function Strategy() {
                       <span className="stg-src-item"><Icon name="film" size={11} />reference pulls on demand</span>
                     </div>
                   </div>
+
+                  {/* ---- what the site scrape actually gave the board ---- */}
+                  {!!res?.urlContext && !res.urlContext.scrapeFailed &&
+                    (res.urlContext.colors?.length || res.urlContext.fonts?.length || res.urlContext.title) && (
+                    <div className="stg-fill stg-site" style={{ '--fo': '720ms' }}>
+                      <span className="stg-ml">Read from {host(res.urlContext.url)}</span>
+                      <div className="stg-site-row">
+                        {!!res.urlContext.image && (
+                          <img className="stg-site-img" src={res.urlContext.image} alt=""
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                        )}
+                        <div className="stg-site-info">
+                          {!!res.urlContext.title && <b className="stg-site-title">{res.urlContext.title}</b>}
+                          {!!res.urlContext.description && (
+                            <span className="stg-site-desc">{String(res.urlContext.description).slice(0, 140)}</span>
+                          )}
+                          <span className="stg-site-meta">
+                            {!!res.urlContext.colors?.length && (
+                              <span className="stg-site-colors" title="Brand colors scraped from the site">
+                                {res.urlContext.colors.slice(0, 5).map((c) => (
+                                  <i key={c.hex || c} style={{ background: c.hex || c }} title={c.hex || c} />
+                                ))}
+                              </span>
+                            )}
+                            {!!res.urlContext.fonts?.length && (
+                              <span className="stg-site-fonts">{res.urlContext.fonts.slice(0, 3).join(' · ')}</span>
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </section>
                 )}
 
                 {/* ---- strategy cards — the board's main area ---- */}
-                <section className="card stg-tile stg-picks" style={{ '--i': 1 }}>
+                <section className={`card stg-tile stg-picks${!strats.length && !busy ? ' stg-picks--empty' : ''}`} style={{ '--i': 1 }}>
                   <div className="stg-tile-head">
                     <span className="stg-ml">Strategies{strats.length ? ` · ${strats.length}` : ''}</span>
                     <span className="stg-empty-note">{busy ? 'model is drafting picks…' : 'pick a card for the full breakdown'}</span>
@@ -1138,7 +1204,7 @@ export default function Strategy() {
                           )}
                           <span className="stg-pick-why stg-fill" style={{ '--fo': '170ms' }}>
                             <span className="stg-pick-why-lbl">Qloo pull</span>
-                            {pull.length ? pull.join(' · ') : '—'}
+                            {pull.length ? pull.join(' · ') : 'broad affinities'}
                             {' → '}
                             {lean.label || 'audience'}
                             {' · runs on '}
@@ -1339,6 +1405,39 @@ export default function Strategy() {
                   </div>
                 </div>
 
+                {/* ---- what the site scrape gave THIS strategy too — the detail
+                      fetch carries urlContext now; same block as the board ---- */}
+                {!!detState?.urlContext && !detState.urlContext.scrapeFailed &&
+                  (detState.urlContext.colors?.length || detState.urlContext.fonts?.length || detState.urlContext.title) && (
+                  <div className="stg-site">
+                    <span className="stg-ml">Read from {host(detState.urlContext.url)}</span>
+                    <div className="stg-site-row">
+                      {!!detState.urlContext.image && (
+                        <img className="stg-site-img" src={detState.urlContext.image} alt=""
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                      )}
+                      <div className="stg-site-info">
+                        {!!detState.urlContext.title && <b className="stg-site-title">{detState.urlContext.title}</b>}
+                        {!!detState.urlContext.description && (
+                          <span className="stg-site-desc">{String(detState.urlContext.description).slice(0, 140)}</span>
+                        )}
+                        <span className="stg-site-meta">
+                          {!!detState.urlContext.colors?.length && (
+                            <span className="stg-site-colors" title="Brand colors scraped from the site">
+                              {detState.urlContext.colors.slice(0, 5).map((c) => (
+                                <i key={c.hex || c} style={{ background: c.hex || c }} title={c.hex || c} />
+                              ))}
+                            </span>
+                          )}
+                          {!!detState.urlContext.fonts?.length && (
+                            <span className="stg-site-fonts">{detState.urlContext.fonts.slice(0, 3).join(' · ')}</span>
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* ---- Qloo read — the actual taste-graph evidence under this
                       strategy. Entity rows grouped by type, affinities visible,
                       provenance in plain sight — no accordions. ---- */}
@@ -1394,23 +1493,6 @@ export default function Strategy() {
                     )}
                   </div>
                 )}
-
-                {/* ---- notes → handoff ---- */}
-                <div className="stg-handoff">
-                  <textarea
-                    className="stg-notes"
-                    rows={3}
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Add notes for the campaign — tone, must-haves, things to avoid…"
-                  />
-                  <div className="stg-strat-foot">
-                    <span className="hint">Hands its brief to the Campaigns composer</span>
-                    <button className="btn lime" onClick={() => useStrategy(full)}>
-                      Use this strategy <Icon name="send" size={15} />
-                    </button>
-                  </div>
-                </div>
 
                 {/* ---- in the wild: manual, steerable pull of real examples;
                         click cards to select references that ride into the
@@ -1510,6 +1592,24 @@ export default function Strategy() {
                       <div className="stg-empty-note">No examples surfaced for this strategy — try re-pulling{exState.hint ? ' with a different steer' : ''}.</div>
                     )
                   )}
+                </div>
+
+                {/* ---- final step: notes → handoff (references picked above
+                        ride into the campaign) ---- */}
+                <div className="stg-handoff">
+                  <textarea
+                    className="stg-notes"
+                    rows={3}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Add notes for the campaign — tone, must-haves, things to avoid…"
+                  />
+                  <div className="stg-strat-foot">
+                    <span className="hint">Hands its brief to the Campaigns composer{selExamples.length ? ` · ${selExamples.length} reference${selExamples.length === 1 ? '' : 's'} selected` : ''}</span>
+                    <button className="btn lime" onClick={() => useStrategy(full)}>
+                      Use this strategy <Icon name="send" size={15} />
+                    </button>
+                  </div>
                 </div>
               </section>
               )}

@@ -21,6 +21,15 @@ const colorList = (p) => {
   return Object.entries(c).filter(([, v]) => typeof v === 'string' && v.startsWith('#')).map(([label, hex]) => ({ label, hex }));
 };
 
+// luminance check — light swatches need dark labels or the hex reads white-on-white
+const lightHex = (hex) => {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  const lum = 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+  return lum > 150;
+};
+
 export default function BrandBook() {
   const { profile, setProfile, say, status } = useApp();
   const nav = useNavigate();
@@ -135,7 +144,12 @@ export default function BrandBook() {
     setTimeout(() => URL.revokeObjectURL(u), 60_000);
   };
 
-  const qlooMode = status?.qloo === 'live' ? 'live' : 'off';
+  // the badge claims the signature IN THE BOOK is live — that's the bundle's
+  // own mode, not the service's global liveness (they disagreed on screen)
+  const qlooMode = profile?.qloo?.mode === 'live' ? 'live'
+    : profile?.qloo?.mode === 'partial' ? 'partial'
+    : profile?.qloo?.mode === 'error' ? 'error'
+    : status?.qloo === 'live' ? 'live' : 'off';
 
   // ---------- loading ----------
   if (book === undefined) {
@@ -309,7 +323,7 @@ export default function BrandBook() {
               <div className="pg-label">Palette</div>
               <div className="palette-strip">
                 {colorList(profile).map(({ label, hex }) => (
-                  <span key={label + hex} className="sw" style={{ background: hex }}>
+                  <span key={label + hex} className={`sw${lightHex(hex) ? ' sw-light' : ''}`} style={{ background: hex }}>
                     <span>{label}<br />{hex}</span>
                   </span>
                 ))}
@@ -345,8 +359,12 @@ export default function BrandBook() {
             </div>
           )}
           {cur.id === 'taste' && (
-            <div className="page-in" style={{ padding: 0 }}>
-              <TastePanel bundle={profile?.qloo} />
+            <div className="page-in" style={profile?.qloo ? { padding: 0 } : undefined}>
+              {profile?.qloo ? <TastePanel bundle={profile.qloo} /> : (
+                <div className="page-in"><div className="pg-label">Taste signature</div>
+                  <p className="muted small">No taste data on this profile yet — enrich your Business Profile and republish the book.</p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -392,7 +410,7 @@ function bookHtml(profile, book) {
 <style>body{margin:0;background:#161616;color:#f2f2f0;font-family:Georgia,serif}section{padding:60px 8%;border-bottom:1px solid #333}h1{font-style:italic;font-size:52px;margin:0}h2{font-style:italic}.muted{color:#9a9a94}.cover{min-height:70vh;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(180deg,transparent, rgba(0,0,0,.75)),url('${img(book?.coverImage)}') center/cover}.sw{display:inline-block;width:90px;height:90px;border-radius:14px;margin-right:12px;vertical-align:bottom;font-size:11px;padding:8px;color:#fff;text-shadow:0 1px 3px #000;box-sizing:border-box}.tag{display:inline-block;background:#2e2e2e;border-radius:999px;padding:6px 14px;margin:4px 6px 0 0;font-size:14px}img.t{width:150px;height:150px;object-fit:cover;border-radius:12px;margin:0 8px 8px 0}</style></head><body>
 <section class="cover"><div><div class="muted">BRAND BOOK</div><h1>${esc(p.name)}</h1><p>${esc(p.tagline)}</p></div></section>
 <section><h2>Our story</h2><p style="max-width:560px">${esc(p.description)}</p><p class="muted">${esc(p.audience)}</p>${(p.values || []).map((v) => `<span class="tag">${esc(v)}</span>`).join('')}</section>
-<section><h2>Palette</h2>${colorList(p).map(({ label, hex }) => `<span class="sw" style="background:${esc(hex)}">${esc(label)} · ${esc(hex)}</span>`).join('')}${book?.paletteNote ? `<p class="muted">${esc(book.paletteNote)}</p>` : ''}</section>
+<section><h2>Palette</h2>${colorList(p).map(({ label, hex }) => `<span class="sw" style="background:${esc(hex)};${lightHex(hex) ? 'color:#1a1a1a;text-shadow:0 1px 2px rgba(255,255,255,.4)' : ''}">${esc(label)} · ${esc(hex)}</span>`).join('')}${book?.paletteNote ? `<p class="muted">${esc(book.paletteNote)}</p>` : ''}</section>
 <section><h2>Typography</h2><p class="muted">Heading · ${esc(p.fonts?.heading)}</p><h1 style="font-size:34px">The quick brown fox</h1><p class="muted">Body · ${esc(p.fonts?.body)}</p><p style="font-family:system-ui">The quick brown fox jumps over the lazy dog.</p></section>
 <section><h2>Imagery</h2>${imgs.map((s) => `<img class="t" src="${s}">`).join('')}</section>
 </body></html>`;

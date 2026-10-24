@@ -101,7 +101,7 @@
 /* hover → a single bottom action bar over the image; even split, one line,
    never wraps or overlaps (labels drop to icon-only on very narrow cards) */
 .creative-card .veil {
-  position: absolute; left: 0; right: 0; bottom: 0;
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
   padding: 34px 7px 7px;
   background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .68));
   opacity: 0; transform: translateY(8px);
@@ -116,7 +116,7 @@
   flex: 1 1 0; min-width: 0;
   display: inline-flex; align-items: center; justify-content: center; gap: 4px;
   padding: 7px 4px; border-radius:0;
-  background: rgba(20, 20, 20, .82); border: 1px solid var(--line); color: var(--ink);
+  background: rgba(20, 20, 20, .82); border: 1px solid rgba(255, 255, 255, .25); color: rgba(255, 255, 255, .95);
   font-size: 10.5px; font-weight: 600; white-space: nowrap; overflow: hidden;
   backdrop-filter: blur(6px);
 }
@@ -125,14 +125,17 @@
 .veil-btn:hover { background: var(--lime); color: var(--lime-ink); border-color: var(--lime); }
 .veil-btn:disabled { opacity: .5; }
 .veil-btn.failed { color: var(--amber, #d4a017); border-color: var(--amber, #d4a017); }
-@container (max-width: 330px) {
+/* below ~290px the five labels can only truncate to a char or two — icon-only
+   is cleaner; labels return once the card is wide enough to read them */
+@container (max-width: 290px) {
   .veil-btn > span:last-child { display: none; }
   .veil-btn { padding: 7px 2px; }
   /* armed delete at icon-only width must still scream "tap again to delete" */
   .veil-btn.failed { background: var(--amber, #d4a017); color: #1a1408; border-color: var(--amber, #d4a017); }
 }
 .creative-card .badge-v {
-  position: absolute; top: 10px; left: 10px; z-index: 2;
+  /* below the overlay brand lockup (~10cqw tall) so neither covers the other */
+  position: absolute; top: calc(11cqw + 6px); left: 10px; z-index: 2;
   background: rgba(20,20,20,.78); color: var(--lime); font-size: 10.5px; font-weight: 700;
   padding: 3px 9px; border-radius:0; display: inline-flex; gap: 5px; align-items: center;
   border: 1px solid rgba(255,77,0,.35); cursor: pointer;
@@ -483,6 +486,7 @@
   display: flex; align-items: flex-end; padding: 8px; font-size: 10px;
   color: rgba(255,255,255,.9); text-shadow: 0 1px 3px rgba(0,0,0,.55);
 }
+.palette-strip .sw-light { color: rgba(20,20,20,.85); text-shadow: 0 1px 2px rgba(255,255,255,.4); }
 .type-sample .h { font-size: 34px; margin: 6px 0 2px; }
 .type-sample .b { font-size: 16px; color: var(--ink-2); }
 .book-imgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); gap: 10px; }
@@ -522,7 +526,10 @@
 
 /* provider badge — honest label of which engine rendered the image (top-right of media) */
 .badge-p {
-  position: absolute; top: 10px; right: 10px; z-index: 2;
+  /* bottom-right — top-left is badge-v, top-right is the creative's own
+     offer sticker (.co-badge); the veil gradient only covers this on hover */
+  position: absolute; bottom: 10px; right: 10px; z-index: 2;
+  pointer-events: none; /* provenance label only — must not eat veil-button clicks */
   background: rgba(20,20,20,.78); color: var(--ink-3); font-size: 9.5px; font-weight: 700;
   letter-spacing: .03em; padding: 3px 9px; border-radius:0; border: 1px solid var(--line-soft);
 }

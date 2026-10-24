@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Icon from './Icon.jsx';
 import { api } from '../api.js';
-import { arCss, downloadAsset, fileExt, isRaster, MediaFallback } from './Composer.jsx';
+import { arCss, cleanNote, downloadAsset, fileExt, isRaster, MediaFallback } from './Composer.jsx';
 import CreativeOverlay from './CreativeOverlay.jsx';
 import { exportCreativePNG } from './creativeExport.js';
 import { chanLabel } from '../labels.js';
@@ -128,7 +129,8 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
       <div className="cc-media" onClick={(e) => {
         if (e.target.closest('.veil-btn') || e.target.closest('.promote-panel')) return;
         if (COARSE) { setPinned((p) => !p); return; }
-        setZoom(true);   // desktop: click = zoom/inspect
+        // desktop: click the card → open the editor (zoom lives on the veil button)
+        if (onEdit) onEdit(creative); else setZoom(true);
       }}>
         {raster ? (
           <div className="co-host">
@@ -144,7 +146,7 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
         )}
         {video && (
           <button type="button" className="badge-v" onClick={(e) => { e.stopPropagation(); setZoom(true); }}
-            title={creative.videoProvider ? `Watch — animated by ${providerLabel(creative.videoProvider)}${creative.videoNote ? ` · ${creative.videoNote}` : ''}` : 'Watch the animated version'}>
+            title={creative.videoProvider ? `Watch — animated by ${providerLabel(creative.videoProvider)}${creative.videoNote ? ` · ${cleanNote(creative.videoNote)}` : ''}` : 'Watch the animated version'}>
             <Icon name="play" size={10} sw={2.4} /> watch{creative.videoProvider && creative.videoProvider !== 'veo' ? ` · ${providerLabel(creative.videoProvider)}` : ''}
           </button>
         )}
@@ -163,7 +165,7 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
               <Icon name="edit" size={12} /> <span>Edit</span>
             </button>
             {!raster && (
-              <button type="button" className={`veil-btn${creative.imageError ? ' failed' : ''}`} title={creative.imageError ? `Last image failed — ${creative.imageError}. Retry` : 'Retry image generation'} disabled={retrying} onClick={retryImage}>
+              <button type="button" className={`veil-btn${creative.imageError ? ' failed' : ''}`} title={creative.imageError ? `Last image failed — ${cleanNote(creative.imageError)}. Retry` : 'Retry image generation'} disabled={retrying} onClick={retryImage}>
                 <Icon name="refresh" size={12} /> <span>Retry</span>
               </button>
             )}
@@ -252,7 +254,7 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
           </span>
         )}
         {!!creative.imageError && (
-          <span className="cc-err" title={creative.imageError}>
+          <span className="cc-err" title={cleanNote(creative.imageError)}>
             image unavailable{retrying ? ' — retrying…' : ' — hit Retry'}
           </span>
         )}
@@ -267,7 +269,7 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
           ))}
         </span>
       </div>
-      {zoom && (
+      {zoom && createPortal(
         <div className="lightbox" role="dialog" aria-modal="true" aria-label={video ? 'Animated creative' : 'Creative zoom'} onClick={() => setZoom(false)}>
           <button type="button" className="lightbox-x" aria-label="Close" onClick={() => setZoom(false)}><Icon name="x" size={18} /></button>
           {video ? (
@@ -275,16 +277,15 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
               <video src={creative.videoPath} poster={raster ? creative.imagePath : undefined} controls autoPlay loop muted playsInline />
               <div className="lightbox-cap">
                 animated · {providerLabel(creative.videoProvider || 'ffmpeg-render')}
-                {!!creative.videoNote && <span className="lightbox-note"> — {creative.videoNote}</span>}
+                {!!cleanNote(creative.videoNote) && <span className="lightbox-note"> — {cleanNote(creative.videoNote)}</span>}
               </div>
             </div>
           ) : raster ? (
             <img className="lightbox-media" src={creative.imagePath} alt={creative.headline || 'creative'} onClick={(e) => e.stopPropagation()} />
           ) : (
-            <div className="lightbox-cap">No image stored for this creative{creative.imageError ? ` — ${creative.imageError}` : ''}</div>
+            <div className="lightbox-cap">No image stored for this creative{creative.imageError ? ` — ${cleanNote(creative.imageError)}` : ''}</div>
           )}
-        </div>
-      )}
+        </div>, document.body)}
     </div>
   );
 }

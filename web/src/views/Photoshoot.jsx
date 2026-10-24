@@ -4,7 +4,7 @@ import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
 import Wayfind from '../components/Wayfind.jsx';
-import { downloadAsset, fileExt, fmtDate, postJson, useStages } from '../components/Composer.jsx';
+import { cleanNote, downloadAsset, fileExt, fmtDate, postJson, useStages } from '../components/Composer.jsx';
 import './studio.css';
 
 const GEN_STAGES = ['Setting the scene…', 'Composing your shots…', 'Developing the images…', 'Final touch-ups…'];
@@ -272,7 +272,7 @@ export default function Photoshoot() {
         ) : (
           <div className="res-fail">
             <Icon name="x" size={18} />
-            <span>{r.error ? `render failed — ${r.error}` : 'render failed'}</span>
+            <span>{r.error ? `render failed — ${cleanNote(r.error) || 'provider error'}` : 'render failed'}</span>
           </div>
         )}
         {working && <div className="spin-overlay"><div className="spinner" /></div>}
@@ -282,7 +282,7 @@ export default function Photoshoot() {
             <Icon name="play" size={10} sw={2.4} /> {showVid[k] ? 'image' : 'video'}
           </button>
         )}
-        <div className="acts">
+        {r.imagePath && <div className="acts">
           <button className="icon-btn" title="Edit via prompt" onClick={() => { setEditFor(editFor === k ? null : k); setEditPrompt(''); }}>
             <Icon name="edit" size={15} />
           </button>
@@ -308,7 +308,7 @@ export default function Photoshoot() {
               { label: 'Hide', danger: true, onClick: () => setHidden((h) => new Set(h).add(k)) },
             ]} />
           </span>
-        </div>
+        </div>}
         {editFor === k && (
           <div className="edit-row">
             <input
@@ -567,9 +567,9 @@ export default function Photoshoot() {
 
 // Merge a shoot's generated results with prompt edits (stored under edits[])
 // and any locally-tracked resize output. Entries with no imagePath are failed
-// generations — skip them.
+// generations — keep them so the .res-fail tile shows the provider error.
 function allResults(job, extras) {
-  const res = (job?.results || []).filter((r) => r.imagePath);
+  const res = (job?.results || []).filter((r) => r.imagePath || r.error);
   const edits = (job?.edits || []).filter((e) => e.imagePath)
     .map((e) => ({ id: `edit:${e.imagePath}`, imagePath: e.imagePath, template: `edit — ${e.prompt}` }));
   return [...res, ...edits, ...(extras[job?.id] || [])];

@@ -3,17 +3,21 @@
    the pipeline journey (4 live step cards), plan cards, and a media-first
    recent-work strip. Design tokens only (styles.css). */
 
-.dash-wrap { max-width: 1080px; padding-bottom: 90px; }
+.section.dash-wrap { max-width: 1560px; }
+.dash-wrap { max-width: 1560px; padding-bottom: 90px; }
+@media (min-width: 1700px) {
+  .section.dash-wrap { padding-left: 48px; padding-right: 48px; }
+}
 
-/* ---------- header: mark + name + display title + greeting ---------- */
-.dash-head { padding: 40px 4px 4px; }
+/* ---------- header: display title + greeting (mark lives in topnav) ---------- */
+.dash-head { padding: 30px 4px 4px; }
 .dash-brand { display: flex; align-items: center; gap: 10px; }
 .dash-brand-name { font-weight: 700; letter-spacing: .02em; font-size: 15px; }
 .dash-brand-tag {
   font-size: 9.5px; font-weight: 800; letter-spacing: .14em; color: var(--ink-3);
   border: 1px solid var(--line); padding: 2px 8px; border-radius: var(--radius-pill);
 }
-.dash-title { margin: 20px 0 0; font-size: 46px; line-height: 1.04; }
+.dash-title { margin: 0; font-size: 46px; line-height: 1.04; }
 .dash-greet {
   margin: 9px 0 0; font-family: var(--font-display); font-style: italic;
   font-size: 18px; color: var(--ink-3);
@@ -47,10 +51,10 @@
 .dash-plan:focus-visible { outline: 1px solid var(--lime); outline-offset: 2px; }
 .dash-plan.on { border-color: rgba(255, 77, 0, .45); }
 .dash-plan-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-.dash-plan-top h4 { margin: 0; font-size: 16px; line-height: 1.3; min-width: 0; }
+.dash-plan-top h4 { margin: 0; font-size: 16px; line-height: 1.3; min-width: 0; overflow-wrap: anywhere; }
 .dash-plan-live {
   margin-left: 9px; font-size: 9px; font-weight: 800; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--lime); vertical-align: 2px;
+  text-transform: uppercase; color: var(--lime-text); vertical-align: 2px;
   border: 1.5px solid var(--lime); border-radius:0; padding: 2px 8px;
   white-space: nowrap;
 }
@@ -84,6 +88,27 @@
 .dash-plan-strats li.more { color: var(--ink-4); font-style: italic; padding-left: 14px; }
 .dash-plan-strats li.more::before { display: none; }
 .dash-plan .chip-row { margin-top: 2px; }
+/* campaigns this plan produced — thumbs fill the card's spare space */
+.dash-plan-work { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; overflow: hidden; }
+.dash-pw {
+  position: relative; display: block; width: 76px; height: 76px; flex: none;
+  border: 1px solid var(--line); border-radius: 0; overflow: hidden;
+  background: var(--card-3); transition: border-color .14s, transform .14s;
+}
+.dash-pw:hover { border-color: rgba(255, 77, 0, .5); transform: translateY(-2px); }
+.dash-pw img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dash-pw-fb { width: 100%; height: 100%; }
+.dash-pw-fb .mf-mono { font-size: 20px; }
+.dash-pw-n {
+  position: absolute; right: 0; bottom: 0; font-size: 9px; font-weight: 800;
+  background: rgba(0, 0, 0, .72); color: var(--lime); padding: 2px 5px;
+}
+.dash-pw.more {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--ink-3); text-decoration: none;
+}
+.dash-pw.more:hover { color: var(--ink); }
+.dash-pw-n-static { font-size: 10.5px; font-weight: 600; color: var(--ink-4); align-self: flex-end; padding-bottom: 3px; white-space: nowrap; }
 .dash-plan .chan-chip { display: inline-flex; align-items: center; gap: 5px; text-transform: capitalize; }
 .dash-plan .chan-chip svg { color: var(--ink-4); }
 .dash-plan-foot {

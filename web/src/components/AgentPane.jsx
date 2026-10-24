@@ -17,6 +17,8 @@ export default function AgentPane() {
   ]);
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
+  // mobile starts collapsed — the fixed pane otherwise eats half the viewport
+  const [collapsed, setCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 900);
   const bodyRef = useRef(null);
 
   useEffect(() => {
@@ -76,12 +78,17 @@ export default function AgentPane() {
   };
 
   return (
-    <aside className="agent-pane">
+    <aside className={`agent-pane${collapsed ? ' agent-pane--collapsed' : ''}`}>
       <div className="agent-head">
         <Icon name="sparkle" size={16} />
         Marque Agent
         <span className="grow" />
         <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Qloo API" />
+        <button type="button" className="agent-collapse" aria-expanded={!collapsed}
+          title={collapsed ? 'Open chat' : 'Hide chat'}
+          onClick={() => setCollapsed((c) => !c)}>
+          <Icon name={collapsed ? 'chevron-up' : 'chevron-down'} size={15} />
+        </button>
       </div>
       <div className="agent-body" ref={bodyRef}>
         {msgs.map((m, i) => (

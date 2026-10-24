@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 880" font-family="ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace">
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#e8e6df"/>
+    </marker>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#ff4d00"/>
+    </marker>
+  </defs>
+  <rect width="1240" height="880" fill="#121212"/>
+
+  <!-- title -->
+  <text x="40" y="46" fill="#e8e6df" font-size="17" font-weight="700" letter-spacing="3">MARQUE — SYSTEM ARCHITECTURE</text>
+  <text x="40" y="68" fill="#8f8d84" font-size="11.5">local-first marketing studio · one Express server · all state in data/state.json · keys never reach the browser</text>
+
+  <!-- ================= WEB CLIENT ================= -->
+  <rect x="40" y="110" width="240" height="200" rx="6" fill="#1a1a19" stroke="#454540"/>
+  <rect x="40" y="110" width="240" height="30" rx="6" fill="#232322"/>
+  <text x="56" y="130" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">WEB CLIENT</text>
+  <text x="56" y="162" fill="#e8e6df" font-size="11">React SPA — views/*</text>
+  <text x="56" y="182" fill="#8f8d84" font-size="10.5">plain CSS, no UI libs</text>
+  <text x="56" y="202" fill="#8f8d84" font-size="10.5">SSE streams · job polling</text>
+  <line x1="56" y1="216" x2="264" y2="216" stroke="#33332f"/>
+  <text x="56" y="236" fill="#8f8d84" font-size="10.5">dev: Vite :5173 — proxies</text>
+  <text x="56" y="254" fill="#8f8d84" font-size="10.5">  /api /assets ^/s ^/b</text>
+  <text x="56" y="274" fill="#8f8d84" font-size="10.5">prod: static web/dist + SPA</text>
+  <text x="56" y="292" fill="#8f8d84" font-size="10.5">  fallback on :8787</text>
+
+  <!-- ================= EXPRESS ================= -->
+  <rect x="340" y="110" width="570" height="580" rx="8" fill="#161615" stroke="#454540"/>
+  <rect x="340" y="110" width="570" height="34" rx="8" fill="#232322"/>
+  <text x="356" y="132" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">EXPRESS :8787 — server/src/index.js</text>
+
+  <!-- route lanes -->
+  <g font-size="10.5">
+    <rect x="356" y="156" width="262" height="44" rx="4" fill="#1a1a19" stroke="#3a3a36"/>
+    <text x="368" y="174" fill="#e8e6df">/api/* — REST routes</text>
+    <text x="368" y="191" fill="#8f8d84">+ SSE: strategy · agent</text>
+    <rect x="632" y="156" width="262" height="44" rx="4" fill="#1a1a19" stroke="#3a3a36"/>
+    <text x="644" y="174" fill="#e8e6df">/assets — generated media</text>
+    <text x="644" y="191" fill="#8f8d84">immutable · CSP sandbox</text>
+    <rect x="356" y="208" width="262" height="44" rx="4" fill="#1a1a19" stroke="#3a3a36"/>
+    <text x="368" y="226" fill="#e8e6df">/s/:slug — published sites</text>
+    <text x="368" y="243" fill="#8f8d84">LLM single-file HTML</text>
+    <rect x="632" y="208" width="262" height="44" rx="4" fill="#1a1a19" stroke="#3a3a36"/>
+    <text x="644" y="226" fill="#e8e6df">/b/:slug — brand book</text>
+    <text x="644" y="243" fill="#8f8d84">print-friendly HTML/PDF</text>
+  </g>
+
+  <!-- pipeline services -->
+  <rect x="356" y="268" width="262" height="330" rx="6" fill="#1a1a19" stroke="#3a3a36"/>
+  <text x="368" y="290" fill="#8f8d84" font-size="10" letter-spacing="1.5">PIPELINE SERVICES</text>
+  <g font-size="10.5">
+    <text x="368" y="314" fill="#e8e6df">brand.js</text>
+    <text x="368" y="331" fill="#8f8d84" font-size="9.5">profile build: scrape→DNA→Qloo</text>
+    <text x="368" y="356" fill="#e8e6df">strategy.js</text>
+    <text x="368" y="373" fill="#8f8d84" font-size="9.5">boards · audience read · fit</text>
+    <text x="368" y="398" fill="#e8e6df">campaigns.js</text>
+    <text x="368" y="415" fill="#8f8d84" font-size="9.5">briefs · creative copy+images</text>
+    <text x="368" y="440" fill="#e8e6df">sites.js</text>
+    <text x="368" y="457" fill="#8f8d84" font-size="9.5">marketing-site gen + edits</text>
+    <text x="368" y="482" fill="#e8e6df">sitevideo.js</text>
+    <text x="368" y="499" fill="#8f8d84" font-size="9.5">chromium scroll-capture → mp4</text>
+    <text x="368" y="524" fill="#e8e6df">brandbook.js</text>
+    <text x="368" y="541" fill="#8f8d84" font-size="9.5">brand book → printable HTML</text>
+    <text x="368" y="566" fill="#e8e6df">scout.js</text>
+    <text x="368" y="583" fill="#8f8d84" font-size="9.5">real example media (yt-dlp…)</text>
+  </g>
+
+  <!-- client services -->
+  <rect x="632" y="268" width="262" height="330" rx="6" fill="#1a1a19" stroke="#3a3a36"/>
+  <text x="644" y="290" fill="#8f8d84" font-size="10" letter-spacing="1.5">CLIENTS + CORE</text>
+  <g font-size="10.5">
+    <text x="644" y="314" fill="#e8e6df">tensor.js</text>
+    <text x="644" y="331" fill="#8f8d84" font-size="9.5">chat · chatJSON · chatStream</text>
+    <text x="644" y="356" fill="#e8e6df">qloo.js</text>
+    <text x="644" y="373" fill="#8f8d84" font-size="9.5">live-or-error · evidence trail</text>
+    <text x="644" y="398" fill="#e8e6df">gemini.js</text>
+    <text x="644" y="415" fill="#8f8d84" font-size="9.5">image + veo · key-pool rotate</text>
+    <text x="644" y="440" fill="#e8e6df">media.js</text>
+    <text x="644" y="457" fill="#8f8d84" font-size="9.5">resilient image/video chains</text>
+    <text x="644" y="482" fill="#e8e6df">scraper.js</text>
+    <text x="644" y="499" fill="#8f8d84" font-size="9.5">fetchSite · SSRF-guarded</text>
+    <text x="644" y="524" fill="#e8e6df">agent.js · devinCli.js</text>
+    <text x="644" y="541" fill="#8f8d84" font-size="9.5">profile agent · acp stdio bridge</text>
+    <text x="644" y="566" fill="#e8e6df">store.js · tuning.js</text>
+    <text x="644" y="583" fill="#8f8d84" font-size="9.5">state.json CRUD · tuning.json</text>
+  </g>
+
+  <!-- jobs -->
+  <rect x="356" y="616" width="538" height="56" rx="6" fill="#1a1a19" stroke="#3a3a36"/>
+  <text x="368" y="638" fill="#e8e6df" font-size="11">runJob() — in-memory job runner</text>
+  <text x="368" y="657" fill="#8f8d84" font-size="10">GET /api/jobs/:id · progress {stage,done,total} · not persisted</text>
+
+  <!-- ================= LOCALGEN ================= -->
+  <rect x="40" y="430" width="240" height="160" rx="6" fill="#1a1a19" stroke="#454540"/>
+  <rect x="40" y="430" width="240" height="30" rx="6" fill="#232322"/>
+  <text x="56" y="450" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">LOCALGEN :8807</text>
+  <text x="56" y="482" fill="#e8e6df" font-size="11">scripts/localgen.py — python</text>
+  <text x="56" y="502" fill="#8f8d84" font-size="10.5">sd-turbo fp16 · steps ≤ 8 · GPU</text>
+  <text x="56" y="522" fill="#8f8d84" font-size="10.5">POST /generate → PNG · /health</text>
+  <text x="56" y="542" fill="#8f8d84" font-size="10.5">noise gate: rejects static,</text>
+  <text x="56" y="559" fill="#8f8d84" font-size="10.5">reseed once → 500 escalates</text>
+
+  <!-- ================= EXTERNAL ================= -->
+  <g>
+    <rect x="960" y="110" width="240" height="76" rx="6" fill="#1a1a19" stroke="#454540"/>
+    <text x="976" y="134" fill="#e8e6df" font-size="11" font-weight="700">TensorMux / GLM</text>
+    <text x="976" y="152" fill="#8f8d84" font-size="9.5">chat completions · glm-4-7-flash</text>
+    <text x="976" y="169" fill="#8f8d84" font-size="9.5">all text, JSON, reasoning — tensor.js</text>
+
+    <rect x="960" y="198" width="240" height="76" rx="6" fill="#1a1a19" stroke="#454540"/>
+    <text x="976" y="222" fill="#e8e6df" font-size="11" font-weight="700">Gemini API</text>
+    <text x="976" y="240" fill="#8f8d84" font-size="9.5">image models + Veo long-running</text>
+    <text x="976" y="257" fill="#8f8d84" font-size="9.5">5-key pool rotation — gemini.js</text>
+
+    <rect x="960" y="286" width="240" height="76" rx="6" fill="#1a1a19" stroke="#454540"/>
+    <text x="976" y="310" fill="#e8e6df" font-size="11" font-weight="700">Qloo taste graph</text>
+    <text x="976" y="328" fill="#8f8d84" font-size="9.5">/search · /v2/tags · /v2/insights</text>
+    <text x="976" y="345" fill="#8f8d84" font-size="9.5">audience affinities — qloo.js</text>
+
+    <rect x="960" y="374" width="240" height="76" rx="6" fill="#1a1a19" stroke="#454540"/>
+    <text x="976" y="398" fill="#e8e6df" font-size="11" font-weight="700">Devin CLI</text>
+    <text x="976" y="416" fill="#8f8d84" font-size="9.5">`devin acp` agent over stdio</text>
+    <text x="976" y="433" fill="#8f8d84" font-size="9.5">vision inspect + audits — devinCli.js</text>
+
+    <rect x="960" y="462" width="240" height="76" rx="6" fill="#1a1a19" stroke="#454540"/>
+    <text x="976" y="486" fill="#e8e6df" font-size="11" font-weight="700">pollinations.ai</text>
+    <text x="976" y="504" fill="#8f8d84" font-size="9.5">keyless image generation</text>
+    <text x="976" y="521" fill="#8f8d84" font-size="9.5">last-resort fallback — media.js</text>
+
+    <rect x="960" y="550" width="240" height="76" rx="6" fill="#1a1a19" stroke="#454540"/>
+    <text x="976" y="574" fill="#e8e6df" font-size="11" font-weight="700">the open web</text>
+    <text x="976" y="592" fill="#8f8d84" font-size="9.5">scraped sites · yt-dlp · iTunes</text>
+    <text x="976" y="609" fill="#8f8d84" font-size="9.5">Wikipedia · Wikimedia — scraper/scout</text>
+  </g>
+
+  <!-- ================= DATA ================= -->
+  <rect x="340" y="730" width="570" height="110" rx="8" fill="#1a1a19" stroke="#454540"/>
+  <text x="356" y="756" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">data/</text>
+  <text x="356" y="780" fill="#e8e6df" font-size="10.5">state.json — profile · catalog · boards · campaigns · photoshoots ·</text>
+  <text x="356" y="798" fill="#e8e6df" font-size="10.5">  websites · brandbook · images registry (atomic tmp+rename writes)</text>
+  <text x="356" y="822" fill="#8f8d84" font-size="10.5">assets/ — UUID-named media files · served immutable + nosniff</text>
+
+  <!-- ================= ARROWS ================= -->
+  <line x1="280" y1="210" x2="332" y2="210" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="286" y="200" fill="#8f8d84" font-size="9.5">REST + SSE</text>
+
+  <line x1="332" y1="510" x2="288" y2="510" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="40" y="416" fill="#8f8d84" font-size="9.5">← POST /generate (media.js)</text>
+
+  <line x1="625" y1="690" x2="625" y2="722" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
+  <text x="637" y="712" fill="#8f8d84" font-size="9.5">atomic JSON writes + asset files</text>
+
+  <!-- express → external -->
+  <line x1="910" y1="148" x2="952" y2="148" stroke="#e8e6df" stroke-width="1.2" marker-end="url(#a1)"/>
+  <line x1="910" y1="236" x2="952" y2="236" stroke="#e8e6df" stroke-width="1.2" marker-end="url(#a1)"/>
+  <line x1="910" y1="324" x2="952" y2="324" stroke="#e8e6df" stroke-width="1.2" marker-end="url(#a1)"/>
+  <line x1="910" y1="412" x2="952" y2="412" stroke="#e8e6df" stroke-width="1.2" marker-end="url(#a1)"/>
+  <line x1="910" y1="500" x2="952" y2="500" stroke="#e8e6df" stroke-width="1.2" marker-end="url(#a1)"/>
+  <line x1="910" y1="588" x2="952" y2="588" stroke="#e8e6df" stroke-width="1.2" marker-end="url(#a1)"/>
+
+  <!-- legend -->
+  <rect x="960" y="660" width="240" height="46" rx="4" fill="none" stroke="#3a3a36"/>
+  <text x="976" y="680" fill="#8f8d84" font-size="10">EXTERNAL CALLS — all keys stay</text>
+  <text x="976" y="696" fill="#8f8d84" font-size="10">server-side, never in the browser</text>
+</svg>

@@ -66,8 +66,15 @@ await check('genImageResilient (gemini → pollinations fallback)', async () => 
 
 await check('qloo status + insights', async () => {
   const s = qloo.status();
-  const r = await qloo.insights({ type: 'urn:entity:artist', entities: ['fixture:brand:patagonia'], take: 4 });
-  if (!r.entities.length) throw new Error('no entities returned');
+  // resolve a real entity first — a fixture id errors the whole insights call
+  const sr = await qloo.searchEntities('Patagonia');
+  // prefer a brand entity — first hit can be a place/geo record that the
+  // insights signal rejects
+  const eid = (sr.results || []).find((e) => (e.types || []).includes('urn:entity:brand'))?.id
+    || (sr.results || []).find((e) => e.types?.length)?.id;
+  if (!eid) throw new Error(`entity search failed: ${sr.error || 'no results'}`);
+  const r = await qloo.insights({ type: 'urn:entity:artist', entities: [eid], take: 4 });
+  if (!r.entities?.length) throw new Error(`no entities returned (${r.error || 'empty'})`);
   return `mode=${s.mode} top=${r.entities[0].name}`;
 });
 
