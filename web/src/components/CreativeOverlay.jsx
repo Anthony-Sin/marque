@@ -25,7 +25,7 @@ export default function CreativeOverlay({ creative, profile, chrome = false }) {
       {/* brand lockup — every ad unit carries the brand mark, like real paid social */}
       <div className={`co-lockup v-${vpos}`}>
         <span className="co-lockup-bar" style={{ background: accent }} />
-        <span className="co-lockup-name">{profile?.name || 'Brand'}</span>
+        <span className="co-lockup-name">{creative?.brand || (profile?.name !== 'Your Brand' ? profile?.name : null) || 'Brand'}</span>
       </div>
       {!!creative?.badge && <div className="co-badge" style={{ background: accent, color: inkOnPill }}>{creative.badge}</div>}
       <div className={`co-scrim v-${vpos}`} />

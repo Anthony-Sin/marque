@@ -104,7 +104,8 @@ export async function renderCreativePNG(creative, profile, campaign, aspect = '1
     ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
     ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = Math.round(8 * (W / 1080));
     ctx.fillStyle = '#fff';
-    ctx.fillText(String(profile?.name || 'Brand').toUpperCase(), padX + Math.round(W * 0.028) + Math.round(W * 0.014), lkY + Math.round(H * 0.004));
+    const lockName = creative.brand || (profile?.name !== 'Your Brand' ? profile?.name : null) || 'Brand';
+    ctx.fillText(String(lockName).toUpperCase(), padX + Math.round(W * 0.028) + Math.round(W * 0.014), lkY + Math.round(H * 0.004));
     ctx.shadowBlur = 0;
     if (creative.badge) {
       const bTxt = String(creative.badge).toUpperCase();

@@ -240,6 +240,11 @@ async function oneCreative(campaign, profile, product, angle, plan = null) {
     },
   };
   const creative = { id: uid(), headline: safe.headline, body: safe.body, cta: safe.cta, layout: safe.layout, angle, cleanImage: true };
+  // resolve the real brand for the lockup — product name first, then the
+  // product half of a "Campaign — Product" brief title, never a template name
+  const tplName = profile?.name && profile.name !== 'Your Brand' ? profile.name : null;
+  const briefTail = String(campaign.brief?.title || '').split(/—|→| - /).pop().trim().slice(0, 40);
+  creative.brand = product?.name || tplName || briefTail || null;
   if (plan) {
     creative.medium = plan.medium;
     if (plan.format) creative.format = plan.format;
