@@ -17,11 +17,15 @@ const stripDoc = (doc) => {
   });
 };
 const stripExtOverlays = () => {
-  stripDoc(document);
-  try { for (let w = window; w.parent && w.parent !== w; w = w.parent) stripDoc(w.parent.document); } catch { /* cross-origin host — unreachable */ }
+  const docs = [document];
+  try { for (let w = window; w.parent && w.parent !== w; w = w.parent) docs.push(w.parent.document); } catch { /* cross-origin host — unreachable */ }
+  docs.forEach(stripDoc);
+  return docs;
 };
-stripExtOverlays();
-new MutationObserver(stripExtOverlays).observe(document.documentElement, { childList: true, subtree: true });
+const docs = stripExtOverlays();
+// watch EVERY same-origin document — the host's toast lands after our load,
+// a one-shot strip misses it
+docs.forEach((d) => new MutationObserver(stripExtOverlays).observe(d.documentElement, { childList: true, subtree: true }));
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
