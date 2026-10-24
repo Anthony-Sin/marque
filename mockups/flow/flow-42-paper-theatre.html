@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Marque Playhouse — Bill No. 42</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23F6F0E2'/%3E%3Cpath d='M14 56V28a18 18 0 0 1 36 0v28h-8V28a10 10 0 0 0-20 0v28z' fill='%238E1B2C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ivory:#F6F0E2;
+  --ivory2:#EFE7D2;
+  --ink:#241D16;
+  --dim:#776A55;
+  --line:#C9BC9C;
+  --red:#8E1B2C;
+  --serif:'Playfair Display',Georgia,'Times New Roman',serif;
+  --sans:Georgia,'Times New Roman',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#1F1410;
+  background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.2) 0 2px,transparent 2px 60px),linear-gradient(#241811,#170E0A);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:14.5px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(142,27,44,.25)}
+a{color:var(--red);text-decoration:none;border-bottom:1px dotted var(--red)}
+a:hover{color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+button{font:inherit;cursor:pointer}
+img{display:block;max-width:100%}
+
+.house{max-width:1020px;margin:0 auto;padding:24px clamp(10px,3vw,28px) 70px}
+
+/* ===== proscenium arch ===== */
+.prosc{
+  position:relative;background:var(--ivory);
+  border:3px solid var(--ink);
+  border-radius:clamp(140px,24vw,260px) clamp(140px,24vw,260px) 0 0;
+  padding:clamp(60px,10vw,110px) clamp(20px,5vw,60px) 0;
+  box-shadow:0 26px 70px rgba(0,0,0,.55),inset 0 0 0 5px var(--ivory),inset 0 0 0 6px var(--ink);
+  text-align:center;overflow:hidden;
+}
+.prosc::before{ /* inner gilt line following the arch */
+  content:"";position:absolute;inset:14px;border:1.5px solid var(--red);
+  border-radius:clamp(126px,22vw,240px) clamp(126px,22vw,240px) 0 0;pointer-events:none;
+}
+.prosc .swag{
+  position:absolute;top:0;left:0;right:0;height:34px;
+  background:radial-gradient(circle at 8% -10%,var(--red) 26px,transparent 27px) ;
+  background-size:64px 34px;background-repeat:repeat-x;opacity:.9;
+}
+.prosc .kick{font-size:10px;letter-spacing:.5em;text-transform:uppercase;color:var(--dim);position:relative}
+.prosc h1{
+  font-family:var(--serif);font-weight:900;font-size:clamp(34px,7vw,72px);line-height:1.02;
+  letter-spacing:.01em;margin:16px 0 8px;position:relative;text-transform:uppercase;
+}
+.prosc h1 em{font-style:italic;font-weight:600;color:var(--red);text-transform:none}
+.prosc .und{font-family:var(--serif);font-style:italic;font-size:clamp(13px,2vw,17px);color:var(--dim);position:relative}
+.prosc .stagefloor{
+  position:relative;margin:clamp(30px,5vw,54px) -30px 0;height:58px;
+  background:
+    linear-gradient(180deg,rgba(36,29,22,.14),transparent 6px),
+    repeating-linear-gradient(90deg,rgba(36,29,22,.08) 0 2px,transparent 2px 26px),
+    var(--ivory2);
+  border-top:2px solid var(--ink);
+}
+.prosc .footlights{position:absolute;top:-9px;left:0;right:0;display:flex;justify-content:center;gap:26px}
+.prosc .footlights i{width:9px;height:9px;border-radius:50%;background:var(--ink)}
+.prosc .footlights i:nth-child(even){background:var(--red)}
+
+/* ===== programme sheets ===== */
+.act{
+  margin-top:26px;background:var(--ivory);border:2.5px solid var(--ink);
+  box-shadow:0 16px 46px rgba(0,0,0,.5),inset 0 0 0 5px var(--ivory),inset 0 0 0 6px var(--line);
+  padding:clamp(20px,4vw,42px);position:relative;
+}
+.act-h{text-align:center;margin-bottom:22px}
+.act-h .actno{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--red);letter-spacing:.06em}
+.act-h h2{font-family:var(--serif);font-weight:900;font-size:clamp(21px,3.4vw,34px);text-transform:uppercase;letter-spacing:.05em;line-height:1.15}
+.act-h .rule{display:flex;align-items:center;gap:10px;justify-content:center;margin-top:10px;color:var(--red);font-size:11px;letter-spacing:.4em}
+.act-h .rule::before,.act-h .rule::after{content:"";width:70px;border-top:1.5px solid var(--red)}
+.lbl{font-size:9px;letter-spacing:.34em;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:10px;text-align:center}
+.lbl::before,.lbl::after{content:" — "}
+
+/* ask */
+.ask .prompt{font-family:var(--serif);font-size:clamp(20px,3.2vw,32px);font-weight:700;text-align:center;line-height:1.3;max-width:700px;margin:0 auto}
+.ask .prompt em{font-style:normal;color:var(--red)}
+.ask .url{text-align:center;margin-top:16px;font-size:12.5px}
+.ask .ctx{max-width:640px;margin:22px auto 0;border-top:1.5px solid var(--ink);padding-top:14px;
+  display:grid;grid-template-columns:92px 1fr;gap:5px 14px;font-size:12.5px}
+.ask .ctx dt{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim);padding-top:2px}
+.ask .ctx dd{overflow-wrap:anywhere;font-style:italic}
+
+/* audience */
+.aud .lean{font-family:var(--serif);font-weight:900;font-size:clamp(26px,4.4vw,44px);text-transform:capitalize;text-align:center;line-height:1.05}
+.aud .conf{font-family:var(--serif);font-style:italic;color:var(--red);text-align:center;margin-top:6px;font-size:15px}
+.aud .claps{display:flex;justify-content:center;gap:6px;margin:12px 0 4px}
+.aud .claps i{width:11px;height:11px;border:1.5px solid var(--ink);border-radius:50%}
+.aud .claps i.on{background:var(--red);border-color:var(--red)}
+.audgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:24px;border-top:1.5px solid var(--ink)}
+.audgrid>div{padding:18px 20px;border-right:1px dashed var(--line);min-width:0}
+.audgrid>div:last-child{border-right:none}
+.audgrid ul{list-style:none}
+.audgrid li{font-size:12.5px;font-style:italic;padding:6px 0;border-bottom:1px dotted var(--line);text-align:center}
+.audgrid li:last-child{border-bottom:none}
+.audgrid .hab{display:grid;grid-template-columns:76px 1fr;gap:3px 10px;font-size:12px;padding:6px 0;border-bottom:1px dotted var(--line)}
+.audgrid .hab:last-child{border-bottom:none}
+.audgrid .hab b{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);padding-top:2px}
+.audgrid .vibes{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.audgrid .vibes span{font-family:var(--serif);font-style:italic;font-size:12px;border-bottom:1.5px solid var(--red);padding:0 4px}
+
+/* the players */
+.players{max-width:860px;margin:0 auto}
+.pl{display:grid;grid-template-columns:auto minmax(0,1fr) auto;min-width:0;gap:16px;padding:20px 8px;border-bottom:1.5px solid var(--ink);align-items:start}
+.pl:last-child{border-bottom:none}
+.pl .sc{font-family:var(--serif);font-style:italic;color:var(--red);font-size:13px;white-space:nowrap;padding-top:4px}
+.pl h3{font-family:var(--serif);font-weight:900;font-size:clamp(17px,2.6vw,24px);text-transform:uppercase;letter-spacing:.03em;line-height:1.15}
+.pl .ang{font-family:var(--serif);font-style:italic;color:var(--dim);font-size:13.5px;margin:2px 0 10px}
+.pl .chrow{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:11.5px}
+.pl .chrow b{letter-spacing:.16em;text-transform:uppercase;font-size:9.5px}
+.pl .chrow .cb{display:inline-block;width:60px;height:6px;border:1px solid var(--ink);vertical-align:middle;margin:0 5px;padding:1px}
+.pl .chrow .cb i{display:block;height:100%;background:var(--ink)}
+.pl .fmt{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pl .fmt span{font-size:9px;letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--line);padding:2px 8px;color:var(--dim)}
+.pl .rave{font-size:9.5px;color:var(--dim);font-style:italic;margin-top:8px}
+.pl .wch{font-size:10.5px;color:var(--red);font-style:italic;margin-top:6px}
+.pl .fit{text-align:right;white-space:nowrap}
+.pl .fit b{font-family:var(--serif);font-size:30px;font-weight:900}
+.pl .fit small{display:block;font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim)}
+.pl .ovation{font-size:9px;letter-spacing:.2em;color:var(--red);text-transform:uppercase;margin-top:4px}
+
+/* omitted */
+.omit{max-width:760px;margin:0 auto}
+.omit .row{padding:14px 8px;border-bottom:1px dashed var(--line);text-align:center}
+.omit .row:last-child{border-bottom:none}
+.omit h4{font-family:var(--serif);font-size:17px;font-weight:700;text-transform:uppercase;text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:2px}
+.omit .ch{font-size:9.5px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase;margin:2px 0 6px}
+.omit p{font-size:12px;color:var(--dim);font-style:italic}
+
+/* scenario + lobby cards */
+.scen{max-width:700px;margin:0 auto 26px;text-align:center}
+.scen h3{font-family:var(--serif);font-weight:900;font-size:clamp(21px,3vw,32px);line-height:1.15}
+.scen .ba{font-family:var(--serif);font-style:italic;color:var(--red);font-size:14px;margin:6px 0 14px}
+.scen dl{display:grid;grid-template-columns:110px 1fr;gap:6px 14px;font-size:12.5px;text-align:left;border-top:1.5px solid var(--ink);padding-top:14px}
+.scen dt{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim);padding-top:3px}
+.scen dd.msg{font-family:var(--serif);font-weight:700;font-size:15px}
+.lobby{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.lb{min-width:0;background:#fff;border:1.5px solid var(--ink);padding:8px 8px 10px;box-shadow:3px 4px 0 rgba(36,29,22,.18);transform:rotate(-.4deg)}
+.lb:nth-child(even){transform:rotate(.5deg)}
+.lb img{width:100%;aspect-ratio:4/3.4;object-fit:cover;border:1px solid var(--line);filter:sepia(.1)}
+.lb .h{font-family:var(--serif);font-size:12px;font-weight:700;margin-top:8px;min-height:2.3em;line-height:1.25}
+.lb .p{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);border-top:1px solid var(--line);padding-top:5px;margin-top:5px}
+
+/* costumes */
+.cost{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;max-width:860px;margin:0 auto}
+.co .sw{height:70px;border:1.5px solid var(--ink);box-shadow:inset 0 0 0 3px var(--ivory)}
+.co .n{font-family:var(--serif);font-weight:700;font-size:12px;text-align:center;margin-top:7px}
+.co .h{font-size:9px;letter-spacing:.14em;color:var(--dim);text-align:center}
+
+/* programme notes */
+.notes{max-width:860px;margin:0 auto}
+.tele{border:1.5px solid var(--ink)}
+.tele .th{display:grid;grid-template-columns:minmax(0,2fr) 44px 60px 70px;gap:8px;padding:7px 12px;border-bottom:1.5px solid var(--ink);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim)}
+.tele .tr{display:grid;grid-template-columns:minmax(0,2fr) 44px 60px 70px;gap:8px;padding:7px 12px;border-bottom:1px dashed var(--line);font-size:11px}
+.tele .tr:last-child{border-bottom:none}
+.tele .pm{display:block;color:var(--dim);font-size:9.5px;font-style:italic;overflow-wrap:anywhere}
+.tele .md{color:var(--red);font-size:9px;letter-spacing:.2em;text-transform:uppercase}
+.patro{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 26px;margin-top:24px}
+.patro .g{min-width:0}
+.patro .g .t{font-family:var(--serif);font-style:italic;font-size:14px;text-transform:capitalize;border-bottom:1px solid var(--ink);padding-bottom:3px;margin-bottom:6px}
+.patro .r{display:flex;align-items:baseline;gap:10px;font-size:12px;padding:4px 0;border-bottom:1px dotted var(--line)}
+.patro .r .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.patro .r .dots{flex:0 0 auto;border-bottom:1px dotted var(--dim);width:40px}
+.patro .r .v{font-family:var(--serif);font-weight:700;color:var(--red);font-size:12.5px}
+
+/* tickets */
+.tix{display:flex;flex-wrap:wrap;gap:18px;justify-content:center}
+.tchip{
+  position:relative;background:var(--ivory2);border:2px solid var(--ink);
+  font-family:var(--serif);font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;
+  padding:12px 24px 12px 40px;box-shadow:3px 3px 0 rgba(36,29,22,.25);transition:.15s;
+}
+.tchip::before{
+  content:"";position:absolute;left:22px;top:-3px;bottom:-3px;width:2px;
+  background:repeating-linear-gradient(180deg,var(--ink) 0 5px,transparent 5px 10px);
+}
+.tchip::after{content:"ADMIT ONE";position:absolute;right:6px;bottom:3px;font-family:var(--sans);font-size:6.5px;letter-spacing:.2em;color:var(--dim);font-weight:400}
+.tchip:hover{border-color:var(--red);color:var(--red);transform:translateY(-2px)}
+.tchip:active{transform:translateY(1px)}
+
+.foot{margin-top:40px;text-align:center;font-family:var(--serif);font-style:italic;font-size:12px;color:#A89374}
+.foot b{color:var(--ivory);font-style:normal;letter-spacing:.3em;font-size:9.5px;text-transform:uppercase;display:block;margin-top:6px}
+.empty{background:var(--ivory);border:2px dashed var(--line);padding:44px;text-align:center;font-style:italic;color:var(--dim)}
+
+@media(max-width:900px){
+  .audgrid{grid-template-columns:1fr}
+  .audgrid>div{border-right:none;border-bottom:1px dashed var(--line)}
+  .audgrid>div:last-child{border-bottom:none}
+  .lobby{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .patro{grid-template-columns:1fr}
+  .cost{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .pl{grid-template-columns:minmax(0,1fr);gap:8px}
+  .pl .fit{text-align:left}
+  .lobby{grid-template-columns:1fr}
+  .cost{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .tele .th,.tele .tr{grid-template-columns:minmax(0,2fr) 40px 56px}
+  .tele .md{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="house">
+  <header class="prosc">
+    <div class="swag"></div>
+    <div class="kick">The Marque Playhouse · Management presents</div>
+    <h1 id="bill-title">—</h1>
+    <div class="und" id="bill-sub">a production in three movements — strategy · campaign · result</div>
+    <div class="stagefloor"><div class="footlights"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+  </header>
+  <main id="app"></main>
+  <footer class="foot" id="foot">
+    “The play’s the thing wherein we’ll catch the conscience of the market.”
+    <b id="foot-id">BILL NO. 42 · MARQUE PLAYHOUSE</b>
+  </footer>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const pct=x=>Math.round((x||0)*100);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Barrier Cream',h:'#EDDFCE'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Espresso Bean',h:'#4E362B'}
+];
+const CREAT=[5,9,12,14].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const ROMAN=['I','II','III','IV','V','VI','VII','VIII'];
+const SPECIAL={6:'ENTR’ACTE',7:'APPENDIX',8:'EPILOGUE'};
+
+document.getElementById('bill-title').innerHTML=esc(B.title||'The Bill').replace(/→/g,'<br><em>starring</em> ');
+document.getElementById('foot-id').textContent='BILL NO. 42-'+(B.id||'—').slice(0,4).toUpperCase()+' · MARQUE PLAYHOUSE';
+
+const M=document.getElementById('app');
+let actN=0;
+const act=(title,body,sub)=>{
+  if(!body)return;
+  actN++;
+  const lab=SPECIAL[actN]||('ACT '+ROMAN[actN-1]);
+  M.appendChild(el('<section class="act"><div class="act-h"><div class="actno">— '+lab+' —</div><h2>'+esc(title)+'</h2>'+(sub?'<div class="rule">'+esc(sub)+'</div>':'<div class="rule">◆ ◆ ◆</div>')+'</div>'+body+'</section>'));
+};
+
+/* prologue — the request */
+if(B.sub||B.urlContext){
+  const u=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url)||'';
+  act('The Request',
+    '<div class="ask"><span class="lbl">As whispered to the prompter</span>'+
+    '<p class="prompt">“'+esc((B.sub&&B.sub.prompt)||B.title||'').replace(/→/g,'<em>→</em>')+'”</p>'+
+    (u?'<p class="url"><a href="'+esc(u)+'">'+esc(u)+'</a></p>':'')+
+    '<dl class="ctx"><dt>The house</dt><dd>'+esc(B.urlContext&&B.urlContext.title||'—')+'</dd>'+
+    '<dt>Bill ref.</dt><dd>'+esc(B.id||'—')+'</dd>'+
+    '<dt>The notice</dt><dd>'+esc(B.urlContext&&B.urlContext.description||'—')+'</dd></dl></div>','prologue');
+}
+
+/* audience read */
+if(AR&&AR.lean){
+  const st=Math.round((AR.lean.confidence||0)*5);
+  act('The Audience','<div class="aud"><span class="lbl">The house leans</span>'+
+    '<div class="lean">'+esc(AR.lean.label||'—')+'</div>'+
+    '<div class="conf">applause forecast — '+pct(AR.lean.confidence)+' in the hundred</div>'+
+    '<div class="claps">'+Array.from({length:5},(_,i)=>'<i class="'+(i<st?'on':'')+'"></i>').join('')+'</div>'+
+    '<div class="audgrid">'+
+    '<div><span class="lbl">Whispers from the pit</span><ul>'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></div>'+
+    '<div><span class="lbl">Where they take their seats</span>'+(AR.mediaHabits||[]).map(h=>'<div class="hab"><b>'+esc(h.channel)+'</b><span>'+esc(h.note)+'</span></div>').join('')+'</div>'+
+    '<div><span class="lbl">Words on every lip</span><div class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div>'+
+    '</div></div>','scene i · the reading of the room');
+}
+
+/* the players */
+if(strats.length){
+  act('The Players',
+    '<div class="players">'+strats.map((s,i)=>{
+      return '<div class="pl"><span class="sc">Sc. '+ROMAN[i]+'</span>'+
+      '<div><h3>'+esc(s.title)+'</h3><div class="ang">“'+esc(s.angle)+'”</div>'+
+      '<div class="chrow">'+(s.channels||[]).map(c=>'<span><b>'+esc(c.name)+'</b><span class="cb"><i style="width:'+pct(c.fit)+'%"></i></span>'+pct(c.fit)+'</span>').join('')+'</div>'+
+      '<div class="fmt">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join('')+'</div>'+
+      (s.reach?'<div class="rave">Notices project ≈ '+views(s.reach.estViews)+' patrons — '+esc(s.reach.basis||'')+'</div>':'')+
+      ((s.watchouts&&s.watchouts[0])?'<div class="wch">Caution from the wings — '+esc(s.watchouts[0])+'</div>':'')+
+      '</div>'+
+      '<div class="fit"><b>'+pct(s.audienceFit&&s.audienceFit.score)+'</b><small>fit of part</small>'+(i===sel?'<div class="ovation">▪ tonight’s lead ▪</div>':'')+'</div>'+
+      '</div>'}).join('')+
+    '</div>','the dramatis personæ, four in number');
+}
+
+/* omitted */
+if(anti.length){
+  act('Struck from the Bill',
+    '<div class="omit">'+anti.map(a=>
+      '<div class="row"><h4>'+esc(a.title)+'</h4><div class="ch">'+esc(a.channel).toUpperCase()+' — WITHDRAWN</div><p>'+esc(a.whyNot)+'</p></div>').join('')+
+    '</div>','roles the management declines to cast');
+}
+
+/* the scenario */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  act('The Performance',
+    '<div class="scen"><span class="lbl">Tonight’s scenario · scene '+ROMAN[sel!=null?sel:0]+'</span>'+
+    (br?'<h3>'+esc(br.title)+'</h3><p class="ba">'+esc(br.angle)+'</p>'+
+    '<dl><dt>Played to</dt><dd>'+esc(br.audience)+'</dd>'+
+    '<dt>The line</dt><dd class="msg">“'+esc(br.keyMessage)+'”</dd>'+
+    '<dt>In the manner of</dt><dd>'+esc(selS.heroSignal||'—')+'</dd></dl>':'<p class="ba">no brief bound</p>')+'</div>'+
+    '<div class="lobby">'+CREAT.map(m=>
+      '<figure class="lb"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'">'+
+      '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">played by '+esc(m.provider)+'</div></figcaption></figure>').join('')+
+    '</div>','the brief & the lobby cards');
+}
+
+/* costumier */
+act('The Costumier’s Swatches',
+  '<div class="cost">'+PALETTE.map(s=>
+    '<div class="co"><div class="sw" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="h">'+s.h.toUpperCase()+'</div></div>').join('')+
+  '</div>','wardrobe & greasepaint');
+
+/* programme notes */
+if(B.evidence||affs.length){
+  act('Programme Notes',
+    '<div class="notes"><span class="lbl">As verified by the house telegraph · '+calls.length+' wires · '+(B.qlooBundle&&B.qlooBundle.mode?B.qlooBundle.mode.toUpperCase():'—')+' service</span>'+
+    '<div class="tele"><div class="th"><span>Wire received</span><span>N</span><span>Ms</span><span>Service</span></div>'+
+    calls.map(c=>'<div class="tr"><span>'+esc(c.endpoint)+'<span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,16)).join(' '))+'</span></span><span>'+esc(c.n)+'</span><span>'+esc(c.tookMs)+'</span><span class="md">'+esc(c.mode)+'</span></div>').join('')+
+    '</div>'+
+    '<div class="patro">'+affs.map(g=>'<div class="g"><div class="t">Noted patronage — '+esc(g.type.replace('urn:entity:',''))+'</div>'+
+      g.entities.slice(0,4).map(e=>'<div class="r"><span class="nm">'+esc(e.name)+'</span><span class="dots"></span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')+'</div>').join('')+
+    '</div></div>','provenance, sworn & printed');
+}
+
+/* advance bookings */
+act('Advance Bookings',
+  '<div class="tix">'+['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button class="tchip">'+x+'</button>').join('')+'</div>','tickets for forthcoming productions');
+
+if(!M.children.length)M.appendChild(el('<div class="empty">THE THEATRE IS DARK — the bill failed to arrive (data.js).</div>'));
+})();
+</script>
+</body>
+</html>

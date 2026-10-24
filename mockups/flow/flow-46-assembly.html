@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KAMPÄGN — Assembly Instructions · Marque</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23fff'/%3E%3Ccircle cx='32' cy='32' r='24' fill='none' stroke='%23111' stroke-width='4'/%3E%3Ctext x='32' y='41' text-anchor='middle' font-family='Arial' font-weight='bold' font-size='24' fill='%230058A3'%3E1%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#FDFDFB;
+  --ink:#141414;
+  --dim:#6B6B6B;
+  --hair:#D8D8D3;
+  --blue:#0058A3;
+  --warn:#F5B921;
+  --sans:'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#C9C6BE;
+  background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0 1px,transparent 1px 90px);
+  color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(0,88,163,.2)}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+svg{display:block}
+
+.book{
+  max-width:1060px;margin:26px auto 64px;background:var(--paper);
+  box-shadow:0 24px 70px rgba(0,0,0,.4);
+  border:1px solid #9a978e;
+}
+.page{
+  padding:clamp(20px,4vw,44px) clamp(16px,4vw,48px);
+  border-bottom:2px solid var(--ink);position:relative;
+}
+.page:last-child{border-bottom:none}
+.page .pno{
+  position:absolute;top:clamp(14px,3vw,30px);right:clamp(14px,3vw,40px);
+  font-size:10px;font-weight:700;letter-spacing:.2em;color:var(--dim);
+}
+
+/* ===== cover ===== */
+.cover{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:clamp(18px,4vw,44px);align-items:center;min-height:340px}
+.cover .brand{font-size:11px;font-weight:700;letter-spacing:.42em;text-transform:uppercase}
+.cover h1{font-size:clamp(34px,7vw,64px);font-weight:800;letter-spacing:-.02em;line-height:.98;margin:10px 0 6px}
+.cover h1 em{font-style:normal;color:var(--blue)}
+.cover .sub{font-size:clamp(13px,2vw,17px);font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.cover .ask{margin-top:18px;font-size:clamp(15px,2.2vw,19px);font-weight:700}
+.cover .ask em{font-style:normal;color:var(--blue)}
+.cover .url{font-family:var(--mono);font-size:11px;margin-top:8px;color:var(--dim);overflow-wrap:anywhere}
+.cover .src{font-size:11.5px;color:var(--dim);margin-top:6px}
+.cover .model{margin-top:22px;display:inline-block;border:2px solid var(--ink);padding:8px 14px;font-family:var(--mono);font-size:11px;letter-spacing:.12em}
+.coverfig{position:relative}
+.coverfig svg{width:100%;height:auto;max-width:420px;margin:0 auto}
+svg.keyline,.coverfig svg.keyline{position:absolute;bottom:0;right:0;width:74px;max-width:74px;height:auto;margin:0;opacity:.9}
+.checklist{margin-top:18px;border:1.5px solid var(--ink)}
+.checklist .hd{background:var(--ink);color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;padding:5px 12px}
+.checklist .row{display:flex;gap:10px;padding:6px 12px;font-family:var(--mono);font-size:11.5px;border-bottom:1px solid var(--hair)}
+.checklist .row:last-child{border-bottom:none}
+.checklist .row b{width:40px}
+
+/* ===== steps ===== */
+.step{display:grid;grid-template-columns:76px minmax(0,1fr);gap:clamp(14px,2.6vw,30px);align-items:start}
+.stepnum{
+  width:64px;height:64px;border:3px solid var(--ink);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;font-weight:800;flex-shrink:0;
+}
+.step.blue .stepnum{border-color:var(--blue);color:var(--blue)}
+.stepbody h2{font-size:clamp(19px,3vw,27px);font-weight:800;letter-spacing:-.01em}
+.stepbody .ang{font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--blue);margin:3px 0 16px}
+.stepgrid{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:clamp(14px,3vw,30px);align-items:start}
+.fig{border:1.5px solid var(--ink);background:#fff;padding:10px;position:relative}
+.fig .fno{position:absolute;top:6px;left:8px;font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--dim)}
+.fig svg{width:100%;height:auto}
+.specs{border:1.5px solid var(--ink)}
+.specs .hd{background:var(--ink);color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;padding:5px 12px;display:flex;justify-content:space-between}
+.specs table{width:100%;border-collapse:collapse;font-size:12px}
+.specs th{font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);text-align:left;padding:6px 12px 4px;border-bottom:1.5px solid var(--ink)}
+.specs td{padding:7px 12px;border-bottom:1px solid var(--hair);vertical-align:top}
+.specs td:last-child,.specs th:last-child{text-align:right}
+.specs .cb{display:inline-block;width:56px;height:9px;border:1.5px solid var(--ink);vertical-align:-1px;margin-right:6px}
+.specs .cb i{display:block;height:100%;background:var(--blue)}
+.specs .fit{font-family:var(--mono);font-size:11px}
+.specs .why{display:block;font-size:10px;color:var(--dim)}
+.specs .load{padding:9px 12px;font-size:12px;border-top:1.5px solid var(--ink)}
+.specs .load b{font-family:var(--mono)}
+.specs .load small{display:block;color:var(--dim);font-size:10px;margin-top:2px}
+.specs .warn{
+  margin:10px 12px 12px;border:1.5px solid var(--ink);display:grid;grid-template-columns:34px 1fr;gap:10px;
+  padding:8px 10px;align-items:center;font-size:11px;
+}
+.warn svg{width:34px;height:30px}
+.warn b{display:block;font-size:9px;letter-spacing:.22em;text-transform:uppercase}
+.fmtchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.fmtchips span{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;border:1.5px solid var(--ink);padding:2px 8px}
+
+/* audience as parts diagram */
+.aud{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(14px,3vw,30px);align-items:start}
+.aud .fig{min-height:200px}
+.aud .facts .frow{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;padding:8px 0;border-bottom:1px solid var(--hair);font-size:12.5px;align-items:start}
+.aud .facts .frow b{font-size:9.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;padding-top:2px}
+.aud .lean{font-size:clamp(24px,4vw,34px);font-weight:800;letter-spacing:-.01em;line-height:1}
+.aud .gauge{margin:12px 0}
+.aud .gauge .lbl{display:flex;justify-content:space-between;font-size:9.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.aud .gauge .track{height:14px;border:2px solid var(--ink);padding:2px}
+.aud .gauge .track i{display:block;height:100%;background:var(--blue)}
+.aud .vibes{display:flex;flex-wrap:wrap;gap:6px}
+.aud .vibes span{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;border:1.5px solid var(--ink);padding:3px 9px}
+
+/* ===== warning page ===== */
+.warnpage{background:repeating-linear-gradient(-45deg,#FDFDFB 0 26px,#F7F2E2 26px 52px)}
+.donts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.dont{border:2px solid var(--ink);background:#fff;padding:14px 16px;display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start}
+.dont .tri svg{width:44px;height:40px}
+.dont b{font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;text-decoration:line-through;text-decoration-thickness:2px}
+.dont .chan{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-left:8px}
+.dont p{font-size:11.5px;color:var(--dim);margin-top:4px}
+
+/* ===== final step ===== */
+.final{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.5fr);gap:clamp(16px,3vw,30px)}
+.final .brief h3{font-size:clamp(19px,3vw,26px);font-weight:800;letter-spacing:-.01em}
+.final .brief .ba{color:var(--blue);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin:6px 0 14px}
+.final .brief dl{display:grid;grid-template-columns:88px 1fr;gap:8px 14px;font-size:12.5px}
+.final .brief dt{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);padding-top:3px}
+.final .brief dd.msg{font-weight:700;font-size:14px}
+.final .qc{margin-top:18px}
+.shots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.shot{border:1.5px solid var(--ink);background:#fff;padding:6px}
+.shot img{width:100%;aspect-ratio:4/3;object-fit:cover}
+.shot figcaption{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-top:7px;font-size:10.5px}
+.shot .h{min-width:0;overflow-wrap:anywhere}
+.shot .p{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;border:1.5px solid var(--ink);padding:1px 7px;white-space:nowrap}
+
+/* ===== parts list ===== */
+.parts table{width:100%;border-collapse:collapse;font-size:12.5px}
+.parts th{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;text-align:left;border-bottom:2px solid var(--ink);padding:6px 10px 6px 0;color:var(--dim)}
+.parts td{padding:9px 10px 9px 0;border-bottom:1px solid var(--hair);vertical-align:middle}
+.parts .sw{width:52px;height:34px;border:1.5px solid var(--ink)}
+.parts .pn{font-family:var(--mono);font-size:11px}
+.parts .qty{font-family:var(--mono);font-size:11px;text-align:right}
+.parts .nm{font-weight:700}
+.parts .use{font-size:10.5px;color:var(--dim)}
+
+/* ===== qc log ===== */
+.qclog{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(16px,3vw,30px)}
+.qclog .pre{font-size:12.5px;margin-bottom:14px}
+.qclog .pre b{letter-spacing:.1em}
+table.tq{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10.5px}
+.tq th{font-family:var(--sans);font-size:8.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);text-align:left;border-bottom:2px solid var(--ink);padding:4px}
+.tq td{padding:6px 4px;border-bottom:1px solid var(--hair);vertical-align:top}
+.tq .pm{display:block;color:var(--dim);font-size:8.5px;overflow-wrap:anywhere}
+.tq .md{border:1.5px solid var(--blue);color:var(--blue);font-size:8px;padding:0 5px;font-weight:700}
+.tol .g{font-size:9.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;border-bottom:1.5px solid var(--ink);padding-bottom:4px;margin:14px 0 6px}
+.tol .g:first-child{margin-top:0}
+.tol .row{display:flex;align-items:center;gap:10px;font-size:11.5px;padding:4px 0;border-bottom:1px solid var(--hair)}
+.tol .row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tol .row .cb{width:58px;height:8px;border:1.5px solid var(--ink);padding:1px}
+.tol .row .cb i{display:block;height:100%;background:var(--blue)}
+.tol .row .v{font-family:var(--mono);font-size:9.5px}
+.passstamp{
+  display:inline-block;margin-top:16px;border:3px double var(--blue);color:var(--blue);
+  font-weight:800;letter-spacing:.3em;text-transform:uppercase;font-size:12px;padding:7px 18px;transform:rotate(-4deg);
+}
+
+/* ===== series ===== */
+.series{display:flex;flex-wrap:wrap;gap:14px}
+.prod{
+  font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  background:#fff;border:2px solid var(--ink);padding:11px 20px;box-shadow:4px 4px 0 var(--ink);transition:.12s;
+}
+.prod:hover{border-color:var(--blue);color:var(--blue);box-shadow:4px 4px 0 var(--blue)}
+.prod:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+
+.foot{padding:16px clamp(16px,4vw,48px);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.empty{border:2px dashed var(--ink);padding:44px;text-align:center;margin:24px;color:var(--dim)}
+
+@media(max-width:900px){
+  .cover{grid-template-columns:1fr}
+  .stepgrid,.aud,.final,.qclog{grid-template-columns:1fr}
+  .donts{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .cover{padding-top:48px}
+  .step{grid-template-columns:1fr}
+  .stepnum{width:52px;height:52px;font-size:21px}
+  .shots{grid-template-columns:1fr}
+  .aud .facts .frow{grid-template-columns:1fr;gap:2px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="book" id="book">
+  <section class="page cover">
+    <div>
+      <div class="brand">MARQUE® · DESIGN AND QUALITY</div>
+      <h1>KAMPÄGN<em>.</em></h1>
+      <div class="sub">Assembly instructions · Rev. A</div>
+      <p class="ask" id="c-ask">—</p>
+      <p class="url" id="c-url"></p>
+      <p class="src" id="c-src"></p>
+      <div class="model">ART. NR. <span id="c-art">—</span> · 1 PKG · KEEP ALL FITTINGS</div>
+      <div class="checklist" id="c-check"></div>
+    </div>
+    <div class="coverfig">
+      <svg viewBox="0 0 340 300" id="cover-svg"></svg>
+      <svg class="keyline" viewBox="0 0 80 80"><g fill="none" stroke="#141414" stroke-width="4"><path d="M8 52h40a6 6 0 0 0 6-6v-8" /><circle cx="60" cy="24" r="10"/><rect x="8" y="44" width="14" height="16" fill="#141414"/></g></svg>
+    </div>
+    <span class="pno">PAGE 1 / 11</span>
+  </section>
+  <main id="app"></main>
+  <footer class="foot"><span>MARQUE® KAMPÄGN — ASSEMBLED FROM LIVE SIGNALS</span><span id="f-no">—</span></footer>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const pct=x=>Math.round((x||0)*100);
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE',use:'face panels'},{n:'Glaze Milk',h:'#F7F0E5',use:'background board'},
+  {n:'Barrier Cream',h:'#EDDFCE',use:'shelf liner'},{n:'Toasted Almond',h:'#B98A6F',use:'edge banding'},
+  {n:'Espresso Bean',h:'#4E362B',use:'fixings & type'}
+];
+const CREAT=[4,5,0,11].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+
+document.getElementById('c-ask').innerHTML='“'+esc((B.sub&&B.sub.prompt)||B.title||'').replace(/→/g,' <em>→</em>')+'”';
+document.getElementById('c-url').innerHTML=((B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url))?
+  'compatible with <a href="'+esc((B.sub&&B.sub.url)||B.urlContext.url)+'">'+esc((B.sub&&B.sub.url)||B.urlContext.url)+'</a>':'';
+document.getElementById('c-src').textContent=(B.urlContext&&B.urlContext.title)?('verified against: '+B.urlContext.title):'';
+document.getElementById('c-art').textContent=(B.id||'—').slice(0,8).toUpperCase();
+document.getElementById('f-no').textContent=(B.createdAt?new Date(B.createdAt).toISOString().slice(0,10):'—')+' · '+(B.qlooBundle&&B.qlooBundle.mode||'—').toUpperCase()+' FITTINGS';
+document.getElementById('c-check').innerHTML='<div class="hd">In this package</div>'+
+  '<div class="row"><b>1×</b><span>prompt (sealed)</span></div>'+
+  '<div class="row"><b>1×</b><span>audience reading</span></div>'+
+  '<div class="row"><b>'+strats.length+'×</b><span>strategy units</span></div>'+
+  '<div class="row"><b>'+anti.length+'×</b><span>rejected fittings (do not use)</span></div>'+
+  '<div class="row"><b>1×</b><span>ALLEN KEY (included, keep it)</span></div>';
+
+/* cover exploded view of the "unit" */
+document.getElementById('cover-svg').innerHTML=
+'<g stroke="#141414" fill="#fff" stroke-width="2">'+
+'<polygon points="70,210 250,210 290,252 110,252"/>'+               /* base board */
+'<line x1="170" y1="188" x2="170" y2="206" stroke-dasharray="5 4"/>'+
+'<polygon points="86,140 234,140 274,182 126,182" fill="#F0EEE8"/>'+ /* mid shelf */
+'<line x1="170" y1="118" x2="170" y2="136" stroke-dasharray="5 4"/>'+
+'<polygon points="102,70 218,70 258,112 142,112"/>'+                /* top board */
+'</g>'+
+'<g stroke="#141414" stroke-width="2" fill="none">'+
+'<path d="M292 176 q26 -14 26 -40" /><polygon points="318,128 312,142 324,142" fill="#141414"/>'+
+'<circle cx="120" cy="228" r="4"/><circle cx="170" cy="232" r="4"/><circle cx="220" cy="228" r="4" fill="#0058A3"/>'+
+'</g>'+
+'<g font-family="ui-monospace,Menlo,monospace" font-size="9.5" fill="#141414">'+
+'<text x="14" y="96">① creative skin</text><line x1="98" y1="92" x2="122" y2="90" stroke="#141414"/>'+
+'<text x="14" y="166">② channel shelves</text><line x1="112" y1="162" x2="140" y2="160" stroke="#141414"/>'+
+'<text x="196" y="270">③ audience base</text><line x1="190" y1="252" x2="196" y2="262" stroke="#141414"/>'+
+'<text x="14" y="286" fill="#6B6B6B">Fig. A — the unit, exploded. Dowels = fit.</text></g>';
+
+const M=document.getElementById('app');
+let pageNo=2;
+const page=(cls,body)=>{
+  if(!body)return;
+  const p=el('<section class="page '+(cls||'')+'"><span class="pno">PAGE '+pageNo+' / 11</span>'+body+'</section>');
+  pageNo++;M.appendChild(p);
+};
+
+/* dowel meter: 5 dowels filled by fit */
+const dowels=(f)=>Array.from({length:5},(_,d)=>'<circle cx="'+(10+d*16)+'" cy="0" r="5.4" fill="'+(d<Math.round((f||0)*5)?'#141414':'#fff')+'" stroke="#141414" stroke-width="1.6"/>').join('');
+
+/* exploded figure for a strategy: floating panels per channel */
+const exploded=(s)=>{
+  const ch=(s.channels||[]).slice(0,3);
+  const n=ch.length||1;
+  const ys=ch.map((c,i)=>36+i*46);
+  const baseY=36+n*46+8;
+  return '<svg viewBox="0 0 300 '+(baseY+58)+'">'+
+  ch.map((c,i)=>{
+    const y=ys[i],x=40+i*10;
+    return '<g>'+
+    '<polygon points="'+x+','+y+' '+(x+128)+','+y+' '+(x+146)+','+(y+18)+' '+(x+18)+','+(y+18)+'" fill="'+(i%2?'#F0EEE8':'#fff')+'" stroke="#141414" stroke-width="1.8"/>'+
+    '<line x1="'+(x+73)+'" y1="'+(y+18)+'" x2="'+(x+73)+'" y2="'+(i===n-1?baseY:ys[i+1])+'" stroke="#141414" stroke-width="1" stroke-dasharray="4 4"/>'+
+    '<circle cx="'+(x+150)+'" cy="'+(y+9)+'" r="9" fill="#fff" stroke="#141414" stroke-width="1.6"/>'+
+    '<text x="'+(x+150)+'" y="'+(y+12.5)+'" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#141414">'+(i+1)+'</text>'+
+    '<text x="'+(x+164)+'" y="'+(y+8)+'" font-family="Helvetica,Arial" font-weight="bold" font-size="10.5" fill="#141414">'+esc(c.name)+'</text>'+
+    '<text x="'+(x+164)+'" y="'+(y+20)+'" font-family="ui-monospace,Menlo,monospace" font-size="8.5" fill="#0058A3">'+f2(c.fit)+'</text>'+
+    '<g transform="translate('+(x+24)+','+(y+9)+')">'+dowels(c.fit)+'</g></g>';
+  }).join('')+
+  '<polygon points="'+(56)+','+baseY+' '+(56+128)+','+baseY+' '+(56+146)+','+(baseY+18)+' '+(56+18)+','+(baseY+18)+'" fill="#141414" opacity=".92"/>'+
+  '<text x="'+(56+73)+'" y="'+(baseY+13)+'" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8.5" fill="#fff">AUDIENCE FIT '+f2(s.audienceFit&&s.audienceFit.score)+'</text>'+
+  '<text x="10" y="'+(baseY+44)+'" font-family="Helvetica,Arial" font-size="9" fill="#6B6B6B">Fig. '+esc(s.id||'?')+' — press panels home until dowels align.</text></svg>';
+};
+
+/* STEP 1 — audience parts */
+if(AR&&AR.lean){
+  page(null,'<div class="step blue"><div class="stepnum">1</div><div class="stepbody"><h2>Identify the audience</h2><div class="ang">Lay parts on a soft surface. Read before fitting.</div>'+
+  '<div class="aud"><div class="fig"><span class="fno">FIG. 1</span><svg viewBox="0 0 300 220">'+
+  '<g stroke="#141414" fill="#fff" stroke-width="1.8">'+
+  '<circle cx="118" cy="86" r="46"/>'+
+  '<rect x="96" y="150" width="150" height="14" fill="#141414"/><rect x="96" y="170" width="118" height="14"/><rect x="96" y="190" width="88" height="14"/>'+
+  '<line x1="118" y1="132" x2="118" y2="150" stroke-dasharray="4 4"/></g>'+
+  '<g stroke="#141414" stroke-width="1.6" fill="none"><path d="M150 52 l14 -14"/><circle cx="150" cy="52" r="3" fill="#141414"/></g>'+
+  '<text x="172" y="38" font-family="Helvetica,Arial" font-weight="bold" font-size="11" fill="#141414">'+esc(AR.lean.label||'—')+'</text>'+
+  '<text x="96" y="161" font-family="ui-monospace,Menlo,monospace" font-size="8.5" fill="#fff">MEDIA HABITS</text>'+
+  '<text x="96" y="181" font-family="ui-monospace,Menlo,monospace" font-size="8.5" fill="#141414">LEAN SIGNALS</text>'+
+  '<text x="96" y="201" font-family="ui-monospace,Menlo,monospace" font-size="8.5" fill="#0058A3">VIBE KEYS</text>'+
+  '<text x="10" y="216" font-family="Helvetica,Arial" font-size="9" fill="#6B6B6B">Fig. 1 — audience block, sections labelled.</text></svg></div>'+
+  '<div class="facts">'+
+  '<div class="frow"><b>Component</b><span class="lean">'+esc(AR.lean.label||'—')+'</span></div>'+
+  '<div class="frow"><b>Torque spec</b><span><div class="gauge"><div class="lbl"><span>confidence</span><span>'+pct(AR.lean.confidence)+'%</span></div><div class="track"><i style="width:'+pct(AR.lean.confidence)+'%"></i></div></div></span></div>'+
+  (AR.lean.signals||[]).map((s,i)=>'<div class="frow"><b>Lean '+(i+1)+'</b><span>'+esc(s)+'</span></div>').join('')+
+  (AR.mediaHabits||[]).map(h=>'<div class="frow"><b>Port · '+esc(h.channel)+'</b><span>'+esc(h.note)+'</span></div>').join('')+
+  '<div class="frow"><b>Keyed to</b><span class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</span></div>'+
+  '</div></div></div></div>');
+}
+
+/* STEPS 2-5 — strategies */
+strats.forEach((s,i)=>{
+  page(null,'<div class="step'+(i===sel?' blue':'')+'"><div class="stepnum">'+(i+2)+'</div><div class="stepbody">'+
+  '<h2>'+esc(s.title)+(i===sel?' <span style="color:var(--blue);font-size:.5em;vertical-align:middle;letter-spacing:.2em">★ RECOMMENDED BUILD</span>':'')+'</h2>'+
+  '<div class="ang">'+esc(s.angle)+'</div>'+
+  '<div class="stepgrid"><div class="fig"><span class="fno">FIG. '+(i+2)+'</span>'+exploded(s)+'</div>'+
+  '<div class="specs"><div class="hd"><span>Fixings schedule</span><span>'+esc(s.id)+'</span></div>'+
+  '<table><thead><tr><th>Channel part</th><th>Fit</th><th>Why it seats</th></tr></thead><tbody>'+
+  (s.channels||[]).map(c=>'<tr><td style="text-transform:uppercase;font-weight:700;font-size:11px">'+esc(c.name)+'</td>'+
+    '<td><span class="cb"><i style="width:'+pct(c.fit)+'%"></i></span><span class="fit">'+f2(c.fit)+'</span></td>'+
+    '<td><span class="why">'+esc(c.why||'—')+'</span></td></tr>').join('')+
+  '</tbody></table>'+
+  '<div class="fmtchips">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join('')+'</div>'+
+  '<div class="load" style="margin-top:10px">Rated load: <b>'+views(s.reach&&s.reach.estViews)+' impressions</b><small>'+esc(s.reach&&s.reach.basis||'')+'</small></div>'+
+  ((s.watchouts&&s.watchouts[0])?'<div class="warn"><svg viewBox="0 0 40 36"><polygon points="20,3 38,33 2,33" fill="#F5B921" stroke="#141414" stroke-width="2"/><rect x="18.4" y="13" width="3.2" height="11" fill="#141414"/><circle cx="20" cy="28.5" r="2" fill="#141414"/></svg><div><b>Warning</b>'+esc(s.watchouts[0])+'</div></div>':'')+
+  '</div></div></div></div>');
+});
+
+/* warning page — ruled outs */
+if(anti.length){
+  page('warnpage','<h2 style="font-size:clamp(20px,3.4vw,30px);font-weight:800">STOP. These parts do not fit this unit.</h2>'+
+  '<p style="font-size:12.5px;color:var(--dim);margin:6px 0 18px;max-width:560px">Forcing them voids the warranty and may injure the campaign. Marque has already removed them from the box.</p>'+
+  '<div class="donts">'+anti.map(a=>'<div class="dont"><span class="tri"><svg viewBox="0 0 44 40"><polygon points="22,3 42,37 2,37" fill="#F5B921" stroke="#141414" stroke-width="2.4"/><rect x="20.2" y="15" width="3.6" height="12" fill="#141414"/><circle cx="22" cy="32" r="2.2" fill="#141414"/></svg></span>'+
+  '<div><b>'+esc(a.title)+'</b><span class="chan">'+esc(a.channel)+'</span><p>'+esc(a.whyNot)+'</p></div></div>').join('')+'</div>');
+}
+
+/* final step — brief + creatives */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  page(null,'<div class="step blue"><div class="stepnum">✓</div><div class="stepbody"><h2>Finished. Step back and admire.</h2><div class="ang">The assembled unit — inspected &amp; approved</div>'+
+  '<div class="final"><div class="brief">'+
+  (br?'<h3>'+esc(br.title)+'</h3><p class="ba">'+esc(br.angle)+'</p>'+
+  '<dl><dt>Designed for</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Care label</dt><dd class="msg">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Anchor part</dt><dd>'+esc(selS.heroSignal||'—')+'</dd></dl>':'<p class="ba">no brief bound</p>')+
+  '<div class="qc"><span class="passstamp">QC PASSED</span></div>'+
+  '</div>'+
+  '<div class="shots">'+CREAT.map((m,i)=>
+    '<figure class="shot"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'">'+
+    '<figcaption><span class="h">Fig. '+['a','b','c','d'][i]+' — '+esc(m.head)+'</span><span class="p">'+esc(m.provider)+'</span></figcaption></figure>').join('')+
+  '</div></div></div></div>');
+}
+
+/* parts list — palette */
+page(null,'<h2 style="font-size:clamp(19px,3vw,26px);font-weight:800">Parts list — pigments supplied</h2>'+
+'<p style="font-size:12px;color:var(--dim);margin:5px 0 16px">Check contents before disposal of packaging. Replacement parts via Qloo service desk.</p>'+
+'<div class="parts"><table><thead><tr><th>Part</th><th>Art. no.</th><th>Name</th><th>Used for</th><th style="text-align:right">Qty</th></tr></thead><tbody>'+
+PALETTE.map((s,i)=>'<tr><td><div class="sw" style="background:'+s.h+'"></div></td>'+
+  '<td class="pn">'+s.h.toUpperCase()+'</td><td class="nm">'+esc(s.n)+'</td><td class="use">'+esc(s.use)+'</td><td class="qty">1×</td></tr>').join('')+
+'</tbody></table></div>');
+
+/* qc log — provenance */
+if(B.evidence||affs.length){
+  page(null,'<h2 style="font-size:clamp(19px,3vw,26px);font-weight:800">Quality control — test log</h2>'+
+  '<div class="qclog"><div><p class="pre"><b>NOTE.</b> Every fitting was torque-tested against the <b>Qloo jig</b> in <b>'+(B.qlooBundle&&B.qlooBundle.mode?B.qlooBundle.mode.toUpperCase():'—')+' mode</b> — <b>'+calls.length+' tests</b>, all within tolerance.</p>'+
+  '<table class="tq"><thead><tr><th>Jig</th><th>N</th><th>Ms</th><th>Mode</th></tr></thead><tbody>'+
+  calls.map(c=>'<tr><td>'+esc(c.endpoint)+'<span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,18)).join(' '))+'</span></td>'+
+    '<td>'+esc(c.n)+'</td><td>'+esc(c.tookMs)+'</td><td><span class="md">'+esc(c.mode)+'</span></td></tr>').join('')+
+  '</tbody></table></div>'+
+  '<div class="tol">'+affs.map(g=>'<div class="g">gauge · '+esc(g.type.replace('urn:entity:',''))+'</div>'+
+    g.entities.slice(0,4).map(e=>'<div class="row"><span class="nm">'+esc(e.name)+'</span><span class="cb"><i style="width:'+pct(e.affinity)+'%"></i></span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('')+
+  '</div></div>');
+}
+
+/* series — next */
+page(null,'<h2 style="font-size:clamp(19px,3vw,26px);font-weight:800">More in the MARQUE® series</h2>'+
+'<p style="font-size:12px;color:var(--dim);margin:5px 0 16px">Collect the whole range. Each ships flat with its own allen key.</p>'+
+'<div class="series">'+['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button class="prod">'+x+'</button>').join('')+'</div>');
+
+if(!M.children.length)M.appendChild(el('<div class="empty">Parts missing — data.js failed to load. Do not attempt assembly.</div>'));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MISSION MQ-40 — Launch Manifest</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23060B18'/%3E%3Ccircle cx='32' cy='32' r='24' fill='none' stroke='%23E03C31' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='12' fill='none' stroke='%23E8EDF5' stroke-width='1.5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060B18;
+  --panel:#0B1424;
+  --ink:#E8EDF5;
+  --dim:#8290A8;
+  --line:rgba(232,237,245,.22);
+  --faint:rgba(232,237,245,.1);
+  --red:#E03C31;
+  --go:#35C46F;
+  --gold:#D9A441;
+  --mono:'IBM Plex Mono',ui-monospace,'Cascadia Mono','Courier New',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--bg);
+  background-image:
+    radial-gradient(1px 1px at 15% 20%,rgba(255,255,255,.8),transparent 100%),
+    radial-gradient(1px 1px at 42% 8%,rgba(255,255,255,.5),transparent 100%),
+    radial-gradient(1.5px 1.5px at 71% 16%,rgba(255,255,255,.7),transparent 100%),
+    radial-gradient(1px 1px at 88% 40%,rgba(255,255,255,.55),transparent 100%),
+    radial-gradient(1px 1px at 8% 62%,rgba(255,255,255,.4),transparent 100%),
+    radial-gradient(1.5px 1.5px at 55% 72%,rgba(255,255,255,.5),transparent 100%);
+  color:var(--ink);font-family:var(--mono);font-size:12.5px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(224,60,49,.4)}
+a{color:var(--ink);border-bottom:1px dashed var(--dim);text-decoration:none}
+a:hover{color:var(--red);border-bottom-color:var(--red)}
+a:focus-visible,button:focus-visible{outline:1px dashed var(--red);outline-offset:3px}
+button{font-family:var(--mono);cursor:pointer}
+img{display:block;max-width:100%}
+
+.wrap{max-width:1160px;margin:0 auto;padding:0 clamp(12px,3vw,36px) 60px}
+
+/* ===== masthead ===== */
+.mast{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:20px;align-items:center;padding:26px 0 20px;border-bottom:2px solid var(--line)}
+.mast .patch-main{width:96px;height:96px;flex:0 0 auto}
+.mast h1{font-size:clamp(20px,4vw,36px);font-weight:700;letter-spacing:.12em;text-transform:uppercase;line-height:1.15}
+.mast h1 em{font-style:normal;color:var(--red)}
+.mast .msub{font-size:10px;letter-spacing:.34em;color:var(--dim);text-transform:uppercase;margin-top:8px}
+.mast .stat{text-align:right;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.mast .stat b{display:block;color:var(--go);font-size:14px;letter-spacing:.14em;margin-bottom:4px}
+.mast .stat .clk{font-variant-numeric:tabular-nums}
+
+/* ===== countdown stages ===== */
+.stage{margin-top:46px}
+.stage-h{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.stage-h .t{font-size:12px;letter-spacing:.2em;color:var(--red);border:1px solid var(--red);padding:3px 10px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stage-h h2{font-size:clamp(14px,2.2vw,20px);font-weight:700;letter-spacing:.26em;text-transform:uppercase}
+.stage-h .side{margin-left:auto;font-size:9.5px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase}
+.stage-b{border:1px solid var(--line);background:linear-gradient(180deg,rgba(11,20,36,.95),rgba(6,11,24,.9))}
+.lbl{font-size:8.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:10px}
+.lbl::before{content:"▸ ";color:var(--red)}
+
+/* directive */
+.dirc{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}
+.dirc>div{padding:24px 26px;min-width:0}
+.dirc .l{border-right:1px dashed var(--faint)}
+.dirc .prompt{font-size:clamp(18px,2.8vw,28px);font-weight:700;line-height:1.3;letter-spacing:.03em;text-transform:uppercase}
+.dirc .prompt em{font-style:normal;color:var(--red)}
+.dirc .url{margin-top:14px;font-size:11.5px;word-break:break-all}
+.kv{display:grid;grid-template-columns:96px 1fr;gap:5px 12px;font-size:11px}
+.kv dt{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);padding-top:2px}
+.kv dd{overflow-wrap:anywhere}
+
+/* crew / audience */
+.crew{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr) minmax(0,.95fr)}
+.crew>div{padding:22px 24px;border-right:1px dashed var(--faint);min-width:0}
+.crew>div:last-child{border-right:none}
+.lean{font-size:clamp(20px,3vw,30px);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.lean b{color:var(--red)}
+.conf{font-size:10px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;margin-top:4px}
+.gauge{margin:12px 0 14px}
+.gauge .tr{height:10px;border:1px solid var(--line);position:relative;padding:1px}
+.gauge .fl{height:100%;background:repeating-linear-gradient(90deg,var(--red) 0 6px,transparent 6px 8px)}
+.gauge .sc{display:flex;justify-content:space-between;font-size:8.5px;color:var(--dim);margin-top:4px}
+.crew ul{list-style:none}
+.crew li{font-size:11.5px;padding:6px 0 6px 16px;border-bottom:1px dashed var(--faint);position:relative}
+.crew li::before{content:"◦";position:absolute;left:0;color:var(--red)}
+.trow{display:grid;grid-template-columns:80px 1fr;gap:3px 10px;padding:7px 0;border-bottom:1px dashed var(--faint);font-size:11.5px}
+.trow:last-child{border-bottom:none}
+.trow b{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);padding-top:2px}
+.vibes{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.vibes span{border:1px solid var(--line);padding:3px 10px;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase}
+
+/* patches */
+.ptrow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0}
+.pt{padding:20px 16px 18px;border-right:1px dashed var(--faint);text-align:center;position:relative;min-width:0}
+.pt:last-child{border-right:none}
+.pt svg.patch{width:132px;height:132px;margin:0 auto}
+.pt .prim{position:absolute;top:8px;left:50%;transform:translateX(-50%);font-size:8px;letter-spacing:.26em;color:var(--red);border:1px solid var(--red);padding:2px 8px;background:var(--bg);text-transform:uppercase;white-space:nowrap}
+.pt h3{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-top:10px;min-height:2.4em;display:flex;align-items:center;justify-content:center}
+.pt .ang{font-size:9px;letter-spacing:.24em;color:var(--gold);text-transform:uppercase}
+.pt .tele{width:100%;border-collapse:collapse;font-size:10px;margin-top:10px;text-align:left}
+.pt .tele td{padding:4px 2px;border-bottom:1px dotted var(--faint)}
+.pt .tele td:last-child{text-align:right}
+.pt .tele .k{color:var(--dim);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase}
+.pt .tele .v{font-variant-numeric:tabular-nums}
+.pt .tele .v.g{color:var(--go)}
+.pt .fmt{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:8px}
+.pt .fmt span{font-size:8px;letter-spacing:.14em;border:1px solid var(--line);padding:1px 6px;color:var(--dim);text-transform:uppercase}
+.pt .wch{margin-top:10px;font-size:9px;color:#F0A79F;border-left:2px solid var(--red);padding-left:8px;text-align:left;line-height:1.5}
+
+/* go/no-go poll */
+.poll{width:100%;border-collapse:collapse;font-size:11.5px}
+.poll th{font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim);text-align:left;padding:8px 14px;border-bottom:1px solid var(--line)}
+.poll td{padding:10px 14px;border-bottom:1px dashed var(--faint);vertical-align:top}
+.poll tr:last-child td{border-bottom:none}
+.poll .st{font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.poll .stn{color:var(--dim);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase}
+.poll .nogo{color:var(--red);font-weight:700;letter-spacing:.2em;border:1.5px solid var(--red);padding:2px 10px;display:inline-block}
+.poll .rsn{color:var(--dim);font-size:10.5px;line-height:1.5;max-width:420px}
+
+/* ignition */
+.ign{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.45fr)}
+.ign .brief{padding:24px;border-right:1px dashed var(--faint);min-width:0}
+.ign .brief h3{font-size:clamp(17px,2.4vw,25px);font-weight:700;letter-spacing:.08em;text-transform:uppercase;line-height:1.2}
+.ign .brief .ba{color:var(--gold);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;margin:8px 0 14px}
+.ign .brief .msg{font-size:13.5px;color:#fff}
+.pay{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.pay figure{padding:12px;border-right:1px dashed var(--faint);border-bottom:1px dashed var(--faint)}
+.pay figure:nth-child(2n){border-right:none}
+.pay figure:nth-last-child(-n+2){border-bottom:none}
+.pay .frame{border:1px solid var(--line);padding:4px;background:#000}
+.pay .frame img{width:100%;aspect-ratio:4/3;object-fit:cover}
+.pay figcaption{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-top:8px;font-size:10.5px}
+.pay .h{min-width:0;overflow-wrap:anywhere}
+.pay .p{font-size:8px;letter-spacing:.18em;text-transform:uppercase;border:1px solid var(--go);color:var(--go);padding:1px 6px;white-space:nowrap}
+
+/* paint scheme */
+.paint{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.sw{padding:14px;border-right:1px dashed var(--faint);text-align:center}
+.sw:last-child{border-right:none}
+.sw .box{height:64px;border:1px solid var(--line)}
+.sw .n{font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-top:8px}
+.sw .h{font-size:9px;color:var(--dim);letter-spacing:.14em}
+
+/* black box */
+.bb{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr)}
+.bb>div{padding:22px 24px;min-width:0}
+.bb .l{border-right:1px dashed var(--faint)}
+.bb table{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:10px}
+.bb th{font-size:8.5px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase;text-align:left;padding:3px 5px;border-bottom:1px solid var(--line)}
+.bb td{padding:5px;border-bottom:1px dashed var(--faint);vertical-align:top}
+.bb .pm{display:block;color:var(--dim);font-size:9px;overflow-wrap:anywhere}
+.bb .md{color:var(--go);font-size:8.5px;letter-spacing:.14em}
+.affg{margin-top:10px}
+.affg .t{font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--line);padding-bottom:4px;margin-bottom:4px}
+.aff{display:flex;align-items:center;gap:10px;font-size:11px;padding:4px 0;border-bottom:1px dotted var(--faint)}
+.aff:last-child{border-bottom:none}
+.aff .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aff .cb{width:64px;height:7px;border:1px solid var(--line);padding:1px}
+.aff .cb i{display:block;height:100%;background:var(--red)}
+.aff .v{font-size:10px;font-variant-numeric:tabular-nums}
+
+/* next missions */
+.next{display:flex;flex-wrap:wrap;gap:12px}
+.nchip{background:transparent;border:1px solid var(--line);color:var(--ink);padding:10px 20px;font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;transition:.15s}
+.nchip:hover{border-color:var(--red);color:var(--red)}
+.nchip:active{transform:translateY(1px)}
+
+.foot{margin-top:54px;border-top:1px solid var(--line);padding-top:14px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim)}
+.empty{border:1px dashed var(--line);padding:44px;text-align:center;color:var(--dim);letter-spacing:.2em}
+
+@media(max-width:1020px){
+  .ptrow{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pt:nth-child(2){border-right:none}
+  .pt:nth-child(-n+2){border-bottom:1px dashed var(--faint)}
+  .crew{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .crew>div:nth-child(3){grid-column:1/-1;border-right:none;border-top:1px dashed var(--faint)}
+  .ign{grid-template-columns:minmax(0,1fr)}
+  .ign .brief{border-right:none;border-bottom:1px dashed var(--faint)}
+  .bb{grid-template-columns:minmax(0,1fr)}
+  .bb .l{border-right:none;border-bottom:1px dashed var(--faint)}
+  .paint{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sw{border-bottom:1px dashed var(--faint)}
+}
+@media(max-width:640px){
+  .mast{grid-template-columns:auto minmax(0,1fr)}
+  .mast .stat{display:none}
+  .ptrow{grid-template-columns:minmax(0,1fr)}
+  .pt{border-right:none!important;border-bottom:1px dashed var(--faint)!important}
+  .pt:last-child{border-bottom:none!important}
+  .crew{grid-template-columns:minmax(0,1fr)}
+  .crew>div{border-right:none;border-bottom:1px dashed var(--faint)}
+  .crew>div:last-child{border-bottom:none}
+  .dirc{grid-template-columns:minmax(0,1fr)}
+  .dirc .l{border-right:none;border-bottom:1px dashed var(--faint)}
+  .pay{grid-template-columns:minmax(0,1fr)}
+  .pay figure{border-right:none!important;border-bottom:1px dashed var(--faint)!important}
+  .pay figure:last-child{border-bottom:none!important}
+  .paint{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <svg class="patch-main" viewBox="0 0 120 120" aria-hidden="true">
+      <circle cx="60" cy="60" r="57" fill="#0B1424" stroke="#E03C31" stroke-width="4"/>
+      <circle cx="60" cy="60" r="46" fill="none" stroke="#8290A8" stroke-width="1"/>
+      <ellipse cx="60" cy="62" rx="34" ry="12" fill="none" stroke="#D9A441" stroke-width="1.5" transform="rotate(-18 60 62)"/>
+      <circle cx="22" cy="34" r="1.4" fill="#E8EDF5"/><circle cx="94" cy="28" r="1.2" fill="#E8EDF5"/><circle cx="88" cy="90" r="1.4" fill="#E8EDF5"/>
+      <text x="60" y="55" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="20" font-weight="bold" fill="#E8EDF5">MQ-40</text>
+      <text x="60" y="74" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="7" letter-spacing="1.5" fill="#E03C31">MARQUE FLIGHT</text>
+    </svg>
+    <div>
+      <h1 id="mast-title">MISSION MANIFEST</h1>
+      <div class="msub">strategy → campaign → final result · crewed flight</div>
+    </div>
+    <div class="stat">
+      <b>● LAUNCH READY</b>
+      <span class="clk" id="t-clock">T-04:30:00</span><br>
+      <span id="mast-id">FLT —</span>
+    </div>
+  </header>
+  <main id="app"></main>
+  <footer class="foot">
+    <span>MARQUE FLIGHT OPERATIONS · DIVISION 40</span>
+    <span id="foot-id">VEHICLE —</span>
+    <span>THIS MANIFEST IS GO FOR LAUNCH</span>
+  </footer>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const pct=x=>Math.round((x||0)*100);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Barrier Cream',h:'#EDDFCE'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Espresso Bean',h:'#4E362B'}
+];
+const CREAT=[4,6,12,14].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+
+document.getElementById('mast-title').innerHTML=esc(B.title||'Mission Manifest').toUpperCase().replace(/→/g,'<em> → </em>');
+document.getElementById('mast-id').textContent='FLT MQ-40-'+(B.id||'—').slice(0,4).toUpperCase();
+document.getElementById('foot-id').textContent='VEHICLE '+((B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url)||'—').replace(/^https?:\/\//,'');
+
+/* live countdown ticker (decorative) */
+let t=4*3600+30*60;
+const clk=document.getElementById('t-clock');
+setInterval(()=>{t=Math.max(0,t-1);
+  const h=String(Math.floor(t/3600)).padStart(2,'0'),m=String(Math.floor(t%3600/60)).padStart(2,'0'),s=String(t%60).padStart(2,'0');
+  clk.textContent='T-'+h+':'+m+':'+s;},1000);
+
+const M=document.getElementById('app');
+const stage=(t,title,side,body)=>{
+  if(!body)return;
+  M.appendChild(el('<section class="stage"><div class="stage-h"><span class="t">'+t+'</span><h2>'+esc(title)+'</h2>'+(side?'<span class="side">'+esc(side)+'</span>':'')+'</div><div class="stage-b">'+body+'</div></section>'));
+};
+const patch=(s,i)=>{
+  const L=String.fromCharCode(65+i),uid='p'+i;
+  const title=String(s.title||'').toUpperCase();
+  return '<svg class="patch" viewBox="0 0 120 120">'+
+  '<defs><path id="'+uid+'t" d="M60,60 m-42,0 a42,42 0 1,1 84,0" fill="none"/><path id="'+uid+'b" d="M60,60 m-42,0 a42,42 0 1,0 84,0" fill="none"/></defs>'+
+  '<circle cx="60" cy="60" r="57" fill="#0B1424" stroke="'+(i===sel?'#E03C31':'#8290A8')+'" stroke-width="'+(i===sel?4:2.5)+'"/>'+
+  '<circle cx="60" cy="60" r="48" fill="none" stroke="rgba(232,237,245,.3)" stroke-width="1"/>'+
+  '<circle cx="34" cy="42" r="1.3" fill="#E8EDF5"/><circle cx="86" cy="36" r="1" fill="#E8EDF5"/><circle cx="82" cy="84" r="1.3" fill="#E8EDF5"/><circle cx="30" cy="80" r="1" fill="#E8EDF5"/>'+
+  '<ellipse cx="60" cy="63" rx="33" ry="11" fill="none" stroke="#D9A441" stroke-width="1.4" transform="rotate(-16 60 63)"/>'+
+  '<text font-family="IBM Plex Mono,monospace" font-size="8.4" letter-spacing="1.6" fill="#E8EDF5"><textPath href="#'+uid+'t" startOffset="50%" text-anchor="middle">'+esc(title.slice(0,20))+'</textPath></text>'+
+  '<text font-family="IBM Plex Mono,monospace" font-size="7" letter-spacing="1.4" fill="#8290A8"><textPath href="#'+uid+'b" startOffset="50%" text-anchor="middle">'+esc(String(s.angle||'').toUpperCase().slice(0,22))+'</textPath></text>'+
+  '<text x="60" y="70" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="26" font-weight="bold" fill="'+(i===sel?'#E03C31':'#E8EDF5')+'">'+L+'</text>'+
+  '</svg>';
+};
+
+/* T-04:00 payload briefing */
+if(B.sub||B.urlContext){
+  const u=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url)||'';
+  stage('T-04:00','PAYLOAD BRIEFING','flight directive · verified uplink',
+    '<div class="dirc"><div class="l"><span class="lbl">Directive · read verbatim</span>'+
+    '<p class="prompt">'+esc((B.sub&&B.sub.prompt)||B.title||'').replace(/→/g,'<em>→</em>')+'</p>'+
+    (u?'<p class="url">LAUNCH SITE — <a href="'+esc(u)+'">'+esc(u)+'</a></p>':'')+'</div>'+
+    '<div><span class="lbl">Vehicle manifest</span>'+
+    '<dl class="kv"><dt>Vehicle</dt><dd>'+esc(B.urlContext&&B.urlContext.title||'—')+'</dd>'+
+    '<dt>Serial</dt><dd>'+esc(B.id||'—')+'</dd>'+
+    '<dt>Notes</dt><dd>'+esc(B.urlContext&&B.urlContext.description||'—')+'</dd></dl></div></div>');
+}
+
+/* T-03:30 crew survey */
+if(AR&&AR.lean){
+  stage('T-03:30','CREW SURVEY','who we are flying for',
+    '<div class="crew"><div><span class="lbl">Crew profile · dominant lean</span><div class="lean">'+esc(AR.lean.label||'—').replace(/-/g,'<b>-</b>')+'</div>'+
+    '<div class="conf">Survey confidence '+pct(AR.lean.confidence)+'%</div>'+
+    '<div class="gauge"><div class="tr"><div class="fl" style="width:'+pct(AR.lean.confidence)+'%"></div></div><div class="sc"><span>0.00</span><span>'+(AR.lean.confidence||0).toFixed(2)+'</span><span>1.00</span></div></div>'+
+    '<ul>'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></div>'+
+    '<div><span class="lbl">Telemetry · media habits</span>'+(AR.mediaHabits||[]).map(h=>'<div class="trow"><b>'+esc(h.channel)+'</b><span>'+esc(h.note)+'</span></div>').join('')+'</div>'+
+    '<div><span class="lbl">Comms intercepts · vibe words</span><div class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div></div>');
+}
+
+/* T-02:00 trajectory options */
+if(strats.length){
+  stage('T-02:00','TRAJECTORY OPTIONS','four computed paths · one primary',
+    '<div class="ptrow">'+strats.map((s,i)=>{
+      return '<div class="pt">'+(i===sel?'<span class="prim">Primary trajectory</span>':'')+
+      patch(s,i)+
+      '<h3>'+esc(s.title)+'</h3><div class="ang">'+esc(s.angle)+'</div>'+
+      '<table class="tele"><tbody>'+
+      '<tr><td class="k">P(SUCCESS)</td><td class="v'+(i===sel?' g':'')+'">'+pct(s.audienceFit&&s.audienceFit.score)+'%</td></tr>'+
+      (s.channels||[]).map(c=>'<tr><td class="k">'+esc(c.name).toUpperCase()+'</td><td class="v">'+pct(c.fit)+'%</td></tr>').join('')+
+      (s.reach?'<tr><td class="k">EST. RANGE</td><td class="v">'+views(s.reach.estViews)+'</td></tr>':'')+
+      '</tbody></table>'+
+      '<div class="fmt">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join('')+'</div>'+
+      ((s.watchouts&&s.watchouts[0])?'<div class="wch">FAULT NOTE — '+esc(s.watchouts[0])+'</div>':'')+
+      '</div>'}).join('')+
+    '</div>');
+}
+
+/* T-01:00 go/no-go poll */
+if(anti.length){
+  stage('T-01:00','GO / NO-GO POLL','flight director calls each station',
+    '<table class="poll"><thead><tr><th>Station</th><th>Console</th><th>Status</th><th>Controller’s report</th></tr></thead><tbody>'+
+    anti.map(a=>'<tr><td class="st">'+esc(a.title)+'</td><td class="stn">'+esc(a.channel).toUpperCase()+'</td>'+
+      '<td><span class="nogo">NO GO</span></td><td class="rsn">'+esc(a.whyNot)+'</td></tr>').join('')+
+    '</tbody></table>');
+}
+
+/* T-00:30 ignition */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  stage('T-00:30','IGNITION SEQUENCE','flight plan + payload fairings',
+    '<div class="ign"><div class="brief"><span class="lbl">Flight plan · path '+(sel!=null?String.fromCharCode(65+sel):'—')+'</span>'+
+    (br?'<h3>'+esc(br.title)+'</h3><p class="ba">'+esc(br.angle)+'</p>'+
+    '<dl class="kv"><dt>Crew</dt><dd>'+esc(br.audience)+'</dd>'+
+    '<dt>Burn msg</dt><dd class="msg">“'+esc(br.keyMessage)+'”</dd>'+
+    '<dt>Guidance</dt><dd>'+esc(selS.heroSignal||'—')+'</dd></dl>':'<p class="ba">no brief bound</p>')+'</div>'+
+    '<div class="pay">'+CREAT.map((m,i)=>
+      '<figure><div class="frame"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+      '<figcaption><span class="h">'+esc(m.head)+'</span><span class="p">'+esc(m.provider)+'</span></figcaption></figure>').join('')+
+    '</div></div>');
+}
+
+/* T-00:10 paint scheme */
+stage('T-00:10','EXTERIOR PAINT SCHEME','livery approved for flight',
+  '<div class="paint">'+PALETTE.map(s=>
+    '<div class="sw"><div class="box" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="h">'+s.h.toUpperCase()+'</div></div>').join('')+
+  '</div>');
+
+/* T-00:05 black box */
+if(B.evidence||affs.length){
+  stage('T-00:05','FLIGHT DATA RECORDER','telemetry · qloo downlink '+(B.qlooBundle&&B.qlooBundle.mode?B.qlooBundle.mode.toUpperCase():''),
+    '<div class="bb"><div class="l"><span class="lbl">Downlink log · '+calls.length+' transmissions</span>'+
+    '<table><thead><tr><th>Endpoint</th><th>N</th><th>Ms</th><th>Mode</th></tr></thead><tbody>'+
+    calls.map(c=>'<tr><td>'+esc(c.endpoint)+'<span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,16)).join(' '))+'</span></td>'+
+      '<td>'+esc(c.n)+'</td><td>'+esc(c.tookMs)+'</td><td><span class="md">'+esc(c.mode)+'</span></td></tr>').join('')+
+    '</tbody></table></div>'+
+    '<div><span class="lbl">Beacon returns · affinities</span>'+
+    affs.map(g=>'<div class="affg"><div class="t">'+esc(g.type.replace('urn:entity:',''))+' beacon</div>'+
+      g.entities.slice(0,4).map(e=>'<div class="aff"><span class="nm">'+esc(e.name)+'</span><span class="cb"><i style="width:'+pct(e.affinity)+'%"></i></span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')+'</div>').join('')+
+    '</div></div>');
+}
+
+/* T+00 next missions */
+stage('T+00:00','NEXT MISSIONS','manifest for the following flights',
+  '<div style="padding:18px 22px"><div class="next">'+['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button class="nchip">'+x+'</button>').join('')+'</div></div>');
+
+if(!M.children.length)M.appendChild(el('<div class="empty">MISSION ABORTED — data.js not found on the pad.</div>'));
+})();
+</script>
+</body>
+</html>

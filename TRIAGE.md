@@ -102,16 +102,16 @@ Post-round-5 wins: VersionTabs lazy iframes (IntersectionObserver), Gate 'error'
 ## Round-11 adversarial sweep (QA agent, ~04:00) — findings board
 
 MED (fixer agent assigned):
-- [ ] Free-text brief inherits active-board Qloo signals → contaminates provenance
-- [ ] Promote caption leaks "YourBrand" placeholder + junk Qloo hashtags
-- [ ] Strategy detail auto-pulls media examples on mount (yt-dlp) → on-demand only
+- [x] Free-text brief inherits active-board Qloo signals — FIXED → contaminates provenance
+- [x] Promote caption leaks "YourBrand" placeholder — FIXED + junk Qloo hashtags
+- [x] Strategy detail auto-pulls media examples — FIXED (on-demand only)
 
 LOW (fixer agent):
-- [ ] DELETE /api/websites/:id/versions/:vid lacks last-version guard
-- [ ] hunts chip row: dedupe platforms, drop non-media (OOH/Maps)
-- [ ] "WATCHOUTS" header → "Watch-outs"
-- [ ] .stg-chipbar-prompt ~62px squeeze at 390px
-- [ ] Campaign delete: window.confirm → styled Modal
+- [x] DELETE version last-version guard — FIXED
+- [x] hunts chip row dedupe — FIXED
+- [x] "WATCHOUTS" → "Watch-outs" — FIXED
+- [x] chipbar-prompt squeeze — FIXED (wraps)
+- [x] Campaign delete styled Modal — FIXED
 
 LOW (noted, later):
 - Google Fonts render-blocking CDN → consider self-host/font-display
@@ -121,3 +121,10 @@ LOW (noted, later):
 - Brandbook "Taste signature · failed" badge — no retry affordance
 - Engine chip sets inconsistent between composer and editor
 - dash-plan-top ~6px text overflow; icon buttons lack aria-labels
+
+## Round-12 review (code-read pass)
+- [x] Next-output "Website" → /websites?tab=site (was audit tab) — FIXED
+- [x] Site film films campaign-linked site, falls back to newest — FIXED
+- [x] Restored briefDraft handoff could re-fire auto-produce — FIXED (auto flag stripped on restore)
+- [x] producedFrom.campaignId stored `true` not id — FIXED
+- [x] WildCard platform chip casing → chanLabel — FIXED

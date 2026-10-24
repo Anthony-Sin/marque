@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARQUE ORBIT — Rhode peptide lip tint → Gen Z</title>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<style>
+  :root{
+    --bg:#0a0d12;
+    --bg2:#0d1118;
+    --ink:#e8edf3;
+    --mut:#8b96a5;
+    --dim:#5a6472;
+    --card:#ffffff;
+    --card-ink:#17202c;
+    --card-mut:#5e6c7c;
+    --line:#e4e8ee;
+    --teal:#5fe0cf;
+    --rose:#f2a2bb;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  ::selection{background:var(--teal);color:#052a25}
+  a{color:var(--teal);text-decoration:none}
+  a:hover{text-decoration:underline}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+
+  /* ===== hero ===== */
+  .hero{position:relative;height:min(620px,78vh);min-height:420px;overflow:hidden;
+    background:radial-gradient(1000px 600px at 62% 38%, #111a26 0%, var(--bg) 65%)}
+  #orbit{position:absolute;inset:0}
+  #orbit canvas{display:block}
+  .orbit-fb{position:absolute;inset:0;display:none;align-items:center;justify-content:center;perspective:900px}
+  .orbit-fb .r{position:absolute;border-radius:50%;border:1px solid}
+  .orbit-fb .r1{width:300px;height:300px;border-color:rgba(95,224,207,.5);transform:rotateX(72deg);animation:fspin 9s linear infinite}
+  .orbit-fb .r2{width:430px;height:430px;border-color:rgba(242,162,187,.4);transform:rotateX(60deg) rotateZ(20deg);animation:fspin 14s linear infinite reverse}
+  .orbit-fb .r3{width:560px;height:560px;border-color:rgba(232,237,243,.16);transform:rotateX(80deg) rotateZ(-14deg);animation:fspin 20s linear infinite}
+  .orbit-fb .c{width:8px;height:8px;border-radius:50%;background:var(--teal);box-shadow:0 0 18px var(--teal)}
+  @keyframes fspin{to{transform:rotateX(72deg) rotateZ(360deg)}}
+  .hero-ov{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:22px 28px;pointer-events:none}
+  .hud-top{display:flex;align-items:center;gap:16px}
+  .mark{display:flex;align-items:center;gap:9px;font-weight:700;font-size:13px;letter-spacing:.2em;white-space:nowrap}
+  .mark i{width:10px;height:10px;border-radius:50%;background:var(--teal);box-shadow:0 0 12px var(--teal)}
+  .hud-top .t{color:var(--mut);font-size:11px;letter-spacing:.18em;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .hud-top .r{margin-left:auto;color:var(--dim);font-size:11px;letter-spacing:.14em;font-variant-numeric:tabular-nums}
+  .hero-txt{max-width:640px}
+  .hero-txt .kicker{color:var(--teal);font-size:11px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:10px}
+  .hero-txt h1{font-size:clamp(30px,4.6vw,52px);font-weight:800;letter-spacing:-.02em;line-height:1.05}
+  .hero-txt h1 em{font-style:normal;color:var(--rose)}
+  .hero-txt .sub{color:var(--mut);margin-top:12px;font-size:14px;max-width:520px}
+  .hero-stats{display:flex;gap:26px;margin-top:18px;flex-wrap:wrap}
+  .hero-stats .s b{display:block;font-size:20px;font-weight:800;color:#fff}
+  .hero-stats .s span{font-size:10px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase}
+
+  /* ===== content ===== */
+  .wrap{max-width:1180px;margin:0 auto;padding:34px 18px 80px}
+  .sect{margin-bottom:38px}
+  .shead{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+  .shead h2{font-size:12px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--ink)}
+  .shead .n{color:var(--teal);font-size:11px;letter-spacing:.14em;font-variant-numeric:tabular-nums}
+  .shead .ln{flex:1;height:1px;background:rgba(255,255,255,.08)}
+  .shead .tag{color:var(--dim);font-size:11px;letter-spacing:.12em}
+
+  /* white cards */
+  .wcard{background:var(--card);color:var(--card-ink);border-radius:12px;padding:18px 20px;
+    box-shadow:0 1px 0 rgba(255,255,255,.06),0 14px 30px rgba(0,0,0,.28);min-width:0;
+    transition:transform .18s,box-shadow .18s}
+  .wcard:hover{transform:translateY(-2px);box-shadow:0 22px 44px rgba(0,0,0,.4)}
+
+  .ask-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:14px}
+  .wcard .k{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--card-mut);margin-bottom:6px}
+  .wcard .big{font-size:22px;font-weight:750;letter-spacing:-.01em;line-height:1.2}
+  .wcard .src{color:var(--teal);font-size:12px;font-weight:600}
+  .wcard .desc{color:var(--card-mut);font-size:13px;margin-top:8px}
+  .metric{display:flex;align-items:center;gap:10px;margin:4px 0}
+  .metric .dot{width:8px;height:8px;border-radius:50%;background:var(--teal)}
+  .metric .dot.r{background:var(--rose)}
+  .metric .lab{font-size:12px;color:var(--card-mut)}
+  .metric .val{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+  .vibes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .vibes span{font-size:11px;font-weight:600;border-radius:20px;background:#eff6f5;color:#0d6e62;padding:3px 10px}
+  .habit{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--card-mut);padding:4px 0;border-top:1px dashed var(--line)}
+  .habit:first-of-type{border-top:none}
+  .habit b{color:var(--card-ink);font-weight:600}
+
+  .grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+  .scard .top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+  .scard .num{font-size:11px;font-weight:800;color:var(--rose);letter-spacing:.1em}
+  .scard h3{font-size:16px;font-weight:750;letter-spacing:-.01em}
+  .scard .ang{font-size:12px;color:var(--card-mut);font-style:italic;margin-bottom:10px}
+  .ch{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--card-mut);padding:3px 0}
+  .ch .nm{width:74px;font-weight:600;color:var(--card-ink)}
+  .ch .bar{flex:1;height:4px;border-radius:2px;background:#edf0f4;overflow:hidden}
+  .ch .bar i{display:block;height:100%;background:var(--teal)}
+  .ch .p{width:34px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:var(--card-ink)}
+  .scard .foot{display:flex;align-items:baseline;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid var(--line)}
+  .scard .foot .fit{font-size:24px;font-weight:800;color:var(--card-ink)}
+  .scard .foot .cap{font-size:9.5px;color:var(--card-mut);letter-spacing:.12em;text-transform:uppercase}
+  .scard .foot .reach{margin-left:auto;text-align:right}
+  .scard .foot .reach b{font-size:14px}
+  .scard .foot .reach span{display:block;font-size:9.5px;color:var(--card-mut);letter-spacing:.1em;text-transform:uppercase}
+  .scard .watch{font-size:11px;color:var(--card-mut);margin-top:8px;border-left:2px solid var(--rose);padding-left:8px}
+
+  /* ruled out strip */
+  .killed{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+  .kcard{border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:14px 16px;background:var(--bg2)}
+  .kcard h4{font-size:13px;font-weight:700;color:var(--mut);text-decoration:line-through;text-decoration-color:var(--rose)}
+  .kcard .chn{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:2px 0 8px}
+  .kcard p{font-size:12px;color:var(--mut)}
+
+  /* output */
+  .brief-band{background:var(--card);color:var(--card-ink);border-radius:12px;padding:16px 20px;
+    display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:20px;align-items:center;margin-bottom:14px}
+  .brief-band .k{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--card-mut)}
+  .brief-band .v{font-size:13px;font-weight:600}
+  .brief-band .v.thin{font-weight:400;color:var(--card-mut)}
+  .mcard{padding:0;overflow:hidden;display:flex;flex-direction:column}
+  .mcard .ph{position:relative;aspect-ratio:1/1;background:#e8ecf1;overflow:hidden}
+  .mcard img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+  .mcard:hover img{transform:scale(1.04)}
+  .mcard .pv{position:absolute;left:10px;bottom:10px;background:rgba(10,13,18,.8);color:var(--teal);
+    font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:5px}
+  .mcard .bd{padding:12px 14px}
+  .mcard .bd h3{font-size:13px;font-weight:650;line-height:1.3}
+
+  /* provenance */
+  .prov-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:14px}
+  .pcard .prow{display:grid;grid-template-columns:110px 1fr 64px 40px;gap:10px;font-size:12px;
+    padding:7px 0;border-top:1px solid var(--line);color:var(--card-mut)}
+  .pcard .prow:first-of-type{border-top:none}
+  .pcard code{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--card-ink);background:#f1f4f8;padding:1px 5px;border-radius:4px}
+  .pcard .ms{text-align:right;font-variant-numeric:tabular-nums}
+  .affline{display:flex;align-items:baseline;gap:8px;font-size:12.5px;padding:5px 0;border-top:1px dashed var(--line)}
+  .affline:first-of-type{border-top:none}
+  .affline .ty{width:60px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--card-mut)}
+  .affline .ents{flex:1;color:var(--card-ink);font-weight:550;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .affline .p{font-weight:800;color:#0d6e62;font-variant-numeric:tabular-nums}
+
+  .palrow{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+  .palsw{background:var(--card);border-radius:12px;overflow:hidden}
+  .palsw .c{height:64px}
+  .palsw .t{padding:9px 12px;font-size:11px}
+  .palsw .t b{display:block;color:var(--card-ink);font-weight:700}
+  .palsw .t span{color:var(--card-mut);font-size:10px;letter-spacing:.06em}
+
+  .next{display:flex;gap:12px;flex-wrap:wrap}
+  .next a{pointer-events:none;border:1px solid rgba(95,224,207,.45);color:var(--teal);border-radius:8px;
+    padding:12px 22px;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    text-decoration:none;transition:all .15s;display:inline-flex;align-items:center;gap:8px}
+  .next a:hover{background:var(--teal);color:#052a25}
+  .next a::after{content:"→"}
+  .foot{display:flex;justify-content:space-between;gap:10px;color:var(--dim);font-size:11px;letter-spacing:.1em;margin-top:44px;flex-wrap:wrap}
+
+  @media (max-width:1020px){.grid4,.killed{grid-template-columns:repeat(2,1fr)}.ask-grid,.prov-grid{grid-template-columns:1fr}.brief-band{grid-template-columns:1fr 1fr}}
+  @media (max-width:620px){
+    .grid4{grid-template-columns:1fr}.killed{grid-template-columns:1fr}
+    .palrow{grid-template-columns:repeat(2,1fr)}
+    .brief-band{grid-template-columns:1fr}
+    .hero{height:520px}
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div id="orbit"></div>
+  <div class="orbit-fb" id="fb"><div class="r r1"></div><div class="r r2"></div><div class="r r3"></div><div class="c"></div></div>
+  <div class="hero-ov">
+    <div class="hud-top">
+      <div class="mark"><i></i>MARQUE ORBIT</div>
+      <div class="t">strategy → campaign → final result</div>
+      <div class="r" id="hud-id">—</div>
+    </div>
+    <div class="hero-txt">
+      <div class="kicker" id="ask-src">—</div>
+      <h1 id="ask-h">—</h1>
+      <div class="sub" id="ask-desc">—</div>
+      <div class="hero-stats">
+        <div class="s"><b id="hs-strat">—</b><span>strategies</span></div>
+        <div class="s"><b id="hs-fit">—</b><span>top fit</span></div>
+        <div class="s"><b id="hs-views">—</b><span>est. reach</span></div>
+        <div class="s"><b id="hs-lean">—</b><span>audience lean</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <section class="sect">
+    <div class="shead"><h2>Audience read</h2><span class="n">01</span><span class="ln"></span><span class="tag">signals · habits · vibes</span></div>
+    <div class="ask-grid">
+      <div class="wcard">
+        <div class="k">Disposition</div>
+        <div class="big" id="aud-lean">—</div>
+        <div class="vibes" id="aud-vibes"></div>
+      </div>
+      <div class="wcard">
+        <div class="k">Confidence &amp; media habits</div>
+        <div class="metric"><span class="dot"></span><span class="lab">Confidence</span><span class="val" id="aud-conf">—</span></div>
+        <div id="aud-habits"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sect">
+    <div class="shead"><h2>Strategy ring</h2><span class="n">02</span><span class="ln"></span><span class="tag">4 candidate orbits</span></div>
+    <div class="grid4" id="strats"></div>
+  </section>
+
+  <section class="sect">
+    <div class="shead"><h2>Ruled out</h2><span class="n">03</span><span class="ln"></span><span class="tag">decayed orbits</span></div>
+    <div class="killed" id="anti"></div>
+  </section>
+
+  <section class="sect">
+    <div class="shead"><h2>Final result</h2><span class="n">04</span><span class="ln"></span><span class="tag">campaign + creatives</span></div>
+    <div class="brief-band">
+      <div><div class="k">Campaign</div><div class="v" id="brief-title">—</div></div>
+      <div><div class="k">Angle</div><div class="v thin" id="brief-angle">—</div></div>
+      <div><div class="k">Audience</div><div class="v thin" id="brief-aud">—</div></div>
+      <div><div class="k">Key message</div><div class="v" id="brief-msg">—</div></div>
+    </div>
+    <div class="grid4" id="media"></div>
+  </section>
+
+  <section class="sect">
+    <div class="shead"><h2>Qloo provenance</h2><span class="n">05</span><span class="ln"></span><span class="tag" id="q-mode">—</span></div>
+    <div class="prov-grid">
+      <div class="wcard pcard"><div class="k">Evidence calls</div><div id="calls"></div></div>
+      <div class="wcard"><div class="k">Top affinities</div><div id="affs"></div></div>
+    </div>
+  </section>
+
+  <section class="sect">
+    <div class="shead"><h2>Brand palette</h2><span class="n">06</span><span class="ln"></span><span class="tag">rhode peptide system</span></div>
+    <div class="palrow" id="pal"></div>
+  </section>
+
+  <section class="sect">
+    <div class="shead"><h2>Next outputs</h2><span class="n">07</span><span class="ln"></span></div>
+    <div class="next" id="next">
+      <a href="#" onclick="return false">Website</a>
+      <a href="#" onclick="return false">Brandbook</a>
+      <a href="#" onclick="return false">Video</a>
+    </div>
+    <div class="foot"><span id="ft">—</span><span>MARQUE ORBIT · RENDERED LIVE</span></div>
+  </section>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+const B=(window.DATA&&window.DATA.board)||{};
+const esc=s=>String(s==null?"—":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const K=v=>v>=1e3?Math.round(v/1e3)+"K":v;
+const pct=v=>Math.round((v||0)*100)+"%";
+
+/* ===== three.js orbit sculpture (guarded) ===== */
+(function(){
+  const host=document.getElementById("orbit");
+  if(!window.THREE){document.getElementById("fb").style.display="flex";return;}
+  try{
+    const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+    renderer.setPixelRatio(Math.min(2,devicePixelRatio||1));
+    host.appendChild(renderer.domElement);
+    const scene=new THREE.Scene();
+    const cam=new THREE.PerspectiveCamera(42,1,.1,100);cam.position.set(0,0,7.2);
+    const g=new THREE.Group();scene.add(g);
+    const rings=[];
+    [[1.5,0x5fe0cf,.9,.62,0],[1.95,0xf2a2bb,.75,.4,.5],[2.4,0xe8edf3,.28,.9,-.4],[2.85,0x5fe0cf,.35,1.2,.9]].forEach(([r,c,tx,rz,ry])=>{
+      const m=new THREE.Mesh(new THREE.TorusGeometry(r,.011,8,220),
+        new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.85}));
+      m.rotation.x=tx;m.rotation.z=rz;m.rotation.y=ry;g.add(m);rings.push(m);});
+    /* particle halo */
+    const N=380,pos=new Float32Array(N*3);
+    for(let i=0;i<N;i++){const a=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=2.1+Math.random()*.9;
+      pos[i*3]=r*Math.sin(ph)*Math.cos(a);pos[i*3+1]=r*Math.cos(ph)*.6;pos[i*3+2]=r*Math.sin(ph)*Math.sin(a);}
+    const pg=new THREE.BufferGeometry();pg.setAttribute("position",new THREE.BufferAttribute(pos,3));
+    g.add(new THREE.Points(pg,new THREE.PointsMaterial({color:0x9ff5e8,size:.022,transparent:true,opacity:.7})));
+    const core=new THREE.Mesh(new THREE.SphereGeometry(.16,24,24),new THREE.MeshBasicMaterial({color:0xf2a2bb}));
+    g.add(core);
+    g.position.x=1.4;
+    let mx=0,my=0;
+    addEventListener("pointermove",e=>{mx=(e.clientX/innerWidth-.5);my=(e.clientY/innerHeight-.5);});
+    function size(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();
+      g.position.x=innerWidth<700?0:1.4;}
+    size();addEventListener("resize",size);
+    (function anim(t){requestAnimationFrame(anim);t=t||0;
+      g.rotation.y=t*.00012+mx*.4;g.rotation.x=Math.sin(t*.00007)*.12+my*.25;
+      rings.forEach((r,i)=>r.rotation.z+=.0009*(i%2?-1:1));
+      renderer.render(scene,cam);})(0);
+  }catch(e){document.getElementById("fb").style.display="flex";}
+})();
+
+/* ===== data binding ===== */
+const sub=B.sub||{},uc=B.urlContext||{};
+document.getElementById("hud-id").textContent="BOARD "+String(B.id||"").slice(0,8).toUpperCase();
+document.getElementById("ask-src").textContent=(sub.url||uc.url||"—").replace(/^https?:\/\//,"")+" · "+(uc.title||"");
+document.getElementById("ask-h").innerHTML=esc(sub.prompt||B.title||"—").replace("→","<em>→</em>");
+document.getElementById("ask-desc").textContent=uc.description||"";
+const st=B.strategies||[];
+const topFit=Math.max(...st.map(s=>s.audienceFit?s.audienceFit.score:0));
+const totViews=st.reduce((a,s)=>a+(s.reach&&s.reach.estViews||0),0);
+document.getElementById("hs-strat").textContent=st.length;
+document.getElementById("hs-fit").textContent=pct(topFit);
+document.getElementById("hs-views").textContent=K(totViews);
+const ar=B.audienceRead||{},lean=ar.lean||{};
+document.getElementById("hs-lean").textContent=lean.label||"—";
+document.getElementById("aud-lean").textContent=lean.label||"—";
+document.getElementById("aud-conf").textContent=pct(lean.confidence);
+document.getElementById("aud-vibes").innerHTML=(ar.vibeWords||[]).map(v=>`<span>${esc(v)}</span>`).join("");
+document.getElementById("aud-habits").innerHTML=(ar.mediaHabits||[]).map(h=>
+ `<div class="habit"><b>${esc(h.channel)}</b><span>${esc(h.note)}</span></div>`).join("");
+
+document.getElementById("strats").innerHTML=st.map((s,i)=>
+ `<div class="wcard scard">
+    <div class="top"><span class="num">S${i+1}</span><h3>${esc(s.title)}</h3></div>
+    <div class="ang">${esc(s.angle)}</div>
+    ${(s.channels||[]).map(c=>`<div class="ch"><span class="nm">${esc(c.name)}</span><span class="bar"><i style="width:${pct(c.fit)}"></i></span><span class="p">${pct(c.fit)}</span></div>`).join("")}
+    <div class="foot"><span class="fit">${pct(s.audienceFit&&s.audienceFit.score)}</span><span class="cap">fit</span>
+      <span class="reach"><b>${K(s.reach&&s.reach.estViews||0)}</b><span>est views</span></span></div>
+    <div class="watch">${esc((s.watchouts||[])[0]||"")}</div>
+  </div>`).join("");
+
+document.getElementById("anti").innerHTML=(B.antiStrategies||[]).map(a=>
+ `<div class="kcard"><h4>${esc(a.title)}</h4><div class="chn">${esc(a.channel)}</div><p>${esc(a.whyNot)}</p></div>`).join("");
+
+const br=st[0]&&st[0].brief||{};
+document.getElementById("brief-title").textContent=br.title||"—";
+document.getElementById("brief-angle").textContent=br.angle||"—";
+document.getElementById("brief-aud").textContent=br.audience||"—";
+document.getElementById("brief-msg").textContent="“"+(br.keyMessage||"—")+"”";
+
+const pool=((window.MEDIA||{}).pool||[]).map(m=>({img:m.img.replace(/^\.\//,"../"),head:m.head,provider:m.provider}));
+const picks=[3,7,9,14].map(i=>pool[i]).filter(Boolean);
+document.getElementById("media").innerHTML=picks.map(m=>
+ `<div class="wcard mcard"><div class="ph"><img src="${m.img}" alt="" loading="lazy" onerror="this.closest('.mcard').style.display='none'"><span class="pv">${esc(m.provider)}</span></div>
+   <div class="bd"><h3>${esc(m.head)}</h3></div></div>`).join("");
+
+const ev=B.evidence||{};
+document.getElementById("q-mode").textContent=`${(ev.calls||[]).length} calls · ${ev.qlooMode||"—"} mode · source ${ev.source||"—"}`;
+document.getElementById("calls").innerHTML=(ev.calls||[]).map(c=>
+ `<div class="prow"><code>${esc(c.endpoint)}</code><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(Object.entries(c.params||{}).map(([k,v])=>k+"="+v).join(" "))}</span><span class="ms">${c.tookMs}ms</span><span class="ms">n${c.n}</span></div>`).join("");
+const aff=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+document.getElementById("affs").innerHTML=aff.map(a=>
+ `<div class="affline"><span class="ty">${esc((a.type||"").replace("urn:entity:",""))}</span>
+   <span class="ents">${a.entities.slice(0,4).map(e=>esc(e.name)).join(" · ")}</span>
+   <span class="p">${a.entities[0]?pct(a.entities[0].affinity):""}</span></div>`).join("");
+
+const pal=[["Peptide Blush","#F3D9D2"],["Glaze Cream","#F7EFE4"],["Barrier Beige","#E4CDBB"],["Toast","#7A5A46"],["Espresso","#2E211B"]];
+document.getElementById("pal").innerHTML=pal.map(p=>
+ `<div class="palsw"><div class="c" style="background:${p[1]}"></div><div class="t"><b>${p[0]}</b><span>${p[1]}</span></div></div>`).join("");
+
+document.getElementById("ft").textContent=`BOARD ${String(B.id||"").slice(0,8)} · FETCHED ${(B.fetchedAt||"").slice(0,16).replace("T"," ")} UTC · ${st.length} STRATEGIES · ${picks.length} CREATIVES`;
+</script>
+</body>
+</html>

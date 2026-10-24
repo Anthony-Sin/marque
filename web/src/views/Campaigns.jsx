@@ -127,7 +127,13 @@ export default function Campaigns() {
     try {
       if (sessionStorage.getItem('strategyHandoff')) return;
       const raw = sessionStorage.getItem('marque.briefDraft');
-      if (raw) { const d = JSON.parse(raw); setBrief(d.brief || null); setDraft(d.draft || null); if (d.handoff) setHandoff(d.handoff); }
+      if (raw) {
+        const d = JSON.parse(raw);
+        setBrief(d.brief || null); setDraft(d.draft || null);
+        // a restored handoff must never auto-fire produce again — a failed
+        // create would otherwise re-run on every mount
+        if (d.handoff) setHandoff({ ...d.handoff, auto: false });
+      }
     } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -316,7 +322,7 @@ export default function Campaigns() {
         campaignId: open.id,
       });
       say('Site drafted from this campaign');
-      nav('/websites');
+      nav('/websites?tab=site');
     } catch (e) { say(e.message); }
     setProducingNext('');
   };

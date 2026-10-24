@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque Pictures — Storyboard · Rhode peptide lip tint → Gen Z</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23F0E9DA'/%3E%3Crect x='8' y='14' width='48' height='36' fill='none' stroke='%23241F18' stroke-width='3'/%3E%3Ctext x='32' y='42' font-family='serif' font-size='24' text-anchor='middle' fill='%23C33A1F'%3EM%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F0E9DA;
+  --paper-2:#E8E0CD;
+  --card:#FBF7EE;
+  --ink:#241F18;
+  --ink-2:#6E6250;
+  --ink-3:#9A8C76;
+  --line:#D8CDB6;
+  --acc:#C33A1F;
+  --acc-soft:rgba(195,58,31,.1);
+  --hand:'Caveat',cursive;
+  --type:ui-monospace,'Courier New',Courier,monospace;
+  --sans:system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--paper);
+  background-image:
+    radial-gradient(rgba(110,98,80,.06) 1px,transparent 1.4px),
+    linear-gradient(rgba(255,255,255,.35),rgba(255,255,255,0));
+  background-size:22px 22px,100% 100%;
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:14px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--acc-soft)}
+a{color:var(--acc);text-decoration:none;border-bottom:1px solid var(--acc)}
+a:hover{color:var(--ink)}
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:2px dashed var(--acc);outline-offset:3px}
+button{font-family:var(--sans);cursor:pointer}
+.hand{font-family:var(--hand)}
+.type{font-family:var(--type)}
+
+/* ============ PRODUCTION HEADER ============ */
+.slate{
+  max-width:1240px;margin:0 auto;padding:34px 28px 0;
+}
+.slate-top{display:flex;flex-wrap:wrap;gap:10px 26px;justify-content:space-between;align-items:baseline}
+.prod{font-family:var(--type);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-2)}
+.prod b{color:var(--acc)}
+.slate h1{
+  font-family:var(--hand);font-weight:700;font-size:clamp(38px,6vw,64px);
+  line-height:1;color:var(--ink);margin:6px 0 4px;
+}
+.slate h1 span{color:var(--acc)}
+.slate-sub{font-family:var(--type);font-size:12px;color:var(--ink-2);letter-spacing:.08em}
+.slate-fields{
+  display:flex;flex-wrap:wrap;gap:0;margin-top:20px;border:1.5px solid var(--ink);
+  background:var(--card);
+}
+.slate-fields div{
+  padding:9px 18px;border-right:1.5px solid var(--ink);font-family:var(--type);font-size:11px;
+}
+.slate-fields div:last-child{border-right:none}
+.slate-fields b{display:block;font-size:9px;letter-spacing:.22em;color:var(--ink-3);margin-bottom:2px}
+
+/* ============ TIMELINE RAIL ============ */
+.rail-wrap{
+  position:sticky;top:0;z-index:40;background:linear-gradient(var(--paper) 82%,rgba(240,233,218,0));
+  padding:14px 0 22px;margin-top:18px;
+}
+.rail{max-width:1240px;margin:0 auto;padding:0 28px}
+.rail-track{
+  position:relative;height:46px;border:1.5px solid var(--ink);background:var(--card);
+  display:flex;align-items:stretch;
+}
+.rail-track::before{content:"";position:absolute;left:0;right:0;top:50%;height:1.5px;background:var(--ink)}
+.rtick{
+  flex:1;position:relative;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 4px 5px 8px;border-right:1px dashed var(--line);text-decoration:none;border-bottom:none;
+  color:var(--ink-2);transition:background .15s;
+}
+.rtick:last-child{border-right:none}
+.rtick .sc{font-family:var(--type);font-size:8.5px;letter-spacing:.14em;position:absolute;top:4px;left:8px;color:var(--ink-3)}
+.rtick .lbl{font-family:var(--type);font-size:9.5px;letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtick:hover,.rtick:focus-visible{background:var(--acc-soft);color:var(--acc)}
+.rtick:hover::after{content:"";position:absolute;top:-7px;left:10px;border:5px solid transparent;border-top-color:var(--acc)}
+
+/* ============ SCENES ============ */
+main{max-width:1240px;margin:0 auto;padding:8px 28px 60px}
+.scene{margin-top:44px}
+.slugline{
+  font-family:var(--type);font-size:clamp(13px,1.8vw,16px);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink);display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+}
+.slugline .scno{
+  background:var(--ink);color:var(--paper);padding:3px 10px;font-size:11px;letter-spacing:.18em;
+}
+.slugline .tc{color:var(--ink-3);font-size:11px}
+.slugline::after{content:"";flex:1;border-top:1.5px dashed var(--line);min-width:30px}
+.dirnote{
+  font-family:var(--hand);font-size:19px;color:var(--acc);margin:8px 0 0;transform:rotate(-.6deg);
+}
+.dirnote::before{content:"⤷ ";font-family:var(--hand)}
+
+/* storyboard frame — sprocket film card */
+.frame{
+  background:var(--card);border:1.5px solid var(--ink);position:relative;
+  box-shadow:4px 4px 0 rgba(36,31,24,.14);
+}
+.frame .perf{
+  height:14px;position:relative;
+  background-image:radial-gradient(circle at 9px 7px,var(--paper) 3px,transparent 3.6px);
+  background-size:22px 14px;background-color:var(--ink);
+}
+.frame .perf.b{transform:scaleY(-1)}
+.frame .fnum{
+  position:absolute;top:22px;right:10px;z-index:3;font-family:var(--type);
+  background:var(--acc);color:#fff;font-size:10px;letter-spacing:.16em;padding:2px 8px;
+}
+.fbody{padding:16px 18px}
+
+/* generic bits */
+.kv{display:grid;grid-template-columns:92px 1fr;gap:5px 14px;font-size:12.5px}
+.kv dt{font-family:var(--type);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);padding-top:2px}
+.kv dd{color:var(--ink)}
+.chip{
+  display:inline-block;border:1.5px solid var(--ink);padding:3px 10px;font-family:var(--type);
+  font-size:10.5px;letter-spacing:.1em;margin:0 6px 6px 0;background:var(--card);
+  transition:all .14s;
+}
+.chip:hover{background:var(--ink);color:var(--paper);transform:rotate(-1.5deg)}
+.logline{font-size:clamp(18px,2.6vw,26px);font-weight:600;line-height:1.35;max-width:56ch}
+.logline em{font-style:normal;color:var(--acc)}
+
+/* SC2 audience */
+.aud-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:18px}
+.conf-meter{margin:12px 0}
+.conf-meter .t{display:flex;justify-content:space-between;font-family:var(--type);font-size:10px;letter-spacing:.16em;color:var(--ink-2)}
+.conf-meter .bar{height:14px;border:1.5px solid var(--ink);background:repeating-linear-gradient(90deg,transparent 0 10%,var(--line) 10% calc(10% + 1px));position:relative;margin-top:5px}
+.conf-meter .fill{position:absolute;inset:2px auto 2px 2px;background:var(--acc)}
+.habit{padding:9px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.habit b{font-family:var(--type);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--acc);display:block}
+.vibes{margin-top:6px}
+.vibes .hand{font-size:21px;color:var(--acc);margin-right:14px;display:inline-block;transform:rotate(-1deg)}
+.vibes .hand:nth-child(2n){transform:rotate(1.4deg)}
+.vibes .hand:nth-child(3n){transform:rotate(-2deg)}
+
+/* SC3 strategy frames — 4 up */
+.frames4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.sframe{transition:transform .16s}
+.sframe:hover{transform:translateY(-4px) rotate(-.4deg)}
+.sframe.picked{outline:2.5px solid var(--acc);outline-offset:4px}
+.sframe.picked .fnum::after{content:" ★ FINAL"}
+.sframe h3{font-size:16px;margin:2px 0 1px}
+.sframe .angle{font-family:var(--type);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2)}
+.score{
+  display:flex;align-items:baseline;gap:7px;margin:10px 0 8px;
+}
+.score .n{font-family:var(--hand);font-size:34px;font-weight:700;color:var(--acc);line-height:.9}
+.score .c{font-family:var(--type);font-size:9px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase}
+.chanline{font-size:11.5px;border-top:1px dashed var(--line);padding-top:8px;margin-top:8px}
+.chanline .ch{display:flex;justify-content:space-between;font-family:var(--type);font-size:10.5px;margin:3px 0}
+.chanline .why{font-size:10.5px;color:var(--ink-2)}
+.fmts{font-family:var(--type);font-size:9.5px;color:var(--ink-2);margin-top:8px}
+.est{margin-top:8px;font-family:var(--type);font-size:10.5px}
+.est b{color:var(--acc)}
+.watch{margin-top:9px;font-family:var(--hand);font-size:15.5px;line-height:1.25;color:var(--ink-2)}
+.watch b{color:var(--acc);font-size:16px}
+
+/* SC4 cut scenes */
+.cut-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.cut{position:relative;filter:saturate(.4);opacity:.85}
+.cut .fbody{padding:14px 16px}
+.cut h4{font-size:14px;text-decoration:line-through;text-decoration-color:var(--acc);text-decoration-thickness:2px}
+.cut .ch{font-family:var(--type);font-size:9.5px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase}
+.cut p{font-size:11px;color:var(--ink-2);margin-top:8px}
+.cut .stamp{
+  position:absolute;top:26px;left:50%;transform:translateX(-50%) rotate(-9deg);z-index:4;
+  font-family:var(--hand);font-size:26px;font-weight:700;color:var(--acc);
+  border:2.5px solid var(--acc);padding:0 14px;border-radius:4px;background:rgba(251,247,238,.85);
+}
+
+/* SC5 produced stills */
+.out-grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.5fr);gap:18px;align-items:start}
+.script .fbody{font-family:var(--type);font-size:12px}
+.script .st{font-size:15px;text-transform:uppercase;letter-spacing:.1em;border-bottom:1.5px solid var(--ink);padding-bottom:8px;margin-bottom:10px}
+.script p{margin-bottom:9px}
+.script .lbl{font-size:9px;letter-spacing:.2em;color:var(--ink-3);display:block}
+.script .km{color:var(--acc);font-weight:700}
+.stills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.still .fbody{padding:10px}
+.still .imgbox{position:relative;border:1.5px solid var(--ink);background:#111;aspect-ratio:4/3;overflow:hidden}
+.still img{width:100%;height:100%;object-fit:cover;display:block}
+.still .imgbox::before,.still .imgbox::after{ /* letterbox */
+  content:"";position:absolute;left:0;right:0;height:8%;background:#0d0d0b;z-index:2;
+}
+.still .imgbox::before{top:0}.still .imgbox::after{bottom:0}
+.still .meta{display:flex;justify-content:space-between;gap:8px;padding:8px 4px 2px;font-family:var(--type);font-size:9.5px;color:var(--ink-2)}
+.still .meta .prov{color:var(--acc);letter-spacing:.14em;text-transform:uppercase}
+
+/* SC6 palette */
+.paint{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.pchip .swatch{height:74px;border:1.5px solid var(--ink);box-shadow:3px 3px 0 rgba(36,31,24,.14)}
+.pchip .nm{font-family:var(--hand);font-size:19px;color:var(--ink);margin-top:7px}
+.pchip .hx{font-family:var(--type);font-size:9.5px;color:var(--ink-2);letter-spacing:.12em}
+
+/* SC7 continuity log */
+.prov-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px}
+table.plog{width:100%;border-collapse:collapse;font-family:var(--type);font-size:11px}
+table.plog th{text-align:left;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);font-weight:400;border-bottom:1.5px solid var(--ink);padding:0 10px 6px 0}
+table.plog td{border-bottom:1px dashed var(--line);padding:7px 10px 7px 0;vertical-align:top}
+table.plog .pr{display:block;color:var(--ink-3);font-size:9px;max-width:min(330px,50vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.live{color:var(--acc)}
+.live::before{content:"● ";font-size:8px;vertical-align:1px}
+.affg{margin-bottom:13px}
+.affg .t{font-family:var(--type);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc);margin-bottom:5px}
+.affr{display:flex;align-items:baseline;gap:8px;font-size:12px;padding:2.5px 0}
+.affr .v{margin-left:auto;font-family:var(--type);font-size:10px;color:var(--ink-2)}
+.affr .dots{flex:1;border-bottom:1px dotted var(--ink-3);transform:translateY(-3px)}
+
+/* SC8 deliverables */
+.deliv{display:flex;flex-wrap:wrap;gap:12px}
+.dbtn{
+  border:1.5px solid var(--ink);background:var(--card);padding:11px 20px;font-family:var(--type);
+  font-size:11px;letter-spacing:.14em;text-transform:uppercase;display:inline-flex;align-items:center;gap:9px;
+  box-shadow:3px 3px 0 rgba(36,31,24,.18);transition:all .14s;color:var(--ink);
+}
+.dbtn svg{width:14px;height:14px;stroke:var(--acc);fill:none;stroke-width:1.8}
+.dbtn:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 rgba(36,31,24,.22);border-color:var(--acc);color:var(--acc)}
+.dbtn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(36,31,24,.22)}
+
+footer{
+  max-width:1240px;margin:0 auto;padding:0 28px 44px;font-family:var(--type);font-size:10.5px;
+  color:var(--ink-3);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  border-top:1.5px dashed var(--line);padding-top:18px;
+}
+.coda{font-family:var(--hand);font-size:22px;color:var(--acc);transform:rotate(-1deg)}
+
+@media(max-width:1050px){
+  .frames4,.cut-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .out-grid,.aud-grid,.prov-grid{grid-template-columns:1fr}
+  .paint{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .frames4,.cut-grid,.stills{grid-template-columns:1fr}
+  .paint{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .slate,.rail,main,footer{padding-left:16px;padding-right:16px}
+  .rtick .lbl{display:none}
+  .rtick .sc{position:static}
+  .rtick{padding:10px 4px 4px;align-items:center;justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="slate">
+  <div class="slate-top">
+    <div class="prod">MARQUE <b>PICTURES</b> · STORYBOARD DEPARTMENT</div>
+    <div class="prod" id="prod-date"></div>
+  </div>
+  <h1 id="prod-title">—</h1>
+  <div class="slate-sub" id="prod-sub">A STRATEGY-TO-SCREEN SEQUENCE · BOARDS BY MARQUE AUTOMATION</div>
+  <div class="slate-fields" id="slate-fields"></div>
+</header>
+
+<div class="rail-wrap"><nav class="rail"><div class="rail-track" id="rail" aria-label="Scene timeline"></div></nav></div>
+
+<main id="scenes"></main>
+
+<footer>
+  <span>BOARD <span id="f-id">—</span> · ALL SCENES SHOT ON LIVE QLOO DATA</span>
+  <span class="coda">fin. — let's make the lip tint a movie star.</span>
+</footer>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const pct=x=>Math.round((x||0)*100);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Barrier Cream',h:'#EDDFCE'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Espresso Bean',h:'#4E362B'}
+];
+const CREAT=[0,2,4,6].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+
+document.getElementById('prod-title').innerHTML='“'+esc((B.sub&&B.sub.prompt)||B.title||'—')+'”';
+document.getElementById('prod-date').textContent=B.createdAt?('SHOT DATE '+new Date(B.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toUpperCase()):'';
+document.getElementById('f-id').textContent=(B.id||'').slice(0,8).toUpperCase();
+document.getElementById('slate-fields').innerHTML=
+  '<div><b>PROD.</b>MQ-'+esc((B.id||'').slice(0,4).toUpperCase())+'</div>'+
+  '<div><b>REEL</b>01</div><div><b>SCENES</b>08</div>'+
+  '<div><b>LENS</b>'+esc((B.audienceRead&&B.audienceRead.lean&&B.audienceRead.lean.label)||'—')+'</div>'+
+  '<div><b>STOCK</b>QLOO LIVE</div>';
+
+const SC=[
+  ['sc-ask','SC 1','THE ASK'], ['sc-aud','SC 2','AUDIENCE'], ['sc-strat','SC 3','4 PATHS'],
+  ['sc-cut','SC 4','CUTS'], ['sc-out','SC 5','FINAL SEQ.'], ['sc-pal','SC 6','ART DEPT'],
+  ['sc-log','SC 7','SCRIPT LOG'], ['sc-next','SC 8','DELIVERABLES']
+];
+document.getElementById('rail').innerHTML=SC.map(s=>
+  '<a class="rtick" href="#'+s[0]+'"><span class="sc">'+s[1]+'</span><span class="lbl">'+s[2]+'</span></a>').join('');
+
+const M=document.getElementById('scenes');
+const slug=(id,no,txt,tc,note)=>
+  '<div class="slugline" id="'+id+'"><span class="scno">SCENE '+no+'</span><span>'+txt+'</span><span class="tc">'+tc+'</span></div>'+
+  (note?'<p class="dirnote">'+esc(note)+'</p>':'');
+const frame=(num,inner,cls)=>'<div class="frame '+(cls||'')+'"><div class="perf"></div>'+
+  (num?'<span class="fnum">FR '+num+'</span>':'')+'<div class="fbody">'+inner+'</div><div class="perf b"></div></div>';
+
+/* ---- SCENE 1 : the ask ---- */
+if(B.sub||B.urlContext){
+  const u=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url)||'';
+  M.appendChild(el('<section class="scene">'+slug('sc-ask','01','INT. MARQUE HQ — DAY. A SINGLE PROMPT LANDS ON THE DESK','TC 00:00:00','this is our inciting incident — one line, whole movie.')+
+    frame('01',
+      '<p class="logline">'+esc((B.sub&&B.sub.prompt)||B.title||'').replace(/→/g,'<em>→</em>')+'</p>'+
+      '<div style="margin-top:16px"><dl class="kv">'+
+      '<dt>source</dt><dd>'+(u?'<a href="'+esc(u)+'">'+esc(u)+'</a>':'—')+'</dd>'+
+      '<dt>page title</dt><dd>'+esc(B.urlContext&&B.urlContext.title||'—')+'</dd>'+
+      '<dt>logline</dt><dd>'+esc(B.urlContext&&B.urlContext.description||'—')+'</dd>'+
+      '<dt>greenlit</dt><dd>'+(B.createdAt?new Date(B.createdAt).toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'}):'—')+'</dd></dl></div>'
+    )+'</section>'));
+}
+
+/* ---- SCENE 2 : audience ---- */
+const AR=B.audienceRead;
+if(AR&&AR.lean){
+  M.appendChild(el('<section class="scene">'+slug('sc-aud','02','INT. FOCUS GROUP ROOM — DAY. WE MEET THE AUDIENCE','TC 00:00:12','shoot them like they already love the product.')+
+    '<div class="aud-grid">'+
+    frame('02',
+      '<div class="prod" style="margin-bottom:6px">CHARACTER STUDY — LEAD</div>'+
+      '<div class="logline" style="font-size:20px;text-transform:uppercase;letter-spacing:.04em">'+esc(AR.lean.label)+'</div>'+
+      '<div class="conf-meter"><div class="t"><span>CONFIDENCE</span><span>'+pct(AR.lean.confidence)+'%</span></div>'+
+      '<div class="bar"><div class="fill" style="width:'+pct(AR.lean.confidence)+'%"></div></div></div>'+
+      '<ul style="list-style:none;margin-top:6px">'+(AR.lean.signals||[]).map(s=>'<li class="habit" style="border:none;padding:4px 0"><b style="color:var(--ink-3)">signal</b>'+esc(s)+'</li>').join('')+'</ul>'
+    )+
+    frame('03',
+      '<div class="prod" style="margin-bottom:6px">WHERE WE FIND THEM</div>'+
+      (AR.mediaHabits||[]).map(h=>'<div class="habit"><b>'+esc(h.channel)+'</b>'+esc(h.note)+'</div>').join('')+
+      '<div class="vibes"><div class="prod" style="margin:12px 0 4px">VIBE CHECK (mood board words)</div>'+
+      (AR.vibeWords||[]).map(w=>'<span class="hand">'+esc(w)+'</span>').join('')+'</div>'
+    )+
+    '</div></section>'));
+}
+
+/* ---- SCENE 3 : strategies ---- */
+if(strats.length){
+  M.appendChild(el('<section class="scene">'+slug('sc-strat','03','EXT. CAMPAIGN CITY — MAGIC HOUR. FOUR PATHS, ONE FRAME EACH','TC 00:00:31','4 setups. only one gets the closing shot. watch the fit scores.')+
+    '<div class="frames4">'+strats.map((s,i)=>
+      frame('03'+String.fromCharCode(65+i),
+        '<div class="type" style="font-size:9px;color:var(--ink-3);letter-spacing:.2em">'+esc(s.id||'').toUpperCase()+' · SETUP '+String.fromCharCode(65+i)+'</div>'+
+        '<h3>'+esc(s.title)+'</h3><div class="angle">'+esc(s.angle)+'</div>'+
+        '<div class="score"><span class="n">'+pct(s.audienceFit&&s.audienceFit.score)+'</span><span class="c">audience<br>fit /100</span></div>'+
+        '<div class="chanline">'+(s.channels||[]).map(c=>'<div class="ch"><span>'+esc(c.name).toUpperCase()+'</span><span>'+pct(c.fit)+'%</span></div>'+(c.why?'<div class="why">cue: '+esc(c.why)+'</div>':'')).join('')+'</div>'+
+        '<div class="fmts">'+esc((s.formats||[]).join(' · '))+'</div>'+
+        (s.reach?'<div class="est">EST. REACH <b>'+views(s.reach.estViews)+'</b> VIEWS<div class="why">'+esc(s.reach.basis||'')+'</div></div>':'')+
+        ((s.watchouts&&s.watchouts[0])?'<p class="watch"><b>note:</b> '+esc(s.watchouts[0])+'</p>':'')
+      , 'sframe'+(i===sel?' picked':'')).replace(/^<div class="frame /,'<div class="frame ')).join('')+
+    '</div></section>'));
+}
+
+/* ---- SCENE 4 : cut ---- */
+const anti=B.antiStrategies||[];
+if(anti.length){
+  M.appendChild(el('<section class="scene">'+slug('sc-cut','04','INT. EDIT BAY — NIGHT. SCENES LEFT ON THE CUTTING ROOM FLOOR','TC 00:00:58','kill your darlings. these tested poorly with our lead.')+
+    '<div class="cut-grid">'+anti.map((a,i)=>
+      '<div class="frame cut"><span class="stamp">CUT</span><div class="perf"></div><span class="fnum" style="background:var(--ink-2)">FR 04'+String.fromCharCode(65+i)+'</span><div class="fbody">'+
+      '<h4>'+esc(a.title)+'</h4><div class="ch">LOCATION: '+esc(a.channel)+'</div><p>'+esc(a.whyNot)+'</p>'+
+      '</div><div class="perf b"></div></div>').join('')+
+    '</div></section>'));
+}
+
+/* ---- SCENE 5 : produced output ---- */
+const selS=strats[sel]||strats[0]; const br=selS&&selS.brief;
+if(selS||CREAT.length){
+  M.appendChild(el('<section class="scene">'+slug('sc-out','05','EXT. THE WORLD — DAY. THE FINISHED SEQUENCE SHIPS','TC 00:01:20','final cut. brief on the left, stills on the right.')+
+    '<div class="out-grid">'+
+    (br?frame('05', '<div class="script"><div class="st">'+esc(br.title)+'</div>'+
+      '<p>'+esc(br.angle)+'</p>'+
+      '<p><span class="lbl">CASTING</span>'+esc(br.audience)+'</p>'+
+      '<p><span class="lbl">LINE TO REMEMBER</span><span class="km">“'+esc(br.keyMessage)+'”</span></p>'+
+      '<p><span class="lbl">HERO CAMEO</span>'+esc(selS.heroSignal||'—')+' · <span class="lbl">FROM SETUP</span>'+esc(selS.title)+'</p></div>','script'):'')+
+    '<div class="stills">'+CREAT.map((m,i)=>
+      '<figure class="frame still"><div class="perf"></div><span class="fnum">STILL '+String(i+1).padStart(2,'0')+'</span><div class="fbody">'+
+      '<div class="imgbox"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').remove()"></div>'+
+      '<figcaption class="meta"><span>'+esc(m.head)+'</span><span class="prov">'+esc(m.provider)+'</span></figcaption>'+
+      '</div><div class="perf b"></div></figure>').join('')+
+    '</div></div></section>'));
+}
+
+/* ---- SCENE 6 : art dept ---- */
+M.appendChild(el('<section class="scene">'+slug('sc-pal','06','INT. ART DEPARTMENT — DAY. PAINT CHIPS FOR THE COLOR SCRIPT','TC 00:01:44','Rhode palette: think glazed, think peptide pink, never loud.')+
+  '<div class="paint">'+PALETTE.map((s,i)=>
+    frame('06'+(i+1),'<div class="pchip"><div class="swatch" style="background:'+s.h+'"></div><div class="nm">'+esc(s.n)+'</div><div class="hx">'+s.h.toUpperCase()+'</div></div>')).join('')+
+  '</div></section>'));
+
+/* ---- SCENE 7 : script supervisor log ---- */
+const EV=B.evidence,QB=B.qlooBundle;
+if(EV||QB){
+  const calls=(EV&&EV.calls)||[];
+  const affs=(QB&&QB.affinities)||[];
+  M.appendChild(el('<section class="scene">'+slug('sc-log','07','INT. CONTINUITY DESK — DAY. THE SCRIPT SUPERVISOR LOGS EVERY TAKE','TC 00:01:58','provenance, people. every beat traces back to a live call.')+
+    '<div class="prov-grid">'+
+    frame('07','<div class="prod" style="margin-bottom:10px">PRODUCTION LOG — QLOO API</div>'+
+      '<table class="plog"><thead><tr><th>call</th><th>n</th><th>ms</th><th>mode</th></tr></thead><tbody>'+
+      calls.map(c=>'<tr><td>'+esc(c.endpoint)+'<span class="pr">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+kv[1]).join(' · '))+'</span></td><td>'+esc(c.n)+'</td><td>'+esc(c.tookMs)+'</td><td class="live">'+esc(c.mode)+'</td></tr>').join('')+
+      '</tbody></table>'+
+      '<p class="type" style="font-size:9.5px;color:var(--ink-3);margin-top:10px">LOGGED '+(B.fetchedAt?new Date(B.fetchedAt).toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'}).toUpperCase():'—')+'</p>')+
+    frame('08','<div class="prod" style="margin-bottom:10px">CAMEO RANKINGS — AFFINITY SHEET</div>'+
+      affs.map(g=>'<div class="affg"><div class="t">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+        g.entities.slice(0,4).map(e=>'<div class="affr"><span>'+esc(e.name)+'</span><span class="dots"></span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')+'</div>').join(''))+
+    '</div></section>'));
+}
+
+/* ---- SCENE 8 : deliverables ---- */
+M.appendChild(el('<section class="scene">'+slug('sc-next','08','EXT. STUDIO LOT — SUNRISE. WHAT SHIPS NEXT','TC 00:02:15','sequel potential — pick the next deliverable.')+
+  frame('09','<div class="deliv">'+
+  [['M4 4h16v16H4z M4 9h16 M8 4v16','CAMPAIGN MICROSITE'],
+   ['M5 3h11l4 4v14H5z M16 3v4h4 M8 11h8 M8 15h8','BRANDBOOK PDF'],
+   ['M4 5h16v14H4z M10 10l6 4-6 4z','VIDEO CUT'],
+   ['M4 19h16 M4 15l5-4 4 3 7-6','PERFORMANCE PLAN']].map(x=>
+    '<button class="dbtn"><svg viewBox="0 0 24 24"><path d="'+x[0]+'"/></svg>'+x[1]+'</button>').join('')+
+  '</div>')+'</section>'));
+})();
+</script>
+</body>
+</html>

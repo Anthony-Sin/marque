@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARQUE AIR — Departures — Rhode peptide lip tint → Gen Z</title>
+<style>
+  :root{
+    --ink:#131519;
+    --board:#1b1e24;
+    --board2:#21252d;
+    --flap-hi:#272c35;
+    --flap-lo:#1c2027;
+    --seam:#0e1013;
+    --line:#30353f;
+    --amber:#ffb547;
+    --amber-hi:#ffd48d;
+    --amber-dim:rgba(255,181,71,.14);
+    --mut:#8b8062;
+    --dim:#5c5645;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:var(--mono);
+    background:radial-gradient(1100px 480px at 50% -8%, rgba(255,181,71,.05), transparent 62%), var(--ink);
+    color:var(--amber);
+    font-size:12px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--amber);color:#171207}
+  a{color:var(--amber-hi);text-decoration:none;border-bottom:1px dotted rgba(255,181,71,.4)}
+  a:hover{background:var(--amber-dim)}
+  a:focus-visible,button:focus-visible{outline:1px solid var(--amber);outline-offset:2px}
+
+  .wrap{max-width:1200px;margin:0 auto;padding:18px 16px 64px}
+
+  /* ===== top marquee ===== */
+  .mast{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    border:1px solid var(--line);background:var(--board);
+    padding:10px 14px;margin-bottom:14px}
+  .brandtag{display:flex;align-items:center;gap:9px;color:var(--amber-hi);
+    font-weight:700;letter-spacing:.18em;font-size:13px;white-space:nowrap}
+  .brandtag .dot{width:9px;height:9px;background:var(--amber);box-shadow:0 0 8px rgba(255,181,71,.7)}
+  .mast .mid{color:var(--dim);font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+  .clock{margin-left:auto;color:var(--amber-hi);font-size:18px;letter-spacing:.2em;white-space:nowrap;
+    text-shadow:0 0 10px rgba(255,181,71,.35)}
+  .clock small{font-size:9px;color:var(--mut);letter-spacing:.12em;display:block;text-align:right}
+
+  /* ===== split-flap board ===== */
+  .board{border:1px solid var(--line);background:var(--board);margin-bottom:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03)}
+  .bhead{display:flex;align-items:baseline;gap:10px;padding:9px 14px;
+    border-bottom:1px solid var(--line);background:var(--board2);
+    color:var(--amber-hi);font-size:10px;letter-spacing:.24em;text-transform:uppercase}
+  .bhead .no{color:var(--dim)}
+  .bhead .tag{margin-left:auto;color:var(--mut);letter-spacing:.12em;font-size:9px}
+
+  .row{display:grid;border-top:1px solid var(--seam);transition:background .15s}
+  .row:first-of-type{border-top:none}
+  .row:hover{background:rgba(255,181,71,.045)}
+  .cell{position:relative;padding:8px 12px;min-width:0;overflow:hidden;
+    background:linear-gradient(180deg,var(--flap-hi) 0 49.4%, var(--flap-lo) 49.6% 100%);
+    color:var(--amber);text-transform:uppercase;letter-spacing:.09em;
+    white-space:nowrap;text-overflow:ellipsis}
+  .cell+.cell{box-shadow:inset 1px 0 0 var(--seam)}
+  .cell .lab{display:block;font-size:8px;color:var(--dim);letter-spacing:.18em;margin-bottom:2px}
+  .cell.v{color:var(--amber-hi)}
+  .cell.mut{color:var(--mut);text-transform:none;letter-spacing:.02em;white-space:normal}
+  .cell.wrap{white-space:normal}
+
+  /* status pill — all amber, differentiated by blink/dash */
+  .st{display:inline-block;border:1px solid rgba(255,181,71,.5);padding:1px 8px;
+    font-size:10px;letter-spacing:.16em}
+  .st.blink{animation:stb 1.6s steps(1) infinite}
+  @keyframes stb{0%,55%{opacity:1}56%,100%{opacity:.25}}
+  .st.off{color:var(--dim);border-color:var(--line);text-decoration:line-through}
+
+  /* column templates */
+  .r-ask   {grid-template-columns:110px 1.4fr 1fr 1fr 130px}
+  .r-aud   {grid-template-columns:170px 1.2fr 1.6fr}
+  .r-habit {grid-template-columns:170px 1.6fr 1fr}
+  .r-strat {grid-template-columns:70px 1.3fr 1.1fr 1.4fr 100px 104px 120px}
+  .r-anti  {grid-template-columns:70px 1.2fr 100px 2fr 120px}
+  .r-call  {grid-template-columns:150px 130px 2fr 70px 60px 80px}
+  .r-aff   {grid-template-columns:150px 1.4fr 90px}
+  .hdr .cell{color:var(--dim);font-size:9px;letter-spacing:.2em;padding:5px 12px;
+    background:var(--board2)}
+
+  /* fit bar */
+  .fit{display:inline-flex;align-items:center;gap:7px}
+  .fit .bar{width:36px;height:6px;background:#101216;border:1px solid var(--line);position:relative;flex:none}
+  .fit .bar i{position:absolute;inset:0 auto 0 0;background:var(--amber);box-shadow:0 0 6px rgba(255,181,71,.5)}
+
+  /* creatives — gate displays */
+  .gates{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--seam)}
+  .gate{background:var(--flap-lo);padding:10px;min-width:0}
+  .gate .scr{position:relative;background:#0c0e11;border:1px solid var(--line);overflow:hidden;aspect-ratio:1/1}
+  .gate img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.92)}
+  .gate .scr .prov{position:absolute;left:6px;bottom:6px;background:rgba(10,11,14,.82);
+    border:1px solid rgba(255,181,71,.4);color:var(--amber);font-size:8px;letter-spacing:.12em;
+    padding:2px 6px;text-transform:uppercase}
+  .gate .cap{padding:8px 2px 0;font-size:11px;color:var(--amber-hi);letter-spacing:.05em;min-height:34px}
+  .gate .meta{display:flex;justify-content:space-between;font-size:9px;color:var(--mut);letter-spacing:.1em;padding-top:3px}
+  .gate:hover{background:rgba(255,181,71,.05)}
+
+  .briefrow{display:grid;grid-template-columns:130px 1fr;border-top:1px solid var(--seam)}
+  .briefrow .k{padding:8px 12px;color:var(--dim);font-size:9px;letter-spacing:.18em;text-transform:uppercase;
+    background:var(--board2);border-right:1px solid var(--seam)}
+  .briefrow .v{padding:8px 12px;color:var(--amber);letter-spacing:.04em}
+
+  /* palette + connections */
+  .duo{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .swrow{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--seam)}
+  .sw{padding:10px 10px 8px;border-right:1px solid var(--seam);background:var(--flap-lo)}
+  .sw:last-child{border-right:none}
+  .sw .chip{height:44px;border:1px solid rgba(255,255,255,.08);margin-bottom:7px}
+  .sw .nm{font-size:9px;color:var(--amber-hi);letter-spacing:.1em;text-transform:uppercase}
+  .sw .hx{font-size:9px;color:var(--mut)}
+  .conn{display:flex;flex-wrap:wrap;gap:10px;padding:14px;border-top:1px solid var(--seam)}
+  .conn a{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,181,71,.5);
+    color:var(--amber);padding:8px 14px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+    text-decoration:none;transition:background .15s,color .15s}
+  .conn a:hover{background:var(--amber);color:#171207}
+  .conn a::after{content:"→"}
+  .foot{color:var(--dim);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+    display:flex;justify-content:space-between;gap:12px;padding:4px 2px;flex-wrap:wrap}
+
+  @media (max-width:960px){
+    .r-ask{grid-template-columns:90px 1.3fr 1fr 120px}
+    .r-ask .hideM{display:none}
+    .r-strat{grid-template-columns:56px 1.2fr 96px 90px 108px}
+    .r-strat .hideM{display:none}
+    .r-call{grid-template-columns:120px 110px 1fr 60px 76px}
+    .r-call .hideM{display:none}
+    .gates{grid-template-columns:repeat(2,1fr)}
+    .duo{grid-template-columns:1fr}
+  }
+  @media (max-width:640px){
+    .row{display:block}
+    .cell{box-shadow:none;border-bottom:1px solid var(--seam);white-space:normal}
+    .cell+.cell{border-left:none}
+    .cell .lab{display:block}
+    .r-ask,.r-aud,.r-habit,.r-strat,.r-anti,.r-call,.r-aff,.briefrow{display:block}
+    .hdr{display:none}
+    .briefrow .k{border-right:none;border-bottom:1px solid var(--seam)}
+    /* restore per-cell labels via data attribute */
+    .cell::before{content:attr(data-l);display:block;font-size:8px;color:var(--dim);
+      letter-spacing:.18em;margin-bottom:2px}
+    .cell.nol::before{content:none}
+    .gates{grid-template-columns:1fr 1fr}
+    .swrow{grid-template-columns:1fr 1fr 1fr}
+    .clock{font-size:14px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="mast">
+    <div class="brandtag"><span class="dot"></span>MARQUE AIR</div>
+    <div class="mid">Departures · Strategy → Campaign → Final Result</div>
+    <div class="clock"><span id="clk">--:--:--</span><small id="dte">LOCAL</small></div>
+  </div>
+
+  <!-- A. THE ASK -->
+  <section class="board" id="b-ask">
+    <div class="bhead"><span class="no">B1</span> Flight plan / the ask <span class="tag">origin → destination</span></div>
+    <div class="row hdr r-ask"><div class="cell">Flight</div><div class="cell">Origin</div><div class="cell hideM">Route</div><div class="cell">Destination</div><div class="cell">Status</div></div>
+    <div class="row r-ask">
+      <div class="cell v" data-l="Flight">MQ-1023</div>
+      <div class="cell" data-l="Origin" id="ask-url">—</div>
+      <div class="cell mut hideM" data-l="Route" id="ask-desc">—</div>
+      <div class="cell v" data-l="Destination" id="ask-dest">—</div>
+      <div class="cell" data-l="Status"><span class="st">DEPARTED</span></div>
+    </div>
+    <div class="row r-ask" style="border-top:1px solid var(--seam)">
+      <div class="cell v" data-l="Flight">MQ-1024</div>
+      <div class="cell wrap" data-l="Brief" id="ask-prompt" colspan="5">—</div>
+      <div class="cell mut hideM" data-l="Carrier">Marque Strategy Ops</div>
+      <div class="cell" data-l="Aircraft">Gen-Z / Gen-Z</div>
+      <div class="cell" data-l="Status"><span class="st">ON TIME</span></div>
+    </div>
+  </section>
+
+  <!-- B. AUDIENCE MANIFEST -->
+  <section class="board" id="b-aud">
+    <div class="bhead"><span class="no">B2</span> Passenger manifest / audience read <span class="tag">lean · confidence · habits</span></div>
+    <div class="row r-aud">
+      <div class="cell v" data-l="Lean" id="aud-lean">—</div>
+      <div class="cell" data-l="Confidence"><span class="fit"><span class="bar"><i id="aud-confbar"></i></span><span id="aud-conf">—</span></span></div>
+      <div class="cell wrap" data-l="Vibe words" id="aud-vibes">—</div>
+    </div>
+    <div id="aud-habits"></div>
+  </section>
+
+  <!-- C. STRATEGY DEPARTURES -->
+  <section class="board" id="b-strat">
+    <div class="bhead"><span class="no">B3</span> Departures / strategy board <span class="tag">4 flights · boarding now</span></div>
+    <div class="row hdr r-strat">
+      <div class="cell">Flt</div><div class="cell">Strategy</div><div class="cell hideM">Angle</div>
+      <div class="cell hideM">Channels</div><div class="cell">Fit</div><div class="cell">Est views</div><div class="cell">Status</div>
+    </div>
+    <div id="strat-rows"></div>
+  </section>
+
+  <!-- D. GROUNDED -->
+  <section class="board" id="b-anti">
+    <div class="bhead"><span class="no">B4</span> Grounded / ruled out <span class="tag">do not board</span></div>
+    <div class="row hdr r-anti">
+      <div class="cell">Flt</div><div class="cell">Route</div><div class="cell">Channel</div><div class="cell">Reason</div><div class="cell">Status</div>
+    </div>
+    <div id="anti-rows"></div>
+  </section>
+
+  <!-- E. ARRIVALS / PRODUCED -->
+  <section class="board" id="b-out">
+    <div class="bhead"><span class="no">B5</span> Arrivals / produced output <span class="tag">landed · gate G7</span></div>
+    <div class="briefrow"><div class="k">Campaign</div><div class="v" id="brief-title">—</div></div>
+    <div class="briefrow"><div class="k">Angle</div><div class="v" id="brief-angle">—</div></div>
+    <div class="briefrow"><div class="k">Audience</div><div class="v" id="brief-aud">—</div></div>
+    <div class="briefrow"><div class="k">Key message</div><div class="v" id="brief-msg">—</div></div>
+    <div class="gates" id="gates"></div>
+  </section>
+
+  <!-- F. DATA FEED -->
+  <section class="board" id="b-qloo">
+    <div class="bhead"><span class="no">B6</span> Data feed / Qloo provenance <span class="tag" id="qloo-mode">—</span></div>
+    <div class="row hdr r-call">
+      <div class="cell">At (UTC)</div><div class="cell">Endpoint</div><div class="cell">Params</div><div class="cell">Ms</div><div class="cell hideM">N</div><div class="cell">Mode</div>
+    </div>
+    <div id="call-rows"></div>
+    <div class="row hdr r-aff" style="border-top:1px solid var(--line)">
+      <div class="cell">Affinity</div><div class="cell">Top entities</div><div class="cell">Best</div>
+    </div>
+    <div id="aff-rows"></div>
+  </section>
+
+  <div class="duo">
+    <section class="board">
+      <div class="bhead"><span class="no">L1</span> Lounge / brand palette <span class="tag">rhode peptide</span></div>
+      <div class="swrow" id="pal"></div>
+    </section>
+    <section class="board">
+      <div class="bhead"><span class="no">C1</span> Connecting flights / next outputs</div>
+      <div class="conn" id="next"></div>
+    </section>
+  </div>
+
+  <div class="foot">
+    <span id="ft-board">—</span>
+    <span>SPLIT-FLAP DISPLAY · MARQUE OPS · ALL TIMES LOCAL</span>
+  </div>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+const B=(window.DATA&&window.DATA.board)||{};
+const esc=s=>String(s==null?"—":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const up=s=>String(s||"").toUpperCase();
+const K=v=>v>=1e3?Math.round(v/1e3)+"K":v;
+const pct=v=>Math.round((v||0)*100);
+
+/* clock */
+function tick(){const d=new Date();
+  document.getElementById("clk").textContent=d.toTimeString().slice(0,8);
+  document.getElementById("dte").textContent=d.toDateString().toUpperCase();}
+tick();setInterval(tick,1000);
+
+/* flap scramble on load */
+const GLY="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·-";
+function flap(el,final,ms){ms=ms||650;const t0=performance.now();
+  (function step(t){const p=Math.min(1,(t-t0)/ms);
+    el.textContent=final.split("").map((c,i)=>(i/final.length<p||p===1)?c:(c===" "?" ":GLY[Math.random()*36|0])).join("");
+    if(p<1)requestAnimationFrame(step);})(t0);}
+
+/* A. ask */
+const sub=B.sub||{},uc=B.urlContext||{};
+document.getElementById("ask-url").textContent=(sub.url||uc.url||"—").replace(/^https?:\/\//,"");
+document.getElementById("ask-dest").textContent=(sub.prompt||"").split("→")[1]||"GEN Z";
+document.getElementById("ask-desc").textContent=uc.description||"—";
+document.getElementById("ask-prompt").textContent=sub.prompt||B.title||"—";
+
+/* B. audience */
+const ar=B.audienceRead||{},lean=ar.lean||{};
+const lel=document.getElementById("aud-lean");
+flap(lel,up(lean.label||"—"));
+document.getElementById("aud-conf").textContent=pct(lean.confidence)+"%";
+document.getElementById("aud-confbar").style.width=pct(lean.confidence)+"%";
+document.getElementById("aud-vibes").textContent=(ar.vibeWords||[]).join(" · ")||"—";
+document.getElementById("aud-habits").innerHTML=(ar.mediaHabits||[]).map(h=>
+ `<div class="row r-habit">
+    <div class="cell v" data-l="Channel">${esc(up(h.channel))}</div>
+    <div class="cell mut" data-l="Note">${esc(h.note)}</div>
+    <div class="cell" data-l="Signal type">${esc((h.type||"").replace("urn:entity:",""))}</div>
+  </div>`).join("");
+
+/* C. strategies */
+const st=(B.strategies||[]);
+document.getElementById("strat-rows").innerHTML=st.map((s,i)=>
+ `<div class="row r-strat">
+    <div class="cell v" data-l="Flt">S${i+1}0${i+1}</div>
+    <div class="cell v flapx" data-l="Strategy">${esc(up(s.title))}</div>
+    <div class="cell hideM" data-l="Angle">${esc(up(s.angle))}</div>
+    <div class="cell mut hideM" data-l="Channels">${(s.channels||[]).map(c=>`${esc(c.name)} ${pct(c.fit)}%`).join("  ·  ")}</div>
+    <div class="cell" data-l="Fit"><span class="fit"><span class="bar"><i style="width:${pct(s.audienceFit&&s.audienceFit.score)}%"></i></span>${pct(s.audienceFit&&s.audienceFit.score)}%</span></div>
+    <div class="cell" data-l="Est views">${K(s.reach&&s.reach.estViews||0)}</div>
+    <div class="cell" data-l="Status"><span class="st ${i===0?"blink":""}">${i===0?"BOARDING":"ON TIME"}</span></div>
+  </div>`).join("");
+document.querySelectorAll(".flapx").forEach((el,i)=>setTimeout(()=>flap(el,el.textContent),250+i*160));
+
+/* D. anti */
+document.getElementById("anti-rows").innerHTML=(B.antiStrategies||[]).map((a,i)=>
+ `<div class="row r-anti">
+    <div class="cell" data-l="Flt">X${i+1}0${i+1}</div>
+    <div class="cell" data-l="Route"><span class="st off">${esc(up(a.title))}</span></div>
+    <div class="cell" data-l="Channel">${esc(up(a.channel))}</div>
+    <div class="cell mut wrap" data-l="Reason">${esc(a.whyNot)}</div>
+    <div class="cell" data-l="Status"><span class="st off">CANCELLED</span></div>
+  </div>`).join("");
+
+/* E. brief + creatives */
+const br=st[0]&&st[0].brief||{};
+document.getElementById("brief-title").textContent=`${st[0]?st[0].title+" — ":""}${br.title||""}`||"—";
+document.getElementById("brief-angle").textContent=br.angle||"—";
+document.getElementById("brief-aud").textContent=br.audience||"—";
+document.getElementById("brief-msg").textContent=br.keyMessage||"—";
+
+const pool=((window.MEDIA||{}).pool||[]).map(m=>({img:m.img.replace(/^\.\//,"../"),head:m.head,provider:m.provider}));
+const picks=[0,4,9,11].map(i=>pool[i]).filter(Boolean);
+document.getElementById("gates").innerHTML=picks.map((m,i)=>
+ `<div class="gate">
+    <div class="scr"><img src="${m.img}" alt="" loading="lazy" onerror="this.closest('.gate').style.display='none'"><span class="prov">${esc(m.provider)}</span></div>
+    <div class="cap">${esc(m.head)}</div>
+    <div class="meta"><span>GATE G${i+4}</span><span class="st" style="font-size:8px;padding:0 5px">LANDED</span></div>
+  </div>`).join("");
+
+/* F. qloo */
+const ev=B.evidence||{};
+document.getElementById("qloo-mode").textContent=`${(ev.calls||[]).length} calls · ${up(ev.qlooMode||"—")} mode`;
+document.getElementById("call-rows").innerHTML=(ev.calls||[]).map(c=>
+ `<div class="row r-call">
+    <div class="cell" data-l="At">${esc((c.at||"").slice(11,19))} UTC</div>
+    <div class="cell v" data-l="Endpoint">${esc(c.endpoint)}</div>
+    <div class="cell mut" data-l="Params">${esc(Object.entries(c.params||{}).map(([k,v])=>k+"="+v).join(" "))}</div>
+    <div class="cell" data-l="Ms">${c.tookMs}</div>
+    <div class="cell hideM" data-l="N">${c.n}</div>
+    <div class="cell" data-l="Mode"><span class="st" style="font-size:9px;padding:0 6px">${esc(up(c.mode))}</span></div>
+  </div>`).join("");
+const aff=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+document.getElementById("aff-rows").innerHTML=aff.map(a=>
+ `<div class="row r-aff">
+    <div class="cell v" data-l="Affinity">${esc(up((a.type||"").replace("urn:entity:","")))}</div>
+    <div class="cell mut" data-l="Top entities">${a.entities.slice(0,4).map(e=>esc(e.name)).join(" · ")}</div>
+    <div class="cell" data-l="Best">${a.entities[0]?pct(a.entities[0].affinity)+"%":"—"}</div>
+  </div>`).join("");
+
+/* palette + next */
+const pal=[["Peptide Blush","#F3D9D2"],["Glaze Cream","#F7EFE4"],["Barrier Beige","#E4CDBB"],["Toast","#7A5A46"],["Espresso","#2E211B"]];
+document.getElementById("pal").innerHTML=pal.map(p=>
+ `<div class="sw"><div class="chip" style="background:${p[1]}"></div><div class="nm">${p[0]}</div><div class="hx">${p[1]}</div></div>`).join("");
+document.getElementById("next").innerHTML=["website","brandbook","video"].map(n=>
+ `<a href="#" onclick="return false">${n}</a>`).join("");
+
+document.getElementById("ft-board").textContent=`BOARD ${String(B.id||"").slice(0,8).toUpperCase()} · FETCHED ${(B.fetchedAt||"").slice(0,10)} · ${st.length} STRATEGIES`;
+</script>
+</body>
+</html>

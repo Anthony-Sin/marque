@@ -348,7 +348,7 @@ function WildCard({ e, i, sel, onToggle }) {
       {!!img && !imgDead && <span className="stg-wx-media"><img src={img} alt="" loading="lazy" onError={() => setImgDead(true)} /></span>}
       <span className="stg-wx-body stg-fill">
         <span className="stg-wx-plat">
-          <Icon name={chanIcon(e.platform)} size={12} />{e.platform || 'web'}
+          <Icon name={chanIcon(e.platform)} size={12} />{chanLabel(e.platform) || e.platform || 'web'}
           <span className={`stg-src ${e.source || 'scraped'}`}>{SRC_LABEL[e.source] || e.source || 'scraped'}</span>
         </span>
         <span className="stg-wx-title">{e.title}</span>

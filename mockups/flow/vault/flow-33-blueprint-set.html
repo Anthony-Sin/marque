@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DWG SET MQ-33 — Strategy → Campaign → Result</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230A2138'/%3E%3Crect x='10' y='10' width='44' height='44' fill='none' stroke='%23E8EFF7' stroke-width='2'/%3E%3Cpath d='M10 32h44M32 10v44' stroke='%23E8EFF7' stroke-width='1' stroke-dasharray='4 3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A2138;
+  --deep:#050F1D;
+  --ink:#E8EFF7;
+  --dim:#8FA8C4;
+  --line:rgba(200,220,240,.34);
+  --faint:rgba(200,220,240,.13);
+  --red:#FF5C42;
+  --mono:'IBM Plex Mono',ui-monospace,'Cascadia Mono','Courier New',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--deep);
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:12.5px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(255,92,66,.4)}
+a{color:var(--ink);text-decoration:none;border-bottom:1px dashed var(--line)}
+a:hover{color:var(--red);border-bottom-color:var(--red)}
+a:focus-visible,button:focus-visible{outline:1px dashed var(--red);outline-offset:3px}
+button{font-family:var(--mono);cursor:pointer}
+img{display:block}
+
+/* ============ SHEET + ZONE RULERS ============ */
+.sheet{
+  position:relative;margin:16px;border:1px solid var(--line);
+  background:
+    linear-gradient(rgba(200,220,240,.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(200,220,240,.05) 1px,transparent 1px),
+    var(--navy);
+  background-size:26px 26px,26px 26px;
+  padding:52px 52px 30px;
+  min-height:calc(100vh - 32px);
+}
+.rz{position:absolute;display:grid;color:var(--dim);font-size:9px;letter-spacing:.08em;z-index:2}
+.rz span{display:flex;align-items:center;justify-content:center;border:1px solid var(--faint)}
+.rz-t{top:0;left:52px;right:52px;height:24px;grid-template-columns:repeat(8,1fr);border-bottom:1px solid var(--line)}
+.rz-b{bottom:0;left:52px;right:52px;height:24px;grid-template-columns:repeat(8,1fr);border-top:1px solid var(--line)}
+.rz-l{left:0;top:52px;bottom:52px;width:24px;grid-template-rows:repeat(4,1fr);border-right:1px solid var(--line)}
+.rz-r{right:0;top:52px;bottom:52px;width:24px;grid-template-rows:repeat(4,1fr);border-left:1px solid var(--line)}
+.corner{position:absolute;width:24px;height:24px;border:1px solid var(--faint)}
+.corner.tl{top:0;left:0}.corner.tr{top:0;right:0}.corner.bl{bottom:0;left:0}.corner.br{bottom:0;right:0}
+.tick{position:absolute;color:var(--dim);font-size:8.5px;letter-spacing:.1em;opacity:.7}
+
+/* ============ SHEET HEAD ============ */
+.head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;border-bottom:2px solid var(--line);padding-bottom:16px;flex-wrap:wrap}
+.head h1{font-size:clamp(17px,3vw,30px);font-weight:700;letter-spacing:.1em;text-transform:uppercase;line-height:1.2}
+.head h1 em{font-style:normal;color:var(--dim);font-weight:400}
+.head .dwg{font-size:9.5px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;margin-bottom:8px}
+.head .dwg b{color:var(--ink)}
+/* revision table */
+.rev{border:1px solid var(--line);border-collapse:collapse;font-size:10px;align-self:start}
+.rev caption{text-align:left;font-size:9px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase;padding-bottom:5px}
+.rev th,.rev td{border:1px solid var(--faint);padding:4px 10px;text-align:left;white-space:nowrap}
+.rev th{color:var(--dim);font-weight:400;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase}
+.rev td.rv{color:var(--red);font-weight:700}
+
+/* ============ VIEWS ============ */
+.view{margin-top:30px}
+.vtag{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.vtag .vn{border:1px solid var(--line);padding:2px 8px;font-size:9.5px;letter-spacing:.2em;color:var(--ink);white-space:nowrap}
+.vtag h2{font-size:12.5px;letter-spacing:.26em;text-transform:uppercase;font-weight:700}
+.vtag .zone{margin-left:auto;font-size:9px;color:var(--dim);letter-spacing:.16em;white-space:nowrap}
+.vtag .zone b{color:var(--red)}
+.vbody{border:1px solid var(--line);background:rgba(5,15,29,.35)}
+
+/* dimension string */
+.dim{position:relative;height:22px;margin:2px 0 0}
+.dim::before{content:"";position:absolute;left:2px;right:2px;top:10px;border-top:1px solid var(--line)}
+.dim::after{content:"";position:absolute;left:2px;right:2px;top:6px;height:8px;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+.dim span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--navy);padding:0 7px;font-size:9px;letter-spacing:.14em;color:var(--dim);white-space:nowrap}
+/* section cutting-plane line */
+.cut{position:relative;height:0;border-top:2px dashed var(--ink);margin:36px -14px 0}
+.cut .cm{
+  position:absolute;top:50%;transform:translate(-50%,-50%);
+  width:30px;height:30px;border:2px solid var(--ink);border-radius:50%;background:var(--navy);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;
+}
+.cut .cm.l{left:-4px}.cut .cm.r{right:-4px;transform:translate(50%,-50%)}
+.cut .arr{position:absolute;top:-7px;font-size:0;width:0;height:0;border:6px solid transparent}
+.cut .arr.l{left:34px;border-left:none;border-right:9px solid var(--ink)}
+.cut .arr.r{right:34px;border-right:none;border-left:9px solid var(--ink)}
+.cut .lbl{position:absolute;left:50%;transform:translate(-50%,-50%);top:50%;background:var(--navy);padding:0 10px;font-size:9.5px;letter-spacing:.24em;color:var(--dim)}
+
+/* generic cells */
+.row{display:grid;min-height:0}
+.row.cols2{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+.row.cols3{grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr)}
+.cell{padding:18px;border-right:1px dashed var(--faint);min-width:0}
+.cell:last-child{border-right:none}
+.kv{display:grid;grid-template-columns:92px 1fr;gap:4px 12px;font-size:11px}
+.kv dt{color:var(--dim);font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding-top:2px}
+.kv dd{min-width:0;overflow-wrap:anywhere}
+.lbl{font-size:8.5px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase}
+.lbl::before{content:"";display:inline-block;width:16px;border-top:1px dashed var(--line);margin-right:8px;vertical-align:middle}
+
+/* ask */
+.ask-prompt{font-size:clamp(17px,2.5vw,25px);color:#fff;line-height:1.35;letter-spacing:.02em;margin-top:10px}
+.ask-prompt em{font-style:normal;border-bottom:1px solid var(--red)}
+
+/* audience */
+.gauge{margin:10px 0}
+.gauge .tr{height:9px;border:1px solid var(--line);position:relative}
+.gauge .fl{position:absolute;inset:1px auto 1px 1px;background:repeating-linear-gradient(90deg,var(--ink) 0 5px,transparent 5px 7px)}
+.gauge .lb{display:flex;justify-content:space-between;font-size:8.5px;color:var(--dim);margin-top:4px}
+.habit{display:grid;grid-template-columns:80px 1fr;gap:4px 10px;padding:7px 0;border-bottom:1px dashed var(--faint);font-size:11px}
+.habit:last-child{border-bottom:none}
+.habit b{color:var(--ink);font-weight:700;letter-spacing:.12em;font-size:9.5px;text-transform:uppercase}
+.habit span{color:var(--dim)}
+.sig{list-style:none}
+.sig li{padding:4px 0 4px 14px;position:relative;font-size:11px;color:var(--dim)}
+.sig li::before{content:"—";position:absolute;left:0;color:var(--ink)}
+.vibes{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.vibes span{border:1px solid var(--line);padding:3px 9px;font-size:10.5px;letter-spacing:.06em;transition:background .15s}
+.vibes span:hover{background:var(--ink);color:var(--navy)}
+
+/* strategies — elevation cards */
+.sgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.strat{padding:16px 14px;border-right:1px dashed var(--faint);position:relative;transition:background .15s}
+.strat:last-child{border-right:none}
+.strat:hover{background:rgba(200,220,240,.06)}
+.elev{position:relative;height:74px;border:1px solid var(--line);margin-bottom:12px;background:rgba(200,220,240,.03)}
+.elev::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px dashed var(--faint)}
+.elev::after{content:"";position:absolute;top:50%;left:0;right:0;border-top:1px dashed var(--faint)}
+.elev .box{position:absolute;inset:16px 22%;border:1px solid var(--ink)}
+.elev .box::before{content:"";position:absolute;left:-4px;right:-4px;top:-8px;border-top:1px solid var(--dim)}
+.elev .box::after{content:"";position:absolute;left:-4px;top:-11px;right:-4px;height:6px;border-left:1px solid var(--dim);border-right:1px solid var(--dim)}
+.elev .dm{position:absolute;top:-15px;left:0;right:0;text-align:center;font-size:7.5px;color:var(--dim);letter-spacing:.1em}
+.elev .cl{position:absolute;bottom:6px;right:8px;font-size:8px;color:var(--dim);letter-spacing:.14em}
+.strat .sid{font-size:9px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase}
+.strat h3{font-size:13.5px;font-weight:700;letter-spacing:.06em;margin:5px 0 2px;color:#fff}
+.strat .ang{font-size:9px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
+.strat .fit{font-size:30px;font-weight:700;line-height:1;margin:12px 0 2px;letter-spacing:-.02em}
+.strat .fit small{font-size:10px;color:var(--dim);letter-spacing:.14em}
+.chan{padding:5px 0;border-bottom:1px dashed var(--faint);font-size:10.5px}
+.chan .tp{display:flex;justify-content:space-between;letter-spacing:.08em}
+.chan .bar{height:4px;border:1px solid var(--faint);margin-top:3px;position:relative}
+.chan .bar i{position:absolute;inset:1px auto 1px 1px;background:var(--ink);display:block}
+.chan .why{font-size:8.5px;color:var(--dim);margin-top:3px}
+.fmt{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.fmt span{font-size:8.5px;border:1px dashed var(--faint);padding:2px 6px;color:var(--dim);letter-spacing:.06em}
+.rch{margin-top:10px;font-size:11px;letter-spacing:.08em}
+.rch small{display:block;font-size:8.5px;color:var(--dim);letter-spacing:.03em;margin-top:3px}
+.watch{margin-top:8px;font-size:9px;color:var(--dim);border-left:2px solid var(--line);padding-left:8px}
+/* red-pencil markup on selected */
+.strat.sel{background:rgba(200,220,240,.05)}
+.pencil{position:absolute;inset:-5px;pointer-events:none;transform:rotate(-.5deg)}
+.pencil rect{fill:none;stroke:var(--red);stroke-width:1.6px;vector-effect:non-scaling-stroke}
+.pencil .p2{stroke-width:1;opacity:.5}
+.appr{
+  position:absolute;top:-8px;left:16px;background:var(--navy);color:var(--red);
+  font-size:8px;letter-spacing:.24em;padding:1px 9px;transform:rotate(-2deg);white-space:nowrap;
+}
+
+/* ruled out */
+.rgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.rej{padding:14px;border-right:1px dashed var(--faint);position:relative}
+.rej:last-child{border-right:none}
+.rej .stamp{
+  display:inline-block;border:1px dashed var(--red);color:var(--red);font-size:8px;
+  letter-spacing:.22em;padding:2px 7px;transform:rotate(-3deg);margin-bottom:9px;
+}
+.rej h4{font-size:12px;font-weight:700;letter-spacing:.04em}
+.rej h4 span{opacity:.75}
+.rej .ch{font-size:8.5px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;margin:2px 0 7px}
+.rej p{font-size:9.5px;color:var(--dim)}
+
+/* output */
+.ogrid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.4fr)}
+.brief-cell{padding:18px;border-right:1px dashed var(--faint)}
+.brief-title{font-size:clamp(18px,2.4vw,28px);color:#fff;letter-spacing:.03em;line-height:1.15;margin-top:10px}
+.brief-angle{font-size:10.5px;color:var(--dim);margin:9px 0 14px;line-height:1.7}
+.cre-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:16px}
+.plate{border:1px solid var(--line);background:var(--deep);transition:border-color .15s,transform .15s}
+.plate:hover{border-color:var(--ink);transform:translateY(-3px)}
+.plate .iw{aspect-ratio:1;overflow:hidden;border-bottom:1px solid var(--faint);position:relative}
+.plate img{width:100%;height:100%;object-fit:cover;filter:grayscale(.85) contrast(1.1) brightness(.9)}
+.plate .iw::after{content:"";position:absolute;inset:0;background:var(--navy);mix-blend-mode:screen;opacity:.5;pointer-events:none}
+.plate .cap{padding:8px 9px;font-size:9.5px}
+.plate .cap .h{min-height:2.7em;line-height:1.4}
+.plate .cap .p{font-size:8px;letter-spacing:.16em;color:var(--dim);text-transform:uppercase;margin-top:5px;display:flex;justify-content:space-between}
+.plate .cap .p b{color:var(--ink)}
+
+/* palette */
+.pgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.sw{padding:14px;border-right:1px dashed var(--faint)}
+.sw:last-child{border-right:none}
+.sw .box{height:56px;border:1px solid var(--line);position:relative}
+.sw .box::after{content:"";position:absolute;inset:4px;border:1px dashed rgba(5,15,29,.4)}
+.sw .n{font-size:10px;margin-top:8px;letter-spacing:.04em}
+.sw .h{font-size:8.5px;color:var(--dim);letter-spacing:.12em;margin-top:2px}
+
+/* provenance */
+.pvgrid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+.pvcell{padding:16px;border-right:1px dashed var(--faint)}
+.pvcell:last-child{border-right:none}
+table.log{width:100%;border-collapse:collapse;font-size:10px}
+table.log th{text-align:left;font-weight:400;color:var(--dim);font-size:8px;letter-spacing:.2em;text-transform:uppercase;border-bottom:1px solid var(--line);padding:0 8px 6px 0}
+table.log td{border-bottom:1px dashed var(--faint);padding:6px 8px 6px 0;vertical-align:top}
+table.log .ep{color:#fff}
+table.log .pm{display:block;font-size:8.5px;color:var(--dim);max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.md{font-size:8px;letter-spacing:.18em;color:var(--red);border:1px solid var(--red);padding:1px 6px;text-transform:uppercase;white-space:nowrap}
+.aff-g{margin-bottom:12px}
+.aff-g .t{font-size:8.5px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;margin-bottom:5px}
+.aff{display:flex;flex-wrap:wrap;gap:2px 8px;font-size:10.5px;padding:2px 0;align-items:baseline}
+.aff>span:first-child{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aff .v{font-size:9.5px;color:#fff}
+.aff .bar{flex-basis:100%;height:3px;border:1px solid var(--faint);position:relative}
+.aff .bar i{position:absolute;inset:0 auto 0 0;background:var(--ink);display:block}
+
+/* next */
+.next-row{display:flex;flex-wrap:wrap;gap:10px;padding:16px}
+.nchip{
+  border:1px solid var(--ink);color:var(--ink);background:none;padding:9px 16px;
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;transition:all .14s;
+}
+.nchip:hover,.nchip:focus-visible{background:var(--ink);color:var(--navy)}
+.nchip:active{transform:translateY(1px)}
+
+/* title block */
+.tbwrap{display:flex;justify-content:flex-end;margin-top:36px}
+.tb{border:1px solid var(--line);border-collapse:collapse;font-size:9.5px;letter-spacing:.06em}
+.tb th,.tb td{border:1px solid var(--faint);padding:5px 12px;text-align:left;white-space:nowrap}
+.tb th{color:var(--dim);font-weight:400;font-size:8px;letter-spacing:.2em;text-transform:uppercase}
+.tb .big{font-size:11px;font-weight:700;letter-spacing:.14em}
+
+/* ---------- responsive ---------- */
+@media(max-width:1080px){
+  .sgrid,.rgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .strat:nth-child(2),.rej:nth-child(2){border-right:none}
+  .strat,.rej{border-bottom:1px dashed var(--faint)}
+  .ogrid,.pvgrid,.row.cols3,.row.cols2{grid-template-columns:1fr}
+  .cell,.brief-cell,.pvcell{border-right:none;border-bottom:1px dashed var(--faint)}
+  .cell:last-child,.pvcell:last-child{border-bottom:none}
+  .cre-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sw{border-bottom:1px dashed var(--faint)}
+}
+@media(max-width:720px){
+  .sheet{margin:8px;padding:36px 14px 22px}
+  .rz-t,.rz-b{left:14px;right:14px}
+  .rz-l,.rz-r{display:none}
+  .head{grid-template-columns:1fr}
+  .rev{max-width:100%}
+  .rev th,.rev td{padding:3px 7px;font-size:8.5px;white-space:normal}
+  .pvcell,.cell,.brief-cell{min-width:0}
+  .strat{min-width:0}
+  .sgrid,.rgrid{grid-template-columns:1fr}
+  .strat,.rej{border-right:none}
+  .cre-grid,.pgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cut{margin-left:0;margin-right:0}
+  .cut .cm.l{left:0}.cut .cm.r{right:0}
+  table.log .pm{max-width:150px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="rz rz-t"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div>
+  <div class="rz rz-b"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div>
+  <div class="rz rz-l"><span>D</span><span>C</span><span>B</span><span>A</span></div>
+  <div class="rz rz-r"><span>D</span><span>C</span><span>B</span><span>A</span></div>
+  <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+
+  <header class="head">
+    <div>
+      <div class="dwg">MARQUE AUTOMATION — CAMPAIGN ASSEMBLY SET · DWG <b id="dwgno">MQ-33-____</b></div>
+      <h1>STRATEGY <em>→</em> CAMPAIGN <em>→</em> RESULT</h1>
+      <div style="font-size:9.5px;color:var(--dim);letter-spacing:.2em;margin-top:6px" id="subj">GENERAL ARRANGEMENT · ALL DIMENSIONS IN UNITS · SCALE NTS</div>
+    </div>
+    <table class="rev">
+      <caption>REVISIONS</caption>
+      <tr><th>REV</th><th>DESCRIPTION</th><th>DATE</th><th>BY</th></tr>
+      <tr><td class="rv">A</td><td>INITIAL ISSUE — ASK + AUDIENCE</td><td id="rv-d1">—</td><td>MRQ</td></tr>
+      <tr><td class="rv">B</td><td>STRATEGY PATHS EVALUATED</td><td id="rv-d2">—</td><td>MRQ</td></tr>
+      <tr><td class="rv">C</td><td>ISSUED FOR FABRICATION</td><td id="rv-d3">—</td><td>QA</td></tr>
+    </table>
+  </header>
+
+  <main id="views"></main>
+
+  <div class="tbwrap"><table class="tb" id="tblock"></table></div>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const pct=x=>Math.round((x||0)*100);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE',spec:'PT-01'},
+  {n:'Glaze Milk',h:'#F7F0E5',spec:'PT-02'},
+  {n:'Barrier Cream',h:'#EDDFCE',spec:'PT-03'},
+  {n:'Toasted Almond',h:'#B98A6F',spec:'PT-04'},
+  {n:'Espresso Bean',h:'#4E362B',spec:'PT-05'}
+];
+const CREAT=[8,9,12,13].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const dstr=B.createdAt?new Date(B.createdAt).toISOString().slice(0,10):'—';
+
+document.getElementById('dwgno').textContent='MQ-33-'+((B.id||'00000000').slice(0,4).toUpperCase());
+document.getElementById('subj').textContent='SUBJECT: '+(B.title||'—').toUpperCase()+' · ALL DIMENSIONS IN UNITS · SCALE NTS';
+['rv-d1','rv-d2','rv-d3'].forEach(id=>document.getElementById(id).textContent=dstr);
+
+const M=document.getElementById('views');
+const dim=t=>'<div class="dim"><span>'+esc(t)+'</span></div>';
+const view=(n,title,zone,body)=>{
+  if(!body)return;
+  M.appendChild(el('<section class="view"><div class="vtag"><span class="vn">VIEW '+n+'</span><h2>'+esc(title)+'</h2><span class="zone">ZONE <b>'+esc(zone)+'</b> · DO NOT SCALE DRAWING</span></div><div class="vbody">'+body+'</div></section>'));
+};
+const cutline=(a)=>{M.appendChild(el('<div class="cut"><i class="cm l">'+a+'</i><i class="arr l"></i><span class="lbl">SECTION '+a+'–'+a+'</span><i class="arr r"></i><i class="cm r">'+a+'</i></div>'))};
+
+/* 01 — the ask */
+if(B.sub||B.urlContext){
+  const u=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url)||'';
+  view('01','THE ASK — DESIGN INPUT','D-1',
+    '<div class="row cols2">'+
+      '<div class="cell"><span class="lbl">CLIENT INPUT · SHEET 1</span>'+
+      dim('REQUIREMENT · SINGLE LINE')+
+      '<p class="ask-prompt">'+esc((B.sub&&B.sub.prompt)||B.title||'').replace(/→/g,'<em>→</em>')+'</p>'+
+      (u?'<p style="margin-top:12px;font-size:11px"><a href="'+esc(u)+'">'+esc(u)+'</a></p>':'')+'</div>'+
+      '<div class="cell"><span class="lbl">RESOLVED SOURCE</span>'+
+      dim('URL CONTEXT · VERIFIED')+
+      '<dl class="kv" style="margin-top:8px">'+
+      '<dt>PAGE</dt><dd>'+esc(B.urlContext&&B.urlContext.title||'—')+'</dd>'+
+      '<dt>BOARD</dt><dd>'+esc(B.id||'—')+'</dd>'+
+      '<dt>DESC</dt><dd>'+esc(B.urlContext&&B.urlContext.description||'—')+'</dd></dl></div>'+
+    '</div>');
+}
+
+/* 02 — audience */
+if(AR&&AR.lean){
+  view('02','AUDIENCE READ — CROSS SECTION','C-2',
+    '<div class="row cols3">'+
+      '<div class="cell"><span class="lbl">DOMINANT LEAN</span>'+
+      '<div style="font-size:19px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin:10px 0 4px">'+esc(AR.lean.label||'—')+'</div>'+
+      dim('CONFIDENCE '+pct(AR.lean.confidence)+'% · TOL ±2')+
+      '<div class="gauge"><div class="tr"><div class="fl" style="width:'+pct(AR.lean.confidence)+'%"></div></div><div class="lb"><span>0.00</span><span>'+(AR.lean.confidence||0).toFixed(2)+'</span><span>1.00</span></div></div>'+
+      '<ul class="sig" style="margin-top:8px">'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></div>'+
+      '<div class="cell"><span class="lbl">MEDIA HABITS · EMISSIONS</span>'+
+      '<div style="margin-top:8px">'+(AR.mediaHabits||[]).map(h=>'<div class="habit"><b>'+esc(h.channel)+'</b><span>'+esc(h.note)+'</span></div>').join('')+'</div></div>'+
+      '<div class="cell"><span class="lbl">VIBE WORDS</span>'+
+      dim('N='+(AR.vibeWords||[]).length+' TOKENS')+
+      '<div class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div>'+
+    '</div>');
+}
+
+cutline('A');
+
+/* 03 — strategies */
+if(strats.length){
+  view('03','STRATEGY OPTIONS — ELEVATIONS, 4 OFF','A-3',
+    '<div class="sgrid">'+strats.map((s,i)=>{
+      const selMarkup=i===sel?
+        '<svg class="pencil" viewBox="0 0 100 100" preserveAspectRatio="none"><rect class="p1" x="1" y="1" width="98" height="98"/><rect class="p2" x="4" y="3" width="94" height="96"/></svg><span class="appr">APPROVED</span>':'';
+      return '<article class="strat'+(i===sel?' sel':'')+'">'+selMarkup+
+      '<div class="elev"><div class="dm">W='+pct(s.audienceFit&&s.audienceFit.score)+'</div><div class="box"></div><div class="cl">EL.'+String.fromCharCode(65+i)+'</div></div>'+
+      '<div class="sid">PATH '+String.fromCharCode(65+i)+' · '+esc((s.id||'').toUpperCase())+'</div>'+
+      '<h3>'+esc(s.title)+'</h3><div class="ang">'+esc(s.angle)+'</div>'+
+      '<div class="fit">'+pct(s.audienceFit&&s.audienceFit.score)+'<small> /100 FIT</small></div>'+
+      '<div style="margin-top:6px">'+(s.channels||[]).map(c=>
+        '<div class="chan"><div class="tp"><span>'+esc(c.name).toUpperCase()+'</span><span>'+pct(c.fit)+'%</span></div>'+
+        '<div class="bar"><i style="width:'+pct(c.fit)+'%"></i></div>'+
+        (c.why?'<div class="why">SIG '+esc(c.why)+'</div>':'')+'</div>').join('')+'</div>'+
+      '<div class="fmt">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join('')+'</div>'+
+      (s.reach?'<div class="rch">≈'+views(s.reach.estViews)+' EST.VIEWS<small>'+esc(s.reach.basis||'')+'</small></div>':'')+
+      ((s.watchouts&&s.watchouts[0])?'<div class="watch">TOL: '+esc(s.watchouts[0])+'</div>':'')+
+      '</article>'}).join('')+
+    '</div>');
+}
+
+/* 04 — ruled out */
+const anti=B.antiStrategies||[];
+if(anti.length){
+  view('04','RULED OUT — DO NOT FABRICATE','A-4',
+    '<div class="rgrid">'+anti.map(a=>
+      '<div class="rej"><span class="stamp">REJECTED</span>'+
+      '<h4><span>'+esc(a.title)+'</span></h4><div class="ch">CH·'+esc(a.channel).toUpperCase()+'</div>'+
+      '<p>'+esc(a.whyNot)+'</p></div>').join('')+
+    '</div>');
+}
+
+cutline('B');
+
+/* 05 — produced output */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  view('05','PRODUCED OUTPUT — FINAL ASSEMBLY','B-5',
+    '<div class="ogrid">'+
+      '<div class="brief-cell"><span class="lbl">CAMPAIGN BRIEF · REF PATH '+(sel!=null?String.fromCharCode(65+sel):'—')+'</span>'+
+      (br?'<h3 class="brief-title">'+esc(br.title)+'</h3>'+
+      '<p class="brief-angle">'+esc(br.angle)+'</p>'+
+      dim('BRIEF SPEC · '+esc((selS.id||'').toUpperCase()))+
+      '<dl class="kv"><dt>AUDIENCE</dt><dd>'+esc(br.audience)+'</dd>'+
+      '<dt>KEY MSG</dt><dd style="color:#fff">“'+esc(br.keyMessage)+'”</dd>'+
+      '<dt>HERO SIG</dt><dd>'+esc(selS.heroSignal||'—')+'</dd></dl>':'<p class="brief-angle">no brief bound</p>')+'</div>'+
+      '<div class="cre-grid">'+CREAT.map((m,i)=>
+        '<figure class="plate"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+        '<figcaption class="cap"><div class="h">'+esc(m.head)+'</div><div class="p"><span>PLT '+(i+1)+'</span><b>'+esc(m.provider)+'</b></div></figcaption></figure>').join('')+
+      '</div>'+
+    '</div>');
+}
+
+/* 06 — palette */
+view('06','MATERIAL — PAINT SCHEDULE','B-6',
+  '<div class="pgrid">'+PALETTE.map(s=>
+    '<div class="sw"><div class="box" style="background:'+s.h+'"></div>'+
+    '<div class="n">'+esc(s.n)+'</div><div class="h">'+esc(s.spec)+' · '+s.h.toUpperCase()+'</div></div>').join('')+
+  '</div>');
+
+/* 07 — provenance */
+const QB=B.qlooBundle;
+if(B.evidence||QB){
+  const affs=(QB&&QB.affinities)||[];
+  view('07','PROVENANCE — BILL OF SIGNALS','C-7',
+    '<div class="pvgrid"><div class="pvcell"><span class="lbl">WORKSHOP LOG · API CALLS</span>'+
+    dim(calls.length+' CALLS · '+(QB&&QB.mode?QB.mode.toUpperCase():'—')+' MODE')+
+    '<table class="log" style="margin-top:8px"><thead><tr><th>ENDPOINT</th><th>N</th><th>MS</th><th>MODE</th></tr></thead><tbody>'+
+    calls.map(c=>'<tr><td><span class="ep">'+esc(c.endpoint)+'</span><span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+kv[1]).join(' '))+'</span></td>'+
+      '<td>'+esc(c.n)+'</td><td>'+esc(c.tookMs)+'</td><td><span class="md">'+esc(c.mode)+'</span></td></tr>').join('')+
+    '</tbody></table>'+
+    '<p style="font-size:9px;color:var(--dim);margin-top:10px;letter-spacing:.14em">FETCHED '+(B.fetchedAt?new Date(B.fetchedAt).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'}).toUpperCase():'—')+'</p></div>'+
+    '<div class="pvcell"><span class="lbl">TOP AFFINITIES · MEASURED</span>'+
+    '<div style="margin-top:10px">'+affs.map(g=>
+      '<div class="aff-g"><div class="t">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+      g.entities.slice(0,4).map(e=>'<div class="aff"><span>'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span><div class="bar"><i style="width:'+pct(e.affinity)+'%"></i></div></div>').join('')+'</div>').join('')+
+    '</div></div></div>');
+}
+
+/* 08 — next */
+view('08','NEXT OUTPUTS — DOWNSTREAM ASSEMBLIES','D-8',
+  '<div class="next-row">'+
+  ['CAMPAIGN MICROSITE','BRANDBOOK PDF','VIDEO CUT','PERFORMANCE PLAN'].map(x=>'<button class="nchip">'+x+'</button>').join('')+
+  '</div>');
+
+/* title block */
+document.getElementById('tblock').innerHTML=
+ '<tr><th>PROJECT</th><td colspan="3"><span class="big">'+esc(B.title||'—').toUpperCase()+'</span></td><th>SCALE</th><td>NTS</td></tr>'+
+ '<tr><th>DRAWN</th><td>MARQUE AUTOMATION</td><th>CHECKED</th><td>QLOO ×'+calls.length+'</td><th>SHEET</th><td>1 OF 1</td></tr>'+
+ '<tr><th>DATE</th><td>'+dstr+'</td><th>APPROVED</th><td>—</td><th>REV</th><td class="big" style="color:var(--red)">C</td></tr>';
+})();
+</script>
+</body>
+</html>

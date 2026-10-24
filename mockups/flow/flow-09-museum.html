@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque Gallery — Strategy → Campaign → Result · Rhode peptide lip tint → Gen Z</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23F7F5F0'/%3E%3Crect x='10' y='10' width='44' height='44' fill='none' stroke='%23222018' stroke-width='2'/%3E%3Crect x='18' y='18' width='28' height='28' fill='%23EFB7AE'/%3E%3C/svg%3E">
+<style>
+:root{
+  --wall:#F7F5F0;
+  --wall-2:#EFEDE6;
+  --card:#FFFFFF;
+  --ink:#222018;
+  --ink-2:#5C564A;
+  --ink-3:#948C7D;
+  --frame:#2B2620;
+  --line:#DDD8CC;
+  --acc:#8E3B2C;
+  --serif:Georgia,'Iowan Old Style','Times New Roman',serif;
+  --sans:system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--wall);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(142,59,44,.18)}
+a{color:var(--acc);text-decoration:none;border-bottom:1px solid var(--acc)}
+a:hover{color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+button{font-family:var(--sans);cursor:pointer}
+.sc{font-variant-caps:small-caps;letter-spacing:.14em}
+.sans{font-family:var(--sans)}
+
+.wrap{max-width:1220px;margin:0 auto;padding:0 36px}
+
+/* ============ GALLERY ENTRY ============ */
+.entry{padding:72px 0 40px;border-bottom:1px solid var(--line)}
+.museum{font-family:var(--sans);font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--ink-3)}
+.museum b{color:var(--acc)}
+.entry h1{
+  font-size:clamp(34px,5.6vw,64px);font-weight:400;line-height:1.06;margin:18px 0 14px;
+  letter-spacing:.01em;
+}
+.entry h1 em{font-style:italic;color:var(--acc)}
+.walltext{max-width:62ch;color:var(--ink-2);font-size:16px}
+.tomb{ /* exhibition tombstone */
+  display:flex;flex-wrap:wrap;gap:8px 34px;margin-top:26px;font-family:var(--sans);font-size:11px;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);
+}
+.tomb span b{color:var(--ink);font-weight:600}
+
+/* ============ ROOMS ============ */
+.room{padding:64px 0 26px}
+.room-tag{
+  display:flex;align-items:baseline;gap:18px;margin-bottom:10px;
+}
+.room-tag .rn{
+  font-family:var(--sans);font-size:11px;letter-spacing:.28em;color:var(--acc);
+  border:1px solid var(--acc);padding:4px 10px;text-transform:uppercase;white-space:nowrap;
+}
+.room-tag h2{font-size:clamp(21px,3vw,30px);font-weight:400;letter-spacing:.02em}
+.room-tag h2 i{color:var(--ink-2)}
+.room-note{font-family:var(--sans);font-size:12px;color:var(--ink-3);letter-spacing:.06em;margin-bottom:34px;max-width:70ch}
+
+/* museum wall label (tombstone) */
+.label{
+  background:var(--card);border:1px solid var(--line);padding:12px 16px;max-width:290px;
+  font-family:var(--sans);font-size:11.5px;line-height:1.5;color:var(--ink-2);
+}
+.label .lt{font-family:var(--serif);font-style:italic;font-size:14.5px;color:var(--ink);display:block}
+.label .lm{display:block;margin-top:3px}
+.label .ln{display:block;color:var(--ink-3);font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
+
+/* framed work */
+.work{background:var(--frame);padding:9px;box-shadow:0 10px 28px rgba(34,32,24,.14)}
+.work .mat{background:#FDFCF9;padding:clamp(18px,3vw,38px)}
+.work .art{position:relative}
+
+/* ---- Room I: the ask ---- */
+.ask-hang{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:34px;align-items:start}
+.ask-art{border:1px solid var(--line);padding:clamp(24px,4vw,52px);background:var(--card)}
+.ask-art .q{font-size:clamp(24px,3.4vw,38px);font-style:italic;line-height:1.28}
+.ask-art .q b{font-weight:400;color:var(--acc)}
+.ask-art .src{margin-top:26px;font-family:var(--sans);font-size:12px;color:var(--ink-2)}
+.ask-side .label{max-width:none}
+.ask-side dl{font-size:12.5px}
+.ask-side dt{font-family:var(--sans);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin-top:12px}
+.ask-side dd{color:var(--ink)}
+
+/* ---- Room II: audience ---- */
+.aud-hang{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px}
+.aud-art{min-height:240px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:10px}
+.aud-art .big{font-size:clamp(30px,3.6vw,44px);font-style:italic;color:var(--ink);line-height:1.15}
+.aud-art .sub{font-family:var(--sans);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);margin-top:10px}
+.conf-ring{width:120px;height:120px;position:relative;margin:6px auto}
+.conf-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.conf-ring .val{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--sans)}
+.conf-ring .val b{font-size:30px;font-weight:600}
+.conf-ring .val span{font-size:9px;letter-spacing:.18em;color:var(--ink-3);display:block}
+.habitline{padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+.habitline b{font-family:var(--sans);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc);display:block;margin-bottom:1px}
+.vibewords{text-align:center}
+.vibewords i{display:inline-block;font-size:15px;font-style:italic;margin:3px 10px;color:var(--ink-2)}
+.vibewords i:nth-child(odd){color:var(--acc)}
+
+/* ---- Room III: strategies as works ---- */
+.hang4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px}
+.strat .art{
+  aspect-ratio:3/4;display:flex;flex-direction:column;padding:20px;background:var(--card);
+  border:1px solid var(--line);
+}
+.strat .work{transition:transform .2s}
+.strat:hover .work{transform:translateY(-5px)}
+.strat .art .top{display:flex;justify-content:space-between;font-family:var(--sans);font-size:9px;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase}
+.strat .art .t{font-size:19px;font-style:italic;margin:12px 0 2px;line-height:1.2}
+.strat .art .a{font-family:var(--sans);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--acc)}
+.strat .art .fig{
+  margin:auto 0;text-align:center;font-weight:400;
+}
+.strat .art .fig .n{font-size:clamp(52px,6vw,84px);line-height:1;color:var(--ink)}
+.strat .art .fig .n b{font-weight:400;color:var(--acc);font-size:.5em;vertical-align:super}
+.strat .art .fig .c{font-family:var(--sans);font-size:9px;letter-spacing:.26em;color:var(--ink-3);text-transform:uppercase;margin-top:8px}
+.strat .art .ch{border-top:1px solid var(--line);padding-top:10px;font-family:var(--sans);font-size:10px;color:var(--ink-2)}
+.strat .art .ch .r{display:flex;justify-content:space-between;padding:2px 0}
+.strat .art .fmtline{margin-top:8px;font-family:var(--sans);font-size:9.5px;color:var(--ink-3);letter-spacing:.06em}
+.strat .label{margin-top:14px}
+.strat.picked .work{outline:1.5px solid var(--acc);outline-offset:5px}
+.strat.picked .art .top .sel{color:var(--acc)}
+.hang-note{grid-column:1/-1;font-family:var(--sans);font-size:11px;color:var(--ink-3);letter-spacing:.08em}
+
+/* ---- Room IV: not on view ---- */
+.storage{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px}
+.stored .work{background:#B9B3A6;padding:9px}
+.stored .mat{background:var(--wall-2);padding:26px;min-height:170px;display:flex;flex-direction:column}
+.stored .nov{
+  font-family:var(--sans);font-size:9.5px;letter-spacing:.26em;color:var(--wall);
+  background:var(--ink-2);display:inline-block;padding:3px 10px;align-self:flex-start;margin-bottom:14px;
+}
+.stored h4{font-size:15px;font-style:italic;font-weight:400}
+.stored .rc{font-family:var(--sans);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);margin:3px 0 10px}
+.stored p{font-size:11.5px;color:var(--ink-2);font-family:var(--sans);line-height:1.5}
+
+/* ---- Room V: the edition ---- */
+.edition{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.6fr);gap:34px;align-items:start}
+.brief-doc{background:var(--card);border:1px solid var(--line);padding:clamp(22px,3vw,40px)}
+.brief-doc .bt{font-size:clamp(24px,3vw,34px);font-style:italic;line-height:1.15}
+.brief-doc .rule{border:none;border-top:1px solid var(--ink);margin:16px 0}
+.brief-doc p{font-size:13.5px;color:var(--ink-2);margin-bottom:12px}
+.brief-doc .lbl{font-family:var(--sans);font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:3px}
+.brief-doc .km{color:var(--acc);font-style:italic;font-size:15px}
+.prints{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:30px}
+.print .art{aspect-ratio:4/5;overflow:hidden}
+.print img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.print:hover img{transform:scale(1.03)}
+.print .label{margin-top:14px}
+
+/* ---- Room VI: provenance ---- */
+.prov-hang{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:34px}
+.ledger{background:var(--card);border:1px solid var(--line);padding:clamp(20px,2.6vw,34px)}
+.ledger h3,.ranklist h3{font-family:var(--sans);font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-3);margin-bottom:16px}
+table.pl{width:100%;border-collapse:collapse;font-family:var(--sans);font-size:11.5px;table-layout:fixed}
+table.pl th{text-align:left;font-weight:500;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--ink);padding:0 10px 8px 0}
+table.pl td{border-bottom:1px solid var(--line);padding:8px 10px 8px 0;vertical-align:top;color:var(--ink-2)}
+table.pl td:first-child{color:var(--ink)}
+table.pl .pr{display:block;font-size:9.5px;color:var(--ink-3);max-width:min(320px,48vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.live{color:var(--acc)}
+.ranklist{background:var(--card);border:1px solid var(--line);padding:clamp(20px,2.6vw,34px)}
+.rgroup{margin-bottom:16px}
+.rgroup .t{font-size:12px;font-style:italic;color:var(--acc);margin-bottom:4px}
+.rrow{display:flex;align-items:baseline;gap:10px;font-size:13px;padding:2.5px 0}
+.rrow .n{font-family:var(--sans);font-size:9px;color:var(--ink-3);width:16px}
+.rrow .d{flex:1;border-bottom:1px dotted var(--line);transform:translateY(-4px)}
+.rrow .v{font-family:var(--sans);font-size:10.5px;color:var(--ink-2)}
+
+/* ---- shop ---- */
+.shop{display:flex;flex-wrap:wrap;gap:14px}
+.item{
+  border:1px solid var(--frame);background:var(--card);padding:14px 24px;font-size:11px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--ink);display:inline-flex;gap:10px;align-items:center;
+  transition:all .16s;
+}
+.item svg{width:14px;height:14px;stroke:var(--acc);fill:none;stroke-width:1.6}
+.item:hover{background:var(--ink);color:var(--wall);border-color:var(--ink)}
+.item:active{transform:translateY(1px)}
+
+/* ---- footer ---- */
+footer{border-top:1px solid var(--line);margin-top:40px;padding:30px 0 50px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-family:var(--sans);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+
+@media(max-width:1100px){
+  .hang4,.storage{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .aud-hang{grid-template-columns:1fr;max-width:520px}
+  .edition,.prov-hang,.ask-hang{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .wrap{padding:0 18px}
+  .hang4,.storage,.prints{grid-template-columns:1fr}
+  .entry{padding:48px 0 32px}
+  .work .mat{padding:20px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="entry"><div class="wrap">
+  <div class="museum">MARQUE <b>GALLERY</b> · EXHIBITION Nº 1023</div>
+  <h1>Strategy <em>→</em> Campaign <em>→</em> Result</h1>
+  <p class="walltext" id="intro">An exhibition in six rooms, tracing a single marketing brief from ask to artifact — every work generated from live audience-culture data.</p>
+  <div class="tomb" id="tomb"></div>
+</div></header>
+
+<main id="rooms"></main>
+
+<footer><div class="wrap">
+  <span id="f-l">MARQUE GALLERY — PERMANENT COLLECTION</span>
+  <span id="f-r">ALL WORKS © MARQUE AUTOMATION, 2026</span>
+</div></footer>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const pct=x=>Math.round((x||0)*100);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE',m:'pigment on lip'},
+  {n:'Glaze Milk',h:'#F7F0E5',m:'titanium wash'},
+  {n:'Barrier Cream',h:'#EDDFCE',m:'warm ground'},
+  {n:'Toasted Almond',h:'#B98A6F',m:'earth tone'},
+  {n:'Espresso Bean',h:'#4E362B',m:'dark pigment'}
+];
+const CREAT=[0,2,4,6].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+const M=document.getElementById('rooms');
+const room=(no,title,note,body)=>'<section class="room"><div class="wrap"><div class="room-tag"><span class="rn">ROOM '+no+'</span><h2>'+title+'</h2></div>'+(note?'<p class="room-note">'+note+'</p>':'')+body+'</div></section>';
+const label=(t,m,n)=>'<div class="label"><span class="lt">'+esc(t)+'</span><span class="lm">'+esc(m)+'</span>'+(n?'<span class="ln">'+esc(n)+'</span>':'')+'</div>';
+const work=(inner)=>'<div class="work"><div class="mat"><div class="art">'+inner+'</div></div></div>';
+
+document.getElementById('tomb').innerHTML=
+  '<span><b>DATES</b> '+(B.createdAt?new Date(B.createdAt).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'—')+'</span>'+
+  '<span><b>WORKS</b> '+(strats.length+CREAT.length+PALETTE.length+4)+' OBJECTS</span>'+
+  '<span><b>MEDIUM</b> LIVE QLOO DATA</span>'+
+  '<span><b>ADMISSION</b> FREE</span>';
+
+/* ---- ROOM I — the commission ---- */
+if(B.sub||B.urlContext){
+  const u=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url)||'';
+  M.appendChild(el(room('I','The Commission','Every campaign begins with a patron\'s request. The prompt hangs alone — the single line everything else answers to.',
+    '<div class="ask-hang"><div>'+
+    work('<div class="ask-art"><p class="q">“'+esc((B.sub&&B.sub.prompt)||B.title||'').replace(/→/,'<b>→</b>')+'”</p>'+
+      (u?'<p class="src">source — <a href="'+esc(u)+'">'+esc(u)+'</a></p>':'')+'</div>')+
+    '<div style="margin-top:14px">'+label('Untitled (The Ask)','text prompt, resolved URL, 2026','Requested of the artist')+'</div></div>'+
+    '<div class="ask-side">'+label('Catalogue Entry','provenance of the prompt','Cat. Nº 001')+
+    '<div class="label" style="margin-top:14px;max-width:none"><dl>'+
+    '<dt>Source page</dt><dd>'+esc(B.urlContext&&B.urlContext.title||'—')+'</dd>'+
+    '<dt>Page description</dt><dd style="font-family:var(--sans);font-size:12px;color:var(--ink-2)">'+esc(B.urlContext&&B.urlContext.description||'—')+'</dd>'+
+    '<dt>Accession</dt><dd class="sans" style="font-size:10.5px;word-break:break-all">'+esc(B.id||'—')+'</dd>'+
+    '<dt>Commissioned</dt><dd>'+(B.createdAt?new Date(B.createdAt).toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'}):'—')+'</dd></dl></div></div></div>')));
+}
+
+/* ---- ROOM II — study of the viewer ---- */
+const AR=B.audienceRead;
+if(AR&&AR.lean){
+  const conf=pct(AR.lean.confidence), r=52, circ=2*Math.PI*r;
+  M.appendChild(el(room('II','Study of the Viewer','A portrait of the audience, painted from cultural telemetry: what they follow, where they watch, the words they live in.',
+    '<div class="aud-hang">'+
+    '<figure>'+work('<div class="aud-art"><div class="conf-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="'+r+'" fill="none" stroke="#DDD8CC" stroke-width="7"/><circle cx="60" cy="60" r="'+r+'" fill="none" stroke="#8E3B2C" stroke-width="7" stroke-linecap="butt" stroke-dasharray="'+(circ*AR.lean.confidence)+' '+circ+'"/></svg><div class="val"><div><b>'+conf+'</b><span>FIT CONF.</span></div></div></div><div class="big">'+esc(AR.lean.label)+'</div></div>')+
+      '<figcaption style="margin-top:14px">'+label('The Early Adopter','confidence dial, '+conf+'% certain','Model study, live data')+'</figcaption></figure>'+
+    '<figure>'+work('<div class="aud-art" style="align-items:stretch;text-align:left;justify-content:flex-start">'+
+      '<div class="sub" style="margin:0 0 10px;text-align:left">WHERE THEY GATHER</div>'+
+      (AR.mediaHabits||[]).map(h=>'<div class="habitline"><b>'+esc(h.channel)+'</b>'+esc(h.note)+'</div>').join('')+'</div>')+
+      '<figcaption style="margin-top:14px">'+label('Habitats','channel study in three panels','From the field notes')+'</figcaption></figure>'+
+    '<figure>'+work('<div class="aud-art vibewords"><div class="sub" style="margin-bottom:14px">VIBE WORDS</div>'+
+      (AR.vibeWords||[]).map(w=>'<i>'+esc(w)+'</i>').join('')+'</div>')+
+      '<figcaption style="margin-top:14px">'+label('Five Words, Framed','ink on affinity paper','Gift of the Qloo Institute')+'</figcaption></figure>'+
+    '</div>')));
+}
+
+/* ---- ROOM III — four studies ---- */
+if(strats.length){
+  M.appendChild(el(room('III','Four Studies in Persuasion','Four candidate compositions for the campaign. One — marked — was selected for enlargement into the final edition.',
+    '<div class="hang4">'+strats.map((s,i)=>
+      '<figure class="strat'+(i===sel?' picked':'')+'">'+work(
+        '<div class="top"><span>STUDY '+String.fromCharCode(65+i)+'</span>'+(i===sel?'<span class="sel">● SELECTED</span>':'<span>'+esc(s.id||'').toUpperCase()+'</span>')+'</div>'+
+        '<div class="t">'+esc(s.title)+'</div><div class="a">'+esc(s.angle)+'</div>'+
+        '<div class="fig"><div class="n">'+pct(s.audienceFit&&s.audienceFit.score)+'<b>/100</b></div><div class="c">audience fit</div></div>'+
+        '<div class="ch">'+(s.channels||[]).map(c=>'<div class="r"><span>'+esc(c.name)+'</span><span>'+pct(c.fit)+'%</span></div>').join('')+'</div>'+
+        '<div class="fmtline">'+esc((s.formats||[]).join(' · '))+'</div>'
+      )+'<figcaption style="margin-top:14px">'+label(s.title,'Qloo signals on canvas — '+(s.heroSignal||'untitled signal'),(s.reach?views(s.reach.estViews)+' est. views':'')+(i===sel?' · acquired':''))+'</figcaption>'+
+      ((s.watchouts&&s.watchouts[0])?'<div class="label" style="margin-top:8px;max-width:none"><span class="ln" style="margin:0 0 3px">Conservator\'s note</span><span style="font-family:var(--sans);font-size:11px;color:var(--ink-2)">'+esc(s.watchouts[0])+'</span></div>':'')+
+      '</figure>').join('')+
+    '<div class="hang-note">— Works marked “acquired” proceed to Room V for final production.</div></div>')));
+}
+
+/* ---- ROOM IV — not on view ---- */
+const anti=B.antiStrategies||[];
+if(anti.length){
+  M.appendChild(el(room('IV','Deaccessioned','Removed from the exhibition after curatorial review. Stored works remain in the archive; their condition reports are public.',
+    '<div class="storage">'+anti.map(a=>
+      '<figure class="stored"><div class="work"><div class="mat"><div><span class="nov">NOT ON VIEW</span>'+
+      '<h4>'+esc(a.title)+'</h4><div class="rc">medium: '+esc(a.channel)+'</div>'+
+      '<p>'+esc(a.whyNot)+'</p></div></div></div></figure>').join('')+
+    '</div>')));
+}
+
+/* ---- ROOM V — the edition ---- */
+const selS=strats[sel]||strats[0]; const br=selS&&selS.brief;
+if(selS||CREAT.length){
+  M.appendChild(el(room('V','The Edition','The selected study, produced. Left: the exhibition text. Right: the print edition, four proofs with their printers\' marks.',
+    '<div class="edition"><figure>'+
+    (br?'<div class="brief-doc"><span class="lbl">EXHIBITION TEXT — CAMPAIGN BRIEF</span>'+
+      '<div class="bt">'+esc(br.title)+'</div><hr class="rule">'+
+      '<p>'+esc(br.angle)+'</p>'+
+      '<p><span class="lbl">Audience</span>'+esc(br.audience)+'</p>'+
+      '<p><span class="lbl">Key message</span><span class="km">“'+esc(br.keyMessage)+'”</span></p>'+
+      '<p style="margin-bottom:0"><span class="lbl">Derived from</span>'+esc(selS.title)+' · hero signal '+esc(selS.heroSignal||'—')+'</p></div>':'')+
+    '<figcaption style="margin-top:14px">'+label('The Brief','letterpress on cotton paper','Enlarged from Study '+(sel!==null?String.fromCharCode(65+sel):'A'))+'</figcaption></figure>'+
+    '<div class="prints">'+CREAT.map((m,i)=>
+      '<figure class="print">'+work('<img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').remove()">')+
+      '<figcaption>'+label(m.head,'generated print — '+m.provider,'Proof '+(i+1)+' of '+CREAT.length+' · 2026')+'</figcaption></figure>').join('')+
+    '</div></div>')));
+}
+
+/* ---- ROOM VI — provenance + palette ---- */
+const EV=B.evidence,QB=B.qlooBundle;
+{
+  const calls=(EV&&EV.calls)||[];const affs=(QB&&QB.affinities)||[];
+  const swatches='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:22px;margin-bottom:44px">'+
+    PALETTE.map((s,i)=>'<figure>'+work('<div style="aspect-ratio:16/10;background:'+s.h+'"></div>')+
+      '<figcaption style="margin-top:10px">'+label(s.n,s.m,s.h.toUpperCase())+'</figcaption></figure>').join('')+'</div>';
+  M.appendChild(el(room('VI','Provenance & Palette','Every object in this exhibition traces to a recorded call. The pigment studies hang alongside the ledger.',
+    swatches+
+    '<div class="prov-hang">'+
+    '<div class="ledger"><h3>ACQUISITION LEDGER — QLOO API CALLS ('+calls.length+')</h3>'+
+      '<table class="pl"><thead><tr><th>endpoint</th><th>n</th><th>ms</th><th>mode</th></tr></thead><tbody>'+
+      calls.map(c=>'<tr><td>'+esc(c.endpoint)+'<span class="pr">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+kv[1]).join(' · '))+'</span></td><td>'+esc(c.n)+'</td><td>'+esc(c.tookMs)+'</td><td class="live">'+esc(c.mode)+'</td></tr>').join('')+
+      '</tbody></table><p class="sans" style="font-size:10px;color:var(--ink-3);margin-top:12px;letter-spacing:.1em">ENTERED '+(B.fetchedAt?new Date(B.fetchedAt).toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'}).toUpperCase():'—')+'</p></div>'+
+    '<div class="ranklist"><h3>REGISTER OF AFFINITIES</h3>'+
+      affs.map(g=>'<div class="rgroup"><div class="t">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+        g.entities.slice(0,4).map((e,i)=>'<div class="rrow"><span class="n">'+(i+1)+'.</span><span>'+esc(e.name)+'</span><span class="d"></span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')+'</div>').join('')+
+    '</div></div>')));
+}
+
+/* ---- museum shop / next outputs ---- */
+M.appendChild(el(room('VII','The Museum Shop','Reproductions and editions derived from this exhibition are available on request.',
+  '<div class="shop">'+
+  [['M4 4h16v16H4z M4 9h16','CAMPAIGN MICROSITE'],
+   ['M5 3h11l4 4v14H5z M16 3v4h4 M8 11h8 M8 15h8','BRANDBOOK PDF'],
+   ['M4 5h16v14H4z M10 10l6 4-6 4z','VIDEO CUT'],
+   ['M4 19h16 M4 15l5-4 4 3 7-6','PERFORMANCE PLAN']].map(x=>
+    '<button class="item"><svg viewBox="0 0 24 24"><path d="'+x[0]+'"/></svg>'+x[1]+'</button>').join('')+
+  '</div>')));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARQUE OBSERVATORY — flow/15 · survey plate</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23081126'/%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%23e3b65c' stroke-width='1'/%3E%3Cpath d='M16 5v22M5 16h22' stroke='%23e3b65c' stroke-width='.7'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%23e3b65c'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#081126;
+  --bg2:#0b1734;
+  --panel:rgba(16,28,60,.55);
+  --ink:#ccd7f0;
+  --dim:#7d8cb0;
+  --faint:#4a5878;
+  --gold:#e3b65c;
+  --gold-dim:rgba(227,182,92,.45);
+  --line:rgba(178,198,240,.16);
+  --serif:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:ui-sans-serif,system-ui,"Helvetica Neue",Arial,sans-serif;
+  --ease:cubic-bezier(.22,.72,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  color:var(--ink);
+  font:400 15px/1.6 var(--sans);
+  letter-spacing:.005em;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;overflow-x:hidden;
+  background:
+    radial-gradient(1200px 800px at 50% -12%,#122052 0%,transparent 60%),
+    radial-gradient(900px 700px at 90% 110%,#0e1a40 0%,transparent 55%),
+    var(--bg);
+}
+::selection{background:var(--gold);color:#081126}
+a{color:var(--gold)}
+
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;max-width:1160px;margin:0 auto;padding:0 28px}
+
+/* ---------- header ---------- */
+.top{display:flex;align-items:center;gap:18px;padding:24px 0 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.logo{font-family:var(--serif);font-weight:700;font-size:20px;letter-spacing:.34em;color:var(--ink);text-decoration:none;text-transform:uppercase}
+.logo em{font-style:normal;color:var(--gold)}
+.top .meta{margin-left:auto;font-family:var(--mono);font-size:10.5px;line-height:1.8;color:var(--dim);text-align:right}
+.top .meta b{color:var(--ink);font-weight:400}
+.scope{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--gold);border:1px solid var(--gold-dim);padding:5px 12px;border-radius:999px}
+.scope svg{width:12px;height:12px}
+
+/* ---------- hero ---------- */
+.hero{padding:44px 0 30px;display:grid;grid-template-columns:minmax(0,430px) 1fr;gap:44px;align-items:center}
+.polar{position:relative;aspect-ratio:1;max-width:430px;width:100%;margin:0 auto}
+.polar svg{width:100%;height:100%;display:block}
+.polar .core{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 17%}
+.polar .core .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.34em;color:var(--gold);margin-bottom:10px}
+.polar .core .q{font-family:var(--serif);font-weight:600;font-size:clamp(18px,2.4vw,25px);line-height:1.18;color:#f0e9d8}
+.polar .core .src{margin-top:10px;font-family:var(--mono);font-size:10px;color:var(--dim)}
+.hero-r .k{font-family:var(--mono);font-size:10px;letter-spacing:.34em;color:var(--gold);margin-bottom:16px}
+.hero-r h1{font-family:var(--serif);font-weight:600;font-size:clamp(34px,4.6vw,54px);line-height:1.05;color:#eef1fa;font-style:italic}
+.hero-r .sub{margin-top:18px;color:var(--dim);max-width:520px;font-size:14.5px}
+.hero-r .sub b{color:var(--ink);font-weight:600}
+.cat{margin-top:26px;border-top:1px solid var(--line)}
+.cat .row{display:grid;grid-template-columns:140px 1fr;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.cat .k2{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;color:var(--faint);text-transform:uppercase;padding-top:2px}
+.cat .v{color:var(--ink)}
+.cat .v a{text-decoration:none;border-bottom:1px dotted var(--gold-dim)}
+.cat .v a:hover{border-bottom-style:solid}
+
+/* ---------- sections ---------- */
+.sec{padding:52px 0 6px}
+.sec-h{display:flex;align-items:baseline;gap:16px;margin-bottom:8px;flex-wrap:wrap}
+.sec-h .idx{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--gold)}
+.sec-h h2{font-family:var(--serif);font-weight:600;font-size:clamp(24px,3.4vw,34px);letter-spacing:.1em;text-transform:uppercase;color:#eef1fa}
+.sec-h .rule{flex:1;height:1px;min-width:40px;background:linear-gradient(90deg,var(--line),transparent)}
+.sec-h .tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;color:var(--dim)}
+.sec-sub{color:var(--dim);font-size:13.5px;margin-bottom:28px;max-width:640px}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:22px 24px;backdrop-filter:blur(2px);position:relative;min-width:0}
+.panel:hover{border-color:rgba(227,182,92,.35)}
+.panel h3{font-family:var(--mono);font-size:9.5px;letter-spacing:.3em;color:var(--faint);margin-bottom:16px;text-transform:uppercase}
+.corner{position:absolute;width:14px;height:14px;pointer-events:none;opacity:.7}
+.corner.tl{top:-1px;left:-1px;border-top:1px solid var(--gold);border-left:1px solid var(--gold)}
+.corner.br{bottom:-1px;right:-1px;border-bottom:1px solid var(--gold);border-right:1px solid var(--gold)}
+
+/* audience */
+.aud{display:grid;grid-template-columns:1.02fr .98fr;gap:22px}
+.aud>*,.out>*,.prov>*{min-width:0}
+.lean-row{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.lean{font-family:var(--serif);font-weight:700;font-style:italic;font-size:32px;color:var(--gold);line-height:1}
+.conf{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink);border:1px solid var(--line);padding:4px 10px;border-radius:2px}
+.confbar{height:4px;background:rgba(255,255,255,.06);margin:16px 0 18px;position:relative}
+.confbar i{position:absolute;inset:0;background:linear-gradient(90deg,var(--gold-dim),var(--gold))}
+.signals{list-style:none}
+.signals li{font-size:13px;padding:8px 0 8px 22px;border-bottom:1px solid var(--line);position:relative;color:var(--ink)}
+.signals li:last-child{border-bottom:0}
+.signals li::before{content:"";position:absolute;left:2px;top:13px;width:6px;height:6px;background:var(--gold);transform:rotate(45deg);opacity:.85}
+.habits{display:flex;flex-direction:column;gap:10px}
+.habit{display:grid;grid-template-columns:96px 1fr;gap:12px;padding:10px 14px;border:1px solid var(--line);border-radius:3px;align-items:baseline;transition:border-color .25s,background .25s}
+.habit:hover{border-color:var(--gold-dim);background:rgba(227,182,92,.05)}
+.habit .ch{font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase}
+.habit .nt{font-size:12.5px;color:var(--dim)}
+.vibes{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px}
+.vibe{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;padding:5px 12px;border:1px solid var(--line);border-radius:999px;color:var(--ink);transition:all .2s}
+.vibe:hover{border-color:var(--gold);color:var(--gold)}
+
+/* constellation strategies */
+.strat-field{position:relative}
+#constel{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;overflow:visible}
+.strats{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.strat{background:rgba(13,23,52,.72);border:1px solid var(--line);border-radius:4px;padding:22px 24px;position:relative;transition:border-color .3s,transform .3s var(--ease),background .3s}
+.strat:hover{border-color:var(--gold-dim);transform:translateY(-3px);background:rgba(18,30,66,.8)}
+.starnode{position:absolute;top:-7px;left:50%;margin-left:-7px;width:14px;height:14px;z-index:3}
+.starnode::before{content:"";position:absolute;inset:0;background:var(--gold);transform:rotate(45deg);box-shadow:0 0 10px rgba(227,182,92,.8)}
+.starnode::after{content:"";position:absolute;inset:4px;background:#081126;transform:rotate(45deg)}
+.s-des{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-right:78px}
+.s-des .g{font-family:var(--serif);font-style:italic;font-weight:600;font-size:15px;color:var(--gold);letter-spacing:.1em}
+.s-des .coord{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--faint)}
+.s-name{font-family:var(--serif);font-weight:700;font-size:26px;line-height:1.1;color:#eef1fa;margin:4px 0 2px}
+.s-angle{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;color:var(--dim);text-transform:uppercase;margin-bottom:14px}
+.s-fit{position:absolute;top:20px;right:22px;text-align:right}
+.s-fit b{font-family:var(--serif);font-size:24px;font-weight:700;color:var(--gold);line-height:1;display:block}
+.s-fit span{font-family:var(--mono);font-size:8px;letter-spacing:.22em;color:var(--faint)}
+.s-chans{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.s-chan{display:grid;grid-template-columns:84px 1fr auto;gap:10px;align-items:center;font-size:12px}
+.s-chan .nm{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.s-chan .bar{height:3px;background:rgba(255,255,255,.07);position:relative}
+.s-chan .bar i{position:absolute;inset:0;background:var(--gold);opacity:.85}
+.s-chan .wy{font-family:var(--mono);font-size:9.5px;color:var(--dim)}
+.s-hero{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;color:var(--ink);margin-bottom:10px}
+.s-hero b{color:var(--gold);font-weight:400}
+.s-fmts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.s-fmts span{font-family:var(--mono);font-size:9px;letter-spacing:.14em;padding:3px 9px;border:1px solid var(--line);color:var(--dim);border-radius:2px}
+.s-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;border-top:1px solid var(--line);padding-top:12px}
+.s-reach b{font-family:var(--serif);font-size:22px;color:var(--gold);font-weight:700}
+.s-reach span{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;color:var(--faint)}
+.s-watch{font-size:10.5px;color:var(--dim);max-width:56%;text-align:right;line-height:1.5}
+
+/* anti */
+.anti{border:1px dashed var(--faint);border-radius:4px}
+.anti-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.3em;color:var(--dim);padding:12px 18px;border-bottom:1px dashed var(--faint);text-transform:uppercase}
+.anti-row{display:grid;grid-template-columns:190px 100px 1fr;gap:14px;align-items:baseline;padding:12px 18px;border-bottom:1px solid var(--line)}
+.anti-row:last-child{border-bottom:0}
+.anti-row .t{font-family:var(--serif);font-weight:600;font-size:16px;color:var(--dim);text-decoration:line-through;text-decoration-color:var(--gold-dim);text-decoration-thickness:1px}
+.anti-row .c{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--faint);text-transform:uppercase}
+.anti-row .w{font-size:12px;color:var(--dim)}
+
+/* output */
+.out{display:grid;grid-template-columns:.9fr 1.1fr;gap:24px;align-items:start}
+.brief{background:var(--panel);border:1px solid var(--gold-dim);border-radius:4px;padding:26px;position:relative}
+.brief .stamp{font-family:var(--mono);font-size:9px;letter-spacing:.3em;color:var(--gold)}
+.brief h3{font-family:var(--serif);font-weight:700;font-size:30px;color:#f0e9d8;margin:8px 0 4px;line-height:1.1}
+.brief .a{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--dim);margin-bottom:16px}
+.brief dt{font-family:var(--mono);font-size:8.5px;letter-spacing:.3em;color:var(--faint);text-transform:uppercase;margin-bottom:3px}
+.brief dd{font-size:13.5px;margin-bottom:14px;color:var(--ink)}
+.brief .km{border-left:2px solid var(--gold);padding:4px 0 4px 16px;font-family:var(--serif);font-style:italic;font-size:18px;color:#f0e9d8}
+.cre-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cre{border:1px solid var(--line);background:rgba(13,23,52,.6);padding:6px;transition:border-color .3s,transform .3s var(--ease)}
+.cre:hover{border-color:var(--gold-dim);transform:translateY(-3px)}
+.cre .imgw{position:relative;aspect-ratio:1;overflow:hidden;background:#0a1330}
+.cre img{width:100%;height:100%;object-fit:cover;display:block;opacity:.92}
+.cre:hover img{opacity:1}
+.cre .prov{position:absolute;top:7px;left:7px;background:rgba(8,17,38,.85);border:1px solid var(--gold-dim);color:var(--gold);font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;padding:3px 8px}
+.cre figcaption{padding:8px 4px 2px;font-size:11px;color:var(--dim);line-height:1.4}
+.palette{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+.sw{flex:1;min-width:104px;border:1px solid var(--line);background:rgba(13,23,52,.5);transition:border-color .25s,transform .25s var(--ease)}
+.sw:hover{border-color:var(--gold-dim);transform:translateY(-2px)}
+.sw .c{height:52px;border-bottom:1px solid var(--line)}
+.sw .n{padding:7px 9px;font-size:10.5px;color:var(--ink)}
+.sw .n span{display:block;font-family:var(--mono);font-size:8.5px;color:var(--faint);letter-spacing:.1em;margin-top:1px}
+
+/* provenance */
+.prov{display:grid;grid-template-columns:1.15fr .85fr;gap:24px;align-items:start}
+.calls{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10.5px}
+.calls th{font-size:8.5px;letter-spacing:.26em;color:var(--faint);text-align:left;padding:8px 9px;border-bottom:1px solid var(--line);text-transform:uppercase;font-weight:400}
+.calls td{padding:9px;border-bottom:1px solid rgba(178,198,240,.08);vertical-align:top;color:var(--ink)}
+.calls tr:hover td{background:rgba(227,182,92,.05)}
+.calls .ep{color:var(--gold)}
+.calls .pm{color:var(--dim);max-width:270px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px}
+.calls .ms,.calls .n{text-align:right}
+.calls .md{color:var(--dim);letter-spacing:.14em}
+.calls .tot td{border-top:1px solid var(--gold-dim);color:var(--gold)}
+.affs{display:flex;flex-direction:column;gap:16px}
+.aff-g h4{font-family:var(--mono);font-size:9px;letter-spacing:.28em;color:var(--gold);text-transform:uppercase;margin-bottom:7px}
+.aff-r{display:grid;grid-template-columns:1fr auto;gap:3px 12px;align-items:center;font-size:12px;padding:3px 0}
+.aff-r .nm{font-family:var(--serif);font-size:15px;font-weight:600;color:var(--ink)}
+.aff-r .bar{grid-column:1/-1;height:2px;background:rgba(255,255,255,.06);position:relative}
+.aff-r .bar i{position:absolute;inset:0;background:var(--gold);opacity:.7}
+.aff-r .v{font-family:var(--mono);font-size:9.5px;color:var(--dim)}
+
+.next{display:flex;gap:14px;flex-wrap:wrap}
+.nchip{flex:1;min-width:170px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 20px;border:1px solid var(--line);background:rgba(13,23,52,.5);color:var(--ink);text-decoration:none;font-family:var(--serif);font-weight:600;font-size:17px;letter-spacing:.12em;text-transform:uppercase;transition:all .25s var(--ease);cursor:pointer}
+.nchip small{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;color:var(--faint);font-weight:400;margin-top:3px}
+.nchip:hover,.nchip:focus-visible{border-color:var(--gold);color:var(--gold);background:rgba(227,182,92,.06)}
+.nchip:active{transform:translateY(1px)}
+
+.foot{margin:58px 0 36px;padding-top:18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:9px;letter-spacing:.24em;color:var(--faint)}
+
+@media (max-width:940px){
+  .hero{grid-template-columns:1fr;gap:34px}
+  .aud,.out,.prov,.strats{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .wrap{padding:0 18px}
+  .anti-row{grid-template-columns:1fr;gap:3px}
+  .calls .pm{max-width:140px}
+  .s-fit{position:static;text-align:left;margin-bottom:8px}
+  .s-watch{max-width:48%}
+  .cat .row{grid-template-columns:1fr;gap:2px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg id="stars" aria-hidden="true"></svg>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="#">MARQUE <em>OBSERVATORY</em></a>
+    <div class="meta" id="hdr-meta"></div>
+    <span class="scope"><svg viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor"/><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width=".7"/></svg>SURVEY LIVE</span>
+  </header>
+
+  <section class="hero">
+    <div class="polar" id="polar">
+      <svg viewBox="0 0 400 400" id="polar-svg" aria-hidden="true"></svg>
+      <div class="core">
+        <div class="lbl">TARGET OF OBSERVATION</div>
+        <div class="q" id="ask-q"></div>
+        <div class="src" id="ask-src"></div>
+      </div>
+    </div>
+    <div class="hero-r">
+      <div class="k">PLATE I — STRATEGY → CAMPAIGN → FINAL RESULT</div>
+      <h1>An atlas of one campaign, drawn from the taste sky.</h1>
+      <p class="sub" id="hero-sub"></p>
+      <div class="cat" id="cat"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="idx">FIELD 02</span><h2>Spectral Reading</h2><span class="rule"></span><span class="tag">AUDIENCE CLASS</span></div>
+    <div class="aud" id="aud"></div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="idx">FIELD 03</span><h2>Strategy Constellation</h2><span class="rule"></span><span class="tag" id="strat-tag"></span></div>
+    <p class="sec-sub">Four plotted routes, joined in order of survey. Each star carries its fit, channel fit and estimated reach.</p>
+    <div class="strat-field">
+      <svg id="constel" aria-hidden="true"></svg>
+      <div class="strats" id="strats"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="idx">FIELD 04</span><h2>Rejected Vectors</h2><span class="rule"></span><span class="tag">BELOW HORIZON</span></div>
+    <div class="anti" id="anti"></div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="idx">FIELD 05</span><h2>Developed Plate</h2><span class="rule"></span><span class="tag">CAMPAIGN OUTPUT</span></div>
+    <div class="out">
+      <div>
+        <div class="brief" id="brief"></div>
+        <div class="palette" id="palette"></div>
+      </div>
+      <div class="cre-grid" id="cres"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="idx">FIELD 06</span><h2>Observation Log</h2><span class="rule"></span><span class="tag">QLOO PROVENANCE</span></div>
+    <div class="prov">
+      <div class="panel"><span class="corner tl"></span><span class="corner br"></span><h3>TELESCOPE CALLS</h3><div style="overflow-x:auto"><table class="calls" id="calls"></table></div></div>
+      <div class="panel"><span class="corner tl"></span><span class="corner br"></span><h3>BRIGHTEST OBJECTS</h3><div class="affs" id="affs"></div></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="idx">FIELD 07</span><h2>Next Pointings</h2><span class="rule"></span><span class="tag">QUEUED</span></div>
+    <div class="next" id="next"></div>
+  </section>
+
+  <footer class="foot" id="foot"></footer>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtN=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M":n>=1e3?Math.round(n/1e3)+"K":String(n);
+const pct=x=>Math.round((x||0)*100);
+const B=(window.DATA&&window.DATA.board)||null;
+const pool=(((window.MEDIA||{}).pool)||[]).map(m=>({img:String(m.img||"").replace(/^\.\//,"../"),head:m.head||"",provider:m.provider||""})).filter(m=>m.img);
+const PICKS=[0,1,4,5].map(i=>pool[i]).filter(Boolean);
+const PALETTE=[["Glaze Pink","#EAB6AC"],["Vanilla Cream","#F6EEE5"],["Toasted Almond","#9C6B4F"],["Deep Espresso","#3E2A20"]];
+const NEXT=[["Website","landing page"],["Brandbook","identity kit"],["Video","15s cut"]];
+const GREEK=["α","β","γ","δ"];
+const el=id=>document.getElementById(id);
+if(!B){document.querySelector(".wrap").innerHTML='<p style="padding:80px 0;color:#7d8cb0">— the sky is empty: no board data —</p>';return;}
+
+const sub=B.sub||{},url=B.urlContext||{},ar=B.audienceRead||{lean:{},mediaHabits:[],vibeWords:[]},
+      strats=B.strategies||[],anti=B.antiStrategies||[],ev=B.evidence||{calls:[]},
+      affs=(B.qlooBundle||{}).affinities||[];
+
+/* --- starfield (deterministic) --- */
+let seed=42;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+(function starfield(){
+  const svg=el("stars"),W=1920,H=1400;svg.setAttribute("viewBox","0 0 "+W+" "+H);
+  svg.setAttribute("preserveAspectRatio","xMidYMin slice");
+  let s='<rect width="'+W+'" height="'+H+'" fill="none"/>';
+  for(let i=0;i<150;i++){
+    const x=(rnd()*W).toFixed(1),y=(rnd()*H).toFixed(1),r=(rnd()*1.3+.4).toFixed(2),o=(rnd()*.55+.2).toFixed(2);
+    s+='<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="#cdd9f4" opacity="'+o+'"/>';
+    if(rnd()>.9)s+='<path d="M'+(+x-4)+' '+y+'H'+(+x+4)+'M'+x+' '+(+y-4)+'V'+(+y+4)+'" stroke="#cdd9f4" stroke-width=".6" opacity="'+(+o*.8)+'"/>';
+  }
+  svg.innerHTML=s;
+})();
+
+/* --- polar reticle --- */
+(function polar(){
+  const svg=el("polar-svg");let s="";
+  const C=200,R=[188,150,112,74,40];
+  R.forEach((r,i)=>{s+='<circle cx="200" cy="200" r="'+r+'" fill="none" stroke="rgba(178,198,240,'+(i===0?.4:.18)+')" stroke-width="1"/>';});
+  for(let d=0;d<360;d+=15){
+    const a=d*Math.PI/180,r1=d%90===0?30:180,r2=188;
+    s+='<line x1="'+(200+r1*Math.cos(a)).toFixed(1)+'" y1="'+(200+r1*Math.sin(a)).toFixed(1)+'" x2="'+(200+r2*Math.cos(a)).toFixed(1)+'" y2="'+(200+r2*Math.sin(a)).toFixed(1)+'" stroke="rgba(178,198,240,'+(d%90===0?.35:.12)+')" stroke-width="1"/>';
+  }
+  // degree ticks + labels
+  [["N",0],["E",90],["S",180],["W",270]].forEach(([t,d])=>{
+    const a=(d-90)*Math.PI/180;
+    s+='<text x="'+(200+166*Math.cos(a)).toFixed(1)+'" y="'+(200+166*Math.sin(a)).toFixed(1)+'" fill="#e3b65c" font-size="9" font-family="ui-monospace" text-anchor="middle" dominant-baseline="middle">'+t+'</text>';
+  });
+  s+='<circle cx="200" cy="200" r="26" fill="none" stroke="#e3b65c" stroke-width="1" stroke-dasharray="3 4"/>';
+  s+='<circle cx="200" cy="200" r="3" fill="#e3b65c"/>';
+  s+='<circle cx="200" cy="200" r="196" fill="none" stroke="rgba(227,182,92,.35)" stroke-width="1"/>';
+  svg.innerHTML=s;
+})();
+
+el("hdr-meta").innerHTML='PLATE <b>'+esc((B.id||"").slice(0,8))+'</b><br>EPOCH '+esc((B.createdAt||"").slice(0,10))+' UTC';
+el("ask-q").textContent=sub.prompt||B.title||"";
+el("ask-src").textContent=url.url||sub.url||"";
+el("hero-sub").innerHTML='The full exposure of board <b>'+esc(B.title)+'</b> — target acquisition, spectral read of the audience, the strategy constellation, and the developed plate, with the observation log attached.';
+el("cat").innerHTML=
+  '<div class="row"><span class="k2">Object</span><span class="v">'+esc(B.title)+'</span></div>'+
+  '<div class="row"><span class="k2">Source</span><span class="v"><a href="'+esc(url.url||sub.url||"#")+'">'+esc(url.url||sub.url||"")+'</a> — '+esc(url.title||"")+'</span></div>'+
+  '<div class="row"><span class="k2">Epoch</span><span class="v">'+esc((B.createdAt||"").replace("T"," · ").slice(0,24))+'</span></div>'+
+  '<div class="row"><span class="k2">Instruments</span><span class="v">Qloo taste graph · '+(ev.calls||[]).length+' exposures · '+(strats.length)+' candidate routes</span></div>';
+
+/* audience */
+const lean=ar.lean||{};
+el("aud").innerHTML=
+  '<div class="panel"><span class="corner tl"></span><span class="corner br"></span><h3>LEAN CLASSIFICATION</h3>'+
+  '<div class="lean-row"><span class="lean">'+esc(lean.label||"—")+'</span><span class="conf">CONFIDENCE '+pct(lean.confidence)+'%</span></div>'+
+  '<div class="confbar"><i style="width:'+pct(lean.confidence)+'%"></i></div><ul class="signals">'+
+  (lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join("")+'</ul></div>'+
+  '<div class="panel"><span class="corner tl"></span><span class="corner br"></span><h3>MEDIA HABITS</h3><div class="habits">'+
+  (ar.mediaHabits||[]).map(h=>'<div class="habit"><span class="ch">'+esc(h.channel)+'</span><span class="nt">'+esc(h.note)+'</span></div>').join("")+
+  '</div><div class="vibes">'+(ar.vibeWords||[]).map(v=>'<span class="vibe">'+esc(v)+'</span>').join("")+'</div></div>';
+
+/* strategies */
+el("strat-tag").textContent=strats.length+" STARS PLOTTED";
+el("strats").innerHTML=strats.map((s,i)=>{
+  const ra=(18*60+10+i*7),rah=Math.floor(ra/60),ram=ra%60;
+  const chans=(s.channels||[]).map(c=>'<div class="s-chan"><span class="nm">'+esc(c.name)+'</span><span class="bar"><i style="width:'+pct(c.fit)+'%"></i></span><span class="wy">'+esc(c.why||"")+'</span></div>').join("");
+  return '<div class="strat"><span class="starnode"></span>'+
+    '<div class="s-des"><span class="g">'+GREEK[i]+' Rhodae</span><span class="coord">RA '+rah+'h '+ram+'m · DEC −23°0'+i+'′</span></div>'+
+    '<div class="s-fit"><b>'+(s.audienceFit?s.audienceFit.score.toFixed(2):"—")+'</b><span>APPARENT FIT</span></div>'+
+    '<div class="s-name">'+esc(s.title)+'</div><div class="s-angle">'+esc(s.angle)+'</div>'+
+    '<div class="s-chans">'+chans+'</div>'+
+    '<div class="s-hero">BRIGHTEST SIGNAL ▸ <b>'+esc(s.heroSignal||"—")+'</b></div>'+
+    '<div class="s-fmts">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join("")+'</div>'+
+    '<div class="s-foot"><div class="s-reach"><b>'+fmtN((s.reach||{}).estViews||0)+'</b><span>EST VIEWS</span></div>'+
+    '<div class="s-watch">'+esc((s.watchouts||[])[0]||"")+'</div></div></div>';
+}).join("");
+
+/* constellation lines between starnodes */
+function drawConstel(){
+  const svg=el("constel"),field=svg.parentElement,nodes=[...field.querySelectorAll(".starnode")];
+  const fr=field.getBoundingClientRect();
+  const pts=nodes.map(n=>{const r=n.getBoundingClientRect();return[r.left-fr.left+7,r.top-fr.top+7];});
+  svg.setAttribute("viewBox","0 0 "+field.offsetWidth+" "+field.offsetHeight);
+  let s="";
+  for(let i=0;i<pts.length-1;i++){
+    s+='<line x1="'+pts[i][0]+'" y1="'+pts[i][1]+'" x2="'+pts[i+1][0]+'" y2="'+pts[i+1][1]+'" stroke="rgba(227,182,92,.45)" stroke-width="1.2" stroke-dasharray="6 5"/>';
+  }
+  pts.forEach(p=>{s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="10" fill="none" stroke="rgba(227,182,92,.3)" stroke-width="1"/>';});
+  svg.innerHTML=s;
+}
+window.addEventListener("load",drawConstel);
+window.addEventListener("resize",drawConstel);
+setTimeout(drawConstel,400);
+
+/* anti */
+el("anti").innerHTML='<div class="anti-h">VECTORS BELOW THE CHANNEL-FIT HORIZON — NOT POINTED</div>'+
+  anti.map(a=>'<div class="anti-row"><span class="t">'+esc(a.title)+'</span><span class="c">'+esc(a.channel)+'</span><span class="w">'+esc(a.whyNot)+'</span></div>').join("");
+
+/* output */
+const sel=strats[0]||{},br=sel.brief||{};
+el("brief").innerHTML='<span class="stamp">DEVELOPED FROM ▸ '+GREEK[0]+' RHODAE · '+esc(sel.title||"")+'</span>'+
+  '<h3>'+esc(br.title||"—")+'</h3><div class="a">'+esc(br.angle||"")+'</div>'+
+  '<dt>Audience</dt><dd>'+esc(br.audience||"")+'</dd>'+
+  '<div class="km">“'+esc(br.keyMessage||"")+'”</div>';
+el("palette").innerHTML=PALETTE.map(p=>'<div class="sw"><div class="c" style="background:'+p[1]+'"></div><div class="n">'+p[0]+'<span>'+p[1]+'</span></div></div>').join("");
+el("cres").innerHTML=PICKS.map(m=>'<figure class="cre"><div class="imgw"><span class="prov">'+esc(m.provider||"gen")+'</span>'+
+  '<img src="'+esc(m.img)+'" alt="'+esc(m.head)+'" onerror="this.closest(\'.cre\').style.display=\'none\'"></div>'+
+  '<figcaption>'+esc(m.head)+'</figcaption></figure>').join("");
+
+/* provenance */
+const calls=ev.calls||[];
+el("calls").innerHTML='<tr><th>Endpoint</th><th>Params</th><th style="text-align:right">ms</th><th style="text-align:right">n</th><th>mode</th></tr>'+
+  calls.map(c=>{
+    const pm=Object.entries(c.params||{}).map(([k,v])=>k+"="+v).join(" ");
+    return '<tr><td class="ep">'+esc(c.endpoint)+'</td><td class="pm" title="'+esc(pm)+'">'+esc(pm)+'</td><td class="ms">'+esc(c.tookMs)+'</td><td class="n">'+esc(c.n)+'</td><td class="md">'+esc(c.mode)+'</td></tr>';
+  }).join("")+
+  '<tr class="tot"><td colspan="2">TOTAL · '+calls.length+' EXPOSURES</td><td class="ms">'+calls.reduce((a,c)=>a+(c.tookMs||0),0)+'</td><td></td><td class="md">'+esc(ev.qlooMode||"")+'</td></tr>';
+
+el("affs").innerHTML=affs.map(g=>{
+  const lbl=String(g.type||"").replace("urn:entity:","");
+  const top=(g.entities||[]).slice(0,4);
+  const max=Math.max(...top.map(e=>e.affinity||0),0.001);
+  return '<div class="aff-g"><h4>'+esc(lbl)+'</h4>'+top.map(e=>
+    '<div class="aff-r"><span class="nm">'+esc(e.name)+'</span><span class="v">'+(e.affinity||0).toFixed(2)+'</span><span class="bar"><i style="width:'+Math.round((e.affinity/max)*100)+'%"></i></span></div>'
+  ).join("")+'</div>';
+}).join("");
+
+el("next").innerHTML=NEXT.map(n=>'<a class="nchip" href="#" onclick="return false"><span>'+esc(n[0])+'<small>'+esc(n[1])+'</small></span><span style="color:var(--gold)">▸</span></a>').join("");
+
+el("foot").innerHTML='<span>MARQUE OBSERVATORY / FLOW-15</span><span>'+calls.length+' EXPOSURES · '+esc(ev.qlooMode||"—").toUpperCase()+' SKY</span><span>PLATE '+esc((B.id||"").slice(0,8))+'</span>';
+})();
+</script>
+</body>
+</html>

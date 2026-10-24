@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque — Campaign in Four Movements — Rhode → Gen Z</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23faf5e9'/%3E%3Cpath d='M12 22h40M12 30h40M12 38h40M12 46h40' stroke='%23191512' stroke-width='2'/%3E%3Cellipse cx='34' cy='42' rx='6' ry='4.5' fill='%23191512' transform='rotate(-18 34 42)'/%3E%3Cpath d='M40 42V16' stroke='%23191512' stroke-width='2.5'/%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#faf5e9;
+  --paper-2:#f3ecdb;
+  --ink:#191512;
+  --ink-2:#5a5044;
+  --ink-3:#968a76;
+  --hair:#d9cfb8;
+  --red:#a03228;
+  --b:8px;
+  --serif:Georgia,'Times New Roman',Times,serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{overflow-x:hidden}
+body{
+  background:var(--paper);
+  background-image:linear-gradient(rgba(25,21,18,.028) 1px,transparent 1px);
+  background-size:100% calc(var(--b)*4);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:14.5px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--red);color:var(--paper)}
+a{color:var(--ink);border-bottom:1px solid var(--red);text-decoration:none}
+a:hover{color:var(--red)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:1240px;margin:0 auto;padding:0 clamp(18px,4vw,56px)}
+.mono{font-family:var(--mono)}
+.it{font-style:italic}
+.dyn{font-weight:700;font-style:italic;letter-spacing:.02em}
+
+/* ============ cover ============ */
+.cover{
+  min-height:82vh;display:flex;flex-direction:column;
+  border-bottom:4px double var(--ink);position:relative;padding:26px 0 0;
+}
+.cover .rule{height:1px;background:var(--ink);margin:26px 0}
+.cover-top{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-2)}
+.cover-top b{color:var(--red)}
+.cover-mid{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:34px 0}
+.cover-mid .scoring{font-family:var(--mono);font-size:10.5px;letter-spacing:.34em;text-transform:uppercase;color:var(--ink-2)}
+.cover-mid h1{
+  font-size:clamp(38px,6.4vw,78px);font-weight:400;line-height:1.04;letter-spacing:-.01em;
+  margin:18px auto 6px;max-width:15ch;
+}
+.cover-mid h1 em{font-style:italic;color:var(--red)}
+.cover-mid .sub{font-style:italic;font-size:clamp(15px,1.8vw,19px);color:var(--ink-2);max-width:64ch;margin:14px auto 0}
+.cover-mid .dedic{font-size:13px;color:var(--ink-3);margin-top:26px;font-style:italic}
+.tempo{
+  display:flex;justify-content:center;align-items:baseline;gap:26px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--ink-2);margin-top:30px;text-transform:uppercase;
+}
+.tempo b{font-family:var(--serif);font-style:italic;font-weight:700;font-size:17px;color:var(--ink);letter-spacing:0;text-transform:none}
+.cover-score{display:block;width:100%;height:auto}
+.cover-foot{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);padding:10px 0 14px}
+
+/* ============ movement headings ============ */
+.mvt{padding:clamp(44px,6vw,72px) 0;border-bottom:1px solid var(--hair)}
+.mvt-head{display:flex;align-items:flex-end;gap:20px;margin-bottom:30px;flex-wrap:wrap}
+.rehearsal{
+  font-family:var(--mono);font-size:12px;letter-spacing:.1em;border:1.5px solid var(--ink);
+  padding:7px 12px 6px;min-width:52px;text-align:center;font-weight:700;
+}
+.mvt-head h2{font-size:clamp(24px,3.4vw,36px);font-weight:400;font-style:italic;line-height:1.05}
+.mvt-head .right{margin-left:auto;text-align:right;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
+.mvt-head .right b{display:block;font-size:14px;color:var(--red);letter-spacing:.04em;font-family:var(--serif);font-weight:700;font-style:italic;text-transform:none}
+.staffline{display:block;width:100%;height:auto;margin:6px 0 26px}
+
+/* ============ ask / program ============ */
+.prog{display:grid;grid-template-columns:repeat(12,1fr);gap:0 clamp(14px,3vw,40px)}
+.prog-a{grid-column:1/8}
+.prog-b{grid-column:8/13;border-left:1px solid var(--hair);padding-left:40px}
+.ask-line{font-size:clamp(21px,2.8vw,30px);line-height:1.25;font-style:italic}
+.ask-src{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--ink-2);margin-top:16px}
+.ask-src a{color:var(--red)}
+.lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:10px}
+.instr{padding:9px 0;border-top:1px solid var(--hair);display:flex;justify-content:space-between;gap:16px;font-size:13.5px}
+.instr:last-of-type{border-bottom:1px solid var(--hair)}
+.instr b{font-weight:700;font-style:italic}
+.instr .note{color:var(--ink-2);text-align:right;font-style:italic;max-width:60%}
+.conf-wrap{margin-top:22px}
+.conf-wrap .dyn{font-size:40px;color:var(--red)}
+.confbar{height:5px;background:var(--hair);margin-top:6px;position:relative}
+.confbar i{position:absolute;inset:0 auto 0 0;background:var(--ink)}
+.confbar::after{content:"";position:absolute;right:0;top:-4px;bottom:-4px;width:1.5px;background:var(--red)}
+.siglist{margin-top:16px}
+.siglist li{list-style:none;padding:8px 0 8px 22px;border-top:1px dashed var(--hair);font-size:13px;font-style:italic;position:relative;color:var(--ink-2)}
+.siglist li::before{content:"";position:absolute;left:2px;top:14px;width:10px;height:10px;border:1.5px solid var(--ink);border-radius:50%;background:var(--paper)}
+.vibes{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.vibes span{border:1px solid var(--ink);padding:5px 14px;font-style:italic;font-size:13.5px;border-radius:999px}
+
+/* ============ strategy movements ============ */
+.movements{display:grid;grid-template-columns:repeat(2,1fr);gap:34px 40px}
+.movement{border-top:2.5px solid var(--ink);padding-top:14px;position:relative}
+.movement.sel{border-top-color:var(--red);border-top-width:4px}
+.movement .mnum{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase}
+.movement .mnum em{color:var(--red);font-style:normal;font-weight:700}
+.movement h3{font-size:clamp(21px,2.4vw,27px);font-weight:400;font-style:italic;margin:6px 0 2px}
+.movement .ang{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2)}
+.movement .excerpt{display:block;width:100%;height:auto;margin:14px 0 8px}
+.movement .chrow{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-top:1px dashed var(--hair);font-size:12.5px}
+.movement .chrow .nm{font-weight:700;font-style:italic}
+.movement .chrow .wy{font-family:var(--mono);font-size:10px;color:var(--ink-3);text-align:right}
+.movement .chrow .ft{font-family:var(--mono);font-size:12px;color:var(--red);min-width:44px;text-align:right}
+.movement .mfoot{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;padding-top:10px;border-top:1px solid var(--ink);font-size:12.5px}
+.movement .mfoot b{font-size:17px;font-weight:700}
+.movement .mfoot small{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase}
+.movement .watch{font-size:12px;font-style:italic;color:var(--ink-2);margin-top:8px;padding-left:14px;border-left:2px solid var(--red)}
+.movement .fmts{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink-2);margin-top:8px}
+
+/* ============ tacet ============ */
+.tacet .pl-note{font-style:italic;font-size:17px;color:var(--ink-2);max-width:620px;margin-bottom:24px}
+.tacet table{width:100%;border-collapse:collapse;font-size:13.5px;table-layout:fixed}
+.tacet th{text-align:left;font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-3);font-weight:400;border-bottom:2.5px solid var(--ink);padding:0 16px 9px 0}
+.tacet td{border-bottom:1px solid var(--hair);padding:12px 16px 12px 0;vertical-align:top}
+.tacet td:first-child{font-weight:700;font-style:italic;white-space:nowrap}
+.tacet td.c{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);white-space:nowrap}
+.tacet td.w{font-style:italic;color:var(--ink-2)}
+.tacet td.dyn{font-size:15px;color:var(--ink-3);white-space:nowrap}
+
+/* ============ finale ============ */
+.finale{display:grid;grid-template-columns:repeat(12,1fr);gap:0 clamp(14px,3vw,40px)}
+.fin-a{grid-column:1/6}
+.fin-b{grid-column:6/13;border-left:1px solid var(--hair);padding-left:40px}
+.stamp{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--red);border:1.5px solid var(--red);display:inline-block;padding:6px 14px;margin-bottom:18px}
+.brief h3{font-size:clamp(28px,3.6vw,42px);font-weight:400;font-style:italic;line-height:1.05;margin-bottom:8px}
+.brief .ang{font-size:15px;font-style:italic;color:var(--ink-2)}
+.brief dl{margin-top:16px;display:grid;grid-template-columns:110px 1fr;gap:6px 16px;font-size:13px}
+.brief dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);padding-top:4px}
+.km{margin-top:22px;padding:18px 20px;border:2px solid var(--ink);position:relative;font-size:20px;font-style:italic;background:var(--paper-2)}
+.km::before{content:"TEMA — KEY MESSAGE";position:absolute;top:-9px;left:14px;background:var(--paper);padding:0 10px;font-family:var(--mono);font-size:9px;letter-spacing:.22em;font-style:normal;color:var(--red)}
+.creatives{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+.cre{border:1.5px solid var(--ink);padding:8px;background:var(--paper)}
+.cre .imgw{position:relative;aspect-ratio:4/3;overflow:hidden;border:1px solid var(--hair)}
+.cre img{width:100%;height:100%;object-fit:cover;display:block}
+.cre .prov{position:absolute;top:7px;left:7px;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;background:var(--paper);border:1px solid var(--ink);padding:3px 8px}
+.cre figcaption{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;font-style:italic;padding:8px 2px 2px}
+.cre figcaption .n{font-family:var(--mono);font-style:normal;font-size:9.5px;color:var(--red);white-space:nowrap}
+
+/* ============ palette / instrumentation ============ */
+.pal-wrap{display:grid;grid-template-columns:repeat(12,1fr);gap:0 clamp(14px,3vw,40px)}
+.pal-a{grid-column:1/7}
+.pal-b{grid-column:7/13}
+.swrow{display:flex;align-items:center;gap:18px;border-top:1px solid var(--hair);padding:12px 0}
+.swrow:last-child{border-bottom:1px solid var(--hair)}
+.swrow .box{width:56px;height:56px;border:1.5px solid var(--ink);flex:none}
+.swrow .nm{font-size:17px;font-style:italic}
+.swrow .hx{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+.swrow .no{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.14em;width:34px}
+.aff-g{margin-bottom:22px}
+.aff-g h4{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--red);margin-bottom:8px;font-weight:400}
+.aff-r{display:flex;align-items:baseline;gap:12px;padding:6px 0;border-top:1px dashed var(--hair);font-size:13.5px}
+.aff-r .nm{font-style:italic}
+.aff-r .dlt{flex:1;border-bottom:1px dotted var(--ink-3);min-width:16px;transform:translateY(-4px)}
+.aff-r .v{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+.aff-r .d{font-size:12px;font-weight:700;font-style:italic;color:var(--red);width:26px;text-align:right}
+
+/* ============ session log ============ */
+.log table{width:100%;border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+.log th{text-align:left;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3);font-weight:400;border-bottom:2.5px solid var(--ink);padding:0 14px 9px 0}
+.log td{border-bottom:1px solid var(--hair);padding:10px 14px 10px 0;vertical-align:top;font-size:12.5px}
+.log td.ep{font-family:var(--mono);font-size:12px;white-space:nowrap;color:var(--red)}
+.log td.pm{font-family:var(--mono);font-size:10.5px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log td.num{font-family:var(--mono);font-size:11.5px;text-align:right;white-space:nowrap}
+.log tr.tot td{border-top:2.5px solid var(--ink);border-bottom:none;font-family:var(--mono);font-size:11px}
+
+/* ============ encores ============ */
+.enc{display:flex;flex-wrap:wrap;gap:16px}
+.echip{
+  border:1.5px solid var(--ink);padding:16px 24px;display:flex;align-items:baseline;gap:14px;
+  background:var(--paper);transition:background .15s,transform .15s;
+}
+.echip:hover{background:var(--paper-2);transform:translateY(-2px)}
+.echip .no{font-family:var(--mono);font-size:10px;color:var(--red)}
+.echip b{font-weight:400;font-style:italic;font-size:19px}
+.echip small{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3)}
+
+.foot{padding:30px 0 44px;display:flex;justify-content:space-between;gap:14px 30px;flex-wrap:wrap;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-3)}
+
+/* ============ responsive ============ */
+@media(max-width:960px){
+  .prog-a{grid-column:1/13}
+  .prog-b{grid-column:1/13;border-left:none;padding-left:0;margin-top:30px}
+  .fin-a{grid-column:1/13}
+  .fin-b{grid-column:1/13;border-left:none;padding-left:0;margin-top:34px}
+  .pal-a{grid-column:1/13}
+  .pal-b{grid-column:1/13;margin-top:28px}
+}
+@media(max-width:720px){
+  .movements{grid-template-columns:1fr}
+  .creatives{grid-template-columns:1fr 1fr}
+}
+@media(max-width:430px){
+  .creatives{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ COVER ============ -->
+  <section class="cover">
+    <div class="cover-top">
+      <span>MARQUE EDITION <b id="opus">OP. —</b></span>
+      <span>SCORE &amp; PARTS</span>
+      <span id="cdate">—</span>
+    </div>
+    <div class="rule"></div>
+    <div class="cover-mid">
+      <div class="scoring">FOR SOLO AUDIENCE AND ENSEMBLE</div>
+      <h1 id="h1">—</h1>
+      <p class="sub" id="csub">—</p>
+      <p class="dedic" id="cdedic">—</p>
+      <div class="tempo" id="tempo"></div>
+    </div>
+    <svg class="cover-score" id="coverStaff" viewBox="0 0 1200 150" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+    <div class="cover-foot"><span>PLATE I — FULL SCORE</span><span>ENGRAVED BY MARQUE · ALL PARTS LIVE</span><span id="cref">—</span></div>
+  </section>
+
+  <!-- ============ MVT I : ASK + INSTRUMENTATION ============ -->
+  <section class="mvt" id="s-ask">
+    <div class="mvt-head">
+      <span class="rehearsal">I.</span>
+      <h2>Programma — the request, and the instruments at hand</h2>
+      <div class="right"><b id="d1">con brio</b>MOVEMENT I · REHEARSAL MARK A</div>
+    </div>
+    <div class="prog">
+      <div class="prog-a">
+        <span class="lbl">PROGRAM NOTE — COMMISSIONED TEXT</span>
+        <p class="ask-line" id="askline">—</p>
+        <p class="ask-src" id="asksrc">—</p>
+      </div>
+      <div class="prog-b">
+        <span class="lbl">INSTRUMENTATION</span>
+        <div id="instr"></div>
+        <div class="conf-wrap">
+          <span class="lbl">INTENSITY OF LEAN — <span id="leanlbl">—</span></span>
+          <span class="dyn" id="confdyn">ff</span>
+          <div class="confbar"><i id="confbar" style="width:0%"></i></div>
+          <div class="vibes" id="vibes"></div>
+          <ul class="siglist" id="siglist"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MVT II–V : STRATEGIES ============ -->
+  <section class="mvt" id="s-mvt">
+    <div class="mvt-head">
+      <span class="rehearsal">II–V.</span>
+      <h2>Four movements — each a candidate route</h2>
+      <div class="right"><b>allegro → affettuoso</b>DYNAMIC = AUDIENCE FIT</div>
+    </div>
+    <svg class="staffline" id="themeStaff" viewBox="0 0 1200 96" aria-hidden="true"></svg>
+    <div class="movements" id="movements"></div>
+  </section>
+
+  <!-- ============ TACET ============ -->
+  <section class="mvt tacet" id="s-tacet">
+    <div class="mvt-head">
+      <span class="rehearsal">VI.</span>
+      <h2>Tacet — parts struck from the score</h2>
+      <div class="right"><b>pp · sempre tacet</b>SILENT FOR THE DURATION</div>
+    </div>
+    <p class="pl-note">Four instruments tested, all muted. The fit is too low to be written into the part — marked <span class="dyn">tacet</span>.</p>
+    <table id="anti"></table>
+  </section>
+
+  <!-- ============ FINALE ============ -->
+  <section class="mvt" id="s-finale">
+    <div class="mvt-head">
+      <span class="rehearsal">VII.</span>
+      <h2>Finale — the campaign, scored</h2>
+      <div class="right"><b id="d7">—</b>BRIEF · SESSION PLATES</div>
+    </div>
+    <div class="finale">
+      <div class="fin-a brief" id="brief"></div>
+      <div class="fin-b"><span class="lbl">SESSION PLATES — GENERATED CREATIVES</span><div class="creatives" id="cres"></div></div>
+    </div>
+  </section>
+
+  <!-- ============ PALETTE + CODA ============ -->
+  <section class="mvt" id="s-pal">
+    <div class="mvt-head">
+      <span class="rehearsal">VIII.</span>
+      <h2>Coda — pigments &amp; thematic material</h2>
+      <div class="right"><b>da capo</b>PALETTE · AFFINITY THEMES</div>
+    </div>
+    <div class="pal-wrap">
+      <div class="pal-a"><span class="lbl">HOUSE PIGMENTS — RHODE</span><div id="palette"></div></div>
+      <div class="pal-b"><span class="lbl">THEMES BY FAMILY — QLOO AFFINITIES</span><div id="affs"></div></div>
+    </div>
+  </section>
+
+  <section class="mvt log" id="s-log">
+    <div class="mvt-head">
+      <span class="rehearsal">IX.</span>
+      <h2>Session log — every take recorded</h2>
+      <div class="right"><b>live</b>QLOO PROVENANCE</div>
+    </div>
+    <table id="calls"></table>
+  </section>
+
+  <section class="mvt" id="s-enc" style="border-bottom:none">
+    <div class="mvt-head">
+      <span class="rehearsal">ENC.</span>
+      <h2>Encores — next outputs</h2>
+      <div class="right"><b>più mosso</b>READY ON REQUEST</div>
+    </div>
+    <div class="enc" id="next"></div>
+  </section>
+
+  <footer class="foot">
+    <span>MARQUE EDITION · <span id="fref">—</span></span>
+    <span id="ftakes">—</span>
+    <span id="fdate">—</span>
+  </footer>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtN=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M":n>=1e3?Math.round(n/1e3)+"K":String(n);
+const pct=x=>Math.round((x||0)*100);
+const el=id=>document.getElementById(id);
+const B=(window.DATA&&window.DATA.board)||null;
+const pool=(((window.MEDIA||{}).pool)||[]).map(m=>({img:String(m.img||"").replace(/^\.\//,"../"),head:m.head||"",provider:m.provider||""})).filter(m=>m.img);
+const PICKS=[5,7,1,13].map(i=>pool[i]).filter(Boolean);
+const PALETTE=[["Glaze Pink","#E8B4BC"],["Rice Milk","#F6F0E4"],["Toasted Almond","#B08D64"],["Hazel Shell","#7A5140"],["Espresso Bean","#3E2A20"]];
+const NEXT=[["Website","landing page"],["Brandbook","identity kit"],["Video","15s cut"]];
+if(!B){
+  document.body.innerHTML='<p style="padding:130px 24px;text-align:center;font-style:italic;font-family:Georgia,serif;color:#5a5044">— the house is dark; no board data —</p>';
+  return;
+}
+const sub=B.sub||{},url=B.urlContext||{},ar=B.audienceRead||{lean:{},mediaHabits:[],vibeWords:[]},
+      strats=B.strategies||[],anti=B.antiStrategies||[],ev=B.evidence||{calls:[]},
+      affs=(B.qlooBundle||{}).affinities||[];
+const lean=ar.lean||{},calls=ev.calls||[];
+const fit=s=>s.audienceFit?s.audienceFit.score:0;
+const dyn=f=>f>=.95?"ff":f>=.9?"f":f>=.8?"mf":f>=.6?"mp":"pp";
+const ROM=["I","II","III","IV","V","VI","VII","VIII"];
+
+/* ---- engraving helpers (svg) ---- */
+const INK="#191512",RED="#a03228";
+function staff(x,y,w,sw){ // 5 lines
+  let s="";
+  for(let i=0;i<5;i++) s+='<line x1="'+x+'" y1="'+(y+i*sw)+'" x2="'+(x+w)+'" y2="'+(y+i*sw)+'" stroke="'+INK+'" stroke-width="1.1"/>';
+  return s;
+}
+function clef(x,y,sw){ // stylised G-clef
+  const u=sw/10;
+  return '<g transform="translate('+x+','+y+') scale('+u+')">'+
+    '<path d="M18 78 C6 78 -2 68 4 58 C10 49 26 50 30 60 C34 70 26 84 14 86 C2 88 -8 78 -6 66" fill="none" stroke="'+INK+'" stroke-width="3.4"/>'+
+    '<path d="M18 78 C30 74 34 60 30 46 C26 32 30 14 24 2" fill="none" stroke="'+INK+'" stroke-width="3.4"/>'+
+    '<path d="M24 2 C18 -4 8 -2 8 6" fill="none" stroke="'+INK+'" stroke-width="3.4"/>'+
+    '<circle cx="17" cy="89" r="3.2" fill="'+INK+'"/></g>';
+}
+function note(x,y,fill,col){ // whole/half note head (rotated ellipse)
+  return '<ellipse cx="'+x+'" cy="'+y+'" rx="6.4" ry="4.6" fill="'+(fill?col||INK:'none')+'" stroke="'+(col||INK)+'" stroke-width="1.6" transform="rotate(-16 '+x+' '+y+')"/>';
+}
+function stem(x,y,up){ return up?'<line x1="'+(x+5.6)+'" y1="'+y+'" x2="'+(x+5.6)+'" y2="'+(y-34)+'" stroke="'+INK+'" stroke-width="1.7"/>':'<line x1="'+(x-5.6)+'" y1="'+y+'" x2="'+(x-5.6)+'" y2="'+(y+34)+'" stroke="'+INK+'" stroke-width="1.7"/>'; }
+function barline(x,y,sw,heavy){ return '<line x1="'+x+'" y1="'+y+'" x2="'+x+'" y2="'+(y+4*sw)+'" stroke="'+INK+'" stroke-width="'+(heavy?3:1.2)+'"/>'; }
+function finalBar(x,y,sw){ return barline(x-5,y,sw,false)+barline(x,y,sw,true); }
+
+/* cover excerpt: ascending motif ending in chord */
+(function(){
+  const y=34,sw=14,W=1200;
+  let s=staff(46,y,W-92,sw)+clef(50,y-4,sw)+barline(46,y,sw,false);
+  const xs=[240,360,480,600,720,840,960];
+  const ys=[y+3*sw,y+2.5*sw,y+2*sw,y+2.5*sw,y+1.5*sw,y+1*sw,y+1.5*sw];
+  xs.forEach((x,i)=>{ s+=note(x,ys[i],i>3)+stem(x,ys[i],ys[i]>y+2*sw); });
+  // beamed pair feel: slur arc + key sig-ish sharps
+  s+='<path d="M240 '+(y-14)+' Q600 '+(y-46)+' 960 '+(y-14)+'" fill="none" stroke="'+INK+'" stroke-width="1.3"/>';
+  // final chord + barline
+  [y,y+sw,y+2*sw].forEach(ny=>{ s+=note(1060,ny,true,RED); });
+  s+=finalBar(1140,y,sw);
+  // sharps near clef
+  s+='<text x="150" y="'+(y+2*sw+4)+'" font-family="Georgia" font-size="20" fill="'+INK+'">♯</text>';
+  el("coverStaff").innerHTML=s;
+})();
+
+/* theme staff above strategies: 4 measures, note height = fit */
+(function(){
+  const y=20,sw=11,W=1200,x0=40;
+  let s=staff(x0,y,W-80,sw)+clef(x0+4,y-3,sw);
+  const mw=(W-80-70)/Math.max(strats.length,1);
+  strats.forEach((st,i)=>{
+    const mx=x0+70+mw*i;
+    const ny=y+4*sw-fit(st)*4.4*sw;          // higher fit → higher note
+    s+=note(mx+mw/2-20,ny,true,i===0?RED:INK)+stem(mx+mw/2-20,ny,ny>y+2*sw);
+    s+='<text x="'+(mx+mw/2-20)+'" y="'+(y+4*sw+22)+'" text-anchor="middle" font-family="Georgia" font-style="italic" font-weight="700" font-size="17" fill="'+(i===0?RED:INK)+'">'+dyn(fit(st))+'</text>';
+    if(i<strats.length-1) s+=barline(x0+70+mw*(i+1),y,sw,false);
+    else s+=finalBar(x0+70+mw*(i+1),y,sw);
+  });
+  el("themeStaff").innerHTML=s;
+})();
+
+/* cover text */
+el("opus").innerHTML='OP. '+esc((B.id||"").slice(0,6).toUpperCase());
+el("cdate").textContent="PREMIÈRED "+(B.createdAt||"").slice(0,10);
+el("cref").textContent="REF "+(B.id||"").slice(0,8).toUpperCase();
+el("fref").textContent="OP. "+(B.id||"").slice(0,6).toUpperCase();
+el("fdate").textContent="ENGRAVED "+(B.createdAt||"").slice(0,10);
+el("ftakes").textContent=calls.length+" TAKES · "+String(ev.qlooMode||"").toUpperCase()+" MODE";
+el("h1").innerHTML=esc(sub.prompt||B.title||"").replace(/→/g,'<em>→</em>');
+el("csub").textContent=(url.title?("after "+url.title+" — "):"")+(url.description||"");
+el("cdedic").textContent="commissioned for "+(ar.lean&&ar.lean.label?ar.lean.label+"s":"the audience")+" — "+(sub.url||url.url||"");
+el("tempo").innerHTML='<span><b>Allegro con brio</b> · ♩ = '+Math.round(100+pct(lean.confidence))+'</span><span>'+strats.length+' MOVEMENTS</span><span>'+calls.length+' SESSION TAKES</span><span>MODE — <b style="color:var(--red)">'+esc(ev.qlooMode||"live")+'</b></span>';
+
+/* ask + instrumentation */
+el("askline").innerHTML='“'+esc(sub.prompt||B.title||"")+'”';
+el("asksrc").innerHTML='FROM THE SCENARIO AT <a href="'+esc(url.url||sub.url||"#")+'">'+esc(url.url||sub.url||"")+'</a>';
+el("instr").innerHTML=(ar.mediaHabits||[]).map(h=>'<div class="instr"><b>'+esc(h.channel)+'</b><span class="note">'+esc(h.note)+'</span></div>').join("");
+el("leanlbl").textContent=lean.label||"—";
+el("confdyn").textContent=pct(lean.confidence)>=80?"ff":"f";
+el("confbar").style.width=pct(lean.confidence)+"%";
+el("vibes").innerHTML=(ar.vibeWords||[]).map(v=>'<span>'+esc(v)+'</span>').join("");
+el("siglist").innerHTML=(lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join("");
+
+/* movements */
+el("d1").textContent=pct(lean.confidence)>=80?"con brio":"moderato";
+el("d7").textContent="ff · grandioso";
+el("movements").innerHTML=strats.map((s,i)=>{
+  const f=fit(s);
+  const y=18,sw=9;
+  let ex=staff(10,y,300,sw);
+  const nx=60+ (i%2)*40;
+  ex+=note(nx,y+4*sw-f*4*sw,true,i===0?RED:INK)+stem(nx,y+4*sw-f*4*sw,f<.93);
+  (s.channels||[]).slice(0,2).forEach((c,ci)=>{ ex+=note(nx+26+ci*24,y+4*sw-c.fit*4*sw,false); });
+  ex+='<text x="'+(nx+90)+'" y="'+(y+3.4*sw)+'" font-family="Georgia" font-style="italic" font-weight="700" font-size="16" fill="'+(i===0?RED:INK)+'">'+dyn(f)+'</text>';
+  ex+=finalBar(300,y,sw);
+  const chans=(s.channels||[]).map(c=>'<div class="chrow"><span class="nm">'+esc(c.name)+'</span><span class="wy">'+esc(c.why||"")+'</span><span class="ft">'+pct(c.fit)+'</span></div>').join("");
+  return '<article class="movement'+(i===0?' sel':'')+'">'+
+    '<div class="mnum">MOVEMENT '+ROM[i+1]+'. <em>'+dyn(f)+'</em></div>'+
+    '<h3>'+esc(s.title)+'</h3><div class="ang">'+esc(s.angle)+'</div>'+
+    '<svg class="excerpt" viewBox="0 0 320 76" preserveAspectRatio="xMinYMid meet">'+ex+'</svg>'+
+    chans+
+    '<div class="fmts">SCORED FOR — '+(s.formats||[]).map(esc).join(" · ")+'</div>'+
+    '<div class="mfoot"><span><b>'+f.toFixed(2)+'</b><small>audience fit</small></span><span><b>'+fmtN((s.reach||{}).estViews||0)+'</b><small>projected house</small></span></div>'+
+    '<div class="watch">'+esc((s.watchouts||[])[0]||"")+'</div></article>';
+}).join("");
+
+/* tacet */
+el("anti").innerHTML='<tr><th style="width:24%">Part</th><th style="width:14%">Desk</th><th style="width:10%">Dyn.</th><th>Why silent</th></tr>'+
+  anti.map(a=>'<tr><td>'+esc(a.title)+'</td><td class="c">'+esc(a.channel)+'</td><td class="dyn">pp</td><td class="w">'+esc(a.whyNot)+'</td></tr>').join("");
+
+/* finale */
+const sel=strats[0]||{},br=sel.brief||{};
+el("brief").innerHTML='<span class="stamp">PRINCIPAL MOVEMENT · '+esc(sel.id||"")+' — '+esc(sel.title||"")+'</span>'+
+  '<h3>'+esc(br.title||"—")+'</h3><div class="ang">'+esc(br.angle||"")+'</div>'+
+  '<dl><dt>Audience</dt><dd>'+esc(br.audience||"")+'</dd></dl>'+
+  '<div class="km">“'+esc(br.keyMessage||"")+'”</div>';
+el("cres").innerHTML=PICKS.map((m,i)=>'<figure class="cre"><div class="imgw"><span class="prov">'+esc(m.provider||"gen")+'</span>'+
+  '<img src="'+esc(m.img)+'" alt="'+esc(m.head)+'" loading="lazy" onerror="this.closest(\'.cre\').style.display=\'none\'"></div>'+
+  '<figcaption><span>'+esc(m.head)+'</span><span class="n">PL.'+(i+1)+'</span></figcaption></figure>').join("");
+
+/* palette + affinities */
+el("palette").innerHTML=PALETTE.map((p,i)=>'<div class="swrow"><span class="no">Nº '+(i+1)+'</span><div class="box" style="background:'+p[1]+'"></div><span class="nm">'+esc(p[0])+'</span><span class="hx">'+esc(p[1])+'</span></div>').join("");
+el("affs").innerHTML=affs.map(g=>{
+  const top=(g.entities||[]).slice(0,4);
+  return '<div class="aff-g"><h4>'+esc(String(g.type||"").replace("urn:entity:",""))+' family</h4>'+
+    top.map(e=>'<div class="aff-r"><span class="nm">'+esc(e.name)+'</span><span class="dlt"></span><span class="v">'+(e.affinity||0).toFixed(2)+'</span><span class="d">'+dyn(e.affinity||0)+'</span></div>').join("")+'</div>';
+}).join("");
+
+/* log */
+el("calls").innerHTML='<tr><th style="width:100px">Take</th><th style="width:38%">Markings</th><th style="text-align:right">ms</th><th style="text-align:right">n</th><th>mode</th></tr>'+
+  calls.map((c,i)=>{
+    const pm=Object.entries(c.params||{}).map(([k,v])=>k+"="+v).join(" ");
+    return '<tr><td class="ep">'+esc(c.endpoint)+'</td><td class="pm" title="'+esc(pm)+'">'+esc(pm)+'</td><td class="num">'+esc(c.tookMs)+'</td><td class="num">'+esc(c.n)+'</td><td class="num">'+esc(c.mode)+'</td></tr>';
+  }).join("")+
+  '<tr class="tot"><td colspan="2">'+calls.length+' TAKES — SESSION COMPLETE</td><td class="num">'+calls.reduce((a,c)=>a+(c.tookMs||0),0)+'</td><td></td><td class="num">'+esc(ev.qlooMode||"")+'</td></tr>';
+
+/* encores + footer */
+el("next").innerHTML=NEXT.map((n,i)=>'<a class="echip" href="#" onclick="return false"><span class="no">BIS '+(i+1)+'</span><b>'+esc(n[0])+'</b><small>'+esc(n[1])+'</small></a>').join("");
+})();
+</script>
+</body>
+</html>

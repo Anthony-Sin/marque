@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque Seed Co. — Cultivar Catalogue No. 37</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23F2E8D0'/%3E%3Cpath d='M32 50V30M32 30c0-10 8-14 16-14 0 10-8 14-16 14zm0 8c0-8-6-12-13-12 0 8 6 12 13 12z' fill='none' stroke='%234E7434' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --parch:#F2E8D0;
+  --parch2:#EADCB9;
+  --kraft:#B98D58;
+  --kraft-d:#8A6A3E;
+  --ink:#3A2C1A;
+  --faded:#7D6A49;
+  --line:#C9B48C;
+  --leaf:#4E7434;
+  --leaf-l:#6F9448;
+  --stamp:#9E3B29;
+  --serif:'Fraunces',Georgia,'Times New Roman',serif;
+  --sans:ui-sans-serif,'Helvetica Neue',Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#5E4629;
+  background-image:
+    repeating-linear-gradient(45deg,rgba(255,255,255,.02) 0 3px,transparent 3px 9px),
+    linear-gradient(#6B5132,#52401F);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:14px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+::selection{background:rgba(78,116,52,.3)}
+a{color:var(--leaf);text-decoration:none;border-bottom:1px dashed var(--leaf)}
+a:hover{color:var(--stamp);border-bottom-color:var(--stamp)}
+a:focus-visible,button:focus-visible{outline:2px dashed var(--leaf);outline-offset:3px}
+button{font:inherit;cursor:pointer}
+img{display:block;max-width:100%}
+
+.sheet{
+  max-width:1180px;margin:26px auto;
+  background:var(--parch);
+  background-image:
+    radial-gradient(ellipse at 15% 8%,rgba(185,141,88,.18),transparent 45%),
+    radial-gradient(ellipse at 88% 92%,rgba(185,141,88,.14),transparent 50%),
+    repeating-linear-gradient(0deg,rgba(201,180,140,.06) 0 2px,transparent 2px 6px);
+  border:1px solid var(--kraft-d);
+  box-shadow:0 22px 60px rgba(0,0,0,.45),inset 0 0 0 6px var(--parch),inset 0 0 0 7px var(--line);
+  padding:clamp(18px,4vw,54px);
+  min-height:calc(100vh - 52px);
+}
+
+/* ===== masthead ===== */
+.mast{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:end;border-bottom:3px double var(--ink);padding-bottom:18px}
+.mast .co{font-size:10px;letter-spacing:.42em;text-transform:uppercase;color:var(--faded)}
+.mast h1{font-family:var(--serif);font-weight:900;font-size:clamp(30px,5.4vw,58px);line-height:1.02;letter-spacing:-.01em}
+.mast h1 em{font-style:italic;font-weight:400;color:var(--leaf)}
+.mast .no{font-family:var(--serif);text-align:right;font-size:11px;letter-spacing:.14em;color:var(--faded);white-space:nowrap}
+.mast .no b{display:block;font-size:clamp(18px,3vw,30px);color:var(--ink);letter-spacing:.04em}
+.mast .no .est{border:1.5px solid var(--stamp);color:var(--stamp);display:inline-block;padding:3px 10px;margin-top:6px;transform:rotate(-3deg);font-size:9.5px;letter-spacing:.22em}
+
+/* ===== section furniture ===== */
+.sec{margin-top:44px}
+.sec-h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:20px}
+.sec-h .cat-no{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--faded);white-space:nowrap}
+.sec-h h2{font-family:var(--serif);font-weight:600;font-size:clamp(19px,2.6vw,27px);letter-spacing:.01em}
+.sec-h h2::after{content:"";display:block;height:2px;background:var(--leaf);width:52px;margin-top:4px}
+.sec-h .note{margin-left:auto;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faded)}
+
+.tag{display:inline-block;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--line);padding:2px 8px;color:var(--faded);background:rgba(255,255,255,.35)}
+
+/* ===== ask / order slip ===== */
+.order{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:0;border:1.5px solid var(--ink);background:var(--parch2)}
+.order>div{padding:22px 24px;min-width:0}
+.order .l{border-right:1.5px dashed var(--ink)}
+.order .lbl{font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--faded);margin-bottom:10px}
+.order .prompt{font-family:var(--serif);font-size:clamp(20px,3vw,32px);font-weight:600;line-height:1.25}
+.order .prompt em{font-style:normal;box-shadow:inset 0 -8px 0 rgba(78,116,52,.28)}
+.order .url{margin-top:12px;font-size:12.5px;word-break:break-all}
+.order dl{display:grid;grid-template-columns:88px 1fr;gap:6px 12px;font-size:12px}
+.order dt{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--faded);padding-top:2px}
+.order dd{overflow-wrap:anywhere}
+
+/* ===== soil report (audience) ===== */
+.soil{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.15fr) minmax(0,.95fr);border:1.5px solid var(--ink)}
+.soil>div{padding:20px 22px;border-right:1.5px dashed var(--ink);min-width:0}
+.soil>div:last-child{border-right:none}
+.soil .lean{font-family:var(--serif);font-size:clamp(22px,3vw,34px);font-weight:900;color:var(--leaf);text-transform:capitalize;line-height:1.05;margin:6px 0 2px}
+.soil .conf{font-size:11px;letter-spacing:.16em;color:var(--faded);text-transform:uppercase}
+.meter{margin:12px 0 14px}
+.meter .bed{height:14px;border:1.5px solid var(--ink);background:repeating-linear-gradient(90deg,rgba(58,44,26,.07) 0 8px,transparent 8px 10%);position:relative}
+.meter .fill{position:absolute;inset:2px auto 2px 2px;background:repeating-linear-gradient(90deg,var(--leaf) 0 7px,var(--leaf-l) 7px 9px)}
+.meter .sc{display:flex;justify-content:space-between;font-size:9.5px;color:var(--faded);margin-top:4px}
+.fnotes{list-style:none;margin-top:6px}
+.fnotes li{padding:7px 0 7px 20px;border-bottom:1px dashed var(--line);font-size:12.5px;position:relative}
+.fnotes li:last-child{border-bottom:none}
+.fnotes li::before{content:"";position:absolute;left:2px;top:13px;width:8px;height:8px;border:1.5px solid var(--leaf);border-radius:50% 0 50% 50%;background:rgba(78,116,52,.15);transform:rotate(45deg)}
+.cond{display:grid;grid-template-columns:92px 1fr;gap:3px 12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.cond:last-child{border-bottom:none}
+.cond b{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--leaf)}
+.vibes{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.vibes span{border:1px solid var(--ink);background:var(--parch);padding:3px 10px;font-size:11px;font-family:var(--serif);font-style:italic;box-shadow:2px 2px 0 rgba(58,44,26,.2)}
+
+/* ===== seed packets ===== */
+.pkts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}
+.pkt{
+  position:relative;min-width:0;background:linear-gradient(180deg,#FBF4DE,var(--parch) 30%);
+  border:1.5px solid var(--ink);
+  box-shadow:4px 5px 0 rgba(58,44,26,.22);
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.pkt::before{ /* sown flap */
+  content:"";position:absolute;top:-1.5px;left:-1.5px;right:-1.5px;height:26px;
+  background:linear-gradient(180deg,var(--kraft),var(--kraft-d));
+  border:1.5px solid var(--ink);border-bottom:1.5px dashed var(--ink);
+}
+.pkt:hover{transform:translateY(-4px) rotate(-.6deg);box-shadow:6px 9px 0 rgba(58,44,26,.28)}
+.pkt .pname{
+  padding:38px 16px 10px;text-align:center;border-bottom:1px dashed var(--line);
+}
+.pkt .var{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--faded)}
+.pkt h3{font-family:var(--serif);font-weight:900;font-size:19px;line-height:1.12;margin:4px 0 2px}
+.pkt .ang{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--leaf)}
+.pkt .ill{padding:14px 16px 4px;display:flex;justify-content:center}
+.pkt .ill svg{width:74px;height:74px}
+.pkt .germ{text-align:center;padding:2px 12px 10px;border-bottom:1px dashed var(--line)}
+.pkt .germ b{font-family:var(--serif);font-size:30px;font-weight:900;color:var(--ink)}
+.pkt .germ small{display:block;font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--faded)}
+.pkt .dots{display:flex;gap:4px;justify-content:center;margin-top:6px}
+.pkt .dots i{width:9px;height:9px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:1.2px solid var(--leaf)}
+.pkt .dots i.on{background:var(--leaf)}
+.pkt .zone{padding:10px 16px}
+.pkt .sow{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px;padding:4px 0;border-bottom:1px dotted var(--line)}
+.pkt .sow:last-child{border-bottom:none}
+.pkt .sow b{font-size:9px;letter-spacing:.18em;text-transform:uppercase}
+.pkt .sow span{font-family:var(--serif);font-weight:600;color:var(--leaf)}
+.pkt .fmt{display:flex;flex-wrap:wrap;gap:5px;padding:10px 16px 2px}
+.pkt .fmt span{font-size:9px;letter-spacing:.1em;text-transform:uppercase;border:1px solid var(--line);padding:2px 7px;color:var(--faded)}
+.pkt .yld{margin:10px 16px;padding-top:10px;border-top:1.5px solid var(--ink);font-size:11.5px}
+.pkt .yld b{font-family:var(--serif);font-size:16px;color:var(--leaf)}
+.pkt .yld small{display:block;color:var(--faded);font-size:10.5px;line-height:1.4;margin-top:3px}
+.pkt .cau{margin:0 16px 14px;font-size:10.5px;color:var(--stamp);border-left:2px solid var(--stamp);padding-left:8px;line-height:1.4}
+.pkt .pstock{
+  margin:0 16px 16px;text-align:center;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--faded);
+  border-top:1px dashed var(--line);padding-top:9px;
+}
+.pkt .pstock b{color:var(--ink)}
+.pstamp{
+  position:absolute;top:34px;right:8px;transform:rotate(11deg);z-index:2;
+  border:2.5px solid var(--stamp);color:var(--stamp);border-radius:50%;
+  width:92px;height:92px;display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:8.5px;letter-spacing:.14em;line-height:1.35;padding:10px;
+  text-transform:uppercase;background:rgba(242,232,208,.82);
+}
+.pstamp i{position:absolute;inset:5px;border:1px solid var(--stamp);border-radius:50%}
+.pstamp span{position:relative}
+
+/* ===== compost (ruled out) ===== */
+.compost{border:1.5px solid var(--ink);background:repeating-linear-gradient(-45deg,rgba(58,44,26,.05) 0 12px,transparent 12px 24px)}
+.compost .cin{padding:16px 20px;border-bottom:1px dashed var(--line);display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+.compost .cin:last-child{border-bottom:none}
+.compost .nosow{flex:0 0 auto;border:2px solid var(--stamp);color:var(--stamp);font-size:9px;letter-spacing:.22em;padding:3px 8px;transform:rotate(-4deg);text-transform:uppercase}
+.compost h4{font-family:var(--serif);font-size:15px;text-decoration:line-through;text-decoration-color:var(--stamp);text-decoration-thickness:2px}
+.compost .ch{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faded)}
+.compost p{flex-basis:100%;font-size:12px;color:var(--faded);line-height:1.5}
+
+/* ===== grow plan / specimens ===== */
+.grow{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr);gap:0;border:1.5px solid var(--ink)}
+.grow .brief{padding:22px;border-right:1.5px dashed var(--ink);background:var(--parch2);min-width:0}
+.grow .brief h3{font-family:var(--serif);font-size:clamp(20px,2.6vw,30px);font-weight:900;line-height:1.1;margin:6px 0}
+.grow .brief .ba{font-family:var(--serif);font-style:italic;color:var(--leaf);font-size:13.5px;margin-bottom:14px}
+.grow .brief dl{display:grid;grid-template-columns:92px 1fr;gap:7px 12px;font-size:12px}
+.grow .brief dt{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--faded);padding-top:2px}
+.grow .brief dd.msg{font-family:var(--serif);font-size:15px;font-weight:600}
+.specs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+.spec{border-right:1px dashed var(--line);border-bottom:1px dashed var(--line);padding:12px;min-width:0}
+.spec:nth-child(2n){border-right:none}
+.spec:nth-last-child(-n+2){border-bottom:none}
+.spec .frame{border:1.5px solid var(--ink);background:#fff;padding:5px;box-shadow:3px 3px 0 rgba(58,44,26,.18)}
+.spec .frame img{width:100%;aspect-ratio:4/3;object-fit:cover;filter:sepia(.14) saturate(.92)}
+.spec figcaption{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:8px;font-size:11px}
+.spec figcaption .h{font-family:var(--serif);font-weight:600;min-width:0;overflow-wrap:anywhere}
+.spec figcaption .p{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--leaf);color:var(--leaf);padding:1px 6px;white-space:nowrap}
+
+/* ===== palette ===== */
+.swrow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px}
+.sw .swatch{
+  height:88px;border:1.5px solid var(--ink);position:relative;box-shadow:3px 3px 0 rgba(58,44,26,.18);
+  border-radius:50% 50% 4px 4px / 14% 14% 4px 4px;
+}
+.sw .n{font-family:var(--serif);font-weight:600;font-size:13px;margin-top:8px}
+.sw .h{font-size:10px;letter-spacing:.12em;color:var(--faded);text-transform:uppercase}
+
+/* ===== provenance ledger ===== */
+.ledger{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr);border:1.5px solid var(--ink)}
+.ledger>div{padding:20px 22px;min-width:0}
+.ledger .l{border-right:1.5px dashed var(--ink)}
+.ledger table{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px}
+.ledger th{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faded);text-align:left;padding:4px 6px;border-bottom:1.5px solid var(--ink)}
+.ledger td{padding:6px;border-bottom:1px dashed var(--line);vertical-align:top}
+.ledger .ep{font-family:ui-monospace,monospace;font-size:10.5px}
+.ledger .pm{display:block;color:var(--faded);font-size:9.5px;overflow-wrap:anywhere}
+.ledger .md{border:1px solid var(--leaf);color:var(--leaf);font-size:8.5px;padding:1px 6px;letter-spacing:.14em;text-transform:uppercase}
+.affg{margin-top:12px}
+.affg .t{font-family:var(--serif);font-size:14px;font-weight:600;text-transform:capitalize;border-bottom:1px solid var(--ink);padding-bottom:3px;margin-bottom:6px}
+.aff{display:flex;align-items:center;gap:9px;padding:4px 0;border-bottom:1px dotted var(--line);font-size:12px}
+.aff:last-child{border-bottom:none}
+.aff img{width:26px;height:26px;object-fit:cover;border:1px solid var(--ink);border-radius:50%}
+.aff .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aff .v{font-family:var(--serif);font-weight:600;color:var(--leaf)}
+.aff .bar{width:64px;height:7px;border:1px solid var(--ink);position:relative;background:rgba(58,44,26,.06)}
+.aff .bar i{position:absolute;inset:1px auto 1px 1px;background:var(--leaf)}
+.cert{float:right;width:110px;height:110px;margin:0 0 10px 16px;transform:rotate(8deg)}
+.cert svg{width:100%;height:100%}
+
+/* ===== next ===== */
+.tags{display:flex;flex-wrap:wrap;gap:16px}
+.tchip{
+  position:relative;background:var(--parch2);border:1.5px solid var(--ink);
+  padding:10px 18px 10px 34px;font-family:var(--serif);font-size:14px;font-weight:600;
+  box-shadow:3px 3px 0 rgba(58,44,26,.2);transition:transform .15s,box-shadow .15s;
+}
+.tchip::before{content:"";position:absolute;left:11px;top:50%;transform:translateY(-50%);width:9px;height:9px;border:1.5px solid var(--ink);border-radius:50%;background:#5E4629}
+.tchip:hover{transform:translateY(-2px) rotate(-1deg);box-shadow:5px 5px 0 rgba(58,44,26,.26)}
+.tchip:active{transform:translateY(1px);box-shadow:2px 2px 0 rgba(58,44,26,.2)}
+
+.foot{margin-top:48px;border-top:3px double var(--ink);padding-top:14px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--faded)}
+
+.empty{border:1.5px dashed var(--line);padding:40px;text-align:center;font-family:var(--serif);font-style:italic;color:var(--faded)}
+
+@media(max-width:1020px){
+  .pkts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .soil{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .soil>div:nth-child(3){border-top:1.5px dashed var(--ink);grid-column:1/-1;border-right:none}
+  .grow{grid-template-columns:1fr}
+  .grow .brief{border-right:none;border-bottom:1.5px dashed var(--ink)}
+  .ledger{grid-template-columns:1fr}
+  .ledger .l{border-right:none;border-bottom:1.5px dashed var(--ink)}
+  .swrow{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .sheet{margin:10px;padding:16px}
+  .pkts{grid-template-columns:1fr}
+  .order{grid-template-columns:1fr}
+  .order .l{border-right:none;border-bottom:1.5px dashed var(--ink)}
+  .soil{grid-template-columns:1fr}
+  .soil>div{border-right:none;border-bottom:1.5px dashed var(--ink)}
+  .soil>div:last-child{border-bottom:none}
+  .specs{grid-template-columns:1fr}
+  .spec{border-right:none!important;border-bottom:1px dashed var(--line)!important}
+  .spec:last-child{border-bottom:none!important}
+  .swrow{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mast{grid-template-columns:1fr}
+  .mast .no{text-align:left}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header class="mast">
+    <div>
+      <div class="co">Marque Seed Co. · Purveyors of Fine Campaign Cultivars</div>
+      <h1 id="mast-title">Cultivar <em>Catalogue</em></h1>
+    </div>
+    <div class="no">
+      <b id="cat-no">No. 37</b>
+      <span id="cat-date">SEASON 2026</span><br>
+      <span class="est">CERTIFIED QLOO STOCK</span>
+    </div>
+  </header>
+  <main id="app"></main>
+  <footer class="foot">
+    <span>MARQUE SEED CO. — PACKED BY MACHINE, CHOSEN BY HAND</span>
+    <span id="foot-id">LOT —</span>
+    <span>GERMINATION NOT GUARANTEED OUTSIDE TEST PLOTS</span>
+  </footer>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const pct=x=>Math.round((x||0)*100);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE',spec:'FLOWER'},
+  {n:'Glaze Milk',h:'#F7F0E5',spec:'PETAL'},
+  {n:'Barrier Cream',h:'#EDDFCE',spec:'STEM'},
+  {n:'Toasted Almond',h:'#B98A6F',spec:'SOIL'},
+  {n:'Espresso Bean',h:'#4E362B',spec:'LOAM'}
+];
+const CREAT=[5,7,12,14].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+
+document.getElementById('cat-no').textContent='No. 37-'+((B.id||'0000').slice(0,4).toUpperCase());
+document.getElementById('cat-date').textContent=B.createdAt?('SOWN '+new Date(B.createdAt).toISOString().slice(0,10)):'SEASON —';
+document.getElementById('foot-id').textContent='LOT '+esc((B.id||'—').slice(0,8).toUpperCase());
+document.getElementById('mast-title').innerHTML=esc(B.title||'Cultivar Catalogue').replace(/→/g,'<em>→</em>');
+
+const M=document.getElementById('app');
+const sec=(no,title,note,body)=>{
+  if(!body)return;
+  M.appendChild(el('<section class="sec"><div class="sec-h"><span class="cat-no">'+no+'</span><h2>'+esc(title)+'</h2>'+(note?'<span class="note">'+esc(note)+'</span>':'')+'</div>'+body+'</section>'));
+};
+const sprout='<svg viewBox="0 0 80 80" fill="none" stroke="#4E7434" stroke-width="2.2" stroke-linecap="round"><path d="M40 68V38"/><path d="M40 46C40 36 48 30 60 30c0 10-8 16-20 16z" fill="rgba(78,116,52,.12)"/><path d="M40 54c0-8-7-13-17-13 0 8 7 13 17 13z" fill="rgba(78,116,52,.12)"/><path d="M40 38V22m0 0c-4-3-4-8 0-11 4 3 4 8 0 11z" fill="rgba(78,116,52,.12)"/><path d="M22 68h36" stroke-dasharray="3 4"/></svg>';
+
+/* 1 — the order */
+if(B.sub||B.urlContext){
+  const u=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url)||'';
+  sec('§1','THE ORDER — COUNTER SLIP','received at the potting bench',
+    '<div class="order"><div class="l"><div class="lbl">Customer request · one line only</div>'+
+    '<p class="prompt">'+esc((B.sub&&B.sub.prompt)||B.title||'').replace(/→/g,'<em>→</em>')+'</p>'+
+    (u?'<p class="url"><a href="'+esc(u)+'">'+esc(u)+'</a></p>':'')+'</div>'+
+    '<div><div class="lbl">Seed house remarks · resolved source</div>'+
+    '<dl><dt>Source page</dt><dd>'+esc(B.urlContext&&B.urlContext.title||'—')+'</dd>'+
+    '<dt>Order no.</dt><dd>'+esc(B.id||'—')+'</dd>'+
+    '<dt>Notes</dt><dd>'+esc(B.urlContext&&B.urlContext.description||'—')+'</dd></dl></div></div>');
+}
+
+/* 2 — soil report */
+if(AR&&AR.lean){
+  sec('§2','SOIL REPORT — WHO WE’RE PLANTING FOR','sampled from live affinity bed',
+    '<div class="soil">'+
+    '<div><span class="tag">Dominant lean</span><div class="lean">'+esc(AR.lean.label||'—')+'</div>'+
+    '<div class="conf">Confidence '+pct(AR.lean.confidence)+'%</div>'+
+    '<div class="meter"><div class="bed"><div class="fill" style="width:'+pct(AR.lean.confidence)+'%"></div></div><div class="sc"><span>poor bed</span><span>rich bed</span></div></div>'+
+    '<ul class="fnotes">'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></div>'+
+    '<div><span class="tag">Growing conditions · media habits</span><div style="margin-top:10px">'+
+    (AR.mediaHabits||[]).map(h=>'<div class="cond"><b>'+esc(h.channel)+'</b><span>'+esc(h.note)+'</span></div>').join('')+'</div></div>'+
+    '<div><span class="tag">Varietals mentioned at the fence · vibe words</span>'+
+    '<div class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div>'+
+    '</div>');
+}
+
+/* 3 — the cultivars */
+if(strats.length){
+  sec('§3','FOUR CULTIVARS — THIS SEASON’S PACKETS','germination rate = audience fit',
+    '<div class="pkts">'+strats.map((s,i)=>{
+      const f=pct(s.audienceFit&&s.audienceFit.score);
+      const dots=Array.from({length:5},(_,d)=>'<i class="'+(f>=d*20+18?'on':'')+'"></i>').join('');
+      return '<article class="pkt">'+
+      (i===sel?'<div class="pstamp"><i></i><span>Head grower’s<br>choice</span></div>':'')+
+      '<div class="pname"><div class="var">Variety '+String.fromCharCode(65+i)+' · '+esc((s.id||'').toUpperCase())+'</div><h3>'+esc(s.title)+'</h3><div class="ang">'+esc(s.angle)+'</div></div>'+
+      '<div class="ill">'+sprout+'</div>'+
+      '<div class="germ"><b>'+f+'%</b><small>Germination rate</small><div class="dots">'+dots+'</div></div>'+
+      '<div class="zone">'+(s.channels||[]).map(c=>'<div class="sow"><b>Sow · '+esc(c.name)+'</b><span>'+pct(c.fit)+'%</span></div>').join('')+'</div>'+
+      '<div class="fmt">'+(s.formats||[]).map(fm=>'<span>'+esc(fm)+'</span>').join('')+'</div>'+
+      (s.reach?'<div class="yld">Expected yield ≈ <b>'+views(s.reach.estViews)+' blooms</b><small>'+esc(s.reach.basis||'')+'</small></div>':'')+
+      ((s.watchouts&&s.watchouts[0])?'<div class="cau">Caution — '+esc(s.watchouts[0])+'</div>':'')+
+      '<div class="pstock">Parent stock · <b>'+esc(s.heroSignal||'—')+'</b></div>'+
+      '</article>'}).join('')+
+    '</div>');
+}
+
+/* 4 — compost */
+if(anti.length){
+  sec('§4','THE COMPOST BIN — DO NOT SOW','packets that failed germination trials',
+    '<div class="compost">'+anti.map(a=>
+      '<div class="cin"><span class="nosow">Do not sow</span><h4>'+esc(a.title)+'</h4><span class="ch">Bed · '+esc(a.channel).toUpperCase()+'</span>'+
+      '<p>'+esc(a.whyNot)+'</p></div>').join('')+
+    '</div>');
+}
+
+/* 5 — grow plan + specimens */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('§5','THE GROWING PLAN — BRIEF & SPECIMENS','raised from the chosen packet',
+    '<div class="grow"><div class="brief"><span class="tag">Plan for variety '+(sel!=null?String.fromCharCode(65+sel):'—')+'</span>'+
+    (br?'<h3>'+esc(br.title)+'</h3><p class="ba">'+esc(br.angle)+'</p>'+
+    '<dl><dt>Audience</dt><dd>'+esc(br.audience)+'</dd>'+
+    '<dt>Key message</dt><dd class="msg">“'+esc(br.keyMessage)+'”</dd>'+
+    '<dt>Parent stock</dt><dd>'+esc(selS.heroSignal||'—')+'</dd></dl>':'<p class="ba">no brief bound</p>')+'</div>'+
+    '<div class="specs">'+CREAT.map((m,i)=>
+      '<figure class="spec"><div class="frame"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+      '<figcaption><span class="h">'+esc(m.head)+'</span><span class="p">'+esc(m.provider)+'</span></figcaption></figure>').join('')+
+    '</div></div>');
+}
+
+/* 6 — soil & bloom chart */
+sec('§6','SOIL & BLOOM CHART','house pigments for the beds',
+  '<div class="swrow">'+PALETTE.map(s=>
+    '<div class="sw"><div class="swatch" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="h">'+esc(s.spec)+' · '+s.h.toUpperCase()+'</div></div>').join('')+
+  '</div>');
+
+/* 7 — provenance */
+if(B.evidence||affs.length){
+  sec('§7','CERTIFIED SEED LEDGER','every packet traced to parent stock',
+    '<div class="ledger"><div class="l">'+
+    '<svg class="cert" viewBox="0 0 120 120"><circle cx="60" cy="60" r="56" fill="none" stroke="#9E3B29" stroke-width="2.5"/><circle cx="60" cy="60" r="47" fill="none" stroke="#9E3B29" stroke-width="1"/><text x="60" y="46" text-anchor="middle" font-size="9" letter-spacing="2" fill="#9E3B29" font-family="serif">MARQUE SEED CO.</text><text x="60" y="62" text-anchor="middle" font-size="11" font-weight="bold" fill="#9E3B29" font-family="serif">CERTIFIED</text><text x="60" y="76" text-anchor="middle" font-size="8" letter-spacing="1.5" fill="#9E3B29" font-family="serif">QLOO STOCK '+(B.qlooBundle&&B.qlooBundle.mode?B.qlooBundle.mode.toUpperCase():'')+'</text></svg>'+
+    '<span class="tag">Field ledger · api calls</span>'+
+    '<table><thead><tr><th>Endpoint</th><th>N</th><th>Ms</th><th>Mode</th></tr></thead><tbody>'+
+    calls.map(c=>'<tr><td><span class="ep">'+esc(c.endpoint)+'</span><span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,18)).join(' '))+'</span></td>'+
+      '<td>'+esc(c.n)+'</td><td>'+esc(c.tookMs)+'</td><td><span class="md">'+esc(c.mode)+'</span></td></tr>').join('')+
+    '</tbody></table>'+
+    '<p style="font-size:9.5px;color:var(--faded);letter-spacing:.18em;text-transform:uppercase;margin-top:12px">Packed '+(B.fetchedAt?new Date(B.fetchedAt).toISOString().slice(0,10):'—')+' · '+(calls.length)+' calls logged</p></div>'+
+    '<div><span class="tag">Parent stock · top affinities</span>'+
+    affs.map(g=>'<div class="affg"><div class="t">'+esc(g.type.replace('urn:entity:',''))+' stock</div>'+
+      g.entities.slice(0,4).map(e=>'<div class="aff">'+(e.image?'<img src="'+esc(e.image)+'" alt="" onerror="this.style.display=\'none\'">':'')+'<span class="nm">'+esc(e.name)+'</span><span class="bar"><i style="width:'+pct(e.affinity)+'%"></i></span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')+'</div>').join('')+
+    '</div></div>');
+}
+
+/* 8 — next order tags */
+sec('§8','NEXT SEASON’S ORDERS','tear off and hand to the potting shed',
+  '<div class="tags">'+['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button class="tchip">'+x+'</button>').join('')+'</div>');
+
+if(!M.children.length)M.appendChild(el('<div class="empty">This season’s catalogue failed to bind — check the seed vault (data.js).</div>'));
+})();
+</script>
+</body>
+</html>

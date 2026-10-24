@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARQUE HERBARIUM — Rhode peptide lip tint → Gen Z</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f2ebd9;
+    --paper2:#ece3cd;
+    --ink:#463523;
+    --ink2:#5c4a33;
+    --mut:#8b7a5b;
+    --hair:#b6a37d;
+    --hair2:#cabc9c;
+    --leaf:#5b7648;
+    --leaf-dim:rgba(91,118,72,.12);
+    --serif:"EB Garamond",Georgia,"Times New Roman",serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:var(--serif);
+    background:
+      radial-gradient(900px 400px at 50% -10%, rgba(139,122,91,.10), transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    font-size:15px;line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;
+    background:repeating-linear-gradient(0deg,rgba(139,122,91,.028) 0 1px,transparent 1px 4px)}
+  ::selection{background:var(--leaf);color:var(--paper)}
+  a{color:var(--leaf);text-decoration:none;border-bottom:1px solid rgba(91,118,72,.4)}
+  a:hover{background:var(--leaf-dim)}
+  a:focus-visible{outline:1px solid var(--leaf);outline-offset:2px}
+
+  .sheet{max-width:1120px;margin:0 auto;padding:36px 22px 90px}
+
+  /* ===== masthead ===== */
+  .mast{text-align:center;margin-bottom:44px}
+  .mast .over{font-size:12px;letter-spacing:.42em;text-transform:uppercase;color:var(--mut)}
+  .mast h1{font-weight:500;font-size:clamp(30px,5vw,46px);letter-spacing:.04em;margin:10px 0 6px;color:var(--ink)}
+  .mast h1 em{font-style:italic;color:var(--leaf)}
+  .mast .rule{display:flex;align-items:center;gap:14px;margin:14px auto 8px;max-width:560px}
+  .mast .rule::before,.mast .rule::after{content:"";flex:1;height:0;border-top:1px solid var(--hair)}
+  .mast .rule span{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut);white-space:nowrap}
+  .mast .sub{font-style:italic;color:var(--ink2);font-size:16px}
+  .mast .no{font-size:11px;letter-spacing:.24em;color:var(--mut);text-transform:uppercase;margin-top:6px}
+
+  /* ===== plate ===== */
+  .plate{position:relative;border:1px solid var(--hair);background:var(--paper2);
+    padding:30px 30px 26px;margin:0 0 40px;
+    box-shadow:0 2px 0 rgba(70,53,35,.06), inset 0 0 0 5px var(--paper2), inset 0 0 0 6px var(--hair2)}
+  .plate::before,.plate::after{content:"";position:absolute;width:14px;height:14px;pointer-events:none}
+  .plate::before{top:9px;left:9px;border-top:1px solid var(--hair);border-left:1px solid var(--hair)}
+  .plate::after{bottom:9px;right:9px;border-bottom:1px solid var(--hair);border-right:1px solid var(--hair)}
+  .phead{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--hair);
+    padding-bottom:10px;margin-bottom:18px}
+  .phead .roman{font-size:13px;letter-spacing:.3em;color:var(--leaf);text-transform:uppercase}
+  .phead h2{font-weight:500;font-size:21px;letter-spacing:.06em}
+  .phead .lat{margin-left:auto;font-style:italic;color:var(--mut);font-size:14px;text-align:right}
+
+  .fig-cap{font-style:italic;color:var(--ink2);font-size:14px;text-align:center;padding:9px 8px 0}
+  .fig-cap b{font-style:normal;font-weight:600;color:var(--ink)}
+  .fig-cap .prov{font-style:normal;font-size:12px;color:var(--mut);letter-spacing:.08em}
+
+  /* engraved image frame */
+  .frame{border:1px solid var(--hair);padding:7px;background:var(--paper)}
+  .frame .in{border:1px solid var(--hair2);overflow:hidden;background:#d9cfae}
+  .frame img{display:block;width:100%;height:100%;object-fit:cover;
+    filter:sepia(.18) saturate(.94) contrast(.97);transition:filter .3s,transform .5s}
+  .frame:hover img{filter:sepia(.05) saturate(1);transform:scale(1.015)}
+
+  /* ask plate */
+  .askname{text-align:center;margin:8px 0 18px}
+  .askname .bin{font-style:italic;font-size:clamp(24px,3.4vw,34px);color:var(--ink)}
+  .askname .bin i{color:var(--leaf)}
+  .askname .com{font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut);margin-top:4px}
+  .fields{max-width:640px;margin:0 auto}
+  .lead{display:flex;align-items:baseline;padding:4px 0}
+  .lead .k{color:var(--mut);font-size:13px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+  .lead .d{flex:1;min-width:30px;border-bottom:1px dotted var(--hair);margin:0 8px 4px}
+  .lead .v{color:var(--ink);text-align:right;overflow-wrap:anywhere}
+  .lead .v.it{font-style:italic;color:var(--ink2)}
+
+  .note{font-style:italic;color:var(--ink2);font-size:14px;padding:10px 0 0}
+
+  /* strategy cultivars */
+  .culti{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .cv{border:1px solid var(--hair);background:var(--paper);padding:18px 20px 14px;position:relative;transition:box-shadow .2s,border-color .2s}
+  .cv:hover{border-color:var(--leaf);box-shadow:0 4px 14px rgba(70,53,35,.10)}
+  .cv .cvno{position:absolute;top:-9px;left:14px;background:var(--paper);padding:0 8px;
+    font-size:11px;letter-spacing:.26em;color:var(--leaf);text-transform:uppercase}
+  .cv h3{font-weight:600;font-size:20px;font-style:italic;letter-spacing:.02em}
+  .cv .ang{color:var(--mut);font-style:italic;font-size:14px;margin:2px 0 10px}
+  .cv .lead .v{font-variant-numeric:tabular-nums}
+  .cv .fitline{display:flex;align-items:baseline;margin-top:10px;padding-top:8px;border-top:1px solid var(--hair2)}
+  .cv .fitline .pct{font-size:22px;color:var(--leaf);font-variant-numeric:tabular-nums}
+  .cv .fitline .cap{font-size:11px;letter-spacing:.2em;color:var(--mut);text-transform:uppercase;margin-left:8px}
+  .cv .reach{margin-left:auto;text-align:right;color:var(--ink2);font-size:13px}
+  .cv .reach b{font-size:17px;color:var(--ink)}
+  .cv .hero{font-size:12px;letter-spacing:.12em;color:var(--mut);text-transform:uppercase;margin-top:8px}
+  .cv .hero em{color:var(--leaf);font-style:italic;text-transform:none;letter-spacing:0;font-size:14px}
+
+  /* anti */
+  .rej{border:1px solid var(--hair);background:var(--paper)}
+  .rej .r{display:grid;grid-template-columns:200px 1fr;border-top:1px solid var(--hair2)}
+  .rej .r:first-child{border-top:none}
+  .rej .t{padding:10px 14px;border-right:1px solid var(--hair2);font-style:italic;color:var(--ink2)}
+  .rej .t s{color:var(--mut)}
+  .rej .t .ch{display:block;font-style:normal;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);margin-top:2px}
+  .rej .w{padding:10px 14px;font-size:14px;color:var(--ink2)}
+
+  /* figures grid */
+  .figs{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+  .figs .f{display:flex;flex-direction:column}
+  .figs .frame{aspect-ratio:1/1}
+  .figs .frame .in{height:100%}
+  .figs .frame img{height:100%}
+
+  /* provenance table */
+  table.spec{width:100%;border-collapse:collapse;font-size:14px}
+  table.spec th{font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);
+    text-align:left;padding:6px 10px;border-bottom:1px solid var(--hair)}
+  table.spec td{padding:7px 10px;border-bottom:1px solid var(--hair2);color:var(--ink2);vertical-align:top}
+  table.spec tr:hover td{background:rgba(91,118,72,.05)}
+  table.spec td.ep{font-style:italic;color:var(--ink)}
+  table.spec td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  table.spec th.n{text-align:right}
+  .affix{margin-top:20px}
+  .affix .lead .v{font-style:italic}
+  .affix .lead .pct{color:var(--leaf);min-width:44px;text-align:right;font-variant-numeric:tabular-nums}
+
+  /* pigments */
+  .pig{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+  .pig .sw{text-align:center}
+  .pig .disc{width:64px;height:64px;border-radius:50%;margin:0 auto 8px;
+    border:1px solid var(--hair);box-shadow:inset 0 0 0 4px var(--paper),inset 0 0 0 5px var(--hair2)}
+  .pig .nm{font-style:italic;font-size:14px;color:var(--ink)}
+  .pig .hx{font-size:11px;letter-spacing:.14em;color:var(--mut)}
+
+  .nextrow{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;padding-top:6px}
+  .nextrow a{font-style:italic;font-size:17px;color:var(--leaf);border:1px solid var(--hair);
+    padding:8px 22px;background:var(--paper);text-decoration:none;transition:all .15s}
+  .nextrow a:hover{border-color:var(--leaf);background:var(--leaf-dim)}
+  .nextrow a::after{content:" →";font-style:normal}
+
+  .colophon{text-align:center;color:var(--mut);font-size:13px;font-style:italic;margin-top:10px}
+  .colophon .r{width:200px;border-top:1px solid var(--hair);margin:14px auto}
+
+  @media (max-width:880px){
+    .culti{grid-template-columns:1fr}
+    .figs{grid-template-columns:repeat(2,1fr)}
+    .pig{grid-template-columns:repeat(3,1fr);gap:14px}
+  }
+  @media (max-width:560px){
+    .plate{padding:22px 16px}
+    .figs{grid-template-columns:1fr 1fr;gap:14px}
+    .rej .r{grid-template-columns:1fr}
+    .rej .t{border-right:none;border-bottom:1px dotted var(--hair2)}
+    table.spec{font-size:12.5px}
+    table.spec td,table.spec th{padding:6px 6px}
+    .hideS{display:none}
+    .pig{grid-template-columns:repeat(2,1fr)}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header class="mast">
+    <div class="over">Marque · Botanica Promotoria</div>
+    <h1>Strategy <em>→</em> Campaign <em>→</em> Result</h1>
+    <div class="rule"><span>A study in seven plates</span></div>
+    <div class="sub" id="mast-title">—</div>
+    <div class="no" id="mast-no">—</div>
+  </header>
+
+  <!-- PLATE I — ask -->
+  <section class="plate">
+    <div class="phead"><span class="roman">Plate I</span><h2>The Specimen</h2><span class="lat">habitus · the ask</span></div>
+    <div class="askname">
+      <div class="bin"><i>Rhodea</i> peptidia</div>
+      <div class="com" id="ask-common">—</div>
+    </div>
+    <div class="fields">
+      <div class="lead"><span class="k">Field name</span><span class="d"></span><span class="v it" id="ask-prompt">—</span></div>
+      <div class="lead"><span class="k">Source</span><span class="d"></span><span class="v" id="ask-url">—</span></div>
+      <div class="lead"><span class="k">Cited as</span><span class="d"></span><span class="v it" id="ask-title">—</span></div>
+    </div>
+    <div class="note" id="ask-desc" style="text-align:center;max-width:560px;margin:12px auto 0"></div>
+  </section>
+
+  <!-- PLATE II — audience -->
+  <section class="plate">
+    <div class="phead"><span class="roman">Plate II</span><h2>Habitat &amp; Habits</h2><span class="lat">the audience, observed</span></div>
+    <div class="fields" style="max-width:720px">
+      <div class="lead"><span class="k">Disposition</span><span class="d"></span><span class="v it" id="aud-lean">—</span></div>
+      <div class="lead"><span class="k">Confidence</span><span class="d"></span><span class="v" id="aud-conf">—</span></div>
+      <div class="lead"><span class="k">Signals</span><span class="d"></span><span class="v it" id="aud-sig">—</span></div>
+      <div class="lead"><span class="k">Associated flora</span><span class="d"></span><span class="v it" id="aud-vibes">—</span></div>
+    </div>
+    <table class="spec" style="margin-top:18px">
+      <thead><tr><th>Feeding ground</th><th>Observed behaviour</th><th class="hideS">Family</th></tr></thead>
+      <tbody id="habit-rows"></tbody>
+    </table>
+  </section>
+
+  <!-- PLATE III — strategies -->
+  <section class="plate">
+    <div class="phead"><span class="roman">Plate III</span><h2>Cultivars, Four</h2><span class="lat">strategia selecta</span></div>
+    <div class="culti" id="strats"></div>
+  </section>
+
+  <!-- PLATE IV — rejected -->
+  <section class="plate">
+    <div class="phead"><span class="roman">Plate IV</span><h2>Specimens Rejected</h2><span class="lat">exclusae</span></div>
+    <div class="rej" id="anti"></div>
+  </section>
+
+  <!-- PLATE V — output -->
+  <section class="plate">
+    <div class="phead"><span class="roman">Plate V</span><h2>The Finished Work</h2><span class="lat">campaigna perfecta</span></div>
+    <div class="fields" style="max-width:720px;margin-bottom:22px">
+      <div class="lead"><span class="k">Campaign</span><span class="d"></span><span class="v it" id="brief-title">—</span></div>
+      <div class="lead"><span class="k">Angle</span><span class="d"></span><span class="v it" id="brief-angle">—</span></div>
+      <div class="lead"><span class="k">Audience</span><span class="d"></span><span class="v it" id="brief-aud">—</span></div>
+      <div class="lead"><span class="k">Key message</span><span class="d"></span><span class="v" id="brief-msg">—</span></div>
+    </div>
+    <div class="figs" id="figs"></div>
+  </section>
+
+  <!-- PLATE VI — provenance -->
+  <section class="plate">
+    <div class="phead"><span class="roman">Plate VI</span><h2>Provenance</h2><span class="lat" id="qloo-mode">—</span></div>
+    <table class="spec">
+      <thead><tr><th>№</th><th>Instrument</th><th class="hideS">Reading</th><th class="n">Elapsed ms</th><th class="n">Yield</th><th>Mode</th></tr></thead>
+      <tbody id="call-rows"></tbody>
+    </table>
+    <div class="affix fields" style="max-width:720px" id="aff-rows"></div>
+  </section>
+
+  <!-- PLATE VII — pigments + next -->
+  <section class="plate">
+    <div class="phead"><span class="roman">Plate VII</span><h2>Pigments &amp; Further Study</h2><span class="lat">palette · next plates</span></div>
+    <div class="pig" id="pal"></div>
+    <div class="nextrow" id="next"></div>
+    <div class="colophon">
+      <div class="r"></div>
+      <div id="colo">—</div>
+    </div>
+  </section>
+
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+const B=(window.DATA&&window.DATA.board)||{};
+const esc=s=>String(s==null?"—":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const K=v=>v>=1e3?Math.round(v/1e3)+"K":v;
+const pct=v=>Math.round((v||0)*100);
+const ROM=["I","II","III","IV","V","VI","VII","VIII"];
+
+const sub=B.sub||{},uc=B.urlContext||{};
+document.getElementById("mast-title").textContent=`being a faithful account of “${B.title||sub.prompt||"—"}”`;
+document.getElementById("mast-no").textContent=`vol. ${String(B.id||"").slice(0,4).toUpperCase()} · printed ${(B.fetchedAt||"").slice(0,10)}`;
+
+document.getElementById("ask-common").textContent=uc.title||"—";
+document.getElementById("ask-prompt").textContent=sub.prompt||B.title||"—";
+document.getElementById("ask-url").textContent=(sub.url||uc.url||"—").replace(/^https?:\/\//,"");
+document.getElementById("ask-title").textContent=uc.title||"—";
+document.getElementById("ask-desc").textContent=uc.description||"";
+
+/* audience */
+const ar=B.audienceRead||{},lean=ar.lean||{};
+document.getElementById("aud-lean").textContent=lean.label||"—";
+document.getElementById("aud-conf").textContent=pct(lean.confidence)+"% certainty";
+document.getElementById("aud-sig").textContent=(lean.signals||[]).join("; ");
+document.getElementById("aud-vibes").textContent=(ar.vibeWords||[]).join(", ");
+document.getElementById("habit-rows").innerHTML=(ar.mediaHabits||[]).map(h=>
+ `<tr><td class="ep">${esc(h.channel)}</td><td>${esc(h.note)}</td><td class="hideS">${esc((h.type||"").replace("urn:entity:",""))}</td></tr>`).join("");
+
+/* strategies */
+document.getElementById("strats").innerHTML=(B.strategies||[]).map((s,i)=>
+ `<article class="cv">
+    <div class="cvno">Cultivar ${ROM[i]||i+1}</div>
+    <h3>${esc(s.title)}</h3>
+    <div class="ang">${esc(s.angle)} — signals: ${esc(s.heroSignal||"—")}</div>
+    ${(s.channels||[]).map(c=>`<div class="lead"><span class="k">${esc(c.name)}</span><span class="d"></span><span class="v">${pct(c.fit)}%</span></div>`).join("")}
+    <div class="lead"><span class="k">Formats</span><span class="d"></span><span class="v it">${esc((s.formats||[]).join(", "))}</span></div>
+    <div class="fitline">
+      <span class="pct">${pct(s.audienceFit&&s.audienceFit.score)}%</span><span class="cap">audience fit</span>
+      <span class="reach"><b>${K(s.reach&&s.reach.estViews||0)}</b> est. views</span>
+    </div>
+    <div class="hero">watch — <em>${esc((s.watchouts||[])[0]||"—")}</em></div>
+  </article>`).join("");
+
+/* anti */
+document.getElementById("anti").innerHTML=(B.antiStrategies||[]).map(a=>
+ `<div class="r"><div class="t"><s>${esc(a.title)}</s><span class="ch">${esc(a.channel)}</span></div>
+   <div class="w">${esc(a.whyNot)}</div></div>`).join("");
+
+/* output */
+const st=B.strategies||[],br=st[0]&&st[0].brief||{};
+document.getElementById("brief-title").textContent=`${st[0]?st[0].title+" — ":""}${br.title||""}`;
+document.getElementById("brief-angle").textContent=br.angle||"—";
+document.getElementById("brief-aud").textContent=br.audience||"—";
+document.getElementById("brief-msg").textContent="“"+(br.keyMessage||"—")+"”";
+
+const pool=((window.MEDIA||{}).pool||[]).map(m=>({img:m.img.replace(/^\.\//,"../"),head:m.head,provider:m.provider}));
+const picks=[1,5,10,12].map(i=>pool[i]).filter(Boolean);
+document.getElementById("figs").innerHTML=picks.map((m,i)=>
+ `<figure class="f">
+    <div class="frame"><div class="in"><img src="${m.img}" alt="" loading="lazy" onerror="this.closest('.f').style.display='none'"></div></div>
+    <figcaption class="fig-cap"><b>Fig. ${i+1}.</b> ${esc(m.head)}<br><span class="prov">engr. ${esc(m.provider)}</span></figcaption>
+  </figure>`).join("");
+
+/* provenance */
+const ev=B.evidence||{};
+document.getElementById("qloo-mode").textContent=`${(ev.calls||[]).length} qloo calls · ${ev.qlooMode||"—"}`;
+document.getElementById("call-rows").innerHTML=(ev.calls||[]).map((c,i)=>
+ `<tr><td class="n">${i+1}</td><td class="ep">${esc(c.endpoint)}</td>
+   <td class="hideS">${esc(Object.entries(c.params||{}).map(([k,v])=>k+"="+String(v).slice(0,14)).join(" · "))}</td>
+   <td class="n">${c.tookMs}</td><td class="n">${c.n}</td><td>${esc(c.mode)}</td></tr>`).join("");
+const aff=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+document.getElementById("aff-rows").innerHTML=
+ `<div class="lead"><span class="k" style="font-size:12px">Index of affinities</span><span class="d"></span><span class="v" style="font-size:12px">top five each</span></div>`+
+ aff.map(a=>
+ `<div class="lead"><span class="k">${esc((a.type||"").replace("urn:entity:",""))}</span><span class="d"></span>
+   <span class="v">${a.entities.slice(0,5).map(e=>e.name).join(", ")}</span>
+   <span class="pct">${a.entities[0]?pct(a.entities[0].affinity)+"%":""}</span></div>`).join("");
+
+/* pigments + next */
+const pal=[["Peptide Blush","#F3D9D2"],["Glaze Cream","#F7EFE4"],["Barrier Beige","#E4CDBB"],["Toast","#7A5A46"],["Espresso","#2E211B"]];
+document.getElementById("pal").innerHTML=pal.map(p=>
+ `<div class="sw"><div class="disc" style="background:${p[1]}"></div><div class="nm">${p[0]}</div><div class="hx">${p[1]}</div></div>`).join("");
+document.getElementById("next").innerHTML=["website","brandbook","video"].map(n=>
+ `<a href="#" onclick="return false">${n} plate</a>`).join("");
+
+document.getElementById("colo").textContent=`Set in EB Garamond · plate paper 120gsm · board ${String(B.id||"").slice(0,8)} · Marque Botanical Press`;
+</script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARQUE OPS BOARD — Rhode peptide lip tint → Gen Z</title>
+<style>
+  :root{
+    --bg:#e8ecf1;
+    --col:#f1f3f6;
+    --card:#ffffff;
+    --ink:#1c2733;
+    --mut:#5e6c7c;
+    --dim:#8a97a5;
+    --line:#dde3ea;
+    --acc:#2363d1;
+    --acc-soft:#e3ecfb;
+    --acc-line:rgba(35,99,209,.35);
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:var(--sans);
+    background:var(--bg);
+    color:var(--ink);
+    font-size:13px;line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--acc);color:#fff}
+  a{color:var(--acc);text-decoration:none}
+  a:hover{text-decoration:underline}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+  /* ===== top bar ===== */
+  .topbar{display:flex;align-items:center;gap:14px;background:#fff;border-bottom:1px solid var(--line);
+    padding:0 18px;height:52px;position:sticky;top:0;z-index:40}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;letter-spacing:.02em;white-space:nowrap}
+  .logo .sq{width:18px;height:18px;border-radius:4px;background:var(--acc);
+    box-shadow:inset 0 -6px 0 rgba(0,0,0,.18)}
+  .crumb{color:var(--mut);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .crumb b{color:var(--ink);font-weight:600}
+  .topright{margin-left:auto;display:flex;align-items:center;gap:8px}
+  .chipbtn{border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 12px;
+    font-size:12px;font-weight:600;color:var(--ink);cursor:pointer;transition:all .15s;white-space:nowrap}
+  .chipbtn:hover{border-color:var(--acc);color:var(--acc);background:var(--acc-soft)}
+  .chipbtn:active{transform:translateY(1px)}
+
+  .board{max-width:1400px;margin:0 auto;padding:18px 16px 60px}
+
+  /* ===== columns ===== */
+  .cols{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;align-items:start}
+  .coln{background:var(--col);border-radius:10px;padding:10px;min-width:0}
+  .chead{display:flex;align-items:center;gap:8px;padding:2px 6px 10px}
+  .chead h2{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+  .chead .wip{margin-left:auto;background:#fff;border:1px solid var(--line);border-radius:20px;
+    font-size:10.5px;font-weight:700;color:var(--mut);padding:1px 8px}
+  .chead .dot{width:7px;height:7px;border-radius:50%;background:var(--dim)}
+  .chead .dot.hot{background:var(--acc)}
+
+  /* ===== card ===== */
+  .card{background:var(--card);border-radius:8px;border:1px solid var(--line);
+    box-shadow:0 1px 2px rgba(28,39,51,.07);
+    padding:11px 12px;margin-bottom:9px;cursor:grab;position:relative;
+    transition:transform .16s ease, box-shadow .16s ease, border-color .16s}
+  .card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(28,39,51,.13);border-color:#c5cfdb}
+  .card:active{cursor:grabbing;transform:translateY(-1px) rotate(.5deg);box-shadow:0 14px 26px rgba(28,39,51,.18)}
+  .card.dragging{opacity:.85;transform:rotate(2deg) scale(1.02);box-shadow:0 18px 34px rgba(28,39,51,.22);z-index:30;cursor:grabbing}
+  .card .lbrow{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px}
+  .lab{height:6px;border-radius:3px;background:var(--acc);opacity:.85}
+  .lab.w1{width:38px}.lab.w2{width:26px}.lab.w3{width:48px}
+  .lab.mut{background:#b8c3d0}.lab.soft{background:var(--acc);opacity:.35}
+  .card h3{font-size:13.5px;font-weight:650;line-height:1.3;margin-bottom:4px}
+  .card .desc{font-size:12px;color:var(--mut);margin-bottom:8px}
+  .card .meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--dim);flex-wrap:wrap}
+  .card .meta .m{display:inline-flex;align-items:center;gap:4px}
+  .card .meta .m svg{width:11px;height:11px;stroke:var(--dim)}
+  .badge{margin-left:auto;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    border:1px solid var(--acc-line);color:var(--acc);border-radius:4px;padding:1px 6px;background:var(--acc-soft)}
+  .badge.gy{color:var(--mut);border-color:var(--line);background:#f4f6f8}
+
+  .fitrow{display:flex;align-items:center;gap:8px;margin-top:8px}
+  .fitbar{flex:1;height:5px;border-radius:3px;background:#e7ebf0;overflow:hidden}
+  .fitbar i{display:block;height:100%;background:var(--acc);border-radius:3px}
+  .fitnum{font-size:11.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+  .chfit{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mut);padding:3px 0;border-top:1px dashed var(--line)}
+  .chfit b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .chfit:first-of-type{border-top:none}
+
+  .kv{font-size:12px;padding:2px 0}
+  .kv .k{color:var(--dim);font-size:10px;letter-spacing:.1em;text-transform:uppercase;display:block}
+  .kv .v{color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .chip{font-size:10.5px;font-weight:600;border-radius:20px;background:var(--acc-soft);
+    color:var(--acc);padding:2px 9px;border:1px solid transparent;transition:all .15s;cursor:default}
+  .chip:hover{border-color:var(--acc-line)}
+  .chip.gy{background:#eef1f4;color:var(--mut)}
+
+  .call{display:flex;gap:8px;font-size:11px;padding:5px 0;border-top:1px dashed var(--line);color:var(--mut)}
+  .call:first-of-type{border-top:none}
+  .call code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;color:var(--ink);
+    background:#f2f5f8;border-radius:3px;padding:0 4px;white-space:nowrap}
+  .call .ms{margin-left:auto;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .aff{display:flex;justify-content:space-between;font-size:11.5px;padding:3px 0;color:var(--mut)}
+  .aff b{color:var(--ink)}
+  .aff .p{font-variant-numeric:tabular-nums;color:var(--acc);font-weight:700}
+
+  .done .card{opacity:.92}
+  .done h3{text-decoration:line-through;text-decoration-color:#b8c3d0}
+
+  /* ===== swimlane ===== */
+  .lane{margin-top:20px;background:var(--col);border-radius:10px;padding:12px 12px 14px}
+  .lane .chead{padding-bottom:12px}
+  .lane .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+  .media{padding:0;overflow:hidden;cursor:grab}
+  .media .ph{position:relative;aspect-ratio:1/1;background:#dfe5ec;overflow:hidden}
+  .media img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+  .media:hover img{transform:scale(1.03)}
+  .media .ph .pv{position:absolute;left:8px;bottom:8px;background:rgba(20,28,38,.78);color:#fff;
+    font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-radius:4px;padding:2px 7px}
+  .media .bd{padding:10px 12px}
+  .media h3{font-size:12.5px;font-weight:650}
+
+  /* palette strip */
+  .palcard .sw{display:flex;gap:6px;margin-top:8px}
+  .palcard .sw i{flex:1;height:30px;border-radius:5px;border:1px solid rgba(28,39,51,.1);position:relative}
+  .palcard .sw i:hover::after{content:attr(data-n);position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+    background:var(--ink);color:#fff;font-size:9px;padding:2px 6px;border-radius:4px;white-space:nowrap;font-style:normal}
+  .palcard .hex{display:flex;gap:6px;margin-top:5px}
+  .palcard .hex span{flex:1;text-align:center;font-size:8.5px;color:var(--dim);letter-spacing:.02em;overflow:hidden}
+
+  @media (max-width:1100px){.cols{grid-template-columns:repeat(2,1fr)}.lane .cards{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:640px){
+    .cols{grid-template-columns:1fr}
+    .lane .cards{grid-template-columns:1fr 1fr}
+    .crumb{display:none}
+    .topbar{padding:0 12px}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo"><span class="sq"></span>Marque</div>
+  <div class="crumb">Boards / <b id="bc-title">—</b> / strategy→campaign→result</div>
+  <div class="topright" id="next">
+    <button class="chipbtn">Website</button>
+    <button class="chipbtn">Brandbook</button>
+    <button class="chipbtn">Video</button>
+  </div>
+</div>
+
+<div class="board">
+  <div class="cols">
+
+    <!-- COL 1: intake -->
+    <div class="coln">
+      <div class="chead"><span class="dot hot"></span><h2>Intake</h2><span class="wip">2</span></div>
+      <div class="card" draggable="true">
+        <div class="lbrow"><span class="lab w1"></span></div>
+        <h3 id="ask-prompt">—</h3>
+        <div class="desc" id="ask-desc">—</div>
+        <div class="meta"><span class="m">source</span><a id="ask-url" href="#" onclick="return false">—</a><span class="badge">ASK</span></div>
+      </div>
+      <div class="card" draggable="true">
+        <div class="lbrow"><span class="lab w2 soft"></span><span class="lab w3 soft"></span></div>
+        <h3>Audience read <span style="font-weight:400;color:var(--dim)" id="aud-lean">—</span></h3>
+        <div class="fitrow"><div class="fitbar"><i id="aud-confbar"></i></div><span class="fitnum" id="aud-conf">—</span></div>
+        <div id="aud-habits" style="margin-top:8px"></div>
+        <div class="chips" id="aud-vibes"></div>
+      </div>
+    </div>
+
+    <!-- COL 2: strategy -->
+    <div class="coln">
+      <div class="chead"><span class="dot hot"></span><h2>Strategy</h2><span class="wip" id="wip-strat">—</span></div>
+      <div id="strat-cards"></div>
+    </div>
+
+    <!-- COL 3: ruled out -->
+    <div class="coln done">
+      <div class="chead"><span class="dot"></span><h2>Ruled out</h2><span class="wip" id="wip-anti">—</span></div>
+      <div id="anti-cards"></div>
+    </div>
+
+    <!-- COL 4: production -->
+    <div class="coln">
+      <div class="chead"><span class="dot hot"></span><h2>Production</h2><span class="wip">3</span></div>
+      <div class="card" draggable="true">
+        <div class="lbrow"><span class="lab w3"></span><span class="lab w1 soft"></span></div>
+        <h3 id="brief-title">—</h3>
+        <div class="kv"><span class="k">Angle</span><span class="v" id="brief-angle">—</span></div>
+        <div class="kv"><span class="k">Key message</span><span class="v" id="brief-msg">—</span></div>
+        <div class="meta" style="margin-top:8px"><span class="badge">BRIEF</span></div>
+      </div>
+      <div class="card" draggable="true">
+        <div class="lbrow"><span class="lab mut w2"></span><span class="lab mut w1"></span></div>
+        <h3>Qloo evidence <span style="font-weight:400;color:var(--dim);font-size:11px" id="q-mode"></span></h3>
+        <div id="calls"></div>
+        <div style="margin-top:8px;border-top:1px solid var(--line);padding-top:6px" id="affs"></div>
+      </div>
+      <div class="card palcard" draggable="true">
+        <div class="lbrow"><span class="lab soft w2"></span></div>
+        <h3>Brand palette</h3>
+        <div class="sw" id="pal"></div>
+        <div class="hex" id="palhex"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SWIMLANE -->
+  <div class="lane">
+    <div class="chead"><span class="dot hot"></span><h2>Creatives — shipped lane</h2><span class="wip" id="wip-cr">—</span></div>
+    <div class="cards" id="cr-cards"></div>
+  </div>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+const B=(window.DATA&&window.DATA.board)||{};
+const esc=s=>String(s==null?"—":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const K=v=>v>=1e3?Math.round(v/1e3)+"K":v;
+const pct=v=>Math.round((v||0)*100)+"%";
+
+const sub=B.sub||{},uc=B.urlContext||{};
+document.getElementById("bc-title").textContent=B.title||"—";
+document.getElementById("ask-prompt").textContent=sub.prompt||B.title||"—";
+document.getElementById("ask-desc").textContent=uc.description||"—";
+document.getElementById("ask-url").textContent=(sub.url||uc.url||"—").replace(/^https?:\/\//,"");
+
+/* audience card */
+const ar=B.audienceRead||{},lean=ar.lean||{};
+document.getElementById("aud-lean").textContent=`· ${lean.label||"—"}`;
+document.getElementById("aud-conf").textContent=pct(lean.confidence);
+document.getElementById("aud-confbar").style.width=pct(lean.confidence);
+document.getElementById("aud-habits").innerHTML=(ar.mediaHabits||[]).map(h=>
+ `<div class="chfit"><span>${esc(h.channel)}</span><b>${esc(h.note.replace("leans ",""))}</b></div>`).join("");
+document.getElementById("aud-vibes").innerHTML=(ar.vibeWords||[]).map(v=>`<span class="chip">${esc(v)}</span>`).join("");
+
+/* strategy cards */
+const st=B.strategies||[];
+document.getElementById("wip-strat").textContent=st.length;
+document.getElementById("strat-cards").innerHTML=st.map((s,i)=>
+ `<div class="card" draggable="true">
+    <div class="lbrow">${(s.channels||[]).map(c=>`<span class="lab w${1+(c.name.length%3)}" title="${esc(c.name)}"></span>`).join("")}<span class="lab soft w2"></span></div>
+    <h3>${esc(s.title)}</h3>
+    <div class="desc">${esc(s.angle)} · ${esc((s.formats||[]).join(", "))}</div>
+    ${(s.channels||[]).map(c=>`<div class="chfit"><span>${esc(c.name)} <span style="color:var(--dim)">via ${esc(c.why||"—")}</span></span><b>${pct(c.fit)}</b></div>`).join("")}
+    <div class="fitrow"><div class="fitbar"><i style="width:${pct(s.audienceFit&&s.audienceFit.score)}"></i></div><span class="fitnum">${pct(s.audienceFit&&s.audienceFit.score)}</span></div>
+    <div class="meta" style="margin-top:8px">
+      <span class="m"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/></svg>${K(s.reach&&s.reach.estViews||0)} views</span>
+      <span class="m">${esc(s.heroSignal||"—")}</span>
+      <span class="badge ${i===0?"":"gy"}">${i===0?"SELECTED":"ST"+(i+1)}</span>
+    </div>
+  </div>`).join("");
+
+/* ruled out */
+const anti=B.antiStrategies||[];
+document.getElementById("wip-anti").textContent=anti.length;
+document.getElementById("anti-cards").innerHTML=anti.map(a=>
+ `<div class="card" draggable="true">
+    <div class="lbrow"><span class="lab mut w2"></span></div>
+    <h3>${esc(a.title)}</h3>
+    <div class="desc">${esc(a.whyNot)}</div>
+    <div class="meta"><span class="m">${esc(a.channel)}</span><span class="badge gy">KILLED</span></div>
+  </div>`).join("");
+
+/* brief */
+const br=st[0]&&st[0].brief||{};
+document.getElementById("brief-title").textContent=`${st[0]?st[0].title+" · ":""}${br.title||""}`;
+document.getElementById("brief-angle").textContent=br.angle||"—";
+document.getElementById("brief-msg").textContent="“"+(br.keyMessage||"—")+"”";
+
+/* creatives swimlane */
+const pool=((window.MEDIA||{}).pool||[]).map(m=>({img:m.img.replace(/^\.\//,"../"),head:m.head,camp:m.camp,provider:m.provider}));
+const picks=[2,6,8,13].map(i=>pool[i]).filter(Boolean);
+document.getElementById("wip-cr").textContent=picks.length;
+document.getElementById("cr-cards").innerHTML=picks.map(m=>
+ `<div class="card media" draggable="true">
+    <div class="ph"><img src="${m.img}" alt="" loading="lazy" onerror="this.closest('.card').style.display='none'"><span class="pv">${esc(m.provider)}</span></div>
+    <div class="bd"><h3>${esc(m.head)}</h3>
+    <div class="meta" style="margin-top:5px"><span class="m">${esc(m.camp)}</span><span class="badge">SHIPPED</span></div></div>
+  </div>`).join("");
+
+/* qloo card */
+const ev=B.evidence||{};
+document.getElementById("q-mode").textContent=`· ${(ev.calls||[]).length} calls · ${ev.qlooMode||""}`;
+document.getElementById("calls").innerHTML=(ev.calls||[]).map(c=>
+ `<div class="call"><code>${esc(c.endpoint)}</code><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(Object.keys(c.params||{})[0]||"")}</span><span class="ms">${c.tookMs}ms · n${c.n}</span></div>`).join("");
+const aff=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+document.getElementById("affs").innerHTML=aff.map(a=>
+ `<div class="aff"><span>${esc((a.type||"").replace("urn:entity:",""))}</span><b>${esc(a.entities[0]?a.entities[0].name:"—")}</b><span class="p">${a.entities[0]?pct(a.entities[0].affinity):""}</span></div>`).join("");
+
+/* palette */
+const pal=[["Peptide Blush","#F3D9D2"],["Glaze Cream","#F7EFE4"],["Barrier Beige","#E4CDBB"],["Toast","#7A5A46"],["Espresso","#2E211B"]];
+document.getElementById("pal").innerHTML=pal.map(p=>`<i style="background:${p[1]}" data-n="${p[0]}"></i>`).join("");
+document.getElementById("palhex").innerHTML=pal.map(p=>`<span>${p[1]}</span>`).join("");
+
+/* drag-lift visual feedback (visual only) */
+document.querySelectorAll(".card").forEach(c=>{
+  c.addEventListener("dragstart",e=>{c.classList.add("dragging");e.dataTransfer.effectAllowed="move";});
+  c.addEventListener("dragend",()=>c.classList.remove("dragging"));
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case No. C62E — Strategy Court of Marque</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23FBF3D0'/%3E%3Cpath d='M10 14h44M10 24h44M10 34h44M10 44h44M10 54h44' stroke='%237FA3C8' stroke-width='1.5'/%3E%3Cpath d='M18 8v50' stroke='%23C0392B' stroke-width='1.5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#26201B;
+  --pad:#FBF3D0;
+  --paper:#FFFDF4;
+  --ink:#1D1A16;
+  --dim:#6B6455;
+  --rule:#8FB3D9;
+  --margin:#C0392B;
+  --manila:#E8CF9C;
+  --red:#A62B1F;
+  --type:'Courier Prime','Courier New',ui-monospace,monospace;
+  --serif:Georgia,'Times New Roman',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--desk);
+  background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.14) 0 2px,transparent 2px 140px),linear-gradient(#2C241E,#1E1813);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:14px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(166,43,31,.3)}
+a{color:var(--red);text-decoration:none;border-bottom:1px dotted var(--red)}
+a:hover{color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+button{font:inherit;cursor:pointer}
+img{display:block;max-width:100%}
+
+.desk{max-width:1080px;margin:0 auto;padding:26px clamp(10px,2.5vw,30px) 60px}
+
+/* ===== case caption ===== */
+.caption{
+  background:var(--paper);border:1px solid #B9AE8E;box-shadow:0 14px 40px rgba(0,0,0,.5),3px 3px 0 #14100C;
+  padding:clamp(20px,4vw,40px);position:relative;
+}
+.caption .court{font-family:var(--type);text-align:center;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim)}
+.caption h1{font-family:var(--type);font-weight:700;text-align:center;font-size:clamp(20px,4vw,34px);margin:14px auto 6px;max-width:760px;line-height:1.3;text-transform:uppercase}
+.caption h1 em{font-style:normal;color:var(--red)}
+.caption .v{text-align:center;font-family:var(--type);font-size:12px;color:var(--dim);letter-spacing:.2em}
+.caption .caseno{position:absolute;top:14px;right:16px;font-family:var(--type);font-size:10.5px;color:var(--dim);text-align:right}
+.caption .caseno b{display:block;font-size:14px;color:var(--ink)}
+.caption::after{content:"";display:block;position:absolute;left:8%;right:8%;bottom:14px;border-bottom:1.5px solid var(--ink)}
+
+/* ===== filed sheets ===== */
+.sheet{
+  margin-top:26px;background:var(--paper);border:1px solid #B9AE8E;
+  box-shadow:0 10px 34px rgba(0,0,0,.45),2px 2px 0 #14100C;
+  padding:clamp(18px,3.4vw,36px);position:relative;
+}
+.sheet.ruled{
+  background:var(--pad);
+  background-image:
+    linear-gradient(90deg,transparent 0,transparent 54px,var(--margin) 54px,var(--margin) 55.5px,transparent 55.5px),
+    repeating-linear-gradient(180deg,transparent 0 27px,var(--rule) 27px 28px);
+  background-position:0 0,0 8px;
+}
+.exh-tag{
+  display:inline-block;background:var(--manila);border:1px solid #B09255;
+  font-family:var(--type);font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+  padding:4px 12px 3px;box-shadow:2px 2px 0 rgba(0,0,0,.18);transform:rotate(-1.5deg);
+}
+.sec-h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:16px;border-bottom:2px solid var(--ink);padding-bottom:10px}
+.sec-h h2{font-family:var(--type);font-weight:700;font-size:clamp(15px,2.4vw,22px);letter-spacing:.14em;text-transform:uppercase}
+.sec-h .dkt{margin-left:auto;font-family:var(--type);font-size:10px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
+.stamp{
+  display:inline-block;border:3px solid var(--red);color:var(--red);font-family:var(--type);font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;padding:5px 16px;transform:rotate(-7deg);
+  font-size:clamp(11px,1.6vw,15px);background:rgba(251,243,208,.85);
+}
+
+/* complaint */
+.complaint .body{font-family:var(--type);font-size:clamp(13px,1.8vw,16px);line-height:1.9}
+.complaint .body .prompt{font-size:clamp(16px,2.4vw,22px);font-weight:700}
+.complaint .body .prompt em{font-style:normal;background:linear-gradient(transparent 62%,rgba(166,43,31,.28) 62%)}
+.complaint .body p{margin-bottom:12px}
+.complaint .wherof{border-top:1.5px solid var(--ink);margin-top:18px;padding-top:14px;font-family:var(--type);font-size:12px;line-height:1.9}
+.complaint .wherof b{letter-spacing:.14em}
+.numb{font-family:var(--type);color:var(--dim);font-size:11px;margin-right:10px}
+
+/* witness statement (audience) */
+.wit{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr) minmax(0,.9fr);gap:0}
+.wit>div{padding:4px 22px 4px 70px;border-right:1px dashed #B9AE8E}
+.wit>div:last-child{border-right:none}
+.wit .lbl{font-family:var(--type);font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:8px}
+.wit .lean{font-family:var(--type);font-size:clamp(20px,3vw,30px);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.wit .conf{font-family:var(--type);font-size:11px;color:var(--dim);margin:4px 0 10px}
+.wit .oath{height:12px;border:1px solid var(--ink);margin-bottom:14px;position:relative;background:repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 6px,transparent 6px 10%)}
+.wit .oath i{position:absolute;inset:2px auto 2px 2px;background:var(--ink)}
+.wit ul{list-style:none}
+.wit li{font-family:var(--type);font-size:12px;padding:5px 0;border-bottom:1px dotted #B9AE8E}
+.wit li::before{content:"— "}
+.wit .hab{display:grid;grid-template-columns:80px 1fr;gap:3px 10px;font-family:var(--type);font-size:12px;padding:6px 0;border-bottom:1px dotted #B9AE8E}
+.wit .hab:last-child{border-bottom:none}
+.wit .hab b{text-transform:uppercase;font-size:10px;letter-spacing:.14em}
+.wit .vibes{display:flex;flex-wrap:wrap;gap:7px}
+.wit .vibes span{font-family:var(--type);font-size:11px;border:1px solid var(--ink);padding:2px 9px;background:rgba(255,255,255,.5)}
+.wit .jurat{margin-top:14px;font-family:var(--type);font-size:10px;letter-spacing:.14em;color:var(--dim);border-top:1px solid #B9AE8E;padding-top:8px}
+
+/* exhibits */
+.exhs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.exh{position:relative;min-width:0;background:var(--paper);border:1.5px solid var(--ink);padding:0;box-shadow:3px 4px 0 rgba(0,0,0,.16)}
+.exh .hd{background:var(--manila);border-bottom:1.5px solid var(--ink);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.exh .hd .tag{font-family:var(--type);font-weight:700;letter-spacing:.2em;font-size:12px}
+.exh .hd .fitv{font-family:var(--type);font-size:11px;color:var(--dim)}
+.exh .bd{padding:16px 18px}
+.exh h3{font-family:var(--type);font-weight:700;font-size:18px;text-transform:uppercase;line-height:1.25}
+.exh .ang{font-family:var(--type);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin:3px 0 12px}
+.exh table{width:100%;border-collapse:collapse;font-family:var(--type);font-size:11.5px;margin-bottom:10px}
+.exh th{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);text-align:left;border-bottom:1px solid var(--ink);padding:3px 0}
+.exh td{padding:5px 0;border-bottom:1px dotted #B9AE8E;vertical-align:top}
+.exh .cb{display:inline-block;width:90px;height:8px;border:1px solid var(--ink);vertical-align:middle;margin-right:6px;padding:1px}
+.exh .cb i{display:block;height:100%;background:var(--ink)}
+.exh .fmt{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.exh .fmt span{font-family:var(--type);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--ink);padding:1px 7px}
+.exh .rch{font-family:var(--type);font-size:11.5px;border-top:1px solid var(--ink);padding-top:9px}
+.exh .rch b{font-size:16px}
+.exh .rch small{display:block;color:var(--dim);font-size:10.5px;margin-top:3px}
+.exh .obj{margin-top:10px;font-family:var(--type);font-size:10.5px;color:var(--red);border-left:3px solid var(--red);padding-left:9px;line-height:1.5}
+.exh .verdict{position:absolute;top:36%;right:-8px;transform:rotate(9deg);z-index:2;
+  border:4px double var(--red);color:var(--red);font-family:var(--type);font-weight:700;letter-spacing:.26em;
+  padding:8px 18px;font-size:15px;text-transform:uppercase;background:rgba(255,253,244,.88)}
+
+/* motions denied */
+.denied .row{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;padding:13px 0;border-bottom:1px dashed #B9AE8E;align-items:start}
+.denied .row:last-child{border-bottom:none}
+.denied .mt{font-family:var(--type)}
+.denied .mt b{display:block;text-transform:uppercase;font-size:13px;text-decoration:line-through;text-decoration-color:var(--red)}
+.denied .mt span{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.denied .why{font-family:var(--type);font-size:11.5px;line-height:1.7}
+.denied .why .rb{display:inline-block;background:var(--ink);color:var(--ink);border-radius:1px;min-width:70px;height:.95em;vertical-align:text-bottom;user-select:none}
+.denied .mark{float:right;font-family:var(--type);font-size:9.5px;color:var(--red);letter-spacing:.2em;border:1.5px solid var(--red);padding:2px 8px;transform:rotate(-4deg)}
+
+/* judgment */
+.judge{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.45fr);gap:0}
+.judge .brief{padding:22px 24px;border-right:1px dashed #B9AE8E;min-width:0}
+.evgrid,.wit>div{min-width:0}
+.judge .brief h3{font-family:var(--type);font-size:clamp(18px,2.6vw,26px);font-weight:700;text-transform:uppercase;line-height:1.2}
+.judge .brief .ba{font-family:var(--type);font-size:12px;color:var(--red);letter-spacing:.12em;text-transform:uppercase;margin:8px 0 14px}
+.judge .brief dl{display:grid;grid-template-columns:86px 1fr;gap:7px 12px;font-family:var(--type);font-size:12px}
+.judge .brief dt{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);padding-top:2px}
+.judge .brief dd.msg{font-weight:700;font-size:14px}
+.judge .seal{margin-top:18px;width:96px;height:96px}
+.evgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.ev{padding:14px;border-right:1px dashed #B9AE8E;border-bottom:1px dashed #B9AE8E}
+.ev:nth-child(2n){border-right:none}
+.ev:nth-last-child(-n+2){border-bottom:none}
+.ev .photo{border:1.5px solid var(--ink);background:#fff;padding:5px;transform:rotate(-.4deg);box-shadow:2px 3px 0 rgba(0,0,0,.14)}
+.ev .photo img{width:100%;aspect-ratio:4/3;object-fit:cover;filter:contrast(1.02)}
+.ev figcaption{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-top:8px;font-family:var(--type);font-size:11px}
+.ev .h{min-width:0;overflow-wrap:anywhere}
+.ev .p{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;border:1px solid var(--ink);padding:1px 6px;white-space:nowrap}
+
+/* physical evidence */
+.bags{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}
+.bag{border:1px solid #B9AE8E;background:rgba(255,255,255,.6);padding:10px;position:relative}
+.bag::before{content:"EVIDENCE";position:absolute;top:-9px;left:8px;background:var(--paper);padding:0 5px;font-family:var(--type);font-size:8px;letter-spacing:.26em;color:var(--dim)}
+.bag .sw{height:64px;border:1px solid var(--ink)}
+.bag .n{font-family:var(--type);font-size:11px;margin-top:8px}
+.bag .h{font-family:var(--type);font-size:9.5px;color:var(--dim);letter-spacing:.1em}
+
+/* affidavit */
+.aff .pre{font-family:var(--type);font-size:12px;line-height:1.9;margin-bottom:16px}
+.aff .pre b{letter-spacing:.12em}
+.affgrid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1.25fr);gap:0;border-top:1.5px solid var(--ink)}
+.affgrid>div{padding:18px 20px;min-width:0}
+.affgrid .l{border-right:1px dashed #B9AE8E}
+.aff table{width:100%;border-collapse:collapse;font-family:var(--type);font-size:11px;table-layout:fixed}
+.aff th{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);text-align:left;border-bottom:1px solid var(--ink);padding:3px 4px}
+.aff th:nth-child(2){width:34px}.aff th:nth-child(3){width:48px}.aff th:nth-child(4){width:58px}
+.aff td{padding:5px 4px;border-bottom:1px dotted #B9AE8E;vertical-align:top;overflow-wrap:anywhere}
+.aff .pm{display:block;color:var(--dim);font-size:9.5px;overflow-wrap:anywhere}
+.aff .md{border:1px solid var(--red);color:var(--red);font-size:8.5px;padding:0 5px;letter-spacing:.12em}
+.affg{margin-bottom:12px}
+.affg .t{font-family:var(--type);font-size:11px;letter-spacing:.2em;text-transform:uppercase;border-bottom:1px solid var(--ink);padding-bottom:3px;margin-bottom:4px}
+.aff .row{display:flex;align-items:center;gap:10px;font-family:var(--type);font-size:11.5px;padding:4px 0;border-bottom:1px dotted #B9AE8E}
+.aff .row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aff .row .cb{width:64px;height:7px;border:1px solid var(--ink);padding:1px}
+.aff .row .cb i{display:block;height:100%;background:var(--ink)}
+.aff .row .v{font-size:10.5px}
+.jurat-line{margin-top:20px;padding-top:12px;border-top:1.5px solid var(--ink);font-family:var(--type);font-size:10.5px;color:var(--dim);line-height:1.8}
+.jurat-line .sig{display:inline-block;border-bottom:1px solid var(--ink);min-width:180px}
+
+/* filed motions */
+.motions{display:flex;flex-wrap:wrap;gap:14px}
+.mchip{font-family:var(--type);font-size:12px;letter-spacing:.14em;text-transform:uppercase;background:var(--paper);border:1.5px solid var(--ink);padding:9px 18px;box-shadow:3px 3px 0 rgba(0,0,0,.18);transition:.15s}
+.mchip:hover{border-color:var(--red);color:var(--red);transform:rotate(-1deg)}
+.mchip:active{transform:translate(1px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.18)}
+
+.foot{margin-top:34px;text-align:center;font-family:var(--type);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:#8A7E6B}
+.empty{background:var(--paper);border:1px dashed #B9AE8E;padding:40px;text-align:center;font-family:var(--type);color:var(--dim)}
+
+@media(max-width:900px){
+  .exhs{grid-template-columns:minmax(0,1fr)}
+  .wit{grid-template-columns:minmax(0,1fr)}
+  .wit>div{border-right:none;border-bottom:1px dashed #B9AE8E;padding:14px 0 14px 70px}
+  .judge{grid-template-columns:minmax(0,1fr)}
+  .judge .brief{border-right:none;border-bottom:1px dashed #B9AE8E}
+  .affgrid{grid-template-columns:minmax(0,1fr)}
+  .affgrid .l{border-right:none;border-bottom:1px dashed #B9AE8E}
+  .bags{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .evgrid{grid-template-columns:minmax(0,1fr)}
+  .ev{border-right:none!important;border-bottom:1px dashed #B9AE8E!important}
+  .ev:last-child{border-bottom:none!important}
+  .bags{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .denied .row{grid-template-columns:1fr}
+  .sheet.ruled{background-image:linear-gradient(90deg,transparent 0,transparent 34px,var(--margin) 34px,var(--margin) 35.5px,transparent 35.5px),repeating-linear-gradient(180deg,transparent 0 27px,var(--rule) 27px 28px)}
+  .wit>div{padding-left:44px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="desk">
+  <header class="caption">
+    <div class="caseno">CASE NO.<b id="caseno">—</b>DOCKETED</div>
+    <div class="court">In the Strategy Court of Marque · Creative Division</div>
+    <h1 id="case-title">—</h1>
+    <div class="v">— BRIEF FOR ADMISSION OF FOUR STRATEGIES INTO EVIDENCE —</div>
+  </header>
+  <main id="app"></main>
+  <footer class="foot">FILED UNDER SEAL · STRATEGY COURT OF MARQUE · ALL EXHIBITS MARKED FOR IDENTIFICATION</footer>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const pct=x=>Math.round((x||0)*100);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Barrier Cream',h:'#EDDFCE'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Espresso Bean',h:'#4E362B'}
+];
+const CREAT=[5,6,12,13].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+
+document.getElementById('caseno').textContent='C-'+((B.id||'00000000').slice(0,4).toUpperCase());
+const _parts=String(B.title||'—').split('→');
+document.getElementById('case-title').innerHTML='IN RE: '+esc(_parts[0]).toUpperCase()+(_parts[1]?' <em>v.</em>&nbsp;'+esc(_parts[1]).toUpperCase().replace(/\s+/g,'&nbsp;'):'');
+
+const M=document.getElementById('app');
+const sheet=(cls,tag,dkt,body)=>{
+  if(!body)return;
+  M.appendChild(el('<section class="sheet '+(cls||'')+'"><div class="sec-h"><span class="exh-tag">'+esc(tag)+'</span><span class="dkt">'+esc(dkt)+'</span></div>'+body+'</section>'));
+};
+
+/* 1 — complaint */
+if(B.sub||B.urlContext){
+  const u=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url)||'';
+  sheet('complaint','EXHIBIT — THE COMPLAINT','FILED '+(B.createdAt?new Date(B.createdAt).toISOString().slice(0,10):'—'),
+    '<div class="body">'+
+    '<p><span class="numb">1.</span>COMES NOW the petitioner and respectfully submits the following instruction, entered into the record verbatim:</p>'+
+    '<p><span class="numb">2.</span><span class="prompt">“'+esc((B.sub&&B.sub.prompt)||B.title||'').replace(/→/g,'<em>→</em>')+'”</p>'+
+    (u?'<p><span class="numb">3.</span>Source of record: <a href="'+esc(u)+'">'+esc(u)+'</a></p>':'')+
+    '</div>'+
+    '<div class="wherof"><b>WHEREOF,</b> the clerk has verified the originating page — <i>'+esc(B.urlContext&&B.urlContext.title||'—')+'</i>. '+
+    esc(B.urlContext&&B.urlContext.description||'')+' Board ref: '+(B.id||'—')+'.</div>');
+}
+
+/* 2 — witness statement */
+if(AR&&AR.lean){
+  sheet('ruled','WITNESS STATEMENT — AUDIENCE','SWORN TESTIMONY · EXHIBIT R-1',
+    '<div class="wit">'+
+    '<div><span class="lbl">Deponent leans</span><div class="lean">'+esc(AR.lean.label||'—')+'</div>'+
+    '<div class="conf">Statement confidence · '+pct(AR.lean.confidence)+'%</div>'+
+    '<div class="oath"><i style="width:'+pct(AR.lean.confidence)+'%"></i></div>'+
+    '<ul>'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></div>'+
+    '<div><span class="lbl">Habits entered into record</span>'+(AR.mediaHabits||[]).map(h=>'<div class="hab"><b>'+esc(h.channel)+'</b><span>'+esc(h.note)+'</span></div>').join('')+'</div>'+
+    '<div><span class="lbl">Words used on the stand</span><div class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div>'+
+    '<div class="jurat">SUBSCRIBED AND SWORN before the clerk this day.</div></div>'+
+    '</div>');
+}
+
+/* 3 — exhibits A–D */
+if(strats.length){
+  sheet(null,'EXHIBITS A THROUGH D','MARKED FOR IDENTIFICATION',
+    '<div class="exhs">'+strats.map((s,i)=>{
+      const L=String.fromCharCode(65+i);
+      return '<article class="exh">'+
+      (i===sel?'<div class="verdict">Admitted</div>':'')+
+      '<div class="hd"><span class="tag">EXHIBIT '+L+'</span><span class="fitv">probative value '+pct(s.audienceFit&&s.audienceFit.score)+'%</span></div>'+
+      '<div class="bd"><h3>'+esc(s.title)+'</h3><div class="ang">'+esc(s.angle)+'</div>'+
+      '<table><thead><tr><th>Channel</th><th>Fit</th><th>Foundation</th></tr></thead><tbody>'+
+      (s.channels||[]).map(c=>'<tr><td>'+esc(c.name).toUpperCase()+'</td><td><span class="cb"><i style="width:'+pct(c.fit)+'%"></i></span>'+pct(c.fit)+'%</td><td>'+esc(c.why||'—')+'</td></tr>').join('')+
+      '</tbody></table>'+
+      '<div class="fmt">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join('')+'</div>'+
+      (s.reach?'<div class="rch">Projected reach <b>'+views(s.reach.estViews)+'</b><small>'+esc(s.reach.basis||'')+'</small></div>':'')+
+      ((s.watchouts&&s.watchouts[0])?'<div class="obj">OBJECTION NOTED — '+esc(s.watchouts[0])+'</div>':'')+
+      '</div></article>'}).join('')+
+    '</div>');
+}
+
+/* 4 — motions denied */
+if(anti.length){
+  sheet('denied','MOTIONS DENIED','HEARSAY · FOUNDATION LACKING',
+    anti.map(a=>{
+      const w=String(a.whyNot||'').split(' ');
+      const cut=Math.min(w.length,9);
+      return '<div class="row"><div class="mt"><b>'+esc(a.title)+'</b><span>ch · '+esc(a.channel).toUpperCase()+'</span></div>'+
+      '<div class="why"><span class="mark">DENIED</span>'+esc(w.slice(0,cut).join(' '))+' <span class="rb">'+esc(w.slice(cut,cut+8).join(' '))+'</span> '+esc(w.slice(cut+8).join(' '))+' <span class="rb"> privileged </span></div></div>'}).join(''));
+}
+
+/* 5 — judgment */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sheet(null,'THE JUDGMENT','BRIEF ENTERED INTO THE RECORD',
+    '<div class="judge"><div class="brief">'+
+    (br?'<span class="exh-tag">FINDINGS FOR EXHIBIT '+(sel!=null?String.fromCharCode(65+sel):'—')+'</span>'+
+    '<h3 style="margin-top:12px">'+esc(br.title)+'</h3><p class="ba">'+esc(br.angle)+'</p>'+
+    '<dl><dt>Audience</dt><dd>'+esc(br.audience)+'</dd>'+
+    '<dt>Key msg</dt><dd class="msg">“'+esc(br.keyMessage)+'”</dd>'+
+    '<dt>Foundation</dt><dd>'+esc(selS.heroSignal||'—')+'</dd></dl>':'<p class="ba">no brief bound</p>')+
+    '<svg class="seal" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="#A62B1F" stroke-width="2"/><circle cx="50" cy="50" r="38" fill="none" stroke="#A62B1F" stroke-width="1"/><text x="50" y="42" text-anchor="middle" font-size="7" letter-spacing="1.6" fill="#A62B1F" font-family="Courier New">STRATEGY COURT</text><text x="50" y="56" text-anchor="middle" font-size="10" font-weight="bold" fill="#A62B1F" font-family="Courier New">SO ORDERED</text><text x="50" y="68" text-anchor="middle" font-size="6.4" letter-spacing="1.2" fill="#A62B1F" font-family="Courier New">MARQUE DIVISION</text></svg>'+
+    '</div>'+
+    '<div class="evgrid">'+CREAT.map((m,i)=>
+      '<figure class="ev"><div class="photo"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+      '<figcaption><span class="h">'+esc(m.head)+'</span><span class="p">'+esc(m.provider)+'</span></figcaption></figure>').join('')+
+    '</div></div>');
+}
+
+/* 6 — physical evidence */
+sheet(null,'PHYSICAL EVIDENCE','PIGMENTS · BAGGED & TAGGED',
+  '<div class="bags">'+PALETTE.map((s,i)=>
+    '<div class="bag"><div class="sw" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="h">ITEM '+(i+1)+' · '+s.h.toUpperCase()+'</div></div>').join('')+
+  '</div>');
+
+/* 7 — affidavit */
+if(B.evidence||affs.length){
+  sheet('aff','AFFIDAVIT OF PROVENANCE','EVERY SIGNAL SWORN TO',
+    '<p class="pre"><b>STATE OF MARQUE, COUNTY OF QLOO —</b> The undersigned data pipeline, being duly sworn, deposes and says: '+
+    'the signals below were retrieved in <b>'+(B.qlooBundle&&B.qlooBundle.mode?B.qlooBundle.mode.toUpperCase():'—')+' mode</b> across <b>'+calls.length+' calls</b>, and are true and correct to the best of its knowledge.</p>'+
+    '<div class="affgrid"><div class="l"><span class="exh-tag">CLERK’S LOG — API CALLS</span>'+
+    '<table style="margin-top:12px"><thead><tr><th>Endpoint</th><th>N</th><th>Ms</th><th>Mode</th></tr></thead><tbody>'+
+    calls.map(c=>'<tr><td>'+esc(c.endpoint)+'<span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,16)).join(' '))+'</span></td>'+
+      '<td>'+esc(c.n)+'</td><td>'+esc(c.tookMs)+'</td><td><span class="md">'+esc(c.mode)+'</span></td></tr>').join('')+
+    '</tbody></table></div>'+
+    '<div><span class="exh-tag">EVIDENCE INVENTORY — AFFINITIES</span>'+
+    '<div style="margin-top:12px">'+affs.map(g=>'<div class="affg"><div class="t">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+      g.entities.slice(0,4).map(e=>'<div class="row"><span class="nm">'+esc(e.name)+'</span><span class="cb"><i style="width:'+pct(e.affinity)+'%"></i></span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')+'</div>').join('')+
+    '</div></div></div>'+
+    '<div class="jurat-line">SUBSCRIBED AND SWORN to before me this '+(B.fetchedAt?new Date(B.fetchedAt).toISOString().slice(0,10):'—')+'. <span class="sig"></span> · Notary Public · Commission No. '+(B.id||'—').slice(0,6).toUpperCase()+'</div>');
+}
+
+/* 8 — motions to file next */
+sheet(null,'MOTIONS TO FILE NEXT','CLERK WILL PROCESS IN ORDER RECEIVED',
+  '<div class="motions">'+['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button class="mchip">'+x+'</button>').join('')+'</div>');
+
+if(!M.children.length)M.appendChild(el('<div class="empty">CASE FILE EMPTY — data.js failed to load. Dismissed without prejudice.</div>'));
+})();
+</script>
+</body>
+</html>

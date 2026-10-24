@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chart C62E — Marque Hydrographic Office</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23EFE3C6'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%231C3A5E' stroke-width='2'/%3E%3Cpath d='M32 10v44M10 32h44' stroke='%231C3A5E' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%23B23B2B'/%3E%3C/svg%3E">
+<style>
+:root{
+  --parch:#EFE3C6;
+  --parch-2:#E7D7B2;
+  --paper:#F6EED9;
+  --ink:#1C3A5E;
+  --ink-soft:#42597B;
+  --ink-faint:#7B8AA0;
+  --red:#B23B2B;
+  --hair:#B9A87F;
+  --serif:Georgia,'Times New Roman',serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#26221A;
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:14px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(178,59,43,.28)}
+a{color:var(--ink);border-bottom:1px dotted var(--ink);text-decoration:none}
+a:hover{color:var(--red);border-color:var(--red)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+
+.sheet{
+  max-width:1180px;margin:24px auto 64px;
+  background:var(--parch);
+  background-image:
+    radial-gradient(ellipse 90% 60% at 20% 0%,rgba(255,255,255,.35),transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 100%,rgba(120,95,50,.14),transparent 70%),
+    repeating-linear-gradient(23deg,transparent 0 34px,rgba(90,70,40,.028) 34px 35px);
+  box-shadow:0 30px 80px rgba(0,0,0,.55);
+  border:1px solid #141210;
+  padding:clamp(14px,2.6vw,34px);
+  position:relative;
+}
+.sheet::before{content:"";position:absolute;inset:8px;border:1.5px solid var(--ink);pointer-events:none}
+.sheet::after{content:"";position:absolute;inset:12px;border:.5px solid var(--ink);opacity:.7;pointer-events:none}
+.inner{position:relative;z-index:1;padding:clamp(6px,1vw,14px)}
+
+/* ===== top marginalia ===== */
+.mast{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:start;margin-bottom:8px}
+.mast .office{font-family:var(--mono);font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--ink-soft)}
+.mast h1{
+  font-size:clamp(22px,4.4vw,40px);font-weight:400;font-variant:small-caps;
+  letter-spacing:.06em;line-height:1.15;margin-top:6px;
+}
+.mast h1 em{font-style:normal;color:var(--red)}
+.mast .chartno{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-align:right;color:var(--ink-soft);text-transform:uppercase}
+.mast .chartno b{display:block;font-size:16px;color:var(--ink);letter-spacing:.1em}
+.cartouche{
+  margin-top:14px;border:1.5px solid var(--ink);background:var(--paper);
+  padding:14px 18px;max-width:720px;position:relative;
+  box-shadow:3px 3px 0 rgba(28,58,94,.18);
+}
+.cartouche::before{content:"TITLE BLOCK";position:absolute;top:-8px;left:14px;background:var(--parch);padding:0 6px;font-family:var(--mono);font-size:8.5px;letter-spacing:.3em;color:var(--ink-soft)}
+.cartouche .ask{font-size:clamp(15px,2.2vw,20px);font-style:italic}
+.cartouche .ask em{font-style:normal;color:var(--red)}
+.cartouche .url{font-family:var(--mono);font-size:11px;margin-top:8px;color:var(--ink-soft);overflow-wrap:anywhere}
+.cartouche .src{font-size:11.5px;color:var(--ink-soft);margin-top:6px;font-style:italic}
+
+/* ===== the chart ===== */
+.chartwrap{margin-top:20px;border:1.5px solid var(--ink);background:
+  radial-gradient(ellipse 120% 90% at 50% 40%,rgba(140,170,180,.16),transparent 75%),var(--parch)}
+.chartwrap svg{display:block;width:100%;height:auto}
+.chartkey{display:flex;flex-wrap:wrap;gap:8px 22px;border-top:1px dashed var(--hair);padding:8px 14px;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+.chartkey i{display:inline-block;width:14px;height:9px;vertical-align:-1px;margin-right:6px}
+
+/* ===== marginal notes ===== */
+.note{
+  margin-top:26px;border:1.5px solid var(--ink);background:var(--paper);
+  box-shadow:3px 3px 0 rgba(28,58,94,.14);position:relative;padding:clamp(16px,3vw,28px);
+}
+.note>.tab{
+  position:absolute;top:-11px;left:18px;background:var(--ink);color:var(--parch);
+  font-family:var(--mono);font-size:9px;letter-spacing:.3em;text-transform:uppercase;padding:4px 12px;
+}
+.note>.ref{position:absolute;top:-9px;right:18px;background:var(--parch);padding:0 6px;font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--ink-soft)}
+.sech{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:1.5px solid var(--ink);padding-bottom:8px;margin-bottom:14px}
+.sech h2{font-variant:small-caps;font-weight:400;font-size:clamp(16px,2.4vw,23px);letter-spacing:.05em}
+.sech .sub{margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft)}
+
+/* audience — sailing directions */
+.sd{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.2fr) minmax(0,.9fr);gap:0}
+.sd>div{padding:4px 22px;border-right:1px dashed var(--hair)}
+.sd>div:first-child{padding-left:0}
+.sd>div:last-child{border-right:none;padding-right:0}
+.sd .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:8px}
+.sd .lean{font-size:clamp(24px,3.4vw,34px);font-variant:small-caps;letter-spacing:.04em;line-height:1.05}
+.sd .conf{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:6px 0 10px}
+.sd .glass{height:120px;width:14px;border:1.5px solid var(--ink);border-radius:7px;position:relative;display:inline-block;vertical-align:top;margin-right:14px}
+.sd .glass i{position:absolute;left:2px;right:2px;bottom:2px;background:var(--red);border-radius:0 0 5px 5px}
+.sd ul{list-style:none;display:inline-block;max-width:calc(100% - 40px);vertical-align:top}
+.sd li{font-style:italic;font-size:12.5px;padding:4px 0;border-bottom:1px dotted var(--hair)}
+.sd li::before{content:"※ ";color:var(--red);font-style:normal}
+.sd .hab{display:grid;grid-template-columns:86px 1fr;gap:3px 12px;font-size:12.5px;padding:6px 0;border-bottom:1px dotted var(--hair)}
+.sd .hab:last-child{border-bottom:none}
+.sd .hab b{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;padding-top:2px}
+.sd .hab span{font-style:italic}
+.sd .vibes{display:flex;flex-wrap:wrap;gap:8px}
+.sd .vibes span{
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  border:1px solid var(--ink);padding:3px 10px 2px;background:rgba(255,255,255,.45);
+}
+.sd .colophon{margin-top:14px;border-top:1px solid var(--hair);padding-top:8px;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--ink-soft)}
+
+/* course ledger */
+table.ledger{width:100%;border-collapse:collapse;font-size:12.5px}
+.ledger th{font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-soft);text-align:left;border-bottom:1.5px solid var(--ink);padding:5px 8px 5px 0}
+.ledger td{padding:9px 8px 9px 0;border-bottom:1px dotted var(--hair);vertical-align:top}
+.ledger .wp{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--red);white-space:nowrap}
+.ledger .st b{font-variant:small-caps;font-size:15px;font-weight:400;letter-spacing:.04em}
+.ledger .st small{display:block;font-style:italic;color:var(--ink-soft);font-size:11px;margin-top:2px}
+.ledger .ch{white-space:nowrap}
+.ledger .cb{display:inline-block;width:64px;height:8px;border:1px solid var(--ink);vertical-align:1px;margin:0 6px 0 0;padding:1px}
+.ledger .cb i{display:block;height:100%;background:var(--ink)}
+.ledger .cv{font-family:var(--mono);font-size:10.5px}
+.ledger .why{font-style:italic;font-size:11px;color:var(--ink-soft);display:block;margin-top:2px}
+.ledger .rch{font-family:var(--mono);font-size:11px;white-space:nowrap}
+.ledger .rch small{display:block;font-style:italic;font-family:var(--serif);white-space:normal;color:var(--ink-soft);font-size:10.5px;margin-top:3px;max-width:170px}
+.ledger .cau{font-size:10.5px;color:var(--red);font-style:italic;max-width:190px}
+.ledger .cau b{font-family:var(--mono);font-style:normal;font-size:8.5px;letter-spacing:.2em}
+.ledger tr.best .st b::after{content:" ⚑";color:var(--red);font-size:13px}
+.ledger .fmt{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--ink-soft);margin-top:4px}
+
+/* dangers */
+.dangers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+.danger{padding:13px 18px 13px 0;border-bottom:1px dashed var(--hair);display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start}
+.danger:nth-child(odd){border-right:1px dashed var(--hair);padding-right:22px}
+.danger:nth-child(even){padding-left:22px}
+.danger:nth-last-child(-n+2){border-bottom:none}
+.danger .sym{font-family:var(--mono);color:var(--red);font-size:19px;text-align:center;border:1.5px solid var(--red);width:30px;height:30px;line-height:27px;border-radius:50%}
+.danger b{font-variant:small-caps;font-size:15px;letter-spacing:.05em;text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:1.5px}
+.danger .chan{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);margin-left:8px}
+.danger p{font-size:11.5px;font-style:italic;color:var(--ink-soft);margin-top:3px}
+
+/* orders + views */
+.orders{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.5fr);gap:0}
+.orders .brief{padding:4px 24px 4px 0;border-right:1px dashed var(--hair)}
+.orders .brief h3{font-variant:small-caps;font-weight:400;font-size:clamp(19px,2.6vw,26px);line-height:1.15;letter-spacing:.04em}
+.orders .brief .ba{font-style:italic;color:var(--red);margin:6px 0 14px;font-size:12.5px}
+.orders .brief dl{display:grid;grid-template-columns:78px 1fr;gap:8px 14px;font-size:12.5px}
+.orders .brief dt{font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-soft);padding-top:3px}
+.orders .brief dd.msg{font-style:italic;font-size:14.5px}
+.orders .seal{margin-top:18px;width:88px;height:88px}
+.viewgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding-left:24px}
+.view{padding:10px;border-right:1px dashed var(--hair);border-bottom:1px dashed var(--hair)}
+.view:nth-child(2n){border-right:none}
+.view:nth-last-child(-n+2){border-bottom:none}
+.view .frame{border:1.5px solid var(--ink);background:var(--parch-2);padding:5px}
+.view img{width:100%;aspect-ratio:4/3;object-fit:cover;filter:sepia(.42) contrast(1.02) saturate(.82)}
+.view figcaption{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-top:8px;font-size:11px}
+.view .h{min-width:0;overflow-wrap:anywhere;font-style:italic}
+.view .p{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--ink);padding:1px 7px;white-space:nowrap}
+
+/* signal flags */
+.flags{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:18px}
+.flag{position:relative;padding-top:12px}
+.flag::before{content:"";position:absolute;top:0;left:0;width:34px;height:7px;background:var(--ink)}
+.flag .sw{height:66px;border:1.5px solid var(--ink)}
+.flag .n{font-variant:small-caps;font-size:13px;margin-top:7px;letter-spacing:.05em}
+.flag .h{font-family:var(--mono);font-size:9.5px;color:var(--ink-soft);letter-spacing:.1em}
+
+/* log of soundings */
+.logintro{font-style:italic;font-size:12.5px;margin-bottom:14px}
+.logintro b{font-variant:small-caps;font-style:normal;letter-spacing:.06em}
+.loggrid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.15fr);gap:0;border-top:1.5px solid var(--ink)}
+.loggrid>div{padding:16px 20px}
+.loggrid .l{border-right:1px dashed var(--hair);padding-left:0}
+table.calls{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10.5px}
+.calls th{font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);text-align:left;border-bottom:1px solid var(--ink);padding:3px 4px}
+.calls td{padding:5px 4px;border-bottom:1px dotted var(--hair);vertical-align:top}
+.calls .pm{display:block;color:var(--ink-soft);font-size:8.5px;overflow-wrap:anywhere}
+.calls .md{border:1px solid var(--red);color:var(--red);font-size:8px;padding:0 5px;letter-spacing:.14em}
+.brg{margin-bottom:14px}
+.brg .t{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;border-bottom:1px solid var(--ink);padding-bottom:3px;margin-bottom:5px}
+.brg .row{display:flex;align-items:center;gap:10px;font-size:11.5px;padding:3px 0;border-bottom:1px dotted var(--hair)}
+.brg .row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:italic}
+.brg .row .cb{width:60px;height:7px;border:1px solid var(--ink);padding:1px}
+.brg .row .cb i{display:block;height:100%;background:var(--ink)}
+.brg .row .v{font-family:var(--mono);font-size:9.5px}
+.logfoot{margin-top:16px;padding-top:10px;border-top:1.5px solid var(--ink);font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--ink-soft)}
+
+/* ports of call */
+.ports{display:flex;flex-wrap:wrap;gap:14px}
+.port{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+  background:var(--paper);border:1.5px solid var(--ink);padding:10px 20px;
+  box-shadow:3px 3px 0 rgba(28,58,94,.16);transition:.15s;position:relative;
+}
+.port::before{content:"⚓";margin-right:8px;color:var(--red)}
+.port:hover{border-color:var(--red);color:var(--red);transform:translateY(-1px)}
+.port:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(28,58,94,.16)}
+
+.foot{margin-top:30px;padding-top:12px;border-top:1px solid var(--hair);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-soft)}
+.empty{border:1.5px dashed var(--ink);padding:44px;text-align:center;font-style:italic;margin-top:24px;background:var(--paper)}
+
+@media(max-width:960px){
+  .sd{grid-template-columns:1fr}
+  .sd>div{border-right:none;border-bottom:1px dashed var(--hair);padding:14px 0}
+  .sd>div:last-child{border-bottom:none}
+  .orders{grid-template-columns:1fr}
+  .orders .brief{border-right:none;border-bottom:1px dashed var(--hair);padding-bottom:18px;margin-bottom:6px}
+  .viewgrid{padding-left:0}
+  .loggrid{grid-template-columns:1fr}
+  .loggrid .l{border-right:none;border-bottom:1px dashed var(--hair);padding-left:0;padding-right:0}
+  .flags{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .dangers{grid-template-columns:1fr}
+  .danger{border-right:none!important;padding-left:0!important;padding-right:0!important}
+  .danger:nth-last-child(-n+2){border-bottom:1px dashed var(--hair)}
+  .danger:last-child{border-bottom:none}
+}
+@media(max-width:640px){
+  .viewgrid{grid-template-columns:1fr}
+  .view{border-right:none!important;border-bottom:1px dashed var(--hair)!important}
+  .view:last-child{border-bottom:none!important}
+  .flags{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ledger .hide-m{display:none}
+  .ledger .rch small{max-width:110px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="sheet">
+<div class="inner">
+  <div class="mast">
+    <div>
+      <div class="office">Marque Hydrographic Office · Survey of Demand</div>
+      <h1 id="m-title">Chart of the Strategy Sea</h1>
+      <div class="cartouche">
+        <div class="ask" id="m-ask">—</div>
+        <div class="url" id="m-url"></div>
+        <div class="src" id="m-src"></div>
+      </div>
+    </div>
+    <div class="chartno">CHART Nº<b id="m-no">—</b><span id="m-date"></span></div>
+  </div>
+  <main id="app"></main>
+  <footer class="foot"><span>MARQUE HYDROGRAPHIC OFFICE · SOUNDINGS IN FRACTIONAL FIT</span><span id="f-note">—</span></footer>
+</div>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const pct=x=>Math.round((x||0)*100);
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Barrier Cream',h:'#EDDFCE'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Espresso Bean',h:'#4E362B'}
+];
+const CREAT=[4,5,0,11].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+
+document.getElementById('m-title').innerHTML='Chart of a Passage<br><em>'+esc(B.title||'—')+'</em>';
+document.getElementById('m-no').textContent=(B.id||'0000').slice(0,4).toUpperCase();
+document.getElementById('m-date').textContent=B.createdAt?('corrected '+new Date(B.createdAt).toISOString().slice(0,10)):'';
+document.getElementById('m-ask').innerHTML='“'+esc((B.sub&&B.sub.prompt)||B.title||'').replace(/→/g,'<em>→</em>')+'”';
+document.getElementById('m-url').innerHTML=((B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url))?
+  'From the log of <a href="'+esc((B.sub&&B.sub.url)||B.urlContext.url)+'">'+esc((B.sub&&B.sub.url)||B.urlContext.url)+'</a>':'';
+document.getElementById('m-src').textContent=(B.urlContext&&(B.urlContext.title||B.urlContext.description))?
+  ('Verified at the customs house: '+(B.urlContext.title||'')+' — '+(B.urlContext.description||'')):'';
+document.getElementById('f-note').textContent=calls.length+' SOUNDINGS TELEGRAPHED · '+(B.qlooBundle&&B.qlooBundle.mode||'—').toUpperCase()+' MODE';
+
+const M=document.getElementById('app');
+const note=(tab,ref,body)=>{
+  if(!body)return;
+  M.appendChild(el('<section class="note"><span class="tab">'+esc(tab)+'</span><span class="ref">'+esc(ref)+'</span>'+body+'</section>'));
+};
+
+/* ---------- 1 · the chart itself ---------- */
+if(strats.length){
+  const W=[[150,200],[400,330],[640,160],[840,370]];
+  const flats=strats.flatMap(s=>s.channels||[]);
+  const sndPos=[[110,360],[210,120],[300,470],[480,240],[520,470],[700,330],[760,90],[900,220],[940,470],[350,140],[600,540],[820,520]];
+  const sndVals=flats.map(c=>f2(c.fit));
+  if(AR&&AR.lean)sndVals.push(f2(AR.lean.confidence));
+  const rose=(cx,cy,r)=>'<g stroke="#1C3A5E" fill="none">'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" stroke-width="1.1"/><circle cx="'+cx+'" cy="'+cy+'" r="'+(r*.62)+'" stroke-width=".5"/>'+
+    [0,45,90,135,180,225,270,315].map(a=>{const rad=a*Math.PI/180,maj=a%90===0;
+      return '<line x1="'+(cx+Math.cos(rad)*r*(maj?.2:.55))+'" y1="'+(cy+Math.sin(rad)*r*(maj?.2:.55))+'" x2="'+(cx+Math.cos(rad)*r)+'" y2="'+(cy+Math.sin(rad)*r)+'" stroke-width="'+(maj?1.2:.5)+'"/>'}).join('')+
+    '<line x1="'+cx+'" y1="'+(cy-r-6)+'" x2="'+cx+'" y2="'+(cy-r)+'" stroke="#B23B2B" stroke-width="2.4"/>'+
+    '<circle cx="'+cx+'" cy="'+cy+'" r="2.6" fill="#B23B2B" stroke="none"/></g>';
+  const island=(x,y,i,s)=>{
+    const best=i===sel;
+    return '<g>'+
+    '<ellipse cx="'+x+'" cy="'+y+'" rx="30" ry="21" fill="#E7D7B2" stroke="#1C3A5E" stroke-width="1.3"/>'+
+    '<ellipse cx="'+x+'" cy="'+y+'" rx="23" ry="15" fill="none" stroke="#1C3A5E" stroke-width=".55" stroke-dasharray="3 2.5"/>'+
+    [0,60,120,180,240,300].map(a=>{const rad=a*Math.PI/180;
+      return '<line x1="'+(x+Math.cos(rad)*30)+'" y1="'+(y+Math.sin(rad)*21)+'" x2="'+(x+Math.cos(rad)*38)+'" y2="'+(y+Math.sin(rad)*27)+'" stroke="#1C3A5E" stroke-width=".7"/>'}).join('')+
+    (best?'<g stroke="#B23B2B" stroke-width="1.6"><line x1="'+x+'" y1="'+(y-24)+'" x2="'+x+'" y2="'+(y-52)+'"/><line x1="'+(x-9)+'" y1="'+(y-46)+'" x2="'+(x+9)+'" y2="'+(y-46)+'"/><line x1="'+(x-5)+'" y1="'+(y-58)+'" x2="'+x+'" y2="'+(y-52)+'"/><line x1="'+(x+5)+'" y1="'+(y-58)+'" x2="'+x+'" y2="'+(y-52)+'"/><circle cx="'+x+'" cy="'+(y-56)+'" r="2.2" fill="#B23B2B" stroke="none"/></g>':'')+
+    '<circle cx="'+x+'" cy="'+y+'" r="3" fill="#1C3A5E"/>'+
+    '<text x="'+x+'" y="'+(y+44)+'" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="10" letter-spacing="2" fill="#1C3A5E">WP.'+(i+1)+'</text>'+
+    '<text x="'+x+'" y="'+(y+58)+'" text-anchor="middle" font-family="Georgia" font-style="italic" font-size="12.5" fill="#1C3A5E">'+esc(s.title)+'</text>'+
+    '<text x="'+x+'" y="'+(y+72)+'" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="9.5" fill="#B23B2B">fit '+f2(s.audienceFit&&s.audienceFit.score)+'</text></g>';
+  };
+  const segs=W.slice(1).map((p,i)=>{
+    const q=W[i];const mx=(q[0]+p[0])/2,my=(q[1]+p[1])/2;
+    const ang=Math.round(Math.atan2(p[1]-q[1],p[0]-q[0])*180/Math.PI);
+    return '<line x1="'+q[0]+'" y1="'+q[1]+'" x2="'+p[0]+'" y2="'+p[1]+'" stroke="#1C3A5E" stroke-width="1.4"/>'+
+      '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4" fill="#1C3A5E"/>'+
+      '<text x="'+mx+'" y="'+(my-8)+'" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8.5" letter-spacing="1" fill="#42597B" transform="rotate('+(Math.abs(ang)>90?ang+180:ang)+' '+mx+' '+my+')">course '+(ang<0?360+ang:ang)+'°</text>';
+  }).join('');
+  const rays=[0,30,60,120,150].map(a=>{const rad=a*Math.PI/180;
+    return '<line x1="140" y1="500" x2="'+(140+Math.cos(rad)*860)+'" y2="'+(500-Math.sin(rad)*430)+'" stroke="#1C3A5E" stroke-width=".45" stroke-dasharray="7 6" opacity=".55"/>'}).join('');
+  const snd=sndPos.map((p,i)=>{
+    const v=sndVals[i%sndVals.length];
+    return v?'<text x="'+p[0]+'" y="'+p[1]+'" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="9.5" fill="#42597B" font-style="italic">'+v+'</text>':'';
+  }).join('');
+  M.appendChild(el('<div class="chartwrap"><svg viewBox="0 0 1000 620" role="img" aria-label="Chart plotting four strategy waypoints">'+
+    snd+
+    rays+
+    rose(140,500,58)+rose(880,120,44)+
+    '<line x1="'+W[0][0]+'" y1="'+W[0][1]+'" x2="'+W[1][0]+'" y2="'+W[1][1]+'" stroke="#1C3A5E" stroke-width="1.4" stroke-dasharray="9 5"/>'+
+    '<circle cx="'+W[0][0]+'" cy="'+W[0][1]+'" r="4" fill="#B23B2B"/>'+
+    segs+
+    strats.map((s,i)=>island(W[i][0],W[i][1],i,s)).join('')+
+    '<text x="512" y="600" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="9" letter-spacing="4" fill="#7B8AA0">— LATITUDE OF DEMAND · LONGITUDE OF TASTE —</text>'+
+    '</svg>'+
+    '<div class="chartkey"><span><i style="background:#1C3A5E"></i>rhumb course between waypoints</span><span><i style="background:#B23B2B"></i>lighthouse — strongest signal</span><span><i style="background:#42597B"></i>soundings = fractional fit</span><span><i style="border:1px dashed #1C3A5E"></i>departure bearing</span></div>'+
+    '</div>'));
+}
+
+/* ---------- 2 · sailing directions (audience) ---------- */
+if(AR&&AR.lean){
+  note('Note the First','OF THE INHABITANTS — SAILING DIRECTIONS',
+    '<div class="sech"><h2>Sailing Directions · The Audience Ashore</h2><span class="sub">observed from the masthead</span></div>'+
+    '<div class="sd">'+
+    '<div><span class="lbl">Prevailing disposition</span><div class="lean">'+esc(AR.lean.label||'—')+'</div>'+
+    '<div class="conf">glass stands at '+pct(AR.lean.confidence)+'%</div>'+
+    '<span class="glass"><i style="height:'+pct(AR.lean.confidence)+'%"></i></span>'+
+    '<ul>'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></div>'+
+    '<div><span class="lbl">Harbours they frequent</span>'+(AR.mediaHabits||[]).map(h=>'<div class="hab"><b>'+esc(h.channel)+'</b><span>'+esc(h.note)+'</span></div>').join('')+'</div>'+
+    '<div><span class="lbl">Flags they answer to</span><div class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div>'+
+    '<div class="colophon">ENTERED IN THE REMARK BOOK · BOARD '+(B.id||'—').slice(0,8).toUpperCase()+'</div></div>'+
+    '</div>');
+}
+
+/* ---------- 3 · course ledger (strategies) ---------- */
+if(strats.length){
+  note('Note the Second','COURSES & SOUNDINGS — LEDGER',
+    '<div class="sech"><h2>Ledger of Proposed Courses</h2><span class="sub">four passges surveyed · one lit</span></div>'+
+    '<table class="ledger"><thead><tr><th>WP</th><th>Course named</th><th>Harbours & soundings</th><th class="hide-m">Est. range</th><th class="hide-m">Caution</th></tr></thead><tbody>'+
+    strats.map((s,i)=>'<tr'+(i===sel?' class="best"':'')+'>'+
+      '<td class="wp">'+['α','β','γ','δ'][i]+'</td>'+
+      '<td class="st"><b>'+esc(s.title)+'</b><small>'+esc(s.angle)+'</small>'+
+      '<span class="fmt">'+(s.formats||[]).map(esc).join(' · ')+'</span></td>'+
+      '<td>'+(s.channels||[]).map(c=>'<div class="ch"><span class="cb"><i style="width:'+pct(c.fit)+'%"></i></span><span class="cv">'+esc(c.name)+' '+f2(c.fit)+'</span><span class="why">per '+esc(c.why||'—')+'</span></div>').join('')+'</td>'+
+      '<td class="rch hide-m">'+views(s.reach&&s.reach.estViews)+' souls<small>'+esc(s.reach&&s.reach.basis||'')+'</small></td>'+
+      '<td class="cau hide-m"><b>CAUTION —</b> '+esc((s.watchouts||[])[0]||'none noted')+'</td>'+
+    '</tr>').join('')+'</tbody></table>');
+}
+
+/* ---------- 4 · dangers ---------- */
+if(anti.length){
+  note('Note the Third','DANGERS & FOUL GROUND',
+    '<div class="sech"><h2>Dangers to Navigation</h2><span class="sub">struck from the survey</span></div>'+
+    '<div class="dangers">'+anti.map(a=>'<div class="danger"><span class="sym">✕</span><div><b>'+esc(a.title)+'</b><span class="chan">'+esc(a.channel)+'</span><p>'+esc(a.whyNot)+'</p></div></div>').join('')+'</div>');
+}
+
+/* ---------- 5 · sailing orders + views ---------- */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  note('Note the Fourth','SAILING ORDERS & VIEWS OF THE COAST',
+    '<div class="sech"><h2>Orders for the Chosen Passage</h2><span class="sub">'+(sel!=null?'waypoint '+['α','β','γ','δ'][sel]+' confirmed':'—')+'</span></div>'+
+    '<div class="orders"><div class="brief">'+
+    (br?'<h3>'+esc(br.title)+'</h3><p class="ba">'+esc(br.angle)+'</p>'+
+    '<dl><dt>Ship\'s company</dt><dd>'+esc(br.audience)+'</dd>'+
+    '<dt>Standing order</dt><dd class="msg">“'+esc(br.keyMessage)+'”</dd>'+
+    '<dt>Fixed by</dt><dd>'+esc(selS.heroSignal||'—')+'</dd></dl>':'<p class="ba">no orders bound</p>')+
+    '<svg class="seal" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="#B23B2B" stroke-width="2"/><circle cx="50" cy="50" r="37" fill="none" stroke="#B23B2B" stroke-width="1"/><g stroke="#B23B2B" stroke-width="2"><line x1="38" y1="62" x2="62" y2="62"/><line x1="50" y1="34" x2="50" y2="62"/><line x1="43" y1="46" x2="57" y2="46"/><line x1="45" y1="62" x2="50" y2="70"/><line x1="55" y1="62" x2="50" y2="70"/></g><circle cx="50" cy="50" r="44" fill="none" stroke="#B23B2B" stroke-width=".6" stroke-dasharray="2 3"/></svg>'+
+    '</div>'+
+    '<div class="viewgrid">'+CREAT.map((m,i)=>
+      '<figure class="view"><div class="frame"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+      '<figcaption><span class="h">PL.'+(i+1)+' — '+esc(m.head)+'</span><span class="p">'+esc(m.provider)+'</span></figcaption></figure>').join('')+
+    '</div></div>');
+}
+
+/* ---------- 6 · signal flags (palette) ---------- */
+note('Note the Fifth','SIGNAL FLAGS — PIGMENTS SHIPPED',
+  '<div class="sech"><h2>Colours Carried Aboard</h2><span class="sub">to be flown in all creative</span></div>'+
+  '<div class="flags">'+PALETTE.map((s,i)=>
+    '<div class="flag"><div class="sw" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="h">FLAG '+(i+1)+' · '+s.h.toUpperCase()+'</div></div>').join('')+
+  '</div>');
+
+/* ---------- 7 · log of soundings (provenance) ---------- */
+if(B.evidence||affs.length){
+  note('Note the Sixth','LOG OF SOUNDINGS — TELEGRAPHED ASHORE',
+    '<p class="logintro"><b>PROVENANCE.</b> The soundings herein were taken by the Qloo telegraph in '+
+    '<b>'+(B.qlooBundle&&B.qlooBundle.mode?B.qlooBundle.mode.toUpperCase():'—')+' mode</b> across <b>'+calls.length+' calls</b>; the office vouches for their accuracy.</p>'+
+    '<div class="loggrid"><div class="l"><div class="sech" style="border-bottom:1px solid var(--ink)"><h2 style="font-size:15px">Telegraph Register</h2><span class="sub">api calls</span></div>'+
+    '<table class="calls"><thead><tr><th>Endpoint</th><th>N</th><th>Ms</th><th>Mode</th></tr></thead><tbody>'+
+    calls.map(c=>'<tr><td>'+esc(c.endpoint)+'<span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,18)).join('  '))+'</span></td>'+
+      '<td>'+esc(c.n)+'</td><td>'+esc(c.tookMs)+'</td><td><span class="md">'+esc(c.mode)+'</span></td></tr>').join('')+
+    '</tbody></table></div>'+
+    '<div><div class="sech" style="border-bottom:1px solid var(--ink)"><h2 style="font-size:15px">Bearings to Known Landmarks</h2><span class="sub">qloo affinities</span></div>'+
+    '<div style="margin-top:10px">'+affs.map(g=>'<div class="brg"><div class="t">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+      g.entities.slice(0,4).map(e=>'<div class="row"><span class="nm">'+esc(e.name)+'</span><span class="cb"><i style="width:'+pct(e.affinity)+'%"></i></span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')+'</div>').join('')+
+    '</div></div></div>'+
+    '<div class="logfoot">EXAMINED & FOUND TRUE · MARQUE HYDROGRAPHIC OFFICE · '+(B.fetchedAt?new Date(B.fetchedAt).toISOString().slice(0,10):'—')+'</div>');
+}
+
+/* ---------- 8 · ports of call ---------- */
+note('Note the Last','PORTS OF CALL — WHERE NEXT',
+  '<div class="sech"><h2>Further Voyages</h2><span class="sub">request a new survey</span></div>'+
+  '<div class="ports">'+['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button class="port">'+x+'</button>').join('')+'</div>');
+
+if(!M.children.length)M.appendChild(el('<div class="empty">The chart came back blank — data.js failed to load. The survey is postponed.</div>'));
+})();
+</script>
+</body>
+</html>

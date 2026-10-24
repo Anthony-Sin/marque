@@ -513,7 +513,8 @@ app.get('/api/campaigns', h(async (_req, res) => {
 app.post('/api/campaigns/:id/demo-video', h(async (req, res) => {
   const c = find('campaigns', req.params.id);
   if (!c) return res.status(404).json({ error: 'campaign not found' });
-  const site = list('websites')?.at(-1);
+  const site = list('websites').filter((w) => w.producedFrom?.campaignId === c.id).at(-1)
+    || list('websites')?.at(-1); // fall back to newest when nothing was produced from this campaign
   const version = site ? siteVersion(site) : null;
   if (!version?.html) return res.status(400).json({ error: 'no website version to film — generate a site first' });
   if (!siteVideoAvailable()) return res.status(503).json({ error: 'local capture unavailable' });

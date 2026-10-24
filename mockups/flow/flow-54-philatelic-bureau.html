@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque Philatelic Bureau — New Issues, Sheet 54</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23F4F1EA'/%3E%3Crect x='12' y='12' width='40' height='40' fill='none' stroke='%232E4A7A' stroke-width='3' stroke-dasharray='5 4'/%3E%3Ccircle cx='44' cy='22' r='10' fill='none' stroke='%23A83226' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&display=swap" rel="stylesheet">
+<style>
+:root{
+  --album:#F4F1EA;
+  --album2:#ECE8DC;
+  --ink:#2B2620;
+  --dim:#7E7462;
+  --post:#2E4A7A;
+  --cancel:#A83226;
+  --hair:#CFC6B0;
+  --mar:'Marcellus',Georgia,serif;
+  --body:Georgia,'Times New Roman',serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#3A372E;
+  background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 2px,transparent 2px 130px);
+  color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(46,74,122,.2)}
+a{color:var(--post);text-decoration:none;border-bottom:1px dotted var(--post)}
+a:hover{color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--post);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+
+.page{
+  max-width:1020px;margin:28px auto 66px;background:var(--album);
+  padding:clamp(16px,3.5vw,40px);
+  border:1px solid #B8AF98;
+  box-shadow:0 22px 60px rgba(0,0,0,.5),inset 0 0 0 8px var(--album2),inset 0 0 0 9px var(--hair);
+  position:relative;
+}
+.page::before{content:"";position:absolute;top:8px;bottom:8px;left:50%;width:1px;background:repeating-linear-gradient(0deg,var(--hair) 0 6px,transparent 6px 12px)}
+@media(max-width:900px){.page::before{display:none}}
+
+/* bureau head */
+.bhd{text-align:center;border-bottom:3px double var(--post);padding-bottom:18px;position:relative}
+.bhd .bur{font-size:10px;letter-spacing:.5em;text-transform:uppercase;color:var(--dim);font-family:var(--mar)}
+.bhd h1{font-family:var(--mar);font-size:clamp(26px,5vw,44px);letter-spacing:.08em;margin:10px 0 4px}
+.bhd h1 em{font-style:normal;color:var(--post)}
+.bhd .sheet{font-style:italic;font-size:12.5px;color:var(--dim)}
+.bhd .ask{margin:16px auto 0;max-width:620px;font-size:clamp(15px,2.2vw,18px)}
+.bhd .ask .c{font-style:italic}
+.bhd .ask .c b{color:var(--post)}
+.bhd .url{font-family:var(--mono);font-size:10.5px;margin-top:8px;color:var(--dim);overflow-wrap:anywhere}
+.bhd .src{font-size:11.5px;font-style:italic;color:var(--dim);margin-top:5px}
+.bhd .pm-top{position:absolute;top:6px;right:10px;width:clamp(64px,9vw,88px);opacity:.9}
+
+/* sections */
+.albsec{margin-top:30px}
+.alb-h{display:flex;align-items:baseline;gap:14px;border-bottom:1.5px solid var(--post);padding-bottom:7px;margin-bottom:16px;flex-wrap:wrap}
+.alb-h .pn{font-family:var(--mar);font-size:15px;color:var(--cancel);letter-spacing:.1em}
+.alb-h h2{font-family:var(--mar);font-size:clamp(17px,2.8vw,24px);letter-spacing:.1em;font-weight:400}
+.alb-h .note{margin-left:auto;font-style:italic;font-size:11.5px;color:var(--dim)}
+
+/* envelope = audience */
+.envwrap{display:flex;justify-content:center}
+.env{
+  width:min(680px,100%);background:linear-gradient(165deg,#F8F3E4,#EFE7D2);border:1.5px solid var(--ink);
+  padding:22px 26px 18px;position:relative;transform:rotate(-.5deg);
+  box-shadow:0 10px 28px rgba(40,35,20,.25);
+}
+.env::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+   linear-gradient(to bottom right,transparent 49.6%,rgba(43,38,32,.35) 50%,transparent 50.4%) top left/50% 58% no-repeat,
+   linear-gradient(to bottom left,transparent 49.6%,rgba(43,38,32,.35) 50%,transparent 50.4%) top right/50% 58% no-repeat;}
+.env .postmark{position:absolute;top:-14px;right:16px;width:clamp(84px,14vw,110px);transform:rotate(8deg);opacity:.95}
+.env .stamp-mini{position:absolute;top:8px;right:8px;width:54px;height:64px;background:var(--paper,#fff);z-index:2;
+  --r:4px;
+  -webkit-mask:radial-gradient(var(--r),transparent 98%,#fff) 0 0/calc(var(--r)*2) calc(var(--r)*2),linear-gradient(#fff 0 0) no-repeat 50%/calc(100% - var(--r)*2) calc(100% - var(--r)*2);
+          mask:radial-gradient(var(--r),transparent 98%,#fff) 0 0/calc(var(--r)*2) calc(var(--r)*2),linear-gradient(#fff 0 0) no-repeat 50%/calc(100% - var(--r)*2) calc(100% - var(--r)*2);
+  background:#2E4A7A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#F4F1EA}
+.env .stamp-mini b{font-family:var(--mar);font-size:17px}
+.env .stamp-mini span{font-family:var(--mono);font-size:6.5px;letter-spacing:.14em}
+.env .addr{max-width:70%;font-size:14px}
+.env .addr .to{font-family:var(--mar);font-size:clamp(18px,3vw,24px);letter-spacing:.05em;text-transform:capitalize}
+.env .addr .conf{font-family:var(--mono);font-size:9.5px;color:var(--post);letter-spacing:.14em}
+.env .addr ul{list-style:none;margin-top:8px}
+.env .addr li{font-style:italic;font-size:12.5px;padding:3px 0;border-bottom:1px dotted var(--hair)}
+.env .addr li::before{content:"— "}
+.env .via{margin-top:12px;display:grid;grid-template-columns:76px 1fr;gap:2px 12px;font-size:12px;max-width:78%}
+.env .via b{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--post);padding-top:3px}
+.env .via span{font-style:italic;border-bottom:1px dotted var(--hair);padding-bottom:4px}
+.env .coll{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;max-width:78%}
+.env .coll span{font-size:10.5px;font-style:italic;border:1px dashed var(--post);color:var(--post);padding:2px 9px}
+.env .dk{margin-top:12px;font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;color:var(--dim)}
+
+/* the issue — stamps */
+.issues{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+@media(max-width:920px){.issues{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:430px){.issues{grid-template-columns:1fr}}
+.mount{position:relative;padding:10px 10px 8px}
+.mount::before,.mount::after{content:"";position:absolute;width:26px;height:26px;border:1.5px solid var(--post);opacity:.7}
+.mount::before{top:0;left:0;border-right:none;border-bottom:none}
+.mount::after{bottom:0;right:0;border-left:none;border-top:none}
+.mount .mcap{margin-top:8px;text-align:center;font-size:10.5px;font-style:italic;color:var(--dim);line-height:1.4}
+.mount .mcap b{font-style:normal;font-family:var(--mar);letter-spacing:.06em}
+.stamp{
+  --r:4.5px;
+  -webkit-mask:radial-gradient(var(--r),transparent 98%,#fff) 0 0/calc(var(--r)*2) calc(var(--r)*2),linear-gradient(#fff 0 0) no-repeat 50%/calc(100% - var(--r)*2) calc(100% - var(--r)*2);
+          mask:radial-gradient(var(--r),transparent 98%,#fff) 0 0/calc(var(--r)*2) calc(var(--r)*2),linear-gradient(#fff 0 0) no-repeat 50%/calc(100% - var(--r)*2) calc(100% - var(--r)*2);
+  background:linear-gradient(160deg,#FBF8EF,#EFE9D6);
+  padding:12px 12px 10px;position:relative;
+  filter:drop-shadow(0 4px 8px rgba(40,35,20,.3));
+  transition:transform .18s ease;
+}
+.stamp:hover{transform:scale(1.03) rotate(.6deg)}
+.stamp .frame{border:1.4px solid var(--post);padding:9px 10px 8px;text-align:center;position:relative;min-height:168px;display:flex;flex-direction:column}
+.stamp .cty{font-family:var(--mar);font-size:8.5px;letter-spacing:.34em;color:var(--post);text-transform:uppercase}
+.stamp .val{position:absolute;top:5px;right:7px;font-family:var(--mar);font-size:15px;color:var(--cancel)}
+.stamp h3{font-family:var(--mar);font-size:clamp(14px,2vw,16.5px);letter-spacing:.04em;line-height:1.15;margin:8px 0 2px;min-height:2.3em;display:flex;align-items:center;justify-content:center}
+.stamp .motif{height:34px;margin:4px auto;display:flex;align-items:center}
+.stamp .motif svg{height:34px;width:auto}
+.stamp .ang{font-style:italic;font-size:9.5px;color:var(--post)}
+.stamp .chn{font-family:var(--mono);font-size:7.5px;letter-spacing:.06em;color:var(--dim);margin-top:auto;padding-top:6px;border-top:1px dotted var(--hair)}
+.stamp .hero{font-family:var(--mar);font-size:8px;letter-spacing:.2em;color:var(--cancel);margin-top:4px}
+.fdo{position:absolute;top:-16px;right:-10px;width:88px;transform:rotate(10deg);opacity:.95;pointer-events:none;z-index:3}
+.mount .fitline{display:flex;justify-content:space-between;align-items:baseline;margin-top:7px;font-size:10px}
+.mount .fitline .f{font-family:var(--mono);color:var(--post)}
+.mount .fitline .run{font-family:var(--mar);font-size:12px}
+.mount .basis{font-size:9.5px;font-style:italic;color:var(--dim);text-align:center;margin-top:3px;line-height:1.4}
+.mount .wch{font-size:9.5px;font-style:italic;color:var(--cancel);margin-top:4px;text-align:center}
+.mount .fmt{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:5px}
+.mount .fmt span{font-family:var(--mono);font-size:7.5px;letter-spacing:.06em;border:1px solid var(--hair);padding:1px 6px;background:rgba(255,255,255,.5)}
+
+/* declined essays */
+.essays{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media(max-width:920px){.essays{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:430px){.essays{grid-template-columns:1fr}}
+.essay{position:relative}
+.essay .stamp{filter:grayscale(.7) contrast(.85) drop-shadow(0 4px 8px rgba(40,35,20,.25));opacity:.85}
+.essay .stamp .frame{border-color:var(--dim);min-height:104px}
+.essay .stamp h3{font-size:13px;min-height:0}
+.essay .stamp .cty,.essay .stamp .ang{color:var(--dim)}
+.essay .x{position:absolute;top:6px;left:8px;right:8px;height:120px;pointer-events:none}
+.essay .x::before,.essay .x::after{content:"";position:absolute;left:6%;right:6%;top:50%;border-top:2.5px solid var(--cancel);opacity:.75}
+.essay .x::before{transform:rotate(-9deg)}
+.essay .x::after{transform:rotate(9deg)}
+.essay .why{font-size:10.5px;font-style:italic;color:var(--dim);text-align:center;margin-top:8px;line-height:1.45}
+.essay .ch{font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--cancel);text-align:center;margin-top:3px}
+
+/* first day cover + maximum cards */
+.fdc{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(16px,3vw,28px)}
+@media(max-width:760px){.fdc{grid-template-columns:1fr}}
+.cover2{
+  background:linear-gradient(165deg,#F8F3E4,#EFE7D2);border:1.5px solid var(--ink);padding:20px 22px;position:relative;height:max-content;
+  box-shadow:0 10px 26px rgba(40,35,20,.22);
+}
+.cover2::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+   linear-gradient(to bottom right,transparent 49.6%,rgba(43,38,32,.3) 50%,transparent 50.4%) top left/50% 52% no-repeat,
+   linear-gradient(to bottom left,transparent 49.6%,rgba(43,38,32,.3) 50%,transparent 50.4%) top right/50% 52% no-repeat;}
+.cover2 .cachet{border:1.5px solid var(--post);padding:12px 14px;max-width:70%}
+.cover2 .cachet .k2{font-size:8px;letter-spacing:.4em;text-transform:uppercase;color:var(--cancel)}
+.cover2 .cachet h3{font-family:var(--mar);font-size:clamp(17px,2.6vw,22px);letter-spacing:.05em;margin:4px 0 6px}
+.cover2 .cachet .lede{font-style:italic;font-size:11.5px;color:var(--dim);border-bottom:1px dotted var(--hair);padding-bottom:8px;margin-bottom:8px}
+.cover2 .cachet dl{display:grid;grid-template-columns:76px 1fr;gap:4px 10px;font-size:11.5px}
+.cover2 .cachet dt{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--post);padding-top:3px}
+.cover2 .cachet dd{border-bottom:1px dotted var(--hair);padding-bottom:4px}
+.cover2 .cachet .msg{font-weight:700}
+.cover2 .fdc-stamp{position:absolute;top:10px;right:10px;width:74px;height:88px}
+.cover2 .fdc-pm{position:absolute;top:-8px;right:34px;width:96px;transform:rotate(-9deg);z-index:4}
+.cover2 .foot2{margin-top:12px;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--dim)}
+.maxis{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:440px){.maxis{grid-template-columns:1fr}}
+.maxi{
+  background:#FBF8EF;border:1px solid var(--ink);padding:9px 9px 8px;position:relative;
+  box-shadow:0 8px 20px rgba(40,35,20,.2);transition:transform .16s ease,box-shadow .16s ease;
+}
+.maxi:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(40,35,20,.3)}
+.maxi .iw{border:1px solid var(--hair);overflow:hidden}
+.maxi img{width:100%;aspect-ratio:4/3;object-fit:cover}
+.maxi .corner{
+  position:absolute;top:14px;right:14px;width:34px;height:40px;background:var(--post);color:#F4F1EA;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  --r:3px;
+  -webkit-mask:radial-gradient(var(--r),transparent 98%,#fff) 0 0/calc(var(--r)*2) calc(var(--r)*2),linear-gradient(#fff 0 0) no-repeat 50%/calc(100% - var(--r)*2) calc(100% - var(--r)*2);
+          mask:radial-gradient(var(--r),transparent 98%,#fff) 0 0/calc(var(--r)*2) calc(var(--r)*2),linear-gradient(#fff 0 0) no-repeat 50%/calc(100% - var(--r)*2) calc(100% - var(--r)*2);
+}
+.maxi .corner b{font-family:var(--mar);font-size:11px}
+.maxi .corner span{font-family:var(--mono);font-size:5.5px;letter-spacing:.1em}
+.maxi figcaption{padding:8px 2px 1px}
+.maxi .h{font-size:11.5px;font-weight:700;display:block;line-height:1.3}
+.maxi .p{font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--post);display:block;margin-top:2px}
+
+/* ink register */
+.inkr{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+@media(max-width:640px){.inkr{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:400px){.inkr{grid-template-columns:repeat(2,1fr)}}
+.inkp{text-align:center}
+.inkp .sw{height:50px;position:relative;margin-bottom:6px;
+  --r:4px;
+  -webkit-mask:radial-gradient(var(--r),transparent 98%,#fff) 0 0/calc(var(--r)*2) calc(var(--r)*2),linear-gradient(#fff 0 0) no-repeat 50%/calc(100% - var(--r)*2) calc(100% - var(--r)*2);
+          mask:radial-gradient(var(--r),transparent 98%,#fff) 0 0/calc(var(--r)*2) calc(var(--r)*2),linear-gradient(#fff 0 0) no-repeat 50%/calc(100% - var(--r)*2) calc(100% - var(--r)*2);
+  filter:drop-shadow(0 3px 5px rgba(40,35,20,.25))}
+.inkp .n{font-family:var(--mar);font-size:11.5px;letter-spacing:.05em}
+.inkp .h{font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--dim)}
+
+/* obliteration bureau */
+.obl .mem{font-size:13px;font-style:italic;max-width:640px;margin-bottom:16px}
+.obl .mem b{font-style:normal}
+.oblgrid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:clamp(16px,3vw,28px)}
+@media(max-width:760px){.oblgrid{grid-template-columns:1fr}}
+.cancels{display:flex;flex-direction:column;gap:10px}
+.cancel{display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:center;border-bottom:1px dotted var(--hair);padding-bottom:10px}
+.cancel svg{width:64px;height:64px;flex:none}
+.cancel .inf{font-family:var(--mono);font-size:10px}
+.cancel .inf .pm{display:block;font-size:8px;color:var(--dim);overflow-wrap:anywhere}
+.cancel .meta{display:flex;gap:10px;font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:2px}
+.cancel .meta .md{border:1px solid var(--post);color:var(--post);padding:0 5px;font-size:8px;letter-spacing:.12em;text-transform:uppercase}
+.scott .g{font-family:var(--mar);font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--post);margin:12px 0 4px}
+.scott .g:first-child{margin-top:0}
+.scott .row{display:grid;grid-template-columns:minmax(0,1fr) 70px 30px;gap:8px;align-items:center;font-size:11.5px;padding:3px 0;border-bottom:1px dotted var(--hair)}
+.scott .bar{height:6px;border:1px solid var(--ink);background:rgba(255,255,255,.5)}
+.scott .bar i{display:block;height:100%;background:var(--post)}
+.scott .v{font-family:var(--mono);font-size:9px;text-align:right}
+
+/* standing order */
+.so{display:flex;flex-wrap:wrap;gap:12px}
+.so button{
+  --r:3.5px;
+  -webkit-mask:radial-gradient(var(--r),transparent 98%,#fff) 0 0/calc(var(--r)*2) calc(var(--r)*2),linear-gradient(#fff 0 0) no-repeat 50%/calc(100% - var(--r)*2) calc(100% - var(--r)*2);
+          mask:radial-gradient(var(--r),transparent 98%,#fff) 0 0/calc(var(--r)*2) calc(var(--r)*2),linear-gradient(#fff 0 0) no-repeat 50%/calc(100% - var(--r)*2) calc(100% - var(--r)*2);
+  background:#FBF8EF;border:none;padding:11px 20px;font-family:var(--mar);font-size:12px;letter-spacing:.1em;
+  color:var(--post);filter:drop-shadow(1.5px 2px 0 rgba(40,35,20,.3));transition:all .15s ease;
+}
+.so button:hover{background:var(--post);color:#F4F1EA;transform:translateY(-1px)}
+.so button:active{transform:translateY(1px)}
+.sonote{margin-top:12px;font-size:11px;font-style:italic;color:var(--dim)}
+
+.empty{border:1.5px dashed var(--post);padding:26px;text-align:center;font-style:italic;color:var(--dim);margin-top:30px}
+.foot{text-align:center;margin-top:26px;font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="page">
+<header class="bhd">
+  <div class="pm-top" id="pm-top"></div>
+  <div class="bur">Marque Philatelic Bureau · New Issues Service</div>
+  <h1>ALBUM <em>SHEET No. 54</em></h1>
+  <div class="sheet">a commemorative series, mounted for the subscriber</div>
+  <div class="ask" id="s-ask"></div>
+  <div class="url" id="s-url"></div>
+  <div class="src" id="s-src"></div>
+</header>
+<main id="app"></main>
+<div class="foot" id="foot"></div>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const pct=x=>Math.round((x||0)*100);
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dt=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}).toUpperCase().replace(/ /g,' ')}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Barrier Cream',h:'#EDDFCE'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Espresso Bean',h:'#4E362B'}
+];
+const CREAT=[0,5,7,12].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dt(B.createdAt||B.fetchedAt);
+
+/* circular datestamp */
+let pmn=0;
+const postmark=(top,bot,lines,color)=>{
+  const C=color||'#2E4A7A';
+  const id='pm'+(pmn++);
+  const d='M60 60 m-40 0 a40 40 0 1 1 80 0 a40 40 0 1 1 -80 0';
+  const d2='M60 60 m-28 0 a28 28 0 1 1 56 0 a28 28 0 1 1 -56 0';
+  return '<svg viewBox="0 0 120 120"><defs><path id="'+id+'t" d="'+d+'"/><path id="'+id+'b" d="'+d2+'"/></defs>'+
+  '<circle cx="60" cy="60" r="50" fill="none" stroke="'+C+'" stroke-width="2.2" opacity=".9"/>'+
+  '<circle cx="60" cy="60" r="46" fill="none" stroke="'+C+'" stroke-width=".8" opacity=".9"/>'+
+  '<text font-family="ui-monospace,monospace" font-size="10" letter-spacing="2.5" fill="'+C+'"><textPath href="#'+id+'t">'+esc(top)+'</textPath></text>'+
+  '<text font-family="ui-monospace,monospace" font-size="8.5" letter-spacing="1.5" fill="'+C+'"><textPath href="#'+id+'b" startOffset="50%" text-anchor="middle">'+esc(bot)+'</textPath></text>'+
+  '<text x="60" y="55" text-anchor="middle" font-family="ui-monospace,monospace" font-size="10.5" fill="'+C+'">'+esc(lines[0]||'')+'</text>'+
+  '<text x="60" y="68" text-anchor="middle" font-family="ui-monospace,monospace" font-size="9" fill="'+C+'">'+esc(lines[1]||'')+'</text>'+
+  '<line x1="18" y1="46" x2="44" y2="46" stroke="'+C+'" stroke-width="1.6"/><line x1="16" y1="52" x2="44" y2="52" stroke="'+C+'" stroke-width="1.6"/><line x1="18" y1="58" x2="44" y2="58" stroke="'+C+'" stroke-width="1.6"/>'+
+  '</svg>';
+};
+const INK='#2E4A7A',CAN='#A83226';
+
+document.getElementById('s-ask').innerHTML='<span class="c">Commemorative series commissioned upon the theme <b>“'+esc((B.sub&&B.sub.prompt)||B.title||'')+'”</b></span>';
+document.getElementById('s-url').innerHTML=((B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url))?
+  'postal authority of record: <a href="'+esc((B.sub&&B.sub.url)||B.urlContext.url)+'">'+esc((B.sub&&B.sub.url)||B.urlContext.url)+'</a>':'';
+document.getElementById('s-src').textContent=(B.urlContext&&B.urlContext.title)?('Issuing office: '+B.urlContext.title+' — '+(B.urlContext.description||'').slice(0,80)+'…'):'';
+document.getElementById('pm-top').innerHTML=postmark('FIRST DAY OF ISSUE · MARQUE POST ·','',[DATE,'No. 54'],CAN);
+document.getElementById('foot').textContent='SHEET '+String(B.id||'—').slice(0,8).toUpperCase()+' · REGISTERED '+DATE+' · GUMMED & PERFORATED 12';
+
+const M=document.getElementById('app');
+let pageno=0;
+const alb=(title,note,body)=>{
+  if(!body)return;
+  pageno++;
+  M.appendChild(el('<section class="albsec"><div class="alb-h"><span class="pn">p.'+(54+pageno-1)+'</span><h2>'+esc(title)+'</h2><span class="note">'+esc(note)+'</span></div>'+body+'</section>'));
+};
+
+/* stamp motifs — engraved vignettes */
+const MOTIF=[
+'<svg viewBox="0 0 60 34"><rect x="8" y="6" width="44" height="22" fill="none" stroke="#2E4A7A" stroke-width="1.2"/><circle cx="30" cy="17" r="8" fill="none" stroke="#A83226" stroke-width="1.4"/><path d="M22 17h16M30 9v16" stroke="#A83226" stroke-width=".8"/></svg>',
+'<svg viewBox="0 0 60 34"><path d="M8 24 Q30 6 52 24" fill="none" stroke="#2E4A7A" stroke-width="1.4"/><path d="M14 24 Q30 12 46 24" fill="none" stroke="#2E4A7A" stroke-width=".9"/><circle cx="30" cy="12" r="4" fill="none" stroke="#A83226" stroke-width="1.4"/></svg>',
+'<svg viewBox="0 0 60 34"><path d="M10 26 L20 10 L30 22 L40 8 L50 26" fill="none" stroke="#2E4A7A" stroke-width="1.4"/><circle cx="50" cy="10" r="4" fill="none" stroke="#A83226" stroke-width="1.4"/></svg>',
+'<svg viewBox="0 0 60 34"><path d="M14 26 C14 12 26 6 30 6 C34 6 46 12 46 26" fill="none" stroke="#2E4A7A" stroke-width="1.4"/><path d="M22 26 C22 16 28 12 30 12 C32 12 38 16 38 26" fill="none" stroke="#A83226" stroke-width="1.1"/></svg>'
+];
+
+/* §1 — envelope = the addressee */
+if(AR&&AR.lean){
+  alb('The Addressee','as the letter found them',
+  '<div class="envwrap"><div class="env"><div class="stamp-mini"><b>'+pct(AR.lean.confidence)+'</b><span>MARQUE</span></div>'+
+  '<div class="postmark">'+postmark('QLOO JUNCTION · SORTED ·','',[DATE,esc(AR.lean.label||'—').toUpperCase().slice(0,14)],INK)+'</div>'+
+  '<div class="addr"><div class="to">'+esc(AR.lean.label||'—')+'</div><div class="conf">FRACTION SORTED · '+f2(AR.lean.confidence)+'</div>'+
+  '<ul>'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></div>'+
+  '<div class="via">'+(AR.mediaHabits||[]).map(h=>'<b>via '+esc(h.channel)+'</b><span>'+esc(h.note)+'</span>').join('')+'</div>'+
+  '<div class="coll">'+(AR.vibeWords||[]).map(w=>'<span>collects: '+esc(w)+'</span>').join('')+'</div>'+
+  '<div class="dk">REG. '+String(B.id||'—').slice(0,8).toUpperCase()+' · DELIVERED '+DATE+'</div></div></div>');
+}
+
+/* §2 — the new issue */
+if(strats.length){
+  alb('The New Issue','four values, perforated 12, gummed',
+  '<div class="issues">'+strats.map((s,i)=>{
+    return '<div class="mount"><div class="stamp"><div class="frame">'+
+    '<div class="cty">Marque Post</div><div class="val">'+f2(s.audienceFit&&s.audienceFit.score)+'</div>'+
+    '<h3>'+esc(s.title)+'</h3><div class="motif">'+MOTIF[i%4]+'</div>'+
+    '<div class="ang">'+esc(s.angle||'—')+'</div>'+
+    '<div class="chn">'+(s.channels||[]).map(c=>esc(c.name)+' '+f2(c.fit)+' ('+esc(c.why||'—')+')').join(' · ')+'</div>'+
+    '<div class="hero">subject · '+esc(s.heroSignal||'—')+'</div></div>'+
+    (i===sel?'<div class="fdo">'+postmark('FIRST DAY OF ISSUE ·','',[DATE],CAN)+'</div>':'')+'</div>'+
+    '<div class="fitline"><span class="f">face '+f2(s.audienceFit&&s.audienceFit.score)+' · fit</span><span class="run">print run '+views(s.reach&&s.reach.estViews)+'</span></div>'+
+    '<div class="basis">'+esc(s.reach&&s.reach.basis||'')+'</div>'+
+    '<div class="fmt">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join('')+'</div>'+
+    ((s.watchouts&&s.watchouts[0])?'<div class="wch">note to collectors: '+esc(s.watchouts[0])+'</div>':'')+
+    '<div class="mcap"><b>Cat. '+(54*10+i)+'</b> — '+(i===sel?'key value of the set':'part of set')+'</div></div>';
+  }).join('')+'</div>');
+}
+
+/* §3 — declined essays */
+if(anti.length){
+  alb('Essais Non Adoptés','designs declined by the Bureau',
+  '<div class="essays">'+anti.map((a,i)=>
+    '<div class="essay"><div class="stamp"><div class="frame"><div class="cty">Essai '+('ABCD'[i])+'</div><h3>'+esc(a.title)+'</h3><div class="ang">'+esc(a.channel)+' — colour trial only</div></div></div>'+
+    '<div class="x"></div><div class="ch">declined · '+esc(a.channel)+'</div><div class="why">'+esc(a.whyNot)+'</div></div>').join('')+'</div>');
+}
+
+/* §4 — first day cover + maximum cards */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  alb('First Day Cover & Maximum Cards','cancelled on the day of issue',
+  '<div class="fdc"><div class="cover2"><div class="fdc-stamp"><div class="stamp" style="padding:8px"><div class="frame" style="min-height:64px;justify-content:center"><div class="cty">Marque Post</div><h3 style="font-size:12px;min-height:0">'+esc(selS&&selS.heroSignal||'M')+'</h3></div></div></div>'+
+  '<div class="fdc-pm">'+postmark('FIRST DAY OF ISSUE ·','',[DATE],CAN)+'</div>'+
+  '<div class="cachet"><div class="k2">Official cachet</div>'+
+  (br?'<h3>'+esc(br.title)+'</h3><div class="lede">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Addressed</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Enclosure</dt><dd class="msg">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Subject</dt><dd>'+esc(selS.heroSignal||'—')+'</dd></dl>':'<div class="lede">no cachet applied</div>')+
+  '</div><div class="foot2">FDC '+String(B.id||'—').slice(0,8).toUpperCase()+' · SERVICED '+DATE+'</div></div>'+
+  '<div class="maxis">'+CREAT.map((m,i)=>
+    '<figure class="maxi"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" loading="lazy" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+    '<div class="corner"><b>'+(i+1)+'</b><span>MARQUE</span></div>'+
+    '<figcaption><span class="h">Carte maximum '+(i+1)+' — '+esc(m.head)+'</span><span class="p">imprimé par · '+esc(m.provider)+'</span></figcaption></figure>').join('')+'</div></div>');
+}
+
+/* §5 — printer's ink register */
+alb('Printer’s Ink Register','shades mixed for the series',
+  '<div class="inkr">'+PALETTE.map((s,i)=>
+    '<div class="inkp"><div class="sw" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="h">PLATE '+(i+1)+' · '+s.h.toUpperCase()+'</div></div>').join('')+'</div>');
+
+/* §6 — bureau des oblitérations */
+if(B.evidence||affs.length){
+  alb('Bureau des Oblitérations','every cancellation witnessed — Qloo Junction',
+  '<div class="obl"><p class="mem"><b>CERTIFICAT.</b> The Bureau certifies that <b>'+calls.length+' cancellations</b> were struck at <b>Qloo Junction</b> in <b>'+esc((B.qlooBundle&&B.qlooBundle.mode)||'—').toUpperCase()+' mode</b>; each strike is registered below and none may be re-used.</p>'+
+  '<div class="oblgrid"><div class="cancels">'+
+  calls.map((c,i)=>'<div class="cancel">'+postmark('QLOO JUNCTION · '+esc(c.endpoint.replace(/[^A-Za-z]/g,'·')).toUpperCase().slice(0,30)+' ·','',[DATE.slice(0,6),String(c.tookMs)+'ms'],INK)+
+    '<div class="inf">'+esc(c.endpoint)+'<span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,22)).join(' '))+'</span>'+
+    '<div class="meta"><span>n = '+esc(c.n)+'</span><span>'+esc(c.tookMs)+' ms</span><span class="md">'+esc(c.mode)+'</span></div></div></div>').join('')+
+  '</div>'+
+  '<div class="scott">'+affs.map(g=>'<div class="g">Catalogue · '+esc(g.type.replace('urn:entity:',''))+'</div>'+
+    g.entities.slice(0,4).map(e=>'<div class="row"><span>'+esc(e.name)+'</span><span class="bar"><i style="width:'+pct(e.affinity)+'%"></i></span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('')+
+  '</div></div></div>');
+}
+
+/* §7 — standing order */
+alb('Standing Order Form','future issues reserved without reminder',
+  '<div class="so">'+['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+'</div>'+
+  '<div class="sonote">Subscribers receive each new issue by return of post; cancellations in writing only.</div>');
+
+if(!M.children.length)M.appendChild(el('<div class="empty">The sheet is blank — data.js never reached the Bureau. Nothing was issued.</div>'));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque Darkroom — processing roll 001 — Rhode → Gen Z</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230d0908'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23d43a34' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%23d43a34'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#0d0908;
+  --panel:#171110;
+  --panel-2:#1e1514;
+  --line:#3a201d;
+  --line-2:#52302c;
+  --tx:#d9cdc4;
+  --tx-2:#8f7f74;
+  --tx-3:#5f5049;
+  --red:#e5484d;
+  --red-dk:#8f2326;
+  --red-glow:rgba(229,72,77,.14);
+  --sans:'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{overflow-x:hidden}
+body{
+  background:
+    radial-gradient(900px 500px at 85% -80px,var(--red-glow),transparent 60%),
+    radial-gradient(700px 420px at -10% 40%,rgba(229,72,77,.08),transparent 60%),
+    var(--bg);
+  color:var(--tx);
+  font-family:var(--sans);
+  font-size:13.5px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--red);color:#0d0908}
+a{color:var(--tx);text-decoration:none;border-bottom:1px solid var(--red)}
+a:hover{color:var(--red)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:1220px;margin:0 auto;padding:0 clamp(16px,4vw,48px)}
+.mono{font-family:var(--mono)}
+
+/* ============ safelight header ============ */
+.safe{
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+  padding:16px 0;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx-2);
+}
+.safe .bulb{
+  width:34px;height:34px;border-radius:50%;flex:none;position:relative;
+  background:radial-gradient(circle at 38% 34%,#ff7a6e,#d43a34 55%,#5f171a);
+  box-shadow:0 0 26px 4px rgba(229,72,77,.45);
+}
+.safe .bulb::after{content:"";position:absolute;left:9px;right:9px;top:-5px;height:7px;background:#3a3230;border-radius:2px 2px 0 0}
+.safe .brand{letter-spacing:.3em;color:var(--tx)}
+.safe .roll{margin-left:auto;color:var(--red)}
+
+/* ============ process rail (developing tank) ============ */
+.process{
+  display:flex;align-items:stretch;gap:0;overflow-x:auto;
+  border:1px solid var(--line);background:var(--panel);margin-top:26px;
+}
+.pstep{flex:1;min-width:150px;padding:14px 18px 12px;border-right:1px solid var(--line);position:relative}
+.pstep:last-child{border-right:none}
+.pstep .ph{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--tx-3);text-transform:uppercase}
+.pstep .pn{font-size:14px;font-weight:700;letter-spacing:.04em;margin:4px 0 2px}
+.pstep .pt{font-family:var(--mono);font-size:9.5px;color:var(--red)}
+.pstep::after{
+  content:"";position:absolute;right:-5px;top:50%;width:9px;height:9px;z-index:1;
+  background:var(--bg);border:1px solid var(--line-2);transform:translateY(-50%) rotate(45deg);
+}
+.pstep:last-child::after{display:none}
+.pstep.done .pn{color:var(--red)}
+.pstep.done .ph::after{content:" ●";color:var(--red)}
+
+/* ============ hero ============ */
+.hero{padding:clamp(48px,7vw,96px) 0 clamp(40px,5vw,64px);position:relative}
+.hero .tag{font-family:var(--mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--red);margin-bottom:18px}
+.hero h1{
+  font-size:clamp(34px,5.6vw,68px);font-weight:800;line-height:1.02;letter-spacing:-.02em;
+  max-width:16ch;text-shadow:0 0 34px rgba(229,72,77,.22);
+}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero .src{font-family:var(--mono);font-size:11px;color:var(--tx-2);margin-top:20px;max-width:560px}
+.hero .src a{color:var(--red)}
+.hero .meters{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.meter{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+  border:1px solid var(--line-2);padding:8px 14px;color:var(--tx-2);
+}
+.meter b{color:var(--red);font-size:12px}
+
+/* ============ film strip divider ============ */
+.strip{
+  display:flex;align-items:center;gap:0;margin:0 calc(-1*clamp(16px,4vw,48px));
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  background:#0a0706;padding:0;overflow:hidden;height:30px;position:relative;
+}
+.strip .holes{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 14px}
+.strip .holes i{width:14px;height:9px;border-radius:2px;background:#060403;border:1px solid var(--line-2)}
+.strip .lbl{position:relative;z-index:1;margin:0 auto;font-family:var(--mono);font-size:9px;letter-spacing:.4em;color:var(--tx-3);background:var(--bg);padding:3px 18px;text-transform:uppercase}
+
+/* ============ sections ============ */
+.sec{padding:clamp(42px,6vw,72px) 0}
+.sec-head{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;margin-bottom:30px}
+.sec-head .no{font-family:var(--mono);font-size:10px;color:var(--red);letter-spacing:.2em;border:1px solid var(--red-dk);padding:5px 10px}
+.sec-head h2{font-size:clamp(20px,2.8vw,28px);font-weight:800;letter-spacing:.01em;text-transform:uppercase}
+.sec-head .note{margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--tx-3)}
+.lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--tx-3);display:block;margin-bottom:10px}
+
+/* ============ audience — light table ============ */
+.aud{display:grid;grid-template-columns:repeat(12,1fr);gap:0 clamp(14px,3vw,36px)}
+.aud-a{grid-column:1/6}
+.aud-b{grid-column:6/9;border-left:1px solid var(--line);padding-left:36px}
+.aud-c{grid-column:9/13;border-left:1px solid var(--line);padding-left:36px}
+.density{font-family:var(--mono);font-size:clamp(52px,6vw,78px);line-height:.95;color:var(--red);text-shadow:0 0 30px rgba(229,72,77,.35)}
+.density small{font-size:.3em;color:var(--tx-2)}
+.leanname{font-size:19px;font-weight:700;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.04em}
+.sigline{padding:9px 0;border-top:1px dashed var(--line-2);font-size:12.5px;color:var(--tx-2)}
+.sigline::before{content:"▸ ";color:var(--red)}
+.hab{padding:11px 0;border-top:1px solid var(--line)}
+.hab:last-of-type{border-bottom:1px solid var(--line)}
+.hab .ch{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+.hab .ch em{font-style:normal;color:var(--red)}
+.hab .nt{font-size:12px;color:var(--tx-2);margin-top:4px}
+.vw{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--line);padding:9px 0;font-size:15px;font-weight:700}
+.vw:last-child{border-bottom:1px solid var(--line)}
+.vw .f{font-family:var(--mono);font-size:9px;color:var(--red);letter-spacing:.14em}
+
+/* ============ strategies — mounted slides ============ */
+.slides{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.slide{
+  border:2px solid var(--line-2);background:var(--panel);
+  padding:14px 14px 0;position:relative;transition:border-color .15s,transform .15s;
+}
+.slide:hover{border-color:var(--red);transform:translateY(-3px)}
+.slide.sel{border-color:var(--red);box-shadow:0 0 0 1px var(--red),0 0 34px rgba(229,72,77,.18)}
+.slide .frame{
+  aspect-ratio:1/1;background:#050303;border:1px solid var(--line);position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;text-align:center;padding:10px;
+}
+.slide .frame .fn{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--red)}
+.slide .frame h3{font-size:16.5px;font-weight:800;line-height:1.15;letter-spacing:.01em;text-transform:uppercase}
+.slide .frame .ang{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-3)}
+.slide .frame .ft{font-family:var(--mono);font-size:26px;color:var(--red);text-shadow:0 0 18px rgba(229,72,77,.4)}
+.slide .frame .ft small{font-size:9px;color:var(--tx-3);display:block;letter-spacing:.2em}
+.slide .mount{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-3);padding:9px 0 10px;display:flex;justify-content:space-between}
+.slide .mount b{color:var(--tx-2)}
+.slide .detail{border-top:1px solid var(--line);padding:10px 0 12px}
+.slide .detail .chfit{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;padding:5px 0;border-top:1px dashed var(--line)}
+.slide .detail .chfit em{font-style:normal;color:var(--red)}
+.slide .detail .reach{font-size:12px;margin-top:9px}
+.slide .detail .reach b{font-family:var(--mono);color:var(--red)}
+.slide .detail .watch{font-size:10.5px;color:var(--tx-2);margin-top:8px;border-left:2px solid var(--red-dk);padding-left:8px}
+.slide .detail .fmts{font-family:var(--mono);font-size:9px;color:var(--tx-3);margin-top:8px;letter-spacing:.08em}
+
+/* ============ fogged frames ============ */
+.fog .pl-note{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx-2);margin-bottom:24px}
+.fogrow{display:grid;grid-template-columns:30px minmax(120px,200px) 110px 1fr;gap:14px;align-items:center;padding:12px 0;border-bottom:1px dashed var(--line-2)}
+.fogrow .x{width:20px;height:20px;position:relative}
+.fogrow .x::before,.fogrow .x::after{content:"";position:absolute;left:9px;top:0;width:2px;height:20px;background:var(--red)}
+.fogrow .x::before{transform:rotate(45deg)}
+.fogrow .x::after{transform:rotate(-45deg)}
+.fogrow b{font-size:14px;text-transform:uppercase;letter-spacing:.03em}
+.fogrow .c{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;color:var(--red)}
+.fogrow .w{font-size:12px;color:var(--tx-2)}
+
+/* ============ contact sheet ============ */
+.contact{display:grid;grid-template-columns:repeat(12,1fr);gap:0 clamp(16px,3vw,38px)}
+.con-a{grid-column:1/6}
+.con-b{grid-column:6/13}
+.brief{border:1px solid var(--line-2);background:var(--panel);padding:22px}
+.brief .stamp{font-family:var(--mono);font-size:9px;letter-spacing:.22em;color:var(--red);border:1px solid var(--red-dk);padding:5px 11px;display:inline-block;margin-bottom:16px;text-transform:uppercase}
+.brief h3{font-size:clamp(24px,3vw,34px);font-weight:800;text-transform:uppercase;letter-spacing:.01em;line-height:1.05}
+.brief .a{font-size:13.5px;color:var(--tx-2);font-style:italic;margin-top:8px}
+.brief dl{margin-top:16px;display:grid;grid-template-columns:92px 1fr;gap:6px 16px;font-size:12.5px}
+.brief dt{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--tx-3);text-transform:uppercase;padding-top:3px}
+.km{margin-top:20px;padding:14px 16px;border:1px solid var(--red-dk);font-size:16.5px;font-weight:700;color:var(--tx);box-shadow:inset 0 0 30px rgba(229,72,77,.08)}
+.km::before{content:"KEY LIGHT — ";font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;color:var(--red);font-weight:400;display:block;margin-bottom:6px}
+.sheet{display:grid;grid-template-columns:repeat(2,1fr);gap:0}
+.frame-c{background:#060403;padding:0;position:relative}
+.frame-c .holes{display:flex;justify-content:space-between;padding:8px 10px}
+.frame-c .holes i{width:13px;height:8px;border-radius:2px;background:#000;border:1px solid var(--line-2)}
+.frame-c .imgw{position:relative;margin:0 10px;aspect-ratio:4/3;overflow:hidden;border:1px solid var(--line)}
+.frame-c img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.35) contrast(1.05) brightness(.9);transition:filter .35s}
+.frame-c .imgw::after{content:"";position:absolute;inset:0;background:rgba(212,58,52,.18);mix-blend-mode:multiply;transition:opacity .35s;pointer-events:none}
+.frame-c:hover img{filter:none}
+.frame-c:hover .imgw::after{opacity:0}
+.frame-c .prov{position:absolute;top:8px;left:8px;font-family:var(--mono);font-size:8px;letter-spacing:.12em;text-transform:uppercase;background:#060403d9;border:1px solid var(--red-dk);color:var(--red);padding:3px 8px}
+.frame-c .cap{display:flex;justify-content:space-between;padding:7px 12px 9px;font-family:var(--mono);font-size:9px;color:var(--tx-3);letter-spacing:.08em}
+.frame-c .cap b{color:var(--red)}
+
+/* ============ lab sheet ============ */
+.labc{display:grid;grid-template-columns:repeat(12,1fr);gap:0 clamp(16px,3vw,38px)}
+.lab-a{grid-column:1/7}
+.lab-b{grid-column:7/13}
+.lab table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.lab th{text-align:left;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--tx-3);font-weight:400;border-bottom:1.5px solid var(--line-2);padding:0 14px 8px 0}
+.lab td{border-bottom:1px solid var(--line);padding:9px 14px 9px 0;vertical-align:top}
+.lab td.ep{font-family:var(--mono);font-size:11px;color:var(--red);white-space:nowrap}
+.lab td.pm{font-family:var(--mono);font-size:9.5px;color:var(--tx-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lab td.num{font-family:var(--mono);font-size:10.5px;text-align:right;white-space:nowrap}
+.lab tr.tot td{border-top:1.5px solid var(--line-2);border-bottom:none;font-family:var(--mono);font-size:10px;color:var(--tx-2)}
+.affg{margin-bottom:20px}
+.affg h4{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.affr{display:flex;align-items:center;gap:10px;padding:6px 0;border-top:1px dashed var(--line);font-size:12.5px}
+.affr .nm{min-width:0}
+.affr .meter{flex:1;height:5px;background:#0a0706;border:1px solid var(--line);position:relative}
+.affr .meter i{position:absolute;inset:0 auto 0 0;background:var(--red);box-shadow:0 0 10px rgba(229,72,77,.5)}
+.affr .v{font-family:var(--mono);font-size:10px;color:var(--tx-2);min-width:32px;text-align:right}
+
+/* ============ palette ============ */
+.palette{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.sw{border:1px solid var(--line-2);background:var(--panel)}
+.sw .c{height:64px;border-bottom:1px solid var(--line-2);position:relative}
+.sw .c::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 24px rgba(212,58,52,.18)}
+.sw .n{font-size:11.5px;font-weight:700;padding:9px 10px 2px}
+.sw .h{font-family:var(--mono);font-size:9px;color:var(--tx-3);padding:0 10px 9px;letter-spacing:.1em}
+
+/* ============ drying line ============ */
+.dry{display:flex;flex-wrap:wrap;gap:18px}
+.dchip{
+  border:1px solid var(--line-2);background:var(--panel);padding:0 0 14px;text-align:center;
+  min-width:170px;flex:1;transition:border-color .15s,transform .15s;position:relative;
+}
+.dchip:hover{border-color:var(--red);transform:translateY(-2px)}
+.dchip .clip{width:2px;height:22px;background:var(--tx-2);margin:0 auto;position:relative}
+.dchip .clip::before{content:"";position:absolute;left:-5px;top:-6px;width:12px;height:12px;border:1.5px solid var(--red);border-radius:50%;background:var(--bg)}
+.dchip b{display:block;font-size:16px;margin-top:6px}
+.dchip small{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--tx-3)}
+
+.foot{
+  border-top:1px solid var(--line);margin-top:20px;padding:26px 0 40px;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px 26px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--tx-3);
+}
+
+@media(max-width:1000px){
+  .slides{grid-template-columns:repeat(2,1fr)}
+  .aud-a{grid-column:1/13}
+  .aud-b{grid-column:1/7;border-left:none;padding-left:0;margin-top:26px}
+  .aud-c{grid-column:7/13;border-left:none;padding-left:0;margin-top:26px}
+  .con-a{grid-column:1/13;margin-bottom:34px}
+  .con-b{grid-column:1/13}
+  .lab-a{grid-column:1/13}
+  .lab-b{grid-column:1/13;margin-top:30px}
+  .palette{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:640px){
+  .slides{grid-template-columns:1fr}
+  .aud-b{grid-column:1/13}
+  .aud-c{grid-column:1/13}
+  .sheet{grid-template-columns:1fr}
+  .fogrow{grid-template-columns:30px 1fr 110px}
+  .fogrow .w{grid-column:2/4;margin-top:4px}
+  .palette{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="safe">
+    <span class="bulb"></span>
+    <span class="brand">MARQUE DARKROOM</span>
+    <span>SAFELIGHT ON · NO WHITE LIGHT</span>
+    <span class="roll" id="rollid">ROLL —</span>
+  </header>
+
+  <div class="process" id="process">
+    <div class="pstep done"><div class="ph">Bath 01</div><div class="pn">DEVELOP</div><div class="pt">the ask · 0:35</div></div>
+    <div class="pstep done"><div class="ph">Bath 02</div><div class="pn">READ</div><div class="pt">audience · 0:45</div></div>
+    <div class="pstep done"><div class="ph">Bath 03</div><div class="pn">SELECT</div><div class="pt">strategy · 1:00</div></div>
+    <div class="pstep"><div class="ph">Bath 04</div><div class="pn">FIX</div><div class="pt">campaign · 2:00</div></div>
+    <div class="pstep"><div class="ph">Line</div><div class="pn">DRY</div><div class="pt">outputs · overnight</div></div>
+  </div>
+
+  <section class="hero">
+    <div class="tag" id="htag">PROCESSING ROLL · <span id="b8">—</span></div>
+    <h1 id="h1">—</h1>
+    <p class="src" id="src">—</p>
+    <div class="meters" id="meters"></div>
+  </section>
+</div>
+
+<div class="wrap"><div class="strip"><div class="holes" id="h1s"></div><span class="lbl">MARQUE SAFETY FILM · 400 ASA</span></div></div>
+
+<div class="wrap">
+  <!-- audience -->
+  <section class="sec" id="s-aud">
+    <div class="sec-head"><span class="no">FR. 02</span><h2>Densitometry — audience read</h2><span class="note">exposure · chemistry · grain</span></div>
+    <div class="aud" id="aud"></div>
+  </section>
+</div>
+
+<div class="wrap"><div class="strip"><div class="holes"></div><span class="lbl">TX 400 · PROOF SHEET A</span></div></div>
+
+<div class="wrap">
+  <!-- strategies -->
+  <section class="sec" id="s-slides">
+    <div class="sec-head"><span class="no">FR. 03–06</span><h2>Mounted slides — four exposures</h2><span class="note">density = audience fit</span></div>
+    <div class="slides" id="slides"></div>
+  </section>
+
+  <!-- fogged -->
+  <section class="sec fog" id="s-fog">
+    <div class="sec-head"><span class="no">FR. XX</span><h2>Fogged frames — do not print</h2><span class="note">light struck · unrecoverable</span></div>
+    <p class="pl-note">// four frames pulled before printing — channel fit below usable density</p>
+    <div id="anti"></div>
+  </section>
+</div>
+
+<div class="wrap"><div class="strip"><div class="holes"></div><span class="lbl">CONTACT SHEET · PROOF ONLY</span></div></div>
+
+<div class="wrap">
+  <!-- contact sheet -->
+  <section class="sec" id="s-contact">
+    <div class="sec-head"><span class="no">FR. 07</span><h2>Contact sheet — the campaign</h2><span class="note">brief + developed prints</span></div>
+    <div class="contact">
+      <div class="con-a"><div class="brief" id="brief"></div></div>
+      <div class="con-b"><div class="sheet" id="sheet"></div></div>
+    </div>
+  </section>
+
+  <!-- palette -->
+  <section class="sec" id="s-pal">
+    <div class="sec-head"><span class="no">FR. 08</span><h2>Emulsion tests — brand pigments</h2><span class="note">rhode stock</span></div>
+    <div class="palette" id="palette"></div>
+  </section>
+
+  <!-- lab -->
+  <section class="sec" id="s-lab">
+    <div class="sec-head"><span class="no">FR. 09</span><h2>Lab notebook — chemistry log</h2><span class="note">qloo provenance · every bath timed</span></div>
+    <div class="labc">
+      <div class="lab-a"><table id="calls"></table></div>
+      <div class="lab-b" id="affs"></div>
+    </div>
+  </section>
+
+  <!-- drying line -->
+  <section class="sec" id="s-dry" style="padding-bottom:60px">
+    <div class="sec-head"><span class="no">FR. 10</span><h2>Drying line — next prints</h2><span class="note">hang overnight</span></div>
+    <div class="dry" id="next"></div>
+  </section>
+
+  <footer class="foot">
+    <span id="fl1">MARQUE DARKROOM · ROLL —</span>
+    <span id="fl2">—</span>
+    <span>FIXED · WASHED · <span id="fl3">—</span></span>
+  </footer>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtN=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M":n>=1e3?Math.round(n/1e3)+"K":String(n);
+const pct=x=>Math.round((x||0)*100);
+const el=id=>document.getElementById(id);
+const B=(window.DATA&&window.DATA.board)||null;
+const pool=(((window.MEDIA||{}).pool)||[]).map(m=>({img:String(m.img||"").replace(/^\.\//,"../"),head:m.head||"",provider:m.provider||""})).filter(m=>m.img);
+const PICKS=[6,10,3,14].map(i=>pool[i]).filter(Boolean);
+const PALETTE=[["Glaze Pink","#E8B4BC"],["Rice Milk","#F6F0E4"],["Toasted Almond","#B08D64"],["Hazel Shell","#7A5140"],["Espresso Bean","#3E2A20"]];
+const NEXT=[["Website","landing page"],["Brandbook","identity kit"],["Video","15s cut"]];
+if(!B){
+  document.body.innerHTML='<p style="padding:130px 24px;text-align:center;font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.3em;color:#8f7f74">ROLL BLANK — NO BOARD DATA LOADED</p>';
+  return;
+}
+const sub=B.sub||{},url=B.urlContext||{},ar=B.audienceRead||{lean:{},mediaHabits:[],vibeWords:[]},
+      strats=B.strategies||[],anti=B.antiStrategies||[],ev=B.evidence||{calls:[]},
+      affs=(B.qlooBundle||{}).affinities||[];
+const lean=ar.lean||{},calls=ev.calls||[];
+
+/* sprocket holes */
+document.querySelectorAll(".strip .holes").forEach(h=>{h.innerHTML='<i></i>'.repeat(26);});
+
+el("rollid").textContent="ROLL "+(B.id||"").slice(0,4).toUpperCase();
+el("b8").textContent=(B.id||"").slice(0,8).toUpperCase()+" · "+(B.createdAt||"").slice(0,10);
+el("h1").innerHTML=esc(sub.prompt||B.title||"").replace(/→/g,'<em>→</em>');
+el("src").innerHTML='EXPOSED FROM — <a href="'+esc(url.url||sub.url||"#")+'">'+esc(url.url||sub.url||"")+'</a> · '+esc(url.title||"");
+el("meters").innerHTML=
+  '<span class="meter"><b>'+strats.length+'</b> FRAMES EXPOSED</span>'+
+  '<span class="meter"><b>'+pct(lean.confidence)+'%</b> DENSITY CONF.</span>'+
+  '<span class="meter"><b>'+calls.length+'</b> BATHS TIMED</span>'+
+  '<span class="meter">MODE <b>'+esc(ev.qlooMode||"—").toUpperCase()+'</b></span>';
+el("fl1").textContent="MARQUE DARKROOM · ROLL "+(B.id||"").slice(0,4).toUpperCase();
+el("fl2").textContent=calls.length+" BATHS · "+String(ev.qlooMode||"").toUpperCase()+" MODE";
+el("fl3").textContent=(B.createdAt||"").slice(0,10);
+
+/* audience */
+el("aud").innerHTML=
+  '<div class="aud-a"><span class="lbl">DENSITY READING</span>'+
+    '<div class="density">'+pct(lean.confidence)+'<small>/100 · '+esc(lean.label||"")+'</small></div>'+
+    '<div class="leanname">'+esc(lean.label||"—")+'</div>'+
+    (lean.signals||[]).map(s=>'<div class="sigline">'+esc(s)+'</div>').join("")+'</div>'+
+  '<div class="aud-b"><span class="lbl">CHEMISTRY — MEDIA HABITS</span>'+
+    (ar.mediaHabits||[]).map(h=>'<div class="hab"><div class="ch"><span>'+esc(h.channel)+'</span><em>'+esc(String(h.type||"").replace("urn:entity:",""))+'</em></div><div class="nt">'+esc(h.note)+'</div></div>').join("")+'</div>'+
+  '<div class="aud-c"><span class="lbl">GRAIN — VIBE WORDS</span>'+
+    (ar.vibeWords||[]).map((v,i)=>'<div class="vw"><span>'+esc(v)+'</span><span class="f">'+(12+i*2)+'A</span></div>').join("")+'</div>';
+
+/* slides */
+el("slides").innerHTML=strats.map((s,i)=>{
+  const f=s.audienceFit?s.audienceFit.score:0;
+  const chans=(s.channels||[]).map(c=>'<div class="chfit"><span>'+esc(c.name)+' <small style="color:var(--tx-3)">'+esc(c.why||"")+'</small></span><em>'+pct(c.fit)+'</em></div>').join("");
+  return '<article class="slide'+(i===0?' sel':'')+'">'+
+    '<div class="frame"><span class="fn">'+esc(s.id||("ST"+(i+1)))+' · '+(i===0?"SELECTED":"PROOF")+'</span>'+
+      '<h3>'+esc(s.title)+'</h3><div class="ang">'+esc(s.angle)+'</div>'+
+      '<div class="ft">'+(f).toFixed(2)+'<small>DENSITY</small></div></div>'+
+    '<div class="mount"><span>MARQUE MOUNT</span><b>'+(i===0?"★ PRINT":"PROOF")+'</b></div>'+
+    '<div class="detail">'+chans+
+      '<div class="fmts">'+(s.formats||[]).map(esc).join(" · ")+'</div>'+
+      '<div class="reach"><b>'+fmtN((s.reach||{}).estViews||0)+'</b> est. views</div>'+
+      '<div class="watch">'+esc((s.watchouts||[])[0]||"")+'</div></div></article>';
+}).join("");
+
+/* fogged */
+el("anti").innerHTML=anti.map(a=>'<div class="fogrow"><span class="x"></span><b>'+esc(a.title)+'</b><span class="c">'+esc(a.channel)+'</span><span class="w">'+esc(a.whyNot)+'</span></div>').join("");
+
+/* contact */
+const sel=strats[0]||{},br=sel.brief||{};
+el("brief").innerHTML='<span class="stamp">CHOSEN NEGATIVE · '+esc(sel.id||"")+' — '+esc(sel.title||"")+'</span>'+
+  '<h3>'+esc(br.title||"—")+'</h3><p class="a">'+esc(br.angle||"")+'</p>'+
+  '<dl><dt>Audience</dt><dd>'+esc(br.audience||"")+'</dd><dt>Hero signal</dt><dd>'+esc(sel.heroSignal||"—")+'</dd></dl>'+
+  '<div class="km">“'+esc(br.keyMessage||"")+'”</div>';
+const FR=["12A","13A","14A","15A"];
+el("sheet").innerHTML=PICKS.map((m,i)=>'<figure class="frame-c">'+
+  '<div class="holes">'+'<i></i>'.repeat(6)+'</div>'+
+  '<div class="imgw"><span class="prov">'+esc(m.provider||"gen")+'</span>'+
+  '<img src="'+esc(m.img)+'" alt="'+esc(m.head)+'" loading="lazy" onerror="this.closest(\'.frame-c\').style.display=\'none\'"></div>'+
+  '<div class="cap"><span>'+esc(m.head)+'</span><b>'+FR[i]+'</b></div>'+
+  '<div class="holes">'+'<i></i>'.repeat(6)+'</div></figure>').join("");
+
+/* palette */
+el("palette").innerHTML=PALETTE.map(p=>'<div class="sw"><div class="c" style="background:'+p[1]+'"></div><div class="n">'+esc(p[0])+'</div><div class="h">'+esc(p[1])+'</div></div>').join("");
+
+/* lab */
+el("calls").innerHTML='<tr><th style="width:92px">Bath</th><th style="width:38%">Params</th><th style="text-align:right">ms</th><th style="text-align:right">n</th><th>mode</th></tr>'+
+  calls.map(c=>{
+    const pm=Object.entries(c.params||{}).map(([k,v])=>k+"="+v).join(" ");
+    return '<tr><td class="ep">'+esc(c.endpoint)+'</td><td class="pm" title="'+esc(pm)+'">'+esc(pm)+'</td><td class="num">'+esc(c.tookMs)+'</td><td class="num">'+esc(c.n)+'</td><td class="num">'+esc(c.mode)+'</td></tr>';
+  }).join("")+
+  '<tr class="tot"><td colspan="2">'+calls.length+' BATHS LOGGED</td><td class="num">'+calls.reduce((a,c)=>a+(c.tookMs||0),0)+'</td><td></td><td class="num">'+esc(ev.qlooMode||"")+'</td></tr>';
+el("affs").innerHTML='<span class="lbl">SILVER HALIDE — AFFINITY SAMPLES</span>'+
+  affs.map(g=>{
+    const top=(g.entities||[]).slice(0,4);
+    return '<div class="affg"><h4>'+esc(String(g.type||"").replace("urn:entity:",""))+'</h4>'+
+      top.map(e=>'<div class="affr"><span class="nm">'+esc(e.name)+'</span><span class="meter"><i style="width:'+pct(e.affinity)+'%"></i></span><span class="v">'+(e.affinity||0).toFixed(2)+'</span></div>').join("")+'</div>';
+  }).join("");
+
+/* drying line */
+el("next").innerHTML=NEXT.map(n=>'<a class="dchip" href="#" onclick="return false"><div class="clip"></div><b>'+esc(n[0])+'</b><small>'+esc(n[1])+'</small></a>').join("");
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARQUE CONTROL — Rhode peptide lip tint → Gen Z</title>
+<style>
+  :root{
+    --bg:#090c0b;
+    --panel:#0e1312;
+    --panel2:#111716;
+    --line:#233029;
+    --line2:#2e4034;
+    --amber:#ffb03a;
+    --amber-hi:#ffd089;
+    --amber-dim:rgba(255,176,58,.12);
+    --teal:#4fb8a8;
+    --mut:#6f7d70;
+    --dim:#46544a;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:var(--mono);
+    background:
+      radial-gradient(900px 420px at 50% -10%, rgba(255,176,58,.04), transparent 60%),
+      var(--bg);
+    color:var(--amber);font-size:12px;line-height:1.5;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px);opacity:.4}
+  ::selection{background:var(--amber);color:#120c02}
+  a{color:var(--amber-hi);text-decoration:none;border-bottom:1px dotted rgba(255,176,58,.4)}
+  a:hover{background:var(--amber-dim)}
+  a:focus-visible{outline:1px solid var(--amber);outline-offset:2px}
+
+  .hud{max-width:1240px;margin:0 auto;padding:16px 16px 70px}
+
+  /* ===== header ===== */
+  .hhead{display:flex;align-items:center;gap:16px;border:1px solid var(--line);
+    background:var(--panel);padding:10px 14px;margin-bottom:16px;position:relative;flex-wrap:wrap}
+  .hhead .tt{display:flex;align-items:center;gap:10px;color:var(--amber-hi);
+    font-size:12px;letter-spacing:.22em;font-weight:700;white-space:nowrap}
+  .hhead .tt .lamp{width:9px;height:9px;border-radius:50%;background:var(--amber);
+    box-shadow:0 0 10px var(--amber);animation:lamp 2.6s infinite}
+  @keyframes lamp{0%,90%{opacity:1}95%{opacity:.3}100%{opacity:1}}
+  .hhead .sub{color:var(--mut);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+  .hhead .rr{margin-left:auto;display:flex;gap:18px;font-size:10px;color:var(--dim);letter-spacing:.12em;white-space:nowrap}
+  .hhead .rr b{color:var(--amber);font-weight:400}
+
+  /* ===== bracketed panel ===== */
+  .panel{position:relative;background:linear-gradient(180deg,var(--panel2),var(--panel));
+    border:1px solid var(--line);padding:14px 16px 16px;min-width:0}
+  .bk{position:absolute;width:10px;height:10px;pointer-events:none}
+  .bk.tl{top:-1px;left:-1px;border-top:1px solid var(--amber);border-left:1px solid var(--amber)}
+  .bk.tr{top:-1px;right:-1px;border-top:1px solid var(--amber);border-right:1px solid var(--amber)}
+  .bk.bl{bottom:-1px;left:-1px;border-bottom:1px solid var(--amber);border-left:1px solid var(--amber)}
+  .bk.br{bottom:-1px;right:-1px;border-bottom:1px solid var(--amber);border-right:1px solid var(--amber)}
+  .ph{display:flex;align-items:baseline;gap:10px;font-size:10px;letter-spacing:.26em;
+    text-transform:uppercase;color:var(--amber-hi);border-bottom:1px solid var(--line);
+    padding-bottom:8px;margin-bottom:12px}
+  .ph .id{color:var(--dim)}
+  .ph .tag{margin-left:auto;color:var(--mut);letter-spacing:.12em;font-size:9px}
+
+  .grid-top{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-bottom:16px}
+  .grid-mid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+  .grid-low{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:16px}
+
+  .kv{display:grid;grid-template-columns:110px 1fr;gap:4px 12px;font-size:12px}
+  .kv dt{color:var(--dim);font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding-top:2px}
+  .kv dd{color:var(--amber);overflow-wrap:anywhere}
+  .kv dd.hi{color:var(--amber-hi)}
+  .mission{color:var(--amber-hi);font-size:17px;letter-spacing:.04em;padding:2px 0 12px}
+
+  /* ===== radar ===== */
+  .radarwrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+  .radar{position:relative;width:220px;height:220px;flex:none;border-radius:50%;
+    border:1px solid var(--line2);
+    background:
+      repeating-radial-gradient(circle at 50% 50%, transparent 0 42px, rgba(79,184,168,.14) 42px 43px),
+      linear-gradient(0deg,transparent 49.5%,rgba(79,184,168,.14) 50%,transparent 50.5%),
+      linear-gradient(90deg,transparent 49.5%,rgba(79,184,168,.14) 50%,transparent 50.5%),
+      radial-gradient(circle at 50% 50%, rgba(79,184,168,.06), transparent 70%),
+      #0a100e;
+    overflow:hidden;box-shadow:inset 0 0 30px rgba(0,0,0,.6)}
+  .radar .sweep{position:absolute;inset:0;border-radius:50%;
+    background:conic-gradient(from 0deg, rgba(255,176,58,.5) 0deg, rgba(255,176,58,.12) 40deg, transparent 70deg);
+    animation:sweep 4.5s linear infinite}
+  @keyframes sweep{to{transform:rotate(360deg)}}
+  .blip{position:absolute;transform:translate(-50%,-50%);text-align:center;z-index:3}
+  .blip i{display:block;width:6px;height:6px;margin:0 auto;border-radius:50%;background:var(--amber);
+    box-shadow:0 0 8px var(--amber);animation:bp 2.4s infinite}
+  .blip span{display:block;font-size:7.5px;letter-spacing:.08em;color:var(--amber-hi);
+    text-transform:uppercase;margin-top:2px;white-space:nowrap;text-shadow:0 0 4px #000}
+  @keyframes bp{0%,100%{opacity:1}50%{opacity:.4}}
+  .aud-info{flex:1;min-width:200px}
+  .lean-big{color:var(--amber-hi);font-size:20px;letter-spacing:.08em;text-transform:uppercase}
+
+  /* ===== gauges ===== */
+  .dials{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .dial{border:1px solid var(--line);background:var(--panel);padding:12px;text-align:center;position:relative;
+    transition:border-color .15s,background .15s}
+  .dial:hover{border-color:var(--amber);background:rgba(255,176,58,.03)}
+  .dial .gv{position:relative;width:110px;height:110px;margin:0 auto 8px}
+  .dial svg{transform:rotate(-90deg)}
+  .dial .gv .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .dial .gv .ctr b{font-size:22px;color:var(--amber-hi);font-weight:400}
+  .dial .gv .ctr span{font-size:7.5px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
+  .dial h4{color:var(--amber-hi);font-size:11.5px;letter-spacing:.06em;font-weight:700}
+  .dial .ang{color:var(--mut);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;margin:2px 0 8px}
+  .dial .chs{font-size:9.5px;color:var(--mut);border-top:1px dashed var(--line);padding-top:6px}
+  .dial .chs b{color:var(--teal);font-weight:400}
+  .dial .rch{margin-top:6px;font-size:10px;color:var(--amber)}
+  .dial .rch span{color:var(--dim)}
+
+  /* anti */
+  .rej .r{display:grid;grid-template-columns:150px 90px 1fr;gap:10px;padding:7px 0;
+    border-top:1px dashed var(--line);font-size:11px;align-items:baseline}
+  .rej .r:first-of-type{border-top:none}
+  .rej .t{color:var(--dim);text-decoration:line-through;text-decoration-color:rgba(255,176,58,.5)}
+  .rej .c{color:var(--teal);font-size:9px;letter-spacing:.16em;text-transform:uppercase}
+  .rej .w{color:var(--mut)}
+
+  /* output */
+  .briefline{display:grid;grid-template-columns:110px 1fr;gap:4px 12px;font-size:12px;margin-bottom:12px}
+  .briefline .k{color:var(--dim);font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding-top:2px}
+  .briefline .v{color:var(--amber)}
+  .briefline .v.hi{color:var(--amber-hi)}
+  .thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .th{border:1px solid var(--line);background:#0a0e0d;transition:border-color .15s}
+  .th:hover{border-color:var(--amber)}
+  .th .im{aspect-ratio:1/1;overflow:hidden;position:relative}
+  .th img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.9) brightness(.96)}
+  .th .pv{position:absolute;left:5px;top:5px;background:rgba(6,9,8,.85);border:1px solid rgba(79,184,168,.4);
+    color:var(--teal);font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;padding:1px 5px}
+  .th .cap{font-size:9.5px;color:var(--amber);padding:6px 7px;line-height:1.35;min-height:30px}
+
+  /* telemetry */
+  .tel .c{display:grid;grid-template-columns:100px 1fr 60px 46px;gap:8px;padding:5px 0;
+    border-top:1px dashed var(--line);font-size:10.5px;align-items:baseline}
+  .tel .c:first-of-type{border-top:none}
+  .tel .e{color:var(--amber-hi)}
+  .tel .p{color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tel .m{color:var(--amber);text-align:right;font-variant-numeric:tabular-nums}
+  .tel .n{color:var(--dim);text-align:right}
+  .telhead{font-size:9px;color:var(--dim);letter-spacing:.2em;text-transform:uppercase;
+    display:grid;grid-template-columns:100px 1fr 60px 46px;gap:8px;padding-bottom:5px}
+  .aff .a{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px dashed var(--line);font-size:10.5px}
+  .aff .a:first-of-type{border-top:none}
+  .aff .ty{color:var(--teal);text-transform:uppercase;letter-spacing:.12em;font-size:9px;width:56px;flex:none}
+  .aff .en{color:var(--mut);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .aff .pv{color:var(--amber);font-variant-numeric:tabular-nums}
+
+  /* palette + next */
+  .palrow{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+  .palrow .sw{background:var(--panel);padding:8px;text-align:center}
+  .palrow .c{height:34px;border:1px solid rgba(255,255,255,.07);margin-bottom:6px}
+  .palrow .n{font-size:8px;color:var(--amber);letter-spacing:.1em;text-transform:uppercase}
+  .palrow .h{font-size:8px;color:var(--dim)}
+  .next{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .next a{border:1px solid rgba(255,176,58,.5);color:var(--amber);padding:8px 16px;font-size:10.5px;
+    letter-spacing:.18em;text-transform:uppercase;text-decoration:none;transition:all .15s}
+  .next a:hover{background:var(--amber);color:#120c02}
+  .next a::after{content:" ▸"}
+  .foot{display:flex;justify-content:space-between;gap:10px;color:var(--dim);font-size:9px;
+    letter-spacing:.14em;text-transform:uppercase;margin-top:14px;flex-wrap:wrap}
+
+  @media (max-width:1020px){.grid-top,.grid-mid,.grid-low{grid-template-columns:1fr}.dials{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:620px){
+    .dials{grid-template-columns:1fr 1fr;gap:10px}
+    .thumbs{grid-template-columns:1fr 1fr}
+    .radarwrap{justify-content:center}
+    .rej .r{grid-template-columns:1fr;gap:2px}
+    .palrow{grid-template-columns:1fr 1fr 1fr}
+  }
+</style>
+</head>
+<body>
+<div class="hud">
+
+  <div class="hhead">
+    <div class="tt"><span class="lamp"></span>MARQUE CONTROL</div>
+    <div class="sub">strategy → campaign → result · instrument deck</div>
+    <div class="rr"><span>MODE <b id="h-mode">—</b></span><span>SYS <b>NOMINAL</b></span><span id="h-clock"><b>--:--:--</b></span></div>
+  </div>
+
+  <div class="grid-top">
+    <!-- ASK -->
+    <section class="panel">
+      <span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>
+      <div class="ph"><span class="id">P-01</span>Mission input<span class="tag">the ask</span></div>
+      <div class="mission" id="ask-prompt">—</div>
+      <dl class="kv">
+        <dt>Source URL</dt><dd class="hi" id="ask-url">—</dd>
+        <dt>Resolved as</dt><dd id="ask-title">—</dd>
+        <dt>Context</dt><dd style="color:var(--mut)" id="ask-desc">—</dd>
+      </dl>
+    </section>
+
+    <!-- AUDIENCE radar -->
+    <section class="panel">
+      <span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>
+      <div class="ph"><span class="id">P-02</span>Audience scope<span class="tag">sweep active</span></div>
+      <div class="radarwrap">
+        <div class="radar" id="radar"><div class="sweep"></div></div>
+        <div class="aud-info">
+          <div class="lean-big" id="aud-lean">—</div>
+          <div style="display:flex;align-items:center;gap:10px;margin:8px 0 10px">
+            <span style="font-size:9px;color:var(--dim);letter-spacing:.16em">CONF</span>
+            <span style="flex:1;height:6px;border:1px solid var(--line2);position:relative;background:#0a0e0d">
+              <i id="aud-confbar" style="position:absolute;inset:0 auto 0 0;background:var(--amber);box-shadow:0 0 8px rgba(255,176,58,.5)"></i></span>
+            <b id="aud-conf" style="font-weight:400;color:var(--amber-hi)">—</b>
+          </div>
+          <div id="aud-habits" style="font-size:10.5px;color:var(--mut)"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- STRATEGY DIALS -->
+  <section class="panel" style="margin-bottom:16px">
+    <span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>
+    <div class="ph"><span class="id">P-03</span>Strategy dials<span class="tag">4 vectors · fit instruments</span></div>
+    <div class="dials" id="dials"></div>
+  </section>
+
+  <div class="grid-mid">
+    <!-- RULED OUT -->
+    <section class="panel rej">
+      <span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>
+      <div class="ph"><span class="id">P-04</span>Rejected vectors<span class="tag">locked out</span></div>
+      <div id="anti"></div>
+    </section>
+
+    <!-- PROVENANCE -->
+    <section class="panel tel">
+      <span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>
+      <div class="ph"><span class="id">P-05</span>Telemetry · Qloo<span class="tag" id="q-mode">—</span></div>
+      <div class="telhead"><span>Endpoint</span><span>Parameters</span><span style="text-align:right">ms</span><span style="text-align:right">n</span></div>
+      <div id="calls"></div>
+      <div class="aff" style="margin-top:10px" id="affs"></div>
+    </section>
+  </div>
+
+  <!-- OUTPUT -->
+  <section class="panel" style="margin-bottom:16px">
+    <span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>
+    <div class="ph"><span class="id">P-06</span>Final result · payload<span class="tag">brief + 4 creatives</span></div>
+    <div class="briefline">
+      <span class="k">Campaign</span><span class="v hi" id="brief-title">—</span>
+      <span class="k">Angle</span><span class="v" id="brief-angle">—</span>
+      <span class="k">Audience</span><span class="v" style="color:var(--mut)" id="brief-aud">—</span>
+      <span class="k">Key msg</span><span class="v hi" id="brief-msg">—</span>
+    </div>
+    <div class="thumbs" id="thumbs"></div>
+  </section>
+
+  <div class="grid-low">
+    <!-- PALETTE -->
+    <section class="panel">
+      <span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>
+      <div class="ph"><span class="id">P-07</span>Brand palette<span class="tag">rhode peptide system</span></div>
+      <div class="palrow" id="pal"></div>
+    </section>
+    <!-- NEXT -->
+    <section class="panel">
+      <span class="bk tl"></span><span class="bk tr"></span><span class="bk bl"></span><span class="bk br"></span>
+      <div class="ph"><span class="id">P-08</span>Next outputs</div>
+      <div class="next"><a href="#" onclick="return false">Website</a><a href="#" onclick="return false">Brandbook</a><a href="#" onclick="return false">Video</a></div>
+      <div class="foot"><span id="ft">—</span></div>
+    </section>
+  </div>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+const B=(window.DATA&&window.DATA.board)||{};
+const esc=s=>String(s==null?"—":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const K=v=>v>=1e3?Math.round(v/1e3)+"K":v;
+const pct=v=>Math.round((v||0)*100);
+
+function tick(){document.querySelector("#h-clock b").textContent=new Date().toTimeString().slice(0,8);}
+tick();setInterval(tick,1000);
+
+const sub=B.sub||{},uc=B.urlContext||{};
+const st=B.strategies||[],ar=B.audienceRead||{},lean=ar.lean||{},ev=B.evidence||{};
+document.getElementById("h-mode").textContent=(ev.qlooMode||"—").toUpperCase()+" DATA";
+document.getElementById("ask-prompt").textContent=sub.prompt||B.title||"—";
+document.getElementById("ask-url").textContent=sub.url||uc.url||"—";
+document.getElementById("ask-title").textContent=uc.title||"—";
+document.getElementById("ask-desc").textContent=uc.description||"—";
+
+/* audience + radar blips */
+document.getElementById("aud-lean").textContent=lean.label||"—";
+document.getElementById("aud-conf").textContent=pct(lean.confidence)+"%";
+document.getElementById("aud-confbar").style.width=pct(lean.confidence)+"%";
+document.getElementById("aud-habits").innerHTML=(ar.mediaHabits||[]).map(h=>
+ `<div style="padding:3px 0;border-top:1px dashed var(--line)"><b style="color:var(--teal);font-weight:400">${esc(h.channel)}</b> — ${esc(h.note)}</div>`).join("");
+/* blips = vibe words placed around radar */
+const vibes=(ar.vibeWords||[]).slice(0,5);
+const blips=[[50,20],[76,40],[66,72],[30,68],[24,36]];
+document.getElementById("radar").insertAdjacentHTML("beforeend",
+  vibes.map((v,i)=>`<span class="blip" style="left:${blips[i%5][0]}%;top:${blips[i%5][1]}%"><i></i><span>${esc(v)}</span></span>`).join(""));
+
+/* strategy dials — SVG gauges */
+const CIRC=2*Math.PI*46;
+document.getElementById("dials").innerHTML=st.map((s,i)=>{
+  const f=pct(s.audienceFit&&s.audienceFit.score);
+  return `<div class="dial">
+    <div class="gv"><svg width="110" height="110" viewBox="0 0 110 110">
+      <circle cx="55" cy="55" r="46" fill="none" stroke="#1a231e" stroke-width="6"/>
+      <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(255,176,58,.18)" stroke-width="6" stroke-dasharray="2 5"/>
+      <circle cx="55" cy="55" r="46" fill="none" stroke="${i===0?"var(--amber)":"var(--teal)"}" stroke-width="4"
+        stroke-dasharray="${(f/100*CIRC).toFixed(1)} ${CIRC.toFixed(1)}" stroke-linecap="butt"
+        style="filter:drop-shadow(0 0 4px rgba(255,176,58,.5))"/>
+      ${[...Array(12)].map((_,t)=>{const a=t*30*Math.PI/180;return `<line x1="${55+50*Math.cos(a)}" y1="${55+50*Math.sin(a)}" x2="${55+53*Math.cos(a)}" y2="${55+53*Math.sin(a)}" stroke="#2e4034" stroke-width="1"/>`}).join("")}
+    </svg>
+    <div class="ctr"><b>${f}</b><span>fit /100</span></div></div>
+    <h4>${esc(s.title)}</h4>
+    <div class="ang">${esc(s.angle)}</div>
+    <div class="chs">${(s.channels||[]).map(c=>`${esc(c.name)} <b>${pct(c.fit)}</b>`).join(" · ")}</div>
+    <div class="rch"><span>EST VIEWS</span> ${K(s.reach&&s.reach.estViews||0)} · <span>SIG</span> ${esc(s.heroSignal||"—")}</div>
+  </div>`;}).join("");
+
+/* anti */
+document.getElementById("anti").innerHTML=(B.antiStrategies||[]).map(a=>
+ `<div class="r"><span class="t">${esc(a.title)}</span><span class="c">${esc(a.channel)}</span><span class="w">${esc(a.whyNot)}</span></div>`).join("");
+
+/* telemetry */
+document.getElementById("q-mode").textContent=`${(ev.calls||[]).length} calls · ${ev.qlooMode||"—"}`;
+document.getElementById("calls").innerHTML=(ev.calls||[]).map(c=>
+ `<div class="c"><span class="e">${esc(c.endpoint)}</span><span class="p">${esc(Object.entries(c.params||{}).map(([k,v])=>k+"="+String(v).slice(0,16)).join(" "))}</span><span class="m">${c.tookMs}</span><span class="n">${c.n}</span></div>`).join("");
+const aff=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+document.getElementById("affs").innerHTML=aff.map(a=>
+ `<div class="a"><span class="ty">${esc((a.type||"").replace("urn:entity:",""))}</span>
+   <span class="en">${a.entities.slice(0,4).map(e=>esc(e.name)).join(" · ")}</span>
+   <span class="pv">${a.entities[0]?pct(a.entities[0].affinity)/100:""}</span></div>`).join("");
+
+/* output */
+const br=st[0]&&st[0].brief||{};
+document.getElementById("brief-title").textContent=`${st[0]?st[0].title+" — ":""}${br.title||""}`;
+document.getElementById("brief-angle").textContent=br.angle||"—";
+document.getElementById("brief-aud").textContent=br.audience||"—";
+document.getElementById("brief-msg").textContent="“"+(br.keyMessage||"—")+"”";
+const pool=((window.MEDIA||{}).pool||[]).map(m=>({img:m.img.replace(/^\.\//,"../"),head:m.head,provider:m.provider}));
+const picks=[2,4,8,12].map(i=>pool[i]).filter(Boolean);
+document.getElementById("thumbs").innerHTML=picks.map(m=>
+ `<div class="th"><div class="im"><img src="${m.img}" alt="" loading="lazy" onerror="this.closest('.th').style.display='none'"><span class="pv">${esc(m.provider)}</span></div>
+   <div class="cap">${esc(m.head)}</div></div>`).join("");
+
+/* palette */
+const pal=[["Peptide Blush","#F3D9D2"],["Glaze Cream","#F7EFE4"],["Barrier Beige","#E4CDBB"],["Toast","#7A5A46"],["Espresso","#2E211B"]];
+document.getElementById("pal").innerHTML=pal.map(p=>
+ `<div class="sw"><div class="c" style="background:${p[1]}"></div><div class="n">${p[0]}</div><div class="h">${p[1]}</div></div>`).join("");
+
+document.getElementById("ft").textContent=`BOARD ${String(B.id||"").slice(0,8).toUpperCase()} · ${(B.fetchedAt||"").slice(0,16).replace("T"," ")}Z · ${st.length} VECTORS · ${picks.length} PAYLOADS`;
+</script>
+</body>
+</html>

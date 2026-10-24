@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Strategy Ledger — Rhode peptide lip tint → Gen Z</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,ital,wght@6..72,0,300;6..72,0,400;6..72,0,500;6..72,0,600;6..72,0,700;6..72,1,400;6..72,1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f7f3ec;
+    --paper2:#f1ebe0;
+    --ink:#191512;
+    --ink2:#4a4238;
+    --mut:#8a7f70;
+    --hair:#d8cfc0;
+    --hair2:#c9bfa9;
+    --acc:#7a2121;            /* oxblood — single accent */
+    --serif:'Newsreader',Georgia,'Times New Roman',serif;
+    --sans:ui-sans-serif,-apple-system,'Helvetica Neue',Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:var(--serif);
+    background:var(--paper);
+    color:var(--ink);
+    font-size:17px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--acc);color:var(--paper)}
+  a{color:var(--acc);text-decoration:none;border-bottom:1px solid rgba(122,33,33,.35)}
+  a:hover{border-bottom-color:var(--acc)}
+  a:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+  .page{max-width:1120px;margin:0 auto;padding:0 24px}
+
+  /* ---------- masthead ---------- */
+  .mast{border-bottom:3px double var(--ink);padding:26px 0 14px;text-align:center}
+  .mast .over{font-family:var(--sans);font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--ink2)}
+  .mast h1{font-weight:600;font-size:clamp(30px,4.6vw,52px);letter-spacing:-.01em;margin:6px 0 4px;font-variation-settings:'opsz' 72}
+  .mast .under{display:flex;justify-content:center;gap:18px;font-family:var(--sans);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);flex-wrap:wrap}
+  .rule2{border-top:1px solid var(--ink);margin-top:10px;position:relative}
+  .rule2::after{content:"";position:absolute;left:0;right:0;top:3px;border-top:1px solid var(--ink)}
+
+  /* ---------- headline block ---------- */
+  .hed{padding:52px 0 34px;border-bottom:1px solid var(--hair);display:grid;grid-template-columns:1fr;gap:14px;justify-items:center;text-align:center}
+  .kicker{font-family:var(--sans);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--acc)}
+  .hed h2{font-size:clamp(34px,5.6vw,64px);line-height:1.04;font-weight:500;max-width:19ch;font-variation-settings:'opsz' 72;letter-spacing:-.015em}
+  .hed .stand{max-width:56ch;color:var(--ink2);font-size:19px;line-height:1.65;font-style:italic}
+  .byline{font-family:var(--sans);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+
+  /* ---------- lede ---------- */
+  .lede{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:48px;padding:44px 0;border-bottom:1px solid var(--hair)}
+  .lede .body p{margin-bottom:18px}
+  .lede .body p:first-of-type::first-letter{
+    float:left;font-size:86px;line-height:.78;padding:6px 12px 0 0;
+    font-weight:600;color:var(--acc);font-variation-settings:'opsz' 72}
+  .lede .body p:first-of-type::first-line{font-variant:small-caps;letter-spacing:.04em}
+  .lede aside{border-left:1px solid var(--hair);padding-left:28px}
+  .data-line{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--hair);font-size:14px}
+  .data-line .k{font-family:var(--sans);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);align-self:center}
+  .data-line .v{text-align:right;font-size:15px}
+  .conf-big{font-size:56px;font-weight:600;color:var(--acc);line-height:1;font-variation-settings:'opsz' 72}
+  .conf-lab{font-family:var(--sans);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);margin:6px 0 14px}
+  .vibes{margin-top:14px}
+  .vibes span{display:inline-block;border:1px solid var(--hair2);padding:2px 10px;margin:0 6px 6px 0;font-size:13px;font-style:italic;color:var(--ink2);transition:background .15s,border-color .15s}
+  .vibes span:hover{background:var(--paper2);border-color:var(--ink2)}
+
+  /* ---------- pull quote ---------- */
+  .pull{border-top:2px solid var(--ink);border-bottom:1px solid var(--hair);padding:40px 8%;margin:0;text-align:center}
+  .pull q{font-size:clamp(24px,3.4vw,36px);font-style:italic;font-weight:400;line-height:1.3;quotes:"“" "”";color:var(--ink)}
+  .pull cite{display:block;margin-top:14px;font-family:var(--sans);font-style:normal;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--mut)}
+
+  /* ---------- sections ---------- */
+  section.block{padding:44px 0;border-bottom:1px solid var(--hair)}
+  .sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:26px}
+  .sec-head .no{font-family:var(--sans);font-size:10px;letter-spacing:.2em;color:var(--acc);border:1px solid var(--acc);padding:2px 8px}
+  .sec-head h3{font-size:26px;font-weight:600;letter-spacing:-.01em;font-variation-settings:'opsz' 40}
+  .sec-head .rule{flex:1;border-top:1px solid var(--hair2)}
+  .sec-head .note{font-family:var(--sans);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+
+  /* strategies as articles */
+  .strat{display:grid;grid-template-columns:64px minmax(0,1.35fr) minmax(0,1fr);gap:28px;padding:26px 0;border-bottom:1px solid var(--hair)}
+  .strat:last-child{border-bottom:0}
+  .strat .idx{font-size:44px;font-weight:300;color:var(--hair2);line-height:1;font-variation-settings:'opsz' 72}
+  .strat h4{font-size:23px;font-weight:600;line-height:1.15}
+  .strat .angle{font-style:italic;color:var(--acc);font-size:15px;margin:3px 0 10px}
+  .strat p.sum{font-size:14.5px;color:var(--ink2);line-height:1.6}
+  .strat .fitrow{display:flex;gap:12px;align-items:baseline;margin-top:12px;font-family:var(--sans);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+  .strat .fitrow b{font-size:20px;color:var(--ink);letter-spacing:0;font-family:var(--serif);font-weight:600}
+  .strat .meta{border-left:1px solid var(--hair);padding-left:24px;font-size:14px}
+  .mrow{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px dotted var(--hair2)}
+  .mrow .ch{text-transform:uppercase;font-family:var(--sans);font-size:10px;letter-spacing:.16em;color:var(--ink2);align-self:center}
+  .mrow .dots{flex:1;border-bottom:1px dotted var(--hair2);margin-bottom:5px}
+  .mrow .fv{font-variant-numeric:tabular-nums}
+  .mrow .why{color:var(--mut);font-size:12px;font-style:italic}
+  .reach{display:block;margin-top:12px;font-family:var(--sans);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+  .reach b{font-family:var(--serif);font-size:26px;color:var(--ink);letter-spacing:0;font-weight:600;display:block}
+  .watch{font-size:12.5px;color:var(--mut);font-style:italic;margin-top:10px}
+  .watch::before{content:"Watch out — ";font-style:normal;font-family:var(--sans);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--acc)}
+  .selmark{font-family:var(--sans);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--paper);background:var(--acc);padding:2px 8px;display:inline-block;margin-bottom:8px}
+
+  /* rejected */
+  .rejects{border:1px solid var(--ink);padding:0}
+  .rejects .rh{background:var(--ink);color:var(--paper);font-family:var(--sans);font-size:10px;letter-spacing:.26em;text-transform:uppercase;padding:9px 18px;display:flex;justify-content:space-between}
+  .rej{display:grid;grid-template-columns:minmax(0,180px) 1fr;gap:20px;padding:16px 18px;border-top:1px solid var(--hair)}
+  .rej b{font-size:17px;font-weight:600}
+  .rej .chan{font-family:var(--sans);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc);display:block;margin-top:2px}
+  .rej p{font-size:14px;color:var(--ink2)}
+
+  /* brief feature */
+  .feature{background:var(--paper2);border:1px solid var(--hair2);padding:44px 8%;text-align:center}
+  .feature .fk{font-family:var(--sans);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--acc)}
+  .feature h4{font-size:clamp(30px,4vw,44px);font-weight:600;margin:10px 0 16px;font-variation-settings:'opsz' 72}
+  .feature .cols{display:grid;grid-template-columns:1fr 1fr;gap:32px;text-align:left;max-width:760px;margin:20px auto 0}
+  .feature .fc .k{font-family:var(--sans);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);display:block;margin-bottom:4px}
+  .feature .fc p{font-size:14.5px;color:var(--ink2)}
+  .formats span{display:inline-block;border:1px solid var(--ink);padding:2px 10px;font-family:var(--sans);font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin:0 6px 6px 0}
+
+  /* plates / creatives */
+  .plates{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+  .plate{border:1px solid var(--hair2);background:#fff;padding:10px 10px 12px;transition:box-shadow .2s,transform .2s}
+  .plate:hover{box-shadow:0 8px 24px rgba(25,21,18,.12);transform:translateY(-3px)}
+  .plate img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover}
+  .plate figcaption{display:flex;justify-content:space-between;gap:8px;align-items:baseline;padding-top:9px}
+  .plate .pn{font-family:var(--sans);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--acc);white-space:nowrap}
+  .plate .ph{font-size:12.5px;font-style:italic;color:var(--ink2);line-height:1.35}
+  .plate .pv{display:block;font-family:var(--sans);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-top:2px}
+
+  /* palette plate */
+  .swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--hair2)}
+  .swatch{aspect-ratio:4/3;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;border-right:1px solid var(--hair2)}
+  .swatch:last-child{border-right:0}
+  .swatch .nm{font-size:14px;font-style:italic}
+  .swatch .hx{font-family:var(--sans);font-size:9px;letter-spacing:.16em;text-transform:uppercase}
+  .swatch.lt .nm,.swatch.lt .hx{color:var(--ink2)}
+  .swatch.dk .nm,.swatch.dk .hx{color:rgba(255,255,255,.85)}
+
+  /* methodology / provenance */
+  .method{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:44px}
+  .calls{list-style:none}
+  .calls li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 18px;padding:9px 0;border-bottom:1px dotted var(--hair2);font-size:14px}
+  .calls .ep{font-family:var(--sans);font-size:12px;letter-spacing:.04em;color:var(--ink)}
+  .calls .pp{font-size:12px;color:var(--mut);font-style:italic}
+  .calls .ms{grid-row:1/3;align-self:center;text-align:right;font-variant-numeric:tabular-nums;font-family:var(--sans);font-size:12px}
+  .calls .ms em{display:block;font-style:normal;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--acc)}
+  .affline{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px dotted var(--hair2);font-size:14px}
+  .affline .t{font-family:var(--sans);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);align-self:center}
+  .affline .e b{font-weight:600;color:var(--acc);margin-left:8px;font-variant-numeric:tabular-nums}
+
+  /* colophon */
+  .colo{padding:44px 0 60px;text-align:center}
+  .colo .nx{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:18px 0 30px}
+  .nxchip{font-family:var(--sans);font-size:10px;letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--ink);padding:9px 20px;background:transparent;color:var(--ink);cursor:pointer;transition:background .15s,color .15s,transform .1s}
+  .nxchip:hover{background:var(--ink);color:var(--paper)}
+  .nxchip:active{transform:translateY(1px)}
+  .nxchip:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+  .colo small{font-family:var(--sans);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);display:block;line-height:2.2}
+
+  @media (max-width:900px){
+    .lede{grid-template-columns:1fr;gap:28px}
+    .lede aside{border-left:0;border-top:1px solid var(--hair);padding-left:0;padding-top:24px}
+    .strat{grid-template-columns:44px 1fr;gap:18px}
+    .strat .meta{grid-column:2;border-left:0;border-top:1px solid var(--hair);padding:16px 0 0}
+    .method{grid-template-columns:1fr}
+    .plates{grid-template-columns:repeat(2,1fr)}
+    .feature .cols{grid-template-columns:1fr}
+    .swatches{grid-template-columns:repeat(2,1fr)}
+    .swatch:nth-child(2){border-right:0}
+    .swatch{border-bottom:1px solid var(--hair2)}
+  }
+  @media (max-width:480px){
+    .lede .body p:first-of-type::first-letter{font-size:64px}
+    .rej{grid-template-columns:1fr;gap:4px}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="mast">
+    <div class="over">Marque · Campaign Intelligence</div>
+    <h1>The Strategy Ledger</h1>
+    <div class="rule2"></div>
+    <div class="under" style="margin-top:12px">
+      <span id="issueNo">Issue —</span><span id="issueDate">—</span><span>Qloo-verified edition</span>
+    </div>
+  </header>
+
+  <div class="hed">
+    <div class="kicker">From brief to board — one workflow</div>
+    <h2 id="headline">Rhode peptide lip tint → Gen Z</h2>
+    <p class="stand" id="standfirst"></p>
+    <div class="byline"><span id="byl1">—</span><span id="byl2">—</span><span id="byl3">—</span></div>
+  </div>
+
+  <div class="lede">
+    <div class="body">
+      <p id="lede1"></p>
+      <p id="lede2"></p>
+    </div>
+    <aside>
+      <div class="conf-big" id="confBig">—</div>
+      <div class="conf-lab">Confidence — <span id="leanLab">—</span> lean</div>
+      <div id="habitLines"></div>
+      <div class="vibes" id="vibes"></div>
+    </aside>
+  </div>
+
+  <blockquote class="pull">
+    <q id="pullQ"></q>
+    <cite id="pullCite">—</cite>
+  </blockquote>
+
+  <section class="block">
+    <div class="sec-head"><span class="no">§ 1</span><h3>Four routes in</h3><span class="rule"></span><span class="note">Channel fit · audience fit · reach</span></div>
+    <div id="strats"></div>
+  </section>
+
+  <section class="block">
+    <div class="sec-head"><span class="no">§ 2</span><h3>Considered, and rejected</h3><span class="rule"></span><span class="note">The anti-list</span></div>
+    <div class="rejects"><div class="rh"><span>Ruled out by evidence</span><span id="rejN">—</span></div><div id="rejects"></div></div>
+  </section>
+
+  <section class="block" style="border-bottom:0">
+    <div class="sec-head"><span class="no">§ 3</span><h3>The chosen brief</h3><span class="rule"></span><span class="note" id="briefSrc">—</span></div>
+    <div class="feature">
+      <div class="fk">Campaign brief</div>
+      <h4 id="bTitle">—</h4>
+      <div class="formats" id="bFormats"></div>
+      <div class="cols">
+        <div class="fc"><span class="k">Angle</span><p id="bAngle"></p></div>
+        <div class="fc"><span class="k">Audience</span><p id="bAud"></p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="sec-head"><span class="no">§ 4</span><h3>The produced work</h3><span class="rule"></span><span class="note" id="plateN">—</span></div>
+    <div class="plates" id="plates"></div>
+  </section>
+
+  <section class="block">
+    <div class="sec-head"><span class="no">§ 5</span><h3>A palette in the Rhode register</h3><span class="rule"></span><span class="note">Peptide · cream · toast</span></div>
+    <div class="swatches" id="swatches"></div>
+  </section>
+
+  <section class="block">
+    <div class="sec-head"><span class="no">§ 6</span><h3>Method &amp; provenance</h3><span class="rule"></span><span class="note">Every claim traced to a live call</span></div>
+    <div class="method">
+      <div>
+        <ul class="calls" id="calls"></ul>
+        <p style="font-size:12.5px;color:var(--mut);font-style:italic;margin-top:12px" id="methodNote"></p>
+      </div>
+      <div id="affs"></div>
+    </div>
+  </section>
+
+  <div class="colo">
+    <div class="kicker">Next outputs</div>
+    <div class="nx">
+      <button class="nxchip" type="button">Landing page</button>
+      <button class="nxchip" type="button">Brandbook</button>
+      <button class="nxchip" type="button">Video cut</button>
+    </div>
+    <small id="colo1">—</small>
+    <small>Set in Newsreader · Printed by Marque Ops · All affinities live from Qloo</small>
+  </div>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+  var B=(window.DATA&&window.DATA.board)||null;
+  var POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+  var RN=['I','II','III','IV','V','VI'];
+  function $(id){return document.getElementById(id)}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function fix(p){return String(p||'').replace(/^\.\//,'../')}
+  function fmtK(n){n=Number(n)||0;return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?Math.round(n/1e3)+'K':String(n)}
+  function pc(v){return Math.round((Number(v)||0)*100)}
+  var SEL=0;
+  var PALETTE=[['Peptide','#E8ACAF','lt'],['Glaze','#F6EFE6','lt'],['Toast','#A07856','dk'],['Espresso','#2E211A','dk']];
+  if(!B){document.body.innerHTML='<p style="padding:40px;font-family:sans-serif">No board data.</p>';return}
+
+  var sub=B.sub||{},uc=B.urlContext||{},ar=B.audienceRead||{},ev=B.evidence||{};
+  var strats=B.strategies||[],anti=B.antiStrategies||[],st=strats[SEL]||{},br=st.brief||{};
+
+  $('issueNo').textContent='Issue № '+String(B.id||'').slice(0,4).toUpperCase();
+  $('issueDate').textContent=(B.createdAt||'').slice(0,10);
+  $('headline').textContent=(sub.prompt||B.title||'');
+  $('standfirst').textContent=uc.description||'';
+  $('byl1').textContent='Ask — '+(sub.prompt||'');
+  $('byl2').textContent='Source — '+(uc.url||'');
+  $('byl3').textContent='Filed '+(B.createdAt||'').replace('T',' ').slice(0,16)+'Z';
+
+  $('lede1').textContent='The ask was short: take Rhode’s peptide lip tint to Gen Z. The source page — '+ (uc.title||'')+' ('+(uc.url||'')+') — supplied the seed; a live Qloo pass supplied the taste graph. What follows is the whole pipeline on one spread: who this audience is, the four routes in, what was refused, and the work that came out the other end.';
+  $('lede2').textContent='Every number on this page — the fit scores, the channel calls, the reach estimates — traces back to the evidence ledger reproduced in § 6. Nothing here is vibes alone.';
+  $('confBig').textContent=pc(ar.lean&&ar.lean.confidence)+' / 100';
+  $('leanLab').textContent=(ar.lean&&ar.lean.label)||'—';
+  $('habitLines').innerHTML=(ar.mediaHabits||[]).map(function(h){
+    return '<div class="data-line"><span class="k">'+esc(h.channel)+'</span><span class="v">'+esc(h.note)+'</span></div>'
+  }).join('');
+  $('vibes').innerHTML=(ar.vibeWords||[]).map(function(v){return '<span>'+esc(v)+'</span>'}).join('');
+
+  $('pullQ').textContent=br.keyMessage||'';
+  $('pullCite').textContent='Key message — '+esc(br.title||'')+' ('+esc(st.title||'')+')';
+
+  $('strats').innerHTML=strats.map(function(s,i){
+    var rows=(s.channels||[]).map(function(c){
+      return '<div class="mrow"><span class="ch">'+esc(c.name)+'</span><span class="dots"></span><span class="why">'+esc(c.why||'')+'</span><span class="fv">'+pc(c.fit)+'</span></div>'
+    }).join('');
+    return '<article class="strat">'+
+      '<div class="idx">'+(RN[i]||i+1)+'</div>'+
+      '<div>'+(i===SEL?'<span class="selmark">Selected brief</span>':'')+
+        '<h4>'+esc(s.title)+'</h4><div class="angle">'+esc(s.angle)+'</div>'+
+        '<p class="sum">'+esc(s.reach&&s.reach.basis||'')+'</p>'+
+        '<div class="fitrow"><span>Audience fit</span><b>'+pc(s.audienceFit&&s.audienceFit.score)+'</b><span>/ 100</span><span style="margin-left:14px">Formats — '+esc((s.formats||[]).join(', '))+'</span></div>'+
+      '</div>'+
+      '<div class="meta">'+rows+
+        '<span class="reach">Estimated reach<b>'+fmtK(s.reach&&s.reach.estViews)+'</b></span>'+
+        ((s.watchouts&&s.watchouts[0])?'<p class="watch">'+esc(s.watchouts[0])+'</p>':'')+
+      '</div></article>'
+  }).join('');
+
+  $('rejN').textContent=anti.length+' entries';
+  $('rejects').innerHTML=anti.map(function(a){
+    return '<div class="rej"><div><b>'+esc(a.title)+'</b><span class="chan">'+esc(a.channel)+'</span></div><p>'+esc(a.whyNot)+'</p></div>'
+  }).join('');
+
+  $('briefSrc').textContent='From “'+esc(st.title)+'”';
+  $('bTitle').textContent=br.title||'—';
+  $('bAngle').textContent=br.angle||'';
+  $('bAud').textContent=br.audience||'';
+  $('bFormats').innerHTML=(st.formats||[]).map(function(f){return '<span>'+esc(f)+'</span>'}).join('');
+
+  var picks=[0,1,2,6].map(function(i){return POOL[i]}).filter(Boolean);
+  $('plateN').textContent=picks.length+' plates';
+  $('plates').innerHTML=picks.map(function(m,i){
+    return '<figure class="plate" data-m><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" loading="lazy" onerror="this.closest(\'[data-m]\').remove()">'+
+      '<figcaption><span class="ph">'+esc(m.head)+'<span class="pv">provider — '+esc(m.provider)+'</span></span><span class="pn">Plate '+RN[i]+'</span></figcaption></figure>'
+  }).join('');
+
+  $('swatches').innerHTML=PALETTE.map(function(p){
+    return '<div class="swatch '+p[2]+'" style="background:'+p[1]+'"><span class="nm">'+p[0]+'</span><span class="hx">'+p[1]+'</span></div>'
+  }).join('');
+
+  $('calls').innerHTML=(ev.calls||[]).map(function(c){
+    var p=c.params&&(c.params['filter.type']?c.params['filter.type'].replace('urn:entity:',''):c.params.query)||'';
+    return '<li><span class="ep">GET '+esc(c.endpoint)+'</span><span class="ms">'+esc(c.tookMs)+' ms<em>'+esc(c.mode)+' · n='+esc(c.n)+'</em></span><span class="pp">'+esc(p)+(c.params&&c.params.take?' · take '+c.params.take:'')+'</span></li>'
+  }).join('');
+  var mode=ev.qlooMode||'live';
+  $('methodNote').textContent='All affinity data on this page comes from '+(ev.calls||[]).length+' '+mode+' Qloo calls against the source page '+(uc.url||'')+'. Audience read served by '+esc(ev.source||'pipeline')+'.';
+  var affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+  $('affs').innerHTML=affs.map(function(a){
+    var e=(a.entities||[])[0];if(!e)return'';
+    return '<div class="affline"><span class="t">'+esc(a.type.replace('urn:entity:',''))+'</span><span class="e">'+esc(e.name)+'<b>'+(Number(e.affinity)||0).toFixed(2)+'</b></span></div>'
+  }).join('');
+
+  $('colo1').textContent='Board '+String(B.id||'').slice(0,8)+' · '+strats.length+' strategies · '+anti.length+' rejected · '+picks.length+' creatives · '+(ev.calls||[]).length+' provenance calls';
+})();
+</script>
+</body>
+</html>

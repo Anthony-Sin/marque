@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marque — strategy→result flow · 50 directions</title>
+<style>
+  :root{--ink:#191613;--mut:#8a8378;--line:#e5dfd5;--paper:#faf8f3;--acc:#d4521e}
+  *{box-sizing:border-box;margin:0}
+  body{font:15px/1.5 -apple-system,"Segoe UI",system-ui,sans-serif;background:var(--paper);color:var(--ink)}
+  header{max-width:1100px;margin:0 auto;padding:56px 24px 8px}
+  h1{font-size:34px;letter-spacing:-.02em}
+  .sub{color:var(--mut);margin-top:6px;max-width:640px}
+  .count{display:inline-block;margin-top:14px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--line);border-radius:99px;padding:4px 12px;color:var(--acc)}
+  main{max-width:1100px;margin:0 auto;padding:24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:28px}
+  .card{border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden;transition:transform .18s,box-shadow .18s}
+  .card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(25,22,19,.10)}
+  .shot{display:block;position:relative;aspect-ratio:16/10;background:#efeae2;overflow:hidden}
+  .shot img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+  .num{position:absolute;top:10px;left:10px;background:var(--ink);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px}
+  .meta{padding:14px 16px 16px}
+  h3{font-size:15px}
+  h3 a{color:inherit;text-decoration:none}
+  h3 a:hover{color:var(--acc)}
+  .style{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--acc);margin:2px 0 6px}
+  .blurb{font-size:13px;color:var(--mut)}
+  .demo{margin-top:10px}
+  .demo summary{cursor:pointer;font-size:12px;color:var(--acc);user-select:none}
+  .demo video{width:100%;margin-top:8px;border-radius:8px;background:#000}
+  .noshot{display:grid;place-items:center;height:100%;color:var(--mut);font-size:12px}
+  footer{max-width:1100px;margin:0 auto;padding:16px 24px 56px;color:var(--mut);font-size:12px}
+</style></head><body>
+<header>
+  <h1>Strategy → Result</h1>
+  <p class="sub">50 interface directions for the same Marque workflow — one ask, live audience read, four strategies with Qloo evidence, ruled-outs, produced output, palette and provenance. Ranked by the review pass.</p>
+  <span class="count">50 with demo reels</span>
+</header>
+<main>
+  <article class="card">
+    <a class="shot" href="./flow-16-transit-map.html" target="_blank" rel="noopener">
+      <img src="_media/flow-16-transit-map.png" alt="flow-16-transit-map" loading="lazy">
+      <span class="num">#1</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-16-transit-map.html" target="_blank" rel="noopener">flow-16-transit-map</a></h3>
+      <p class="style">transit map schematic</p>
+      <p class="blurb">Pipeline as subway lines; rejected channels hang on a suspended spur.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-16-transit-map.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-46-assembly.html" target="_blank" rel="noopener">
+      <img src="_media/flow-46-assembly.png" alt="flow-46-assembly" loading="lazy">
+      <span class="num">#2</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-46-assembly.html" target="_blank" rel="noopener">flow-46-assembly</a></h3>
+      <p class="style">flat-pack assembly manual</p>
+      <p class="blurb">IKEA-style steps turn every beat into a part with torque spec.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-46-assembly.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-19-departures.html" target="_blank" rel="noopener">
+      <img src="_media/flow-19-departures.png" alt="flow-19-departures" loading="lazy">
+      <span class="num">#3</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-19-departures.html" target="_blank" rel="noopener">flow-19-departures</a></h3>
+      <p class="style">airport departures board</p>
+      <p class="blurb">Strategies board with statuses; ruled-out channels cancelled, grounded.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-19-departures.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-43-sea-chart.html" target="_blank" rel="noopener">
+      <img src="_media/flow-43-sea-chart.png" alt="flow-43-sea-chart" loading="lazy">
+      <span class="num">#4</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-43-sea-chart.html" target="_blank" rel="noopener">flow-43-sea-chart</a></h3>
+      <p class="style">hydrographic sea chart</p>
+      <p class="blurb">Courses, bearings and depth soundings carry real affinity numbers.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-43-sea-chart.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-15-star-chart.html" target="_blank" rel="noopener">
+      <img src="_media/flow-15-star-chart.png" alt="flow-15-star-chart" loading="lazy">
+      <span class="num">#5</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-15-star-chart.html" target="_blank" rel="noopener">flow-15-star-chart</a></h3>
+      <p class="style">celestial observatory atlas</p>
+      <p class="blurb">Signals charted as constellations; gorgeous gold-on-navy plate work.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-15-star-chart.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-08-storyboard.html" target="_blank" rel="noopener">
+      <img src="_media/flow-08-storyboard.png" alt="flow-08-storyboard" loading="lazy">
+      <span class="num">#6</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-08-storyboard.html" target="_blank" rel="noopener">flow-08-storyboard</a></h3>
+      <p class="style">film storyboard</p>
+      <p class="blurb">Scenes and red-pencil frames narrate the pipeline cinematically.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-08-storyboard.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-12-retro-os.html" target="_blank" rel="noopener">
+      <img src="_media/flow-12-retro-os.png" alt="flow-12-retro-os" loading="lazy">
+      <span class="num">#7</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-12-retro-os.html" target="_blank" rel="noopener">flow-12-retro-os</a></h3>
+      <p class="style">System 7 desktop</p>
+      <p class="blurb">Every beat gets its own Mac window; complete and charming.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-12-retro-os.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-01-ops-console.html" target="_blank" rel="noopener">
+      <img src="_media/flow-01-ops-console.png" alt="flow-01-ops-console" loading="lazy">
+      <span class="num">#8</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-01-ops-console.html" target="_blank" rel="noopener">flow-01-ops-console</a></h3>
+      <p class="style">dense ops console</p>
+      <p class="blurb">All beats above the fold; richest live-data console in the set.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-01-ops-console.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-07-blueprint.html" target="_blank" rel="noopener">
+      <img src="_media/flow-07-blueprint.png" alt="flow-07-blueprint" loading="lazy">
+      <span class="num">#9</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-07-blueprint.html" target="_blank" rel="noopener">flow-07-blueprint</a></h3>
+      <p class="style">architectural blueprint</p>
+      <p class="blurb">Fig-numbered elevations; produced creatives arrive as cyanotype proofs.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-07-blueprint.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-24-control-hud.html" target="_blank" rel="noopener">
+      <img src="_media/flow-24-control-hud.png" alt="flow-24-control-hud" loading="lazy">
+      <span class="num">#10</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-24-control-hud.html" target="_blank" rel="noopener">flow-24-control-hud</a></h3>
+      <p class="style">instrument HUD deck</p>
+      <p class="blurb">Fit dials, radar scope and telemetry log; dense cockpit read.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-24-control-hud.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-17-art-deco.html" target="_blank" rel="noopener">
+      <img src="_media/flow-17-art-deco.png" alt="flow-17-art-deco" loading="lazy">
+      <span class="num">#11</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-17-art-deco.html" target="_blank" rel="noopener">flow-17-art-deco</a></h3>
+      <p class="style">art deco cinema program</p>
+      <p class="blurb">Gold sunburst reels; ruled-outs become cancelled pictures.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-17-art-deco.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-05-zine.html" target="_blank" rel="noopener">
+      <img src="_media/flow-05-zine.png" alt="flow-05-zine" loading="lazy">
+      <span class="num">#12</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-05-zine.html" target="_blank" rel="noopener">flow-05-zine</a></h3>
+      <p class="style">punk zine</p>
+      <p class="blurb">Halftone chaos with real data; ruled-outs scribbled out.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-05-zine.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-11-swiss.html" target="_blank" rel="noopener">
+      <img src="_media/flow-11-swiss.png" alt="flow-11-swiss" loading="lazy">
+      <span class="num">#13</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-11-swiss.html" target="_blank" rel="noopener">flow-11-swiss</a></h3>
+      <p class="style">Swiss typographic grid</p>
+      <p class="blurb">Ruled sections and grotesk type; precision as the style.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-11-swiss.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-39-court-exhibit.html" target="_blank" rel="noopener">
+      <img src="_media/flow-39-court-exhibit.png" alt="flow-39-court-exhibit" loading="lazy">
+      <span class="num">#14</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-39-court-exhibit.html" target="_blank" rel="noopener">flow-39-court-exhibit</a></h3>
+      <p class="style">legal exhibit filing</p>
+      <p class="blurb">Channels examined as witnesses; ruled-outs stricken from record.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-39-court-exhibit.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-14-riso-print.html" target="_blank" rel="noopener">
+      <img src="_media/flow-14-riso-print.png" alt="flow-14-riso-print" loading="lazy">
+      <span class="num">#15</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-14-riso-print.html" target="_blank" rel="noopener">flow-14-riso-print</a></h3>
+      <p class="style">riso overprint plate</p>
+      <p class="blurb">Two-color overprint with registration marks; tactile and complete.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-14-riso-print.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-36-radar-ops.html" target="_blank" rel="noopener">
+      <img src="_media/flow-36-radar-ops.png" alt="flow-36-radar-ops" loading="lazy">
+      <span class="num">#16</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-36-radar-ops.html" target="_blank" rel="noopener">flow-36-radar-ops</a></h3>
+      <p class="style">radar PPI console</p>
+      <p class="blurb">Contacts sweep the scope; range and bearing encode channel fit.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-36-radar-ops.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-48-mission-control.html" target="_blank" rel="noopener">
+      <img src="_media/flow-48-mission-control.png" alt="flow-48-mission-control" loading="lazy">
+      <span class="num">#17</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-48-mission-control.html" target="_blank" rel="noopener">flow-48-mission-control</a></h3>
+      <p class="style">flight-ops binder</p>
+      <p class="blurb">GO/NO-GO poll kills weak channels; punched-sheet mission packet.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-48-mission-control.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-42-paper-theatre.html" target="_blank" rel="noopener">
+      <img src="_media/flow-42-paper-theatre.png" alt="flow-42-paper-theatre" loading="lazy">
+      <span class="num">#18</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-42-paper-theatre.html" target="_blank" rel="noopener">flow-42-paper-theatre</a></h3>
+      <p class="style">paper theatre playbill</p>
+      <p class="blurb">Proscenium marquee, act-per-beat structure, elegant playbill type.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-42-paper-theatre.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-18-receipt-ledger.html" target="_blank" rel="noopener">
+      <img src="_media/flow-18-receipt-ledger.png" alt="flow-18-receipt-ledger" loading="lazy">
+      <span class="num">#19</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-18-receipt-ledger.html" target="_blank" rel="noopener">flow-18-receipt-ledger</a></h3>
+      <p class="style">thermal receipt</p>
+      <p class="blurb">Entire pipeline itemized on one tall receipt with dotted leaders.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-18-receipt-ledger.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-41-market-ticker.html" target="_blank" rel="noopener">
+      <img src="_media/flow-41-market-ticker.png" alt="flow-41-market-ticker" loading="lazy">
+      <span class="num">#20</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-41-market-ticker.html" target="_blank" rel="noopener">flow-41-market-ticker</a></h3>
+      <p class="style">trading desk</p>
+      <p class="blurb">Live ticker and positions book; fit reads as composite index.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-41-market-ticker.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-38-synthwave.html" target="_blank" rel="noopener">
+      <img src="_media/flow-38-synthwave.png" alt="flow-38-synthwave" loading="lazy">
+      <span class="num">#21</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-38-synthwave.html" target="_blank" rel="noopener">flow-38-synthwave</a></h3>
+      <p class="style">CRT broadcast</p>
+      <p class="blurb">Retrowave broadcast chrome; sunset grid under real data rows.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-38-synthwave.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-26-orchestra.html" target="_blank" rel="noopener">
+      <img src="_media/flow-26-orchestra.png" alt="flow-26-orchestra" loading="lazy">
+      <span class="num">#22</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-26-orchestra.html" target="_blank" rel="noopener">flow-26-orchestra</a></h3>
+      <p class="style">engraved orchestral score</p>
+      <p class="blurb">Strategies scored as movements; ruled-out channels rest.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-26-orchestra.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-25-topographic.html" target="_blank" rel="noopener">
+      <img src="_media/flow-25-topographic.png" alt="flow-25-topographic" loading="lazy">
+      <span class="num">#23</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-25-topographic.html" target="_blank" rel="noopener">flow-25-topographic</a></h3>
+      <p class="style">topographic map</p>
+      <p class="blurb">Contour peaks per strategy; dashed approach route to summit.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-25-topographic.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-23-type-specimen.html" target="_blank" rel="noopener">
+      <img src="_media/flow-23-type-specimen.png" alt="flow-23-type-specimen" loading="lazy">
+      <span class="num">#24</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-23-type-specimen.html" target="_blank" rel="noopener">flow-23-type-specimen</a></h3>
+      <p class="style">type foundry specimen</p>
+      <p class="blurb">Signals graded like type sizes across folio-numbered sheets.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-23-type-specimen.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-13-neon-cyberpunk.html" target="_blank" rel="noopener">
+      <img src="_media/flow-13-neon-cyberpunk.png" alt="flow-13-neon-cyberpunk" loading="lazy">
+      <span class="num">#25</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-13-neon-cyberpunk.html" target="_blank" rel="noopener">flow-13-neon-cyberpunk</a></h3>
+      <p class="style">neon cyberpunk deck</p>
+      <p class="blurb">Neon terminal cards; ruled-outs rejected as dead signals.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-13-neon-cyberpunk.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-27-y2k-chrome.html" target="_blank" rel="noopener">
+      <img src="_media/flow-27-y2k-chrome.png" alt="flow-27-y2k-chrome" loading="lazy">
+      <span class="num">#26</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-27-y2k-chrome.html" target="_blank" rel="noopener">flow-27-y2k-chrome</a></h3>
+      <p class="style">Y2K chrome app</p>
+      <p class="blurb">Win2k wizard chrome with pixel labels over honest numbers.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-27-y2k-chrome.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-31-manifesto.html" target="_blank" rel="noopener">
+      <img src="_media/flow-31-manifesto.png" alt="flow-31-manifesto" loading="lazy">
+      <span class="num">#27</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-31-manifesto.html" target="_blank" rel="noopener">flow-31-manifesto</a></h3>
+      <p class="style">constructivist manifesto</p>
+      <p class="blurb">Theses and red geometry; ruled-outs argued as counter-claims.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-31-manifesto.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-34-vhs-rental.html" target="_blank" rel="noopener">
+      <img src="_media/flow-34-vhs-rental.png" alt="flow-34-vhs-rental" loading="lazy">
+      <span class="num">#28</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-34-vhs-rental.html" target="_blank" rel="noopener">flow-34-vhs-rental</a></h3>
+      <p class="style">video rental store</p>
+      <p class="blurb">Staff-pick tapes per strategy; member file holds the audience.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-34-vhs-rental.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-28-darkroom.html" target="_blank" rel="noopener">
+      <img src="_media/flow-28-darkroom.png" alt="flow-28-darkroom" loading="lazy">
+      <span class="num">#29</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-28-darkroom.html" target="_blank" rel="noopener">flow-28-darkroom</a></h3>
+      <p class="style">photo darkroom bench</p>
+      <p class="blurb">Safelight red; strategies develop through chemical bath stages.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-28-darkroom.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-29-isometric.html" target="_blank" rel="noopener">
+      <img src="_media/flow-29-isometric.png" alt="flow-29-isometric" loading="lazy">
+      <span class="num">#30</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-29-isometric.html" target="_blank" rel="noopener">flow-29-isometric</a></h3>
+      <p class="style">isometric pipeline</p>
+      <p class="blurb">Iso blocks stage the pipeline across a printed grid plane.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-29-isometric.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-09-museum.html" target="_blank" rel="noopener">
+      <img src="_media/flow-09-museum.png" alt="flow-09-museum" loading="lazy">
+      <span class="num">#31</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-09-museum.html" target="_blank" rel="noopener">flow-09-museum</a></h3>
+      <p class="style">museum exhibition catalogue</p>
+      <p class="blurb">Plates and wall labels; the audience read as exhibited specimen.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-09-museum.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-50-anatomy-atlas.html" target="_blank" rel="noopener">
+      <img src="_media/flow-50-anatomy-atlas.png" alt="flow-50-anatomy-atlas" loading="lazy">
+      <span class="num">#32</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-50-anatomy-atlas.html" target="_blank" rel="noopener">flow-50-anatomy-atlas</a></h3>
+      <p class="style">anatomical atlas</p>
+      <p class="blurb">Dissection figures with Latin notes; tonus bar encodes fit.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-50-anatomy-atlas.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-45-apothecary.html" target="_blank" rel="noopener">
+      <img src="_media/flow-45-apothecary.png" alt="flow-45-apothecary" loading="lazy">
+      <span class="num">#33</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-45-apothecary.html" target="_blank" rel="noopener">flow-45-apothecary</a></h3>
+      <p class="style">apothecary dispensary</p>
+      <p class="blurb">Latin formulae and tincture bottles; cautions carry real notes.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-45-apothecary.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-53-guide-rouge.html" target="_blank" rel="noopener">
+      <img src="_media/flow-53-guide-rouge.png" alt="flow-53-guide-rouge" loading="lazy">
+      <span class="num">#34</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-53-guide-rouge.html" target="_blank" rel="noopener">flow-53-guide-rouge</a></h3>
+      <p class="style">Michelin-style guide</p>
+      <p class="blurb">Inspected établissements get stars; non retenus list rules out.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-53-guide-rouge.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-54-philatelic-bureau.html" target="_blank" rel="noopener">
+      <img src="_media/flow-54-philatelic-bureau.png" alt="flow-54-philatelic-bureau" loading="lazy">
+      <span class="num">#35</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-54-philatelic-bureau.html" target="_blank" rel="noopener">flow-54-philatelic-bureau</a></h3>
+      <p class="style">stamp album sheet</p>
+      <p class="blurb">Perforated commemoratives per strategy; postmarks stamp provenance.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-54-philatelic-bureau.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-30-field-journal.html" target="_blank" rel="noopener">
+      <img src="_media/flow-30-field-journal.png" alt="flow-30-field-journal" loading="lazy">
+      <span class="num">#36</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-30-field-journal.html" target="_blank" rel="noopener">flow-30-field-journal</a></h3>
+      <p class="style">handwritten field journal</p>
+      <p class="blurb">Kraft pages, tally marks and stamps; observed like a naturalist.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-30-field-journal.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-20-botanical-plate.html" target="_blank" rel="noopener">
+      <img src="_media/flow-20-botanical-plate.png" alt="flow-20-botanical-plate" loading="lazy">
+      <span class="num">#37</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-20-botanical-plate.html" target="_blank" rel="noopener">flow-20-botanical-plate</a></h3>
+      <p class="style">botanical plate</p>
+      <p class="blurb">Species plates with dotted leaders; ruled-outs pressed flat.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-20-botanical-plate.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-10-terminal.html" target="_blank" rel="noopener">
+      <img src="_media/flow-10-terminal.png" alt="flow-10-terminal" loading="lazy">
+      <span class="num">#38</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-10-terminal.html" target="_blank" rel="noopener">flow-10-terminal</a></h3>
+      <p class="style">zsh transcript</p>
+      <p class="blurb">Literal command transcript; mono, dense and on-metaphor.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-10-terminal.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-51-ticket-stubs.html" target="_blank" rel="noopener">
+      <img src="_media/flow-51-ticket-stubs.png" alt="flow-51-ticket-stubs" loading="lazy">
+      <span class="num">#39</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-51-ticket-stubs.html" target="_blank" rel="noopener">flow-51-ticket-stubs</a></h3>
+      <p class="style">railway ticket wallet</p>
+      <p class="blurb">Punched stubs per strategy; season ticket holds the audience.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-51-ticket-stubs.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-49-phonograph-catalog.html" target="_blank" rel="noopener">
+      <img src="_media/flow-49-phonograph-catalog.png" alt="flow-49-phonograph-catalog" loading="lazy">
+      <span class="num">#40</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-49-phonograph-catalog.html" target="_blank" rel="noopener">flow-49-phonograph-catalog</a></h3>
+      <p class="style">phonograph catalogue</p>
+      <p class="blurb">Cylinder grooves encode affinities; withdrawn masters ruled out.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-49-phonograph-catalog.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-02-editorial.html" target="_blank" rel="noopener">
+      <img src="_media/flow-02-editorial.png" alt="flow-02-editorial" loading="lazy">
+      <span class="num">#41</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-02-editorial.html" target="_blank" rel="noopener">flow-02-editorial</a></h3>
+      <p class="style">modern newspaper</p>
+      <p class="blurb">Strategy Ledger masthead; clean columns over real figures.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-02-editorial.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-47-broadsheet.html" target="_blank" rel="noopener">
+      <img src="_media/flow-47-broadsheet.png" alt="flow-47-broadsheet" loading="lazy">
+      <span class="num">#42</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-47-broadsheet.html" target="_blank" rel="noopener">flow-47-broadsheet</a></h3>
+      <p class="style">vintage gazette</p>
+      <p class="blurb">Blackletter masthead; classifieds column files the ruled-outs.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-47-broadsheet.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-52-synoptic-chart.html" target="_blank" rel="noopener">
+      <img src="_media/flow-52-synoptic-chart.png" alt="flow-52-synoptic-chart" loading="lazy">
+      <span class="num">#43</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-52-synoptic-chart.html" target="_blank" rel="noopener">flow-52-synoptic-chart</a></h3>
+      <p class="style">weather synoptic chart</p>
+      <p class="blurb">Isobaric fronts map strategies; balloon ascent returns readings.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-52-synoptic-chart.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-37-seed-packet.html" target="_blank" rel="noopener">
+      <img src="_media/flow-37-seed-packet.png" alt="flow-37-seed-packet" loading="lazy">
+      <span class="num">#44</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-37-seed-packet.html" target="_blank" rel="noopener">flow-37-seed-packet</a></h3>
+      <p class="style">seed catalogue</p>
+      <p class="blurb">Cultivar packets per strategy; sowing notes carry channels.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-37-seed-packet.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-44-arcade-cabinet.html" target="_blank" rel="noopener">
+      <img src="_media/flow-44-arcade-cabinet.png" alt="flow-44-arcade-cabinet" loading="lazy">
+      <span class="num">#45</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-44-arcade-cabinet.html" target="_blank" rel="noopener">flow-44-arcade-cabinet</a></h3>
+      <p class="style">arcade cabinet</p>
+      <p class="blurb">Pixel hi-score table; CRT bezel frames the whole pipeline.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-44-arcade-cabinet.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-32-sushi-menu.html" target="_blank" rel="noopener">
+      <img src="_media/flow-32-sushi-menu.png" alt="flow-32-sushi-menu" loading="lazy">
+      <span class="num">#46</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-32-sushi-menu.html" target="_blank" rel="noopener">flow-32-sushi-menu</a></h3>
+      <p class="style">Japanese menu</p>
+      <p class="blurb">Omakase courses per beat; refined type, lighter data density.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-32-sushi-menu.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-22-chromatic-orbit.html" target="_blank" rel="noopener">
+      <img src="_media/flow-22-chromatic-orbit.png" alt="flow-22-chromatic-orbit" loading="lazy">
+      <span class="num">#47</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-22-chromatic-orbit.html" target="_blank" rel="noopener">flow-22-chromatic-orbit</a></h3>
+      <p class="style">orbital diagram</p>
+      <p class="blurb">Strongest Qloo provenance block; hero orbit runs airy.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-22-chromatic-orbit.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-21-kanban-ops.html" target="_blank" rel="noopener">
+      <img src="_media/flow-21-kanban-ops.png" alt="flow-21-kanban-ops" loading="lazy">
+      <span class="num">#48</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-21-kanban-ops.html" target="_blank" rel="noopener">flow-21-kanban-ops</a></h3>
+      <p class="style">kanban board</p>
+      <p class="blurb">Pipeline as literal lanes; plain but functionally complete.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-21-kanban-ops.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-35-winery-label.html" target="_blank" rel="noopener">
+      <img src="_media/flow-35-winery-label.png" alt="flow-35-winery-label" loading="lazy">
+      <span class="num">#49</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-35-winery-label.html" target="_blank" rel="noopener">flow-35-winery-label</a></h3>
+      <p class="style">wine label</p>
+      <p class="blurb">Cuvée cards and déclassé ruled-outs; charming but thin.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-35-winery-label.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+
+  <article class="card">
+    <a class="shot" href="./flow-04-bento.html" target="_blank" rel="noopener">
+      <img src="_media/flow-04-bento.png" alt="flow-04-bento" loading="lazy">
+      <span class="num">#50</span>
+    </a>
+    <div class="meta">
+      <h3><a href="./flow-04-bento.html" target="_blank" rel="noopener">flow-04-bento</a></h3>
+      <p class="style">bento grid</p>
+      <p class="blurb">Clean grid, honest data; least distinctive structure kept.</p>
+      <details class="demo"><summary>▶ demo reel</summary><video src="_media/flow-04-bento.mp4" controls muted playsinline preload="none"></video></details>
+    </div>
+  </article>
+</main>
+<footer>Generated 2026-10-24 · real board data (Rhode → Gen Z) via ../data.js · culled variants live in vault/</footer>
+</body></html>

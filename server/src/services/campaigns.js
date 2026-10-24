@@ -289,7 +289,8 @@ async function oneCreative(campaign, profile, product, angle, plan = null) {
   if (plan?.medium === 'video' && creative.imagePath && !creative.placeholder) {
     creative.videoState = 'running';
     try {
-      const site = list('websites')?.at(-1);
+      const site = list('websites').filter((w) => w.producedFrom?.campaignId === campaign.id).at(-1)
+        || list('websites')?.at(-1);
       const version = site ? siteVersion(site) : null;
       let v = null;
       if (version?.html && planWantsSiteDemo(plan, campaign) && siteVideoAvailable()) {

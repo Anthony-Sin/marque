@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARQUE THEATRE — flow/17 · a campaign in seven reels</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2312100d'/%3E%3Cpath d='M16 4 L26 26 H6 Z' fill='none' stroke='%23c9a24a' stroke-width='1.4'/%3E%3Ccircle cx='16' cy='19' r='4' fill='%23c9a24a'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#12100d;
+  --bg2:#181510;
+  --panel:#1b1712;
+  --ivory:#efe6d2;
+  --ink2:#a89a7d;
+  --ink3:#6e6350;
+  --gold:#c9a24a;
+  --gold2:#e6c87a;
+  --gold-dim:rgba(201,162,74,.32);
+  --serif:"Cinzel",Georgia,"Times New Roman",serif;
+  --body:Georgia,"Times New Roman",serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.22,.72,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:
+    radial-gradient(1100px 700px at 50% -10%,#241d12 0%,transparent 58%),
+    var(--bg);
+  color:var(--ivory);
+  font:400 15px/1.65 var(--body);
+  -webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;
+}
+::selection{background:var(--gold);color:#12100d}
+a{color:var(--gold2)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 30px}
+
+/* deco stepped frame */
+.deco{position:relative;border:1px solid var(--gold);background:var(--panel)}
+.deco::before{content:"";position:absolute;inset:5px;border:1px solid var(--gold-dim);pointer-events:none}
+.deco::after{content:"";position:absolute;inset:9px;border:1px solid rgba(201,162,74,.14);pointer-events:none}
+.step{position:absolute;width:22px;height:22px;pointer-events:none}
+.step i{position:absolute;background:var(--gold)}
+.step.tl{top:-1px;left:-1px}.step.tr{top:-1px;right:-1px;transform:scaleX(-1)}
+.step.bl{bottom:-1px;left:-1px;transform:scaleY(-1)}.step.br{bottom:-1px;right:-1px;transform:scale(-1)}
+.step i:nth-child(1){width:22px;height:2px;top:0;left:0}
+.step i:nth-child(2){width:2px;height:22px;top:0;left:0}
+.step i:nth-child(3){width:14px;height:2px;top:5px;left:0}
+.step i:nth-child(4){width:2px;height:14px;top:5px;left:0}
+.step i:nth-child(5){width:6px;height:6px;top:11px;left:11px;transform:rotate(45deg)}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:center;position:relative;padding:26px 0 18px;border-bottom:1px solid var(--gold-dim);flex-wrap:wrap;gap:14px}
+.top::after{content:"";position:absolute;bottom:-8px;left:50%;transform:translateX(-50%) rotate(45deg);width:10px;height:10px;background:var(--bg);border:1px solid var(--gold)}
+.logo{font-family:var(--serif);font-weight:700;font-size:21px;letter-spacing:.4em;color:var(--ivory);text-decoration:none;text-transform:uppercase;text-indent:.4em}
+.logo em{font-style:normal;color:var(--gold)}
+.top .meta{position:absolute;right:0;top:30px;font-family:var(--mono);font-size:9.5px;line-height:1.8;color:var(--ink3);text-align:right}
+.top .meta b{color:var(--ink2);font-weight:400}
+
+/* ornament divider */
+.orn{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px auto;color:var(--gold)}
+.orn i{width:7px;height:7px;background:var(--gold);transform:rotate(45deg);flex:none}
+.orn .ln{height:1px;flex:1;max-width:120px;background:linear-gradient(90deg,transparent,var(--gold-dim))}
+.orn .ln:last-child{background:linear-gradient(90deg,var(--gold-dim),transparent)}
+
+/* hero — theatre marquee */
+.hero{padding:56px 0 40px;text-align:center}
+.reel{font-family:var(--mono);font-size:10px;letter-spacing:.44em;color:var(--gold);text-indent:.44em}
+.hero h1{font-family:var(--serif);font-weight:700;font-size:clamp(38px,7vw,74px);line-height:1.04;letter-spacing:.14em;text-indent:.14em;margin:18px 0 8px;
+  background:linear-gradient(180deg,#f4e9cd 30%,var(--gold2) 70%,#a5813a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .tag{font-family:var(--body);font-style:italic;font-size:16px;color:var(--ink2)}
+.marquee{position:relative;margin:38px auto 0;max-width:720px;padding:26px 30px;text-align:center}
+.marquee::before{content:"";position:absolute;left:0;right:0;top:-14px;height:4px;
+  background:radial-gradient(circle 2.5px at 9px 2px,var(--gold) 97%,transparent) repeat-x;background-size:18px 4px}
+.marquee::after{content:"";position:absolute;left:0;right:0;bottom:-14px;height:4px;
+  background:radial-gradient(circle 2.5px at 9px 2px,var(--gold) 97%,transparent) repeat-x;background-size:18px 4px}
+.marquee .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.4em;color:var(--gold);text-indent:.4em}
+.marquee .q{font-family:var(--serif);font-weight:600;font-size:clamp(21px,3.6vw,31px);letter-spacing:.06em;margin:12px 0 10px;line-height:1.25}
+.marquee .src{font-family:var(--mono);font-size:10.5px;color:var(--ink2)}
+.marquee .src a{color:var(--gold2);text-decoration:none;border-bottom:1px dotted var(--gold-dim)}
+.marquee .src a:hover{border-bottom-style:solid}
+.sun{position:absolute;left:50%;top:52%;transform:translate(-50%,-50%);width:min(560px,88vw);aspect-ratio:1;pointer-events:none;opacity:.5;z-index:-1;
+  background:repeating-conic-gradient(from -90deg at 50% 50%,rgba(201,162,74,.16) 0deg 5deg,transparent 5deg 11deg);
+  -webkit-mask-image:radial-gradient(circle,#000 0 34%,transparent 66%);mask-image:radial-gradient(circle,#000 0 34%,transparent 66%);border-radius:50%}
+.hero{position:relative;z-index:0}
+
+/* sections */
+.sec{padding:48px 0 4px}
+.sec-h{text-align:center;margin-bottom:8px}
+.sec-h .reel{display:block;margin-bottom:12px}
+.sec-h h2{font-family:var(--serif);font-weight:700;font-size:clamp(19px,3vw,26px);letter-spacing:.3em;text-indent:.3em;text-transform:uppercase;color:var(--ivory)}
+.sec-sub{text-align:center;color:var(--ink2);font-style:italic;font-size:14px;margin:6px auto 30px;max-width:560px}
+
+.panel-p{padding:26px 28px}
+.panel h3{font-family:var(--mono);font-size:9.5px;letter-spacing:.34em;color:var(--ink3);margin-bottom:16px;text-transform:uppercase;text-align:center}
+.grow{flex:1;display:flex;flex-direction:column}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.cols>*,.out>*,.prov>*{min-width:0}
+
+/* audience */
+.lean{text-align:center}
+.lean .big{font-family:var(--serif);font-weight:700;font-style:normal;font-size:34px;color:var(--gold2);letter-spacing:.04em}
+.lean .conf{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--ink2);border:1px solid var(--gold-dim);padding:4px 12px}
+.lean .bar{width:180px;height:3px;margin:16px auto 18px;background:rgba(201,162,74,.16);position:relative}
+.lean .bar i{position:absolute;inset:0;background:var(--gold)}
+.signals{list-style:none}
+.signals li{font-size:13.5px;padding:8px 0;border-bottom:1px solid rgba(201,162,74,.12);text-align:center;color:var(--ivory)}
+.signals li:last-child{border-bottom:0}
+.habits{display:flex;flex-direction:column;gap:11px}
+.habit{display:grid;grid-template-columns:104px 1fr;gap:14px;align-items:baseline;padding:10px 6px;border-bottom:1px solid rgba(201,162,74,.14)}
+.habit:last-child{border-bottom:0}
+.habit .ch{font-family:var(--serif);font-weight:700;font-size:11.5px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;text-align:center;border:1px solid var(--gold-dim);padding:5px 4px}
+.habit .nt{font-size:12.5px;color:var(--ink2)}
+.vibes{margin-top:18px;display:flex;flex-wrap:wrap;gap:9px;justify-content:center}
+.vibe{font-family:var(--serif);font-size:11px;letter-spacing:.14em;padding:5px 14px;border:1px solid var(--gold-dim);color:var(--ivory);text-transform:uppercase;transition:all .2s}
+.vibe:hover{border-color:var(--gold);color:var(--gold2);transform:translateY(-1px)}
+
+/* strategies */
+.strats{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.strat{padding:24px 26px;text-align:center;transition:transform .3s var(--ease),box-shadow .3s}
+.strat:hover{transform:translateY(-3px);box-shadow:0 18px 50px -20px rgba(201,162,74,.35)}
+.s-act{font-family:var(--mono);font-size:9px;letter-spacing:.34em;color:var(--gold);text-indent:.34em}
+.s-name{font-family:var(--serif);font-weight:700;font-size:23px;letter-spacing:.1em;text-transform:uppercase;margin:10px 0 2px}
+.s-angle{font-style:italic;font-size:13px;color:var(--ink2)}
+.s-score{width:64px;height:64px;margin:14px auto;border:1px solid var(--gold);border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative}
+.s-score::before{content:"";position:absolute;inset:4px;border:1px solid var(--gold-dim);border-radius:50%}
+.s-score b{font-family:var(--serif);font-size:18px;color:var(--gold2);line-height:1}
+.s-score span{font-family:var(--mono);font-size:6.5px;letter-spacing:.2em;color:var(--ink3)}
+.s-chans{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+.s-chan{display:grid;grid-template-columns:88px 1fr auto;gap:10px;align-items:center;font-size:11px;text-align:left}
+.s-chan .nm{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ivory)}
+.s-chan .bar{height:3px;background:rgba(201,162,74,.14);position:relative}
+.s-chan .bar i{position:absolute;inset:0;background:var(--gold)}
+.s-chan .wy{font-family:var(--mono);font-size:9px;color:var(--ink3)}
+.s-hero{font-size:12px;margin:10px 0}
+.s-hero b{color:var(--gold2);font-family:var(--serif);letter-spacing:.1em}
+.s-fmts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:14px}
+.s-fmts span{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;padding:3px 9px;border:1px solid rgba(201,162,74,.3);color:var(--ink2)}
+.s-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;border-top:1px solid rgba(201,162,74,.18);padding-top:12px;text-align:left}
+.s-reach b{font-family:var(--serif);font-size:19px;color:var(--gold2)}
+.s-reach span{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.24em;color:var(--ink3)}
+.s-watch{font-size:10.5px;color:var(--ink3);max-width:56%;text-align:right;font-style:italic;line-height:1.5}
+
+/* anti */
+.anti .panel-p{padding:8px 0}
+.anti-h{text-align:center;font-family:var(--mono);font-size:9.5px;letter-spacing:.34em;color:var(--ink3);padding:14px 0 6px;text-transform:uppercase}
+.anti-row{display:grid;grid-template-columns:190px 100px 1fr;gap:16px;align-items:baseline;padding:13px 30px;border-top:1px solid rgba(201,162,74,.12)}
+.anti-row .t{font-family:var(--serif);font-weight:600;font-size:15px;letter-spacing:.08em;color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--gold-dim)}
+.anti-row .c{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase}
+.anti-row .w{font-size:12.5px;color:var(--ink2);font-style:italic}
+
+/* output */
+.out{display:grid;grid-template-columns:.9fr 1.1fr;gap:26px;align-items:start}
+.brief{padding:30px;text-align:center}
+.brief .stamp{font-family:var(--mono);font-size:9px;letter-spacing:.34em;color:var(--gold);text-indent:.34em}
+.brief h3{font-family:var(--serif);font-weight:700;font-size:29px;letter-spacing:.08em;margin:12px 0 4px;color:var(--gold2)}
+.brief .a{font-style:italic;font-size:14px;color:var(--ink2);margin-bottom:18px}
+.brief dt{font-family:var(--mono);font-size:8.5px;letter-spacing:.3em;color:var(--ink3);text-transform:uppercase;margin-bottom:4px}
+.brief dd{font-size:13.5px;margin-bottom:16px}
+.brief .km{border-top:1px solid var(--gold-dim);border-bottom:1px solid var(--gold-dim);padding:14px 0;font-family:var(--serif);font-size:16px;letter-spacing:.04em;color:var(--ivory)}
+.cre-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.cre{border:1px solid var(--gold);background:var(--panel);padding:8px;transition:transform .3s var(--ease),box-shadow .3s}
+.cre:hover{transform:translateY(-4px);box-shadow:0 16px 44px -18px rgba(201,162,74,.4)}
+.cre .imgw{position:relative;aspect-ratio:.92;overflow:hidden;border:1px solid var(--gold-dim);border-radius:999px 999px 4px 4px;background:var(--bg2)}
+.cre img{width:100%;height:100%;object-fit:cover;display:block;opacity:.94}
+.cre:hover img{opacity:1}
+.cre .prov{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(18,16,13,.88);border:1px solid var(--gold-dim);color:var(--gold2);font-family:var(--mono);font-size:8px;letter-spacing:.2em;padding:3px 9px}
+.cre figcaption{padding:9px 4px 3px;font-size:11px;color:var(--ink2);text-align:center;font-style:italic;line-height:1.45}
+.palette{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.sw{width:96px;border:1px solid var(--gold);padding:5px;background:var(--panel);text-align:center;transition:transform .2s var(--ease)}
+.sw:hover{transform:translateY(-3px)}
+.sw .c{height:48px;border:1px solid rgba(201,162,74,.35)}
+.sw .n{padding:6px 2px 2px;font-family:var(--serif);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ivory)}
+.sw .n span{display:block;font-family:var(--mono);font-size:8px;color:var(--ink3);margin-top:1px}
+
+/* provenance */
+.prov{display:grid;grid-template-columns:1.12fr .88fr;gap:26px;align-items:start}
+.calls{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10.5px}
+.calls th{font-family:var(--serif);font-size:9px;letter-spacing:.26em;color:var(--gold);text-align:left;padding:9px;border-bottom:1px solid var(--gold-dim);text-transform:uppercase;font-weight:600}
+.calls td{padding:9px;border-bottom:1px solid rgba(201,162,74,.1);vertical-align:top;color:var(--ivory)}
+.calls tr:hover td{background:rgba(201,162,74,.06)}
+.calls .ep{color:var(--gold2)}
+.calls .pm{color:var(--ink2);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px}
+.calls .ms,.calls .n{text-align:right}
+.calls .md{color:var(--gold);letter-spacing:.12em}
+.calls .tot td{border-top:1px solid var(--gold);color:var(--gold2)}
+.affs{display:flex;flex-direction:column;gap:16px}
+.aff-g h4{font-family:var(--serif);font-size:10.5px;letter-spacing:.3em;color:var(--gold);text-transform:uppercase;text-align:center;margin-bottom:8px}
+.aff-r{display:grid;grid-template-columns:1fr auto;gap:2px 14px;align-items:center;font-size:12.5px;padding:4px 0}
+.aff-r .nm{font-family:var(--serif);font-size:13.5px;font-weight:600;letter-spacing:.04em}
+.aff-r .bar{grid-column:1/-1;height:2px;background:rgba(201,162,74,.14);position:relative}
+.aff-r .bar i{position:absolute;inset:0;background:var(--gold);opacity:.8}
+.aff-r .v{font-family:var(--mono);font-size:9.5px;color:var(--ink2)}
+
+/* next */
+.next{display:flex;gap:20px;justify-content:center;flex-wrap:wrap}
+.nchip{flex:1;min-width:180px;max-width:280px;padding:20px 18px;border:1px solid var(--gold);background:var(--panel);color:var(--ivory);text-decoration:none;text-align:center;
+  font-family:var(--serif);font-weight:700;font-size:15px;letter-spacing:.26em;text-indent:.26em;text-transform:uppercase;transition:all .25s var(--ease);cursor:pointer;position:relative}
+.nchip::before{content:"";position:absolute;inset:4px;border:1px solid var(--gold-dim);pointer-events:none}
+.nchip small{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.24em;color:var(--ink3);font-weight:400;margin-top:8px;text-indent:.24em}
+.nchip:hover,.nchip:focus-visible{border-color:var(--gold2);color:var(--gold2);transform:translateY(-3px)}
+.nchip:active{transform:translateY(-1px)}
+
+.foot{margin:56px 0 38px;padding-top:20px;border-top:1px solid var(--gold-dim);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:9px;letter-spacing:.26em;color:var(--ink3);text-transform:uppercase}
+
+@media (max-width:880px){
+  .cols,.out,.prov,.strats{grid-template-columns:1fr}
+  .top .meta{position:static;text-align:center;width:100%}
+}
+@media (max-width:560px){
+  .wrap{padding:0 18px}
+  .anti-row{grid-template-columns:1fr;gap:3px;padding:12px 20px}
+  .calls .pm{max-width:140px}
+  .s-watch{max-width:50%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="logo" href="#">MARQUE <em>THEATRE</em></a>
+    <div class="meta" id="hdr-meta"></div>
+  </header>
+  <div class="orn"><span class="ln"></span><i></i><i></i><i></i><span class="ln"></span></div>
+
+  <section class="hero">
+    <div class="sun"></div>
+    <span class="reel">IN SEVEN REELS — STRATEGY → CAMPAIGN → FINAL RESULT</span>
+    <h1>THE CAMPAIGN<br>PICTURE</h1>
+    <p class="tag" id="hero-sub"></p>
+    <div class="marquee deco"><span class="step tl"><i></i><i></i><i></i><i></i><i></i></span><span class="step tr"><i></i><i></i><i></i><i></i><i></i></span><span class="step bl"><i></i><i></i><i></i><i></i><i></i></span><span class="step br"><i></i><i></i><i></i><i></i><i></i></span>
+      <div class="lbl">REEL I · THE REQUEST</div>
+      <div class="q" id="ask-q"></div>
+      <div class="src" id="ask-src"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="reel">REEL II</span><h2>The Audience</h2></div>
+    <div class="orn"><span class="ln"></span><i></i><span class="ln"></span></div>
+    <div class="cols" id="aud"></div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="reel">REEL III</span><h2>Four Productions</h2></div>
+    <div class="orn"><span class="ln"></span><i></i><span class="ln"></span></div>
+    <p class="sec-sub">Four treatments entered consideration; each carries its fit score, its channels and its projected house.</p>
+    <div class="strats" id="strats"></div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="reel">REEL IV</span><h2>Left on the Floor</h2></div>
+    <div class="orn"><span class="ln"></span><i></i><span class="ln"></span></div>
+    <div class="anti deco"><span class="step tl"><i></i><i></i><i></i><i></i><i></i></span><span class="step tr"><i></i><i></i><i></i><i></i><i></i></span><span class="step bl"><i></i><i></i><i></i><i></i><i></i></span><span class="step br"><i></i><i></i><i></i><i></i><i></i></span><div id="anti"></div></div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="reel">REEL V</span><h2>Now Showing</h2></div>
+    <div class="orn"><span class="ln"></span><i></i><span class="ln"></span></div>
+    <div class="out">
+      <div class="grow">
+        <div class="brief deco"><span class="step tl"><i></i><i></i><i></i><i></i><i></i></span><span class="step tr"><i></i><i></i><i></i><i></i><i></i></span><span class="step bl"><i></i><i></i><i></i><i></i><i></i></span><span class="step br"><i></i><i></i><i></i><i></i><i></i></span><div id="brief"></div></div>
+        <div class="palette" id="palette"></div>
+      </div>
+      <div class="cre-grid" id="cres"></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="reel">REEL VI</span><h2>The Record</h2></div>
+    <div class="orn"><span class="ln"></span><i></i><span class="ln"></span></div>
+    <div class="prov">
+      <div class="panel deco panel-p"><span class="step tl"><i></i><i></i><i></i><i></i><i></i></span><span class="step tr"><i></i><i></i><i></i><i></i><i></i></span><span class="step bl"><i></i><i></i><i></i><i></i><i></i></span><span class="step br"><i></i><i></i><i></i><i></i><i></i></span><h3>PROJECTION LEDGER — API CALLS</h3><div style="overflow-x:auto"><table class="calls" id="calls"></table></div></div>
+      <div class="panel deco panel-p"><span class="step tl"><i></i><i></i><i></i><i></i><i></i></span><span class="step tr"><i></i><i></i><i></i><i></i><i></i></span><span class="step bl"><i></i><i></i><i></i><i></i><i></i></span><span class="step br"><i></i><i></i><i></i><i></i><i></i></span><h3>STAR BILLING — AFFINITIES</h3><div class="affs" id="affs"></div></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h"><span class="reel">REEL VII</span><h2>Coming Soon</h2></div>
+    <div class="orn"><span class="ln"></span><i></i><span class="ln"></span></div>
+    <div class="next" id="next"></div>
+  </section>
+
+  <footer class="foot" id="foot"></footer>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtN=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,"")+"M":n>=1e3?Math.round(n/1e3)+"K":String(n);
+const pct=x=>Math.round((x||0)*100);
+const B=(window.DATA&&window.DATA.board)||null;
+const pool=(((window.MEDIA||{}).pool)||[]).map(m=>({img:String(m.img||"").replace(/^\.\//,"../"),head:m.head||"",provider:m.provider||""})).filter(m=>m.img);
+const PICKS=[0,1,4,5].map(i=>pool[i]).filter(Boolean);
+const PALETTE=[["Glaze Pink","#EAB6AC"],["Vanilla Cream","#F6EEE5"],["Toasted Almond","#9C6B4F"],["Deep Espresso","#3E2A20"]];
+const NEXT=[["Website","landing page"],["Brandbook","identity kit"],["Video","15s cut"]];
+const el=id=>document.getElementById(id);
+if(!B){document.querySelector(".wrap").innerHTML='<p style="padding:80px 0;color:#a89a7d;text-align:center">— the house is dark: no board data —</p>';return;}
+
+const sub=B.sub||{},url=B.urlContext||{},ar=B.audienceRead||{lean:{},mediaHabits:[],vibeWords:[]},
+      strats=B.strategies||[],anti=B.antiStrategies||[],ev=B.evidence||{calls:[]},
+      affs=(B.qlooBundle||{}).affinities||[];
+const lean=ar.lean||{},calls=ev.calls||[];
+
+el("hdr-meta").innerHTML='PROGRAMME <b>'+esc((B.id||"").slice(0,8))+'</b><br>'+esc((B.createdAt||"").slice(0,10));
+el("hero-sub").textContent="Presenting the complete production record of “"+(B.title||"")+"” — from a single-line request to a finished campaign.";
+el("ask-q").textContent=sub.prompt||B.title||"";
+el("ask-src").innerHTML='FROM THE SCENARIO AT <a href="'+esc(url.url||sub.url||"#")+'">'+esc(url.url||sub.url||"")+'</a> · '+esc(url.title||"");
+
+/* audience */
+el("aud").innerHTML=
+  '<div class="panel deco panel-p"><span class="step tl"><i></i><i></i><i></i><i></i><i></i></span><span class="step tr"><i></i><i></i><i></i><i></i><i></i></span><span class="step bl"><i></i><i></i><i></i><i></i><i></i></span><span class="step br"><i></i><i></i><i></i><i></i><i></i></span><h3>CLASSIFICATION OF LEAN</h3>'+
+  '<div class="lean"><div class="big">'+esc(lean.label||"—")+'</div><span class="conf">CONFIDENCE '+pct(lean.confidence)+'%</span>'+
+  '<div class="bar"><i style="width:'+pct(lean.confidence)+'%"></i></div></div><ul class="signals">'+
+  (lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join("")+'</ul></div>'+
+  '<div class="panel deco panel-p"><span class="step tl"><i></i><i></i><i></i><i></i><i></i></span><span class="step tr"><i></i><i></i><i></i><i></i><i></i></span><span class="step bl"><i></i><i></i><i></i><i></i><i></i></span><span class="step br"><i></i><i></i><i></i><i></i><i></i></span><h3>PREFERRED HOUSES</h3><div class="habits">'+
+  (ar.mediaHabits||[]).map(h=>'<div class="habit"><span class="ch">'+esc(h.channel)+'</span><span class="nt">'+esc(h.note)+'</span></div>').join("")+
+  '</div><div class="vibes">'+(ar.vibeWords||[]).map(v=>'<span class="vibe">'+esc(v)+'</span>').join("")+'</div></div>';
+
+/* strategies */
+el("strats").innerHTML=strats.map((s,i)=>{
+  const chans=(s.channels||[]).map(c=>'<div class="s-chan"><span class="nm">'+esc(c.name)+'</span><span class="bar"><i style="width:'+pct(c.fit)+'%"></i></span><span class="wy">'+esc(c.why||"")+'</span></div>').join("");
+  return '<div class="strat deco"><span class="step tl"><i></i><i></i><i></i><i></i><i></i></span><span class="step tr"><i></i><i></i><i></i><i></i><i></i></span><span class="step bl"><i></i><i></i><i></i><i></i><i></i></span><span class="step br"><i></i><i></i><i></i><i></i><i></i></span>'+
+    '<div class="s-act">PRODUCTION '+esc(s.id||("ST"+(i+1)))+'</div>'+
+    '<div class="s-name">'+esc(s.title)+'</div><div class="s-angle">'+esc(s.angle)+'</div>'+
+    '<div class="s-score"><b>'+(s.audienceFit?s.audienceFit.score.toFixed(2):"—")+'</b><span>AUD FIT</span></div>'+
+    '<div class="s-chans">'+chans+'</div>'+
+    '<div class="s-hero">STARRING SIGNAL · <b>'+esc(s.heroSignal||"—")+'</b></div>'+
+    '<div class="s-fmts">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join("")+'</div>'+
+    '<div class="s-foot"><div class="s-reach"><b>'+fmtN((s.reach||{}).estViews||0)+'</b><span>PROJECTED HOUSE</span></div>'+
+    '<div class="s-watch">'+esc((s.watchouts||[])[0]||"")+'</div></div></div>';
+}).join("");
+
+/* anti */
+el("anti").innerHTML='<div class="anti-h">NOT ON THE PROGRAMME — CHANNEL FIT BELOW ENGAGEMENT</div>'+
+  anti.map(a=>'<div class="anti-row"><span class="t">'+esc(a.title)+'</span><span class="c">'+esc(a.channel)+'</span><span class="w">'+esc(a.whyNot)+'</span></div>').join("");
+
+/* output */
+const sel=strats[0]||{},br=sel.brief||{};
+el("brief").innerHTML='<span class="stamp">FEATURE PRODUCTION · '+esc(sel.id||"")+' — '+esc(sel.title||"")+'</span>'+
+  '<h3>'+esc(br.title||"—")+'</h3><div class="a">'+esc(br.angle||"")+'</div>'+
+  '<dt>Audience</dt><dd>'+esc(br.audience||"")+'</dd>'+
+  '<div class="km">“'+esc(br.keyMessage||"")+'”</div>';
+el("palette").innerHTML=PALETTE.map(p=>'<div class="sw"><div class="c" style="background:'+p[1]+'"></div><div class="n">'+p[0]+'<span>'+p[1]+'</span></div></div>').join("");
+el("cres").innerHTML=PICKS.map(m=>'<figure class="cre"><div class="imgw"><span class="prov">'+esc(m.provider||"gen")+'</span>'+
+  '<img src="'+esc(m.img)+'" alt="'+esc(m.head)+'" onerror="this.closest(\'.cre\').style.display=\'none\'"></div>'+
+  '<figcaption>'+esc(m.head)+'</figcaption></figure>').join("");
+
+/* provenance */
+el("calls").innerHTML='<tr><th>Reel</th><th>Params</th><th style="text-align:right">ms</th><th style="text-align:right">n</th><th>mode</th></tr>'+
+  calls.map(c=>{
+    const pm=Object.entries(c.params||{}).map(([k,v])=>k+"="+v).join(" ");
+    return '<tr><td class="ep">'+esc(c.endpoint)+'</td><td class="pm" title="'+esc(pm)+'">'+esc(pm)+'</td><td class="ms">'+esc(c.tookMs)+'</td><td class="n">'+esc(c.n)+'</td><td class="md">'+esc(c.mode)+'</td></tr>';
+  }).join("")+
+  '<tr class="tot"><td colspan="2">TOTAL · '+calls.length+' ENTRIES</td><td class="ms">'+calls.reduce((a,c)=>a+(c.tookMs||0),0)+'</td><td></td><td class="md">'+esc(ev.qlooMode||"")+'</td></tr>';
+
+el("affs").innerHTML=affs.map(g=>{
+  const lbl=String(g.type||"").replace("urn:entity:","");
+  const top=(g.entities||[]).slice(0,4);
+  const max=Math.max(...top.map(e=>e.affinity||0),0.001);
+  return '<div class="aff-g"><h4>'+esc(lbl)+'</h4>'+top.map(e=>
+    '<div class="aff-r"><span class="nm">'+esc(e.name)+'</span><span class="v">'+(e.affinity||0).toFixed(2)+'</span><span class="bar"><i style="width:'+Math.round((e.affinity/max)*100)+'%"></i></span></div>'
+  ).join("")+'</div>';
+}).join("");
+
+el("next").innerHTML=NEXT.map(n=>'<a class="nchip" href="#" onclick="return false">'+esc(n[0])+'<small>'+esc(n[1])+' · soon</small></a>').join("");
+
+el("foot").innerHTML='<span>MARQUE THEATRE / FLOW-17</span><span>'+calls.length+' ENTRIES · LIVE RECORD</span><span>PROGRAMME '+esc((B.id||"").slice(0,8))+'</span>';
+})();
+</script>
+</body>
+</html>

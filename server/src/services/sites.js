@@ -66,7 +66,7 @@ export async function generateWebsite(profile, prompt = '', ctx = null) {
   const version = { id: uid(), html, prompt, createdAt: now() };
   const website = { id: uid(), createdAt: now(), versions: [version], activeVersion: version.id, publishedSlug: null };
   if (ctx) website.producedFrom = {
-    campaignId: ctx.campaign ? true : null,
+    campaignId: ctx.campaign?.id || null,
     campaignTitle: ctx.campaign?.title || null,
     strategyTitle: ctx.strategy?.title || null,
   };

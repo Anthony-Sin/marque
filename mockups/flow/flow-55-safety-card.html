@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque Air — Campaign Safety Information</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23FCFCF7'/%3E%3Crect x='8' y='8' width='48' height='48' fill='none' stroke='%23182640' stroke-width='4'/%3E%3Cpath d='M16 40h32M22 40V24h20v16' fill='none' stroke='%23C62F22' stroke-width='4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FCFCF7;
+  --ink:#182640;
+  --mut:#5A6478;
+  --hair:#C7CCD6;
+  --red:#C62F22;
+  --amber:#D98E1E;
+  --sans:'Archivo',Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:#DBDEDC;
+  background-image:repeating-linear-gradient(90deg,rgba(24,38,64,.045) 0 2px,transparent 2px 46px);
+  color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(198,47,34,.18)}
+a{color:var(--red);text-decoration:none;border-bottom:2px solid var(--red)}
+a:hover{color:var(--ink);border-color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+
+.card{
+  max-width:1000px;margin:24px auto 60px;background:var(--paper);
+  border:2.5px solid var(--ink);
+  box-shadow:0 26px 60px rgba(20,28,48,.35);
+}
+/* ============ header placard ============ */
+.hd{padding:clamp(16px,3vw,30px) clamp(16px,3.4vw,34px) clamp(14px,2.6vw,24px);border-bottom:2.5px solid var(--ink);position:relative}
+.hd::after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:4px;background:repeating-linear-gradient(90deg,var(--red) 0 34px,var(--paper) 34px 46px)}
+.brandrow{display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:800;letter-spacing:.28em;font-size:clamp(10px,1.4vw,12px);flex-wrap:wrap}
+.brandrow .eq{color:var(--mut);letter-spacing:.2em;font-weight:500}
+.hd h1{
+  margin:14px 0 4px;font-weight:800;letter-spacing:.06em;line-height:.95;
+  font-size:clamp(30px,6.4vw,58px);text-transform:uppercase;
+}
+.hd h1 em{font-style:normal;color:var(--red)}
+.hd .codes{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--mut);text-transform:uppercase;margin-bottom:16px}
+.askbox{border:2px solid var(--ink);padding:12px 16px;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:baseline}
+.askbox .lb{font-weight:800;font-size:10px;letter-spacing:.24em;color:#fff;background:var(--ink);padding:4px 9px;text-transform:uppercase}
+.askbox .tx{font-size:clamp(15px,2.2vw,19px);font-weight:600}
+.askbox .url{grid-column:2;font-family:var(--mono);font-size:11px;overflow-wrap:anywhere}
+.askbox .src{grid-column:2;font-size:11.5px;color:var(--mut);font-style:italic}
+@media(max-width:480px){.askbox{grid-template-columns:1fr}.askbox .lb{justify-self:start}.askbox .url,.askbox .src{grid-column:1}}
+
+/* ============ fold panels ============ */
+.panel{border-bottom:2.5px solid var(--ink);padding:clamp(16px,3vw,26px) clamp(16px,3.4vw,34px)}
+.panel:nth-of-type(even){background:#F6F6F0}
+.phd{display:flex;align-items:center;gap:clamp(10px,2vw,18px);margin-bottom:clamp(12px,2vw,18px);flex-wrap:wrap}
+.phd .num{
+  flex:0 0 auto;width:clamp(48px,7vw,62px);height:clamp(48px,7vw,62px);
+  border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:clamp(24px,4vw,32px);
+}
+.phd .tt h2{font-weight:800;text-transform:uppercase;letter-spacing:.1em;font-size:clamp(15px,2.4vw,21px);line-height:1.1}
+.phd .tt p{font-size:11.5px;color:var(--mut);letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+.phd .pict{margin-left:auto;flex:0 0 auto}
+.phd .pict svg{display:block;width:clamp(44px,7vw,58px);height:auto}
+.pg{font-size:13.5px;max-width:70ch}
+.pg b{font-weight:700}
+.kw{background:var(--ink);color:#fff;padding:1px 7px;font-weight:700;letter-spacing:.04em}
+.kw.red{background:var(--red)}
+.kw.amb{background:var(--amber)}
+
+/* panel 1 — audience: placard + seat rows */
+.cabin{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(14px,2.4vw,24px)}
+@media(max-width:760px){.cabin{grid-template-columns:1fr}}
+.mani{border:2px solid var(--ink);background:#fff;padding:14px 16px}
+.mani .mh{font-weight:800;text-transform:uppercase;letter-spacing:.18em;font-size:11px;border-bottom:2px solid var(--ink);padding-bottom:8px;display:flex;justify-content:space-between;gap:8px}
+.mani .mh b{color:var(--red)}
+.mani ul{list-style:none;margin-top:10px}
+.mani li{display:grid;grid-template-columns:46px 1fr;gap:10px;padding:7px 0;border-bottom:1px dashed var(--hair);font-size:13px;align-items:baseline}
+.mani li:last-child{border-bottom:none}
+.mani .seat{font-family:var(--mono);font-weight:700;font-size:11px;border:1.5px solid var(--ink);text-align:center;padding:2px 0;background:var(--paper)}
+.habs{border:2px solid var(--ink);background:#fff}
+.habs .hh{background:var(--ink);color:#fff;font-weight:800;letter-spacing:.2em;font-size:10px;padding:7px 12px;text-transform:uppercase}
+.habs table{width:100%;border-collapse:collapse}
+.habs td{padding:8px 12px;border-bottom:1px dashed var(--hair);font-size:12.5px;vertical-align:top}
+.habs td:first-child{font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.12em;width:92px;color:var(--red)}
+.habs tr:last-child td{border-bottom:none}
+.vibes{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.vibes span{border:1.5px solid var(--ink);padding:3px 10px;font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;background:#fff}
+
+/* panel 2 — exits */
+.exits{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,2.4vw,22px)}
+@media(max-width:720px){.exits{grid-template-columns:1fr}}
+.exit{border:2.5px solid var(--ink);background:#fff;position:relative;transition:box-shadow .15s ease,transform .15s ease}
+.exit:hover{transform:translateY(-2px);box-shadow:5px 6px 0 rgba(24,38,64,.18)}
+.exit .sign{background:var(--red);color:#fff;display:flex;justify-content:space-between;align-items:center;padding:6px 12px;font-weight:800;letter-spacing:.3em;font-size:clamp(11px,1.6vw,13px);text-transform:uppercase}
+.exit .sign .lamp{display:flex;align-items:center;gap:6px;font-size:9px;letter-spacing:.14em;font-weight:600}
+.exit .sign .lamp i{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.45);display:inline-block}
+.exit.lit .sign .lamp i{background:#FFE9A8;box-shadow:0 0 8px #FFE9A8}
+.exit .body{padding:12px 14px 13px}
+.exit h3{font-weight:800;font-size:clamp(16px,2.2vw,20px);letter-spacing:.02em;margin-bottom:2px}
+.exit .ang{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.exit .rte{border-top:1.5px solid var(--ink);border-bottom:1.5px solid var(--ink)}
+.exit .rte div{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--hair);font-size:12.5px}
+.exit .rte div:last-child{border-bottom:none}
+.exit .rte b{text-transform:uppercase;letter-spacing:.08em;font-size:11px}
+.exit .rte .f{font-family:var(--mono);font-weight:700}
+.exit .rte .w{color:var(--mut);font-style:italic;font-size:11.5px}
+.exit .dist{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:10px;flex-wrap:wrap}
+.exit .dist b{font-weight:800;font-size:clamp(15px,2vw,18px)}
+.exit .dist span{font-size:10.5px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em}
+.exit .fmt{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.exit .fmt span{font-size:10.5px;font-weight:600;border:1.5px solid var(--ink);padding:2px 8px;text-transform:uppercase;letter-spacing:.07em}
+.exit .warn{margin-top:10px;background:repeating-linear-gradient(-45deg,rgba(217,142,30,.16) 0 10px,transparent 10px 20px);border:1.5px solid var(--amber);padding:7px 10px;font-size:11.5px}
+.exit .warn b{color:#9A6210;text-transform:uppercase;font-size:10px;letter-spacing:.14em;display:block;margin-bottom:2px}
+.exit .near{position:absolute;top:-13px;right:12px;background:var(--ink);color:#fff;font-size:9.5px;font-weight:800;letter-spacing:.2em;padding:3px 10px;text-transform:uppercase}
+.exit .basis{font-size:11.5px;color:var(--mut);margin-top:8px;font-style:italic}
+.exit .fitrow{display:flex;align-items:center;gap:8px;margin-top:8px}
+.exit .fitrow .fb{flex:1;height:8px;border:1.5px solid var(--ink);background:var(--paper)}
+.exit .fitrow .fb i{display:block;height:100%;background:var(--red)}
+.exit .fitrow .fv{font-family:var(--mono);font-size:11px;font-weight:700}
+
+/* panel 3 — prohibited */
+.bans{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,2vw,18px)}
+@media(max-width:700px){.bans{grid-template-columns:1fr}}
+.ban{display:grid;grid-template-columns:52px 1fr;gap:12px;border:2px solid var(--ink);padding:12px 14px;background:#fff;align-items:start}
+.ban .no{width:52px;height:52px;position:relative;flex:0 0 auto}
+.ban h4{font-weight:800;text-transform:uppercase;letter-spacing:.06em;font-size:14px;text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:2.5px}
+.ban .ch{font-family:var(--mono);font-size:10.5px;color:var(--red);letter-spacing:.12em;text-transform:uppercase;margin:2px 0 6px}
+.ban p{font-size:12px;color:var(--mut)}
+.ban .reg{margin-top:6px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink)}
+
+/* panel 4 — mask & demonstration */
+.secure{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(14px,2.6vw,24px);align-items:start}
+@media(max-width:820px){.secure{grid-template-columns:1fr}}
+.oxy{border:2.5px solid var(--ink);background:#fff}
+.oxy .oh{background:var(--ink);color:#fff;padding:7px 14px;font-weight:800;letter-spacing:.22em;font-size:11px;text-transform:uppercase}
+.oxy .ob{padding:14px 16px}
+.oxy h3{font-size:clamp(18px,2.6vw,24px);font-weight:800;letter-spacing:.02em}
+.oxy .lede{font-size:13px;margin:6px 0 12px}
+.oxy dl{display:grid;grid-template-columns:86px 1fr;gap:4px 12px;font-size:12.5px}
+.oxy dt{font-weight:800;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);padding-top:3px}
+.oxy dd{border-bottom:1px dashed var(--hair);padding-bottom:6px}
+.oxy .km{font-weight:700;font-size:14px}
+.oxy .st{margin-top:10px;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--mut);text-transform:uppercase}
+.demos{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:420px){.demos{grid-template-columns:1fr}}
+.demo{border:2px solid var(--ink);background:#fff;padding:8px 8px 0;transition:transform .15s ease}
+.demo:hover{transform:scale(1.02)}
+.demo .iw{border:1.5px solid var(--hair);overflow:hidden;aspect-ratio:4/3;background:#EFEFEA}
+.demo .iw img{width:100%;height:100%;object-fit:cover}
+.demo figcaption{padding:8px 2px}
+.demo .h{font-weight:700;font-size:12px;line-height:1.35}
+.demo .p{display:inline-block;margin-top:5px;font-family:var(--mono);font-size:9px;letter-spacing:.1em;border:1.5px solid var(--ink);padding:2px 7px;text-transform:uppercase}
+.demo .p.sd{border-color:var(--amber);color:#9A6210}
+.demo .p.gm{border-color:var(--red);color:var(--red)}
+
+/* panel 5 — cabin lighting */
+.lights{display:flex;flex-wrap:wrap;gap:clamp(12px,2vw,20px)}
+.lite{width:130px;max-width:46%;flex:1 1 120px}
+.lite .sw{height:56px;border:2px solid var(--ink);position:relative}
+.lite .sw::after{content:"";position:absolute;inset:4px;border:1px dashed rgba(24,38,64,.35)}
+.lite .n{font-weight:800;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;margin-top:7px}
+.lite .h{font-family:var(--mono);font-size:9.5px;color:var(--mut);letter-spacing:.1em}
+
+/* panel 6 — data recorder */
+.fdr{border:2px solid #222;background:#16181D;color:#D8DCE4;padding:14px 16px;font-family:var(--mono);font-size:11.5px}
+.fdr .fh{display:flex;justify-content:space-between;gap:10px;border-bottom:1.5px solid #3A3F4A;padding-bottom:8px;margin-bottom:8px;font-size:10px;letter-spacing:.14em;flex-wrap:wrap}
+.fdr .fh .lv{color:#7BE0A8;font-weight:700}
+.fdr .lg{display:grid;grid-template-columns:1fr;gap:0}
+.fdr .lr{display:grid;grid-template-columns:86px 1fr 60px 50px 48px;gap:8px;padding:5px 0;border-bottom:1px dashed #2C313C;align-items:baseline}
+.fdr .lr:last-child{border-bottom:none}
+.fdr .at{color:#8A93A6}
+.fdr .ep{color:#F2C14E;overflow-wrap:anywhere}
+.fdr .pm{color:#8A93A6;font-size:10px;overflow-wrap:anywhere}
+.fdr .n{color:#7BE0A8;text-align:right}
+.fdr .ms{color:#D8DCE4;text-align:right}
+.fdr .md{color:#182640;background:#D8DCE4;padding:0 5px;text-align:center;font-size:9.5px}
+@media(max-width:560px){.fdr .lr{grid-template-columns:1fr 56px 48px;grid-auto-rows:auto}.fdr .at{grid-column:1/-1}.fdr .ep{grid-column:1/-1}}
+.reg2{margin-top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:820px){.reg2{grid-template-columns:repeat(2,1fr)}}
+.reg2 .g{border:2px solid var(--ink);background:#fff;padding:10px 12px}
+.reg2 .gt{font-weight:800;font-size:10px;letter-spacing:.2em;text-transform:uppercase;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:8px}
+.reg2 .gt b{color:var(--red)}
+.reg2 .rw{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:baseline;font-size:11.5px;padding:3px 0}
+.reg2 .rw .v{font-family:var(--mono);font-size:10px;font-weight:700}
+.reg2 .rw .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.reg2 .bar{grid-column:1/-1;height:5px;background:#EDEFE9;border:1px solid var(--hair)}
+.reg2 .bar i{display:block;height:100%;background:var(--red)}
+
+/* panel 7 — connecting outputs */
+.conx{display:flex;flex-wrap:wrap;gap:10px}
+.conx button{
+  border:2.5px solid var(--ink);background:#fff;padding:11px 20px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.1em;font-size:12px;
+  transition:background .12s ease,color .12s ease,transform .12s ease;
+}
+.conx button:hover{background:var(--ink);color:#fff}
+.conx button:active{transform:translateY(2px);background:var(--red);border-color:var(--red);color:#fff}
+.conx .alt{font-size:11px;color:var(--mut);margin-top:12px;letter-spacing:.06em;text-transform:uppercase}
+.placard{padding:12px clamp(16px,3.4vw,34px);font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.empty{padding:40px;text-align:center;color:var(--mut);font-style:italic}
+</style>
+</head>
+<body>
+<div class="card">
+  <header class="hd">
+    <div class="brandrow"><span>MARQUE AIR</span><span class="eq">ONBOARD CAMPAIGN EQUIPMENT · THIS CARD BELONGS IN YOUR SEAT POCKET</span></div>
+    <h1>Campaign <em>Safety</em> Information</h1>
+    <div class="codes" id="s-codes"></div>
+    <div class="askbox">
+      <span class="lb">Your instructions</span>
+      <span class="tx" id="s-ask"></span>
+      <span class="url" id="s-url"></span>
+      <span class="src" id="s-src"></span>
+    </div>
+  </header>
+  <main id="app"></main>
+  <div class="placard" id="foot"></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dt=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase()}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Runway Rose',h:'#D97F74'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Cabin Navy',h:'#182640'}
+];
+const CREAT=[1,5,8,13].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dt(B.createdAt||B.fetchedAt);
+const ID8=String(B.id||'—').slice(0,8).toUpperCase();
+
+/* pictograms */
+const PIC={
+ seat:'<svg viewBox="0 0 48 48" fill="none" stroke="#182640" stroke-width="2.4"><circle cx="17" cy="10" r="5"/><path d="M14 17h8v11h10l3 9"/><path d="M12 17v14h20"/><path d="M32 37l3 6M14 37l-2 6"/><path d="M38 8v32" stroke="#C62F22"/><path d="M38 8h6v32" stroke="#C62F22"/></svg>',
+ exit:'<svg viewBox="0 0 48 48" fill="none" stroke="#182640" stroke-width="2.4"><rect x="6" y="6" width="20" height="36"/><path d="M15 24h26"/><path d="M34 16l8 8-8 8"/><circle cx="13" cy="14" r="3"/><path d="M12 19v10l-4 6"/></svg>',
+ mask:'<svg viewBox="0 0 48 48" fill="none" stroke="#182640" stroke-width="2.4"><path d="M24 6v8"/><rect x="14" y="16" width="20" height="15" rx="7"/><path d="M18 31q6 5 12 0" /><path d="M24 31v9"/><circle cx="24" cy="43" r="3"/><path d="M10 22q-4 2-4 6M38 22q4 2 4 6" stroke="#C62F22"/></svg>',
+ vest:'<svg viewBox="0 0 48 48" fill="none" stroke="#182640" stroke-width="2.4"><path d="M16 6h16l6 10v26H10V16z"/><path d="M24 6v14"/><path d="M14 24h20M14 32h20"/><path d="M10 16l-4 4M38 16l4 4" stroke="#C62F22"/></svg>',
+ lamp:'<svg viewBox="0 0 48 48" fill="none" stroke="#182640" stroke-width="2.4"><rect x="8" y="10" width="32" height="20" rx="2"/><path d="M24 30v8M14 40h20" /><path d="M16 20h16" stroke="#C62F22"/></svg>',
+ rec:'<svg viewBox="0 0 48 48" fill="none" stroke="#D8DCE4" stroke-width="2.2"><rect x="6" y="10" width="36" height="28" rx="3"/><path d="M14 18h20M14 24h20M14 30h12" stroke="#F2C14E"/></svg>'
+};
+const NOSYM='<svg viewBox="0 0 52 52" fill="none"><circle cx="26" cy="26" r="21" stroke="#C62F22" stroke-width="4"/><path d="M12 40L40 12" stroke="#C62F22" stroke-width="4"/></svg>';
+
+document.getElementById('s-codes').textContent='CARD NO. MK-'+ID8+' · ISSUED '+DATE+' · REVIEW BEFORE LAUNCH · COMPLIANCE MANDATORY';
+document.getElementById('s-ask').textContent=((B.sub&&B.sub.prompt)||B.title||'').toUpperCase();
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+document.getElementById('s-url').innerHTML=U?'Filed flight plan: <a href="'+esc(U)+'">'+esc(U)+'</a>':'';
+document.getElementById('s-src').textContent=(B.urlContext&&B.urlContext.title)?('Operator of record: '+B.urlContext.title+' — '+(B.urlContext.description||'').slice(0,90)+'…'):'';
+document.getElementById('foot').innerHTML='<span>P/N MARQUE-'+ID8+' · REV '+DATE+'</span><span>MARQUE AIRLINE EQUIPMENT · DO NOT REMOVE FROM BOARD</span>';
+
+const M=document.getElementById('app');
+let pn=0;
+const panel=(title,cap,pict,body)=>{
+  if(!body)return;
+  pn++;
+  M.appendChild(el('<section class="panel"><div class="phd"><span class="num">'+pn+'</span><div class="tt"><h2>'+esc(title)+'</h2><p>'+esc(cap)+'</p></div><span class="pict">'+(pict||'')+'</span></div>'+body+'</section>'));
+};
+
+/* 1 — passenger manifest */
+if(AR&&AR.lean){
+  panel('Passenger Profile','who is seated on this flight',PIC.seat,
+  '<div class="cabin"><div class="mani"><div class="mh"><span>MANIFEST · CLASS OF TRAVEL</span><b>CONF '+f2(AR.lean.confidence)+'</b></div>'+
+  '<p style="margin:10px 0 2px">This aircraft is configured for <span class="kw">'+esc(AR.lean.label)+'</span> passengers. Crew must brief the following seated parties:</p>'+
+  '<ul>'+(AR.lean.signals||[]).map((s,i)=>'<li><span class="seat">'+(10+i*3)+'A</span><span>'+esc(s)+'</span></li>').join('')+'</ul>'+
+  '<div class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div>'+
+  '<div class="habs"><div class="hh">IN-FLIGHT ENTERTAINMENT · OBSERVED VIEWING</div><table>'+
+  (AR.mediaHabits||[]).map(h=>'<tr><td>'+esc(h.channel)+'</td><td>'+esc(h.note)+'</td></tr>').join('')+
+  '</table></div></div>');
+}
+
+/* 2 — locate your exits */
+if(strats.length){
+  panel('Locate Your Campaign Exits','four routes are fitted to this airframe — know them all',PIC.exit,
+  '<p class="pg" style="margin-bottom:14px">This board is equipped with <b>FOUR</b> campaign exits. Distance to each exit is measured in expected passengers. The <span class="kw red">nearest exit</span> is marked and its illumination lamp is lit when audience fit reaches 90%.</p>'+
+  '<div class="exits">'+strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    return '<div class="exit'+(fit>=.9?' lit':'')+'">'+(i===sel?'<span class="near">Nearest exit</span>':'')+
+    '<div class="sign"><span>EXIT '+('ABCD'[i])+' — '+esc(s.angle||'ROUTE')+'</span><span class="lamp"><i></i>FIT LAMP</span></div>'+
+    '<div class="body"><h3>'+esc(s.title)+'</h3><div class="ang">route via '+esc(s.heroSignal||'—')+'</div>'+
+    '<div class="rte">'+(s.channels||[]).map(c=>'<div><b>'+esc(c.name)+'</b><span class="w">'+esc(c.why||'')+'</span><span class="f">'+f2(c.fit)+'</span></div>').join('')+'</div>'+
+    '<div class="fitrow"><span style="font-size:9.5px;letter-spacing:.16em;font-weight:700">AUDIENCE FIT</span><span class="fb"><i style="width:'+Math.round(fit*100)+'%"></i></span><span class="fv">'+f2(fit)+'</span></div>'+
+    '<div class="dist"><b>'+views(s.reach&&s.reach.estViews)+' pax</b><span>distance from row</span></div>'+
+    '<div class="basis">'+esc(s.reach&&s.reach.basis||'')+'</div>'+
+    '<div class="fmt">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join('')+'</div>'+
+    ((s.watchouts&&s.watchouts[0])?'<div class="warn"><b>Caution</b>'+esc(s.watchouts[0])+'</div>':'')+
+    '</div></div>';
+  }).join('')+'</div>');
+}
+
+/* 3 — prohibited items */
+if(anti.length){
+  panel('Prohibited Channels','these items may not be carried aboard this campaign',PIC.exit,
+  '<div class="bans">'+anti.map(a=>
+    '<div class="ban"><span class="no">'+NOSYM+'</span><div><h4>'+esc(a.title)+'</h4><div class="ch">restricted goods · '+esc(a.channel)+'</div><p>'+esc(a.whyNot)+'</p><div class="reg">Confiscated at boarding — fit below minimum</div></div></div>').join('')+'</div>');
+}
+
+/* 4 — secure your own message */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  panel('Secure Your Own Message First','before assisting other channels',PIC.mask,
+  '<div class="secure"><div class="oxy"><div class="oh">Oxygen briefing · the chosen message</div><div class="ob">'+
+  (br?'<h3>'+esc(br.title)+'</h3><div class="lede">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Audience</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Message</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Signal</dt><dd>'+esc(selS.heroSignal||'—')+'</dd></dl>':'<div class="lede">No message on file for this route.</div>')+
+  '<div class="st">Brief pulled from EXIT '+('ABCD'[sel<0?0:sel])+' · '+esc(selS?selS.title:'—').toUpperCase()+'</div></div></div>'+
+  '<div class="demos">'+CREAT.map((m,i)=>
+    '<figure class="demo"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+    '<figcaption><div class="h">'+esc(m.head)+'</div><span class="p '+(m.provider==='gemini'?'gm':'sd')+'">demo '+('ABCD'[i])+' · '+esc(m.provider)+'</span></figcaption></figure>').join('')+'</div></div>'+
+  '<p class="pg" style="margin-top:12px">Life-vest demonstrations are rendered by the provider shown on each card. Inflate only after audience fit is confirmed.</p>');
+}
+
+/* 5 — cabin lighting */
+panel('Cabin Lighting Scheme','approved illuminants for this airframe',PIC.lamp,
+  '<div class="lights">'+PALETTE.map(s=>
+    '<div class="lite"><div class="sw" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="h">ILLUM '+s.h.toUpperCase()+'</div></div>').join('')+'</div>');
+
+/* 6 — flight data recorder */
+if(B.evidence||affs.length){
+  panel('Flight Data Recorder','every signal witnessed — do not open in flight',null,
+  '<div class="fdr"><div class="fh"><span>FDR · MARQUE-'+ID8+' · '+calls.length+' ENTRIES</span><span class="lv">QLOO '+(esc((B.qlooBundle&&B.qlooBundle.mode)||'live').toUpperCase())+'</span><span>'+PIC.rec+'</span></div>'+
+  '<div class="lg">'+calls.map(c=>
+    '<div class="lr"><span class="at">'+esc((c.at||'').slice(11,19))+'Z</span><span><span class="ep">'+esc(c.endpoint)+'</span> <span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,18)).join(' '))+'</span></span><span class="n">n='+esc(c.n)+'</span><span class="ms">'+esc(c.tookMs)+'ms</span><span class="md">'+esc(c.mode)+'</span></div>').join('')+
+  '</div></div>'+
+  '<div class="reg2">'+affs.map(g=>'<div class="g"><div class="gt">Affinities · <b>'+esc(g.type.replace('urn:entity:',''))+'</b></div>'+
+    g.entities.slice(0,4).map(e=>'<div class="rw"><span class="nm">'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span><span class="bar"><i style="width:'+Math.round(e.affinity*100)+'%"></i></span></div>').join('')+'</div>').join('')+'</div>');
+}
+
+/* 7 — connecting outputs */
+panel('Upon Landing','connecting outputs depart from this gate',PIC.vest,
+  '<p class="pg" style="margin-bottom:12px">Before leaving the aircraft you may requisition onward materials. Pressing a key does not deplane you.</p>'+
+  '<div class="conx">'+['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+'</div>'+
+  '<div class="conx alt" style="margin-top:12px">Checked boards remain in the hold: '+esc((((window.DASH||{}).plans)||[]).length||'—')+' on file</div>');
+
+if(!M.children.length)M.appendChild(el('<div class="empty">Card not found — data.js never reached the seat pocket. Assume the brace position.</div>'));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARQUE — 本日のお品書き · Rhode peptide lip tint → Gen Z</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23F4EEDF'/%3E%3Crect x='16' y='16' width='32' height='32' rx='4' fill='%23B23A2E'/%3E%3Ctext x='32' y='43' font-size='24' text-anchor='middle' fill='%23F4EEDF' font-family='serif'%3E印%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --washi:#F4EEDF;
+  --washi2:#EDE4CF;
+  --ink:#2B2620;
+  --ink2:#6A6152;
+  --ink3:#9B9080;
+  --verm:#B23A2E;
+  --verm-dk:#8E2C22;
+  --line:#CBBFA4;
+  --rule:#2B2620;
+  --serif:'Shippori Mincho','Hiragino Mincho ProN','Yu Mincho',Georgia,serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--washi2);
+  background-image:
+    repeating-linear-gradient(0deg,rgba(43,38,32,.022) 0 1px,transparent 1px 9px),
+    repeating-linear-gradient(90deg,rgba(43,38,32,.018) 0 1px,transparent 1px 11px);
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:14px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+/* washi fibre noise */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.5;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.17 0 0 0 0 0.12 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+::selection{background:var(--verm);color:var(--washi)}
+a{color:var(--verm-dk);text-decoration:none;border-bottom:1px solid var(--verm)}
+a:hover{color:var(--verm)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--verm);outline-offset:2px}
+button{font-family:var(--serif);cursor:pointer}
+img{display:block}
+.jp{font-weight:800}
+
+/* ============ MENU SHEET ============ */
+.sheet{
+  position:relative;z-index:1;
+  max-width:940px;margin:28px auto;
+  background:var(--washi);
+  border:1px solid var(--ink);
+  box-shadow:0 1px 0 var(--washi) inset,0 0 0 6px var(--washi),0 0 0 7px var(--line),0 14px 40px rgba(43,38,32,.18);
+  padding:40px 64px 36px;
+}
+.sheet::before{content:"";position:absolute;inset:10px;border:1px solid var(--line);pointer-events:none}
+
+/* vertical side rails */
+.rail{
+  position:absolute;top:56px;bottom:56px;
+  writing-mode:vertical-rl;display:flex;align-items:center;justify-content:space-between;
+  font-size:12px;font-weight:600;letter-spacing:.42em;color:var(--ink3);pointer-events:none;
+}
+.rail.l{left:22px;transform:rotate(180deg)}
+.rail.r{right:22px}
+.rail b{color:var(--verm);font-weight:800}
+
+/* ============ MASTHEAD ============ */
+.mast{text-align:center;border-bottom:2px solid var(--rule);padding-bottom:22px;position:relative}
+.mast .brand-jp{font-size:15px;font-weight:800;letter-spacing:.9em;text-indent:.9em;color:var(--ink2)}
+.mast h1{
+  font-size:clamp(34px,6vw,58px);font-weight:800;letter-spacing:.14em;line-height:1.15;margin-top:10px;
+}
+.mast h1 .vk{writing-mode:vertical-rl;font-size:.42em;letter-spacing:.2em;vertical-align:top;color:var(--verm);font-weight:800}
+.mast .sub{font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--ink2);margin-top:12px}
+.mast .meta{
+  display:flex;justify-content:center;gap:26px;flex-wrap:wrap;margin-top:14px;
+  font-size:11px;letter-spacing:.14em;color:var(--ink2);
+}
+.mast .meta b{color:var(--ink)}
+.seal{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--verm);color:var(--washi);
+  width:34px;height:34px;font-size:15px;font-weight:800;
+  border-radius:3px;transform:rotate(-4deg);
+  box-shadow:inset 0 0 0 2px rgba(244,238,223,.35),0 1px 2px rgba(43,38,32,.25);
+  font-family:var(--serif);
+}
+.mast .seal{position:absolute;top:-6px;right:6px;width:52px;height:52px;font-size:20px}
+
+/* ============ COURSE SECTIONS ============ */
+.course{margin-top:34px}
+.course-head{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.course-head .vk{
+  writing-mode:vertical-rl;font-size:19px;font-weight:800;letter-spacing:.24em;
+  border-left:2px solid var(--rule);padding-left:8px;line-height:1.2;flex-shrink:0;
+}
+.course-head .tt{min-width:0}
+.course-head h2{font-size:clamp(18px,2.4vw,24px);font-weight:800;letter-spacing:.08em;line-height:1.2}
+.course-head .en{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink2);margin-top:3px}
+.course-head .no{
+  margin-left:auto;font-size:11px;color:var(--ink3);letter-spacing:.2em;flex-shrink:0;
+  writing-mode:horizontal-tb;
+}
+
+/* ask */
+.ask-box{text-align:center;padding:8px 0 4px}
+.ask-prompt{font-size:clamp(22px,3.6vw,34px);font-weight:800;letter-spacing:.06em;line-height:1.3}
+.ask-prompt .arr{color:var(--verm)}
+.ask-url{margin-top:10px;font-size:12.5px}
+.ask-ctx{
+  margin:18px auto 0;max-width:560px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  padding:12px 6px;font-size:12.5px;color:var(--ink2);line-height:1.8;
+}
+.ask-ctx b{color:var(--ink);letter-spacing:.06em}
+
+/* audience — seasonal catch */
+.aud{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr) minmax(0,.9fr);gap:0;border:1px solid var(--line);background:rgba(255,255,255,.28)}
+.aud .cell{padding:18px 18px;border-right:1px solid var(--line)}
+.aud .cell:last-child{border-right:none}
+.aud .vk-lbl{writing-mode:vertical-rl;font-size:13px;font-weight:800;letter-spacing:.3em;color:var(--verm);border-right:1px solid var(--line);padding-right:10px;margin-right:14px;float:left;height:100px}
+.lean-name{font-size:22px;font-weight:800;letter-spacing:.04em}
+.lean-conf{font-size:12px;color:var(--ink2);margin-top:2px}
+.lean-conf b{color:var(--verm);font-size:20px}
+.sigline{font-size:12px;color:var(--ink2);padding:6px 0;border-bottom:1px dashed var(--line)}
+.sigline::before{content:"一";color:var(--verm);margin-right:8px;font-size:10px}
+.habit{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.habit b{font-weight:800;letter-spacing:.08em;white-space:nowrap}
+.habit span{color:var(--ink2);text-align:right}
+.vibe{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.vibe span{border:1px solid var(--ink);padding:3px 10px;font-size:11.5px;font-weight:600;letter-spacing:.08em;background:var(--washi)}
+.vibe span:hover{background:var(--ink);color:var(--washi)}
+
+/* strategies — today's specials */
+.spec{border:1px solid var(--line);background:rgba(255,255,255,.28);padding:6px 20px 14px}
+.item{position:relative;padding:16px 0 12px;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:none}
+.item .ln1{display:flex;align-items:baseline;gap:12px}
+.item .cat{font-size:10px;color:var(--ink3);letter-spacing:.18em;white-space:nowrap}
+.item h3{font-size:19px;font-weight:800;letter-spacing:.05em;white-space:nowrap}
+.item .kj{font-size:12px;color:var(--verm);font-weight:800;letter-spacing:.2em;white-space:nowrap}
+.item .lead{flex:1;border-bottom:1px dotted var(--ink3);transform:translateY(-4px);min-width:16px}
+.item .price{font-size:16px;font-weight:800;letter-spacing:.04em;white-space:nowrap}
+.item .price small{font-size:9.5px;color:var(--ink2);font-weight:400;letter-spacing:.1em;margin-left:4px}
+.item .desc{margin-top:6px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:4px 24px;font-size:12px;color:var(--ink2)}
+.item .desc .fit-l{font-size:11px}
+.item .desc .fit-l b{color:var(--ink);font-size:13px}
+.item .kicker{font-size:10.5px;letter-spacing:.24em;color:var(--ink2);text-transform:uppercase;margin-top:3px}
+.item .fitbar{height:3px;background:var(--line);margin-top:8px;max-width:340px}
+.item .fitbar i{display:block;height:100%;background:var(--verm)}
+.item .chs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.item .chs span{border:1px solid var(--line);font-size:10.5px;padding:2px 8px;letter-spacing:.06em;background:var(--washi)}
+.item .chs b{color:var(--verm-dk)}
+.item .basis{font-size:10.5px;color:var(--ink3);margin-top:6px}
+.item .watch{font-size:11px;color:var(--ink2);margin-top:6px}
+.item .watch::before{content:"※ ";color:var(--verm)}
+.item .stamp{position:absolute;right:0;top:12px}
+.item.sel .ln1{padding-right:58px}
+.item.sel{background:linear-gradient(90deg,rgba(178,58,46,.06),transparent 60%)}
+.item.sel .stamp{transform:rotate(-8deg)}
+.item .sel-note{font-size:9.5px;letter-spacing:.26em;color:var(--verm);text-transform:uppercase;margin-top:4px}
+
+/* sold out */
+.bin{border:1px solid var(--line);background:rgba(255,255,255,.28);padding:4px 20px 10px}
+.so{display:flex;flex-wrap:wrap;align-items:baseline;gap:3px 14px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.so:last-child{border-bottom:none}
+.so .nm{font-weight:800;font-size:15px;letter-spacing:.05em}
+.so .nm .t{text-decoration:line-through;text-decoration-color:var(--verm);text-decoration-thickness:2px}
+.so .why{flex-basis:100%;font-size:11.5px;color:var(--ink2)}
+.so .tag{
+  margin-left:auto;font-size:10px;font-weight:800;letter-spacing:.2em;color:var(--washi);
+  background:var(--verm);padding:3px 8px;transform:rotate(-3deg);white-space:nowrap;flex-shrink:0;
+}
+
+/* output — the set course */
+.set{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.35fr);gap:0;border:1px solid var(--line);background:rgba(255,255,255,.28)}
+.brief{padding:20px;border-right:1px solid var(--line);text-align:center}
+.brief .vk-l{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.34em;color:var(--verm);border-bottom:1px solid var(--verm);padding-bottom:4px}
+.brief h3{font-size:clamp(20px,2.6vw,28px);font-weight:800;letter-spacing:.08em;margin-top:14px;line-height:1.25}
+.brief p{font-size:12px;color:var(--ink2);margin-top:10px;line-height:1.8}
+.brief .km{font-size:15px;font-weight:800;color:var(--ink);border:1px solid var(--rule);padding:10px 14px;margin-top:14px;background:var(--washi)}
+.brief .src{font-size:10px;letter-spacing:.2em;color:var(--ink3);margin-top:12px;text-transform:uppercase}
+.plates{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:16px}
+.plate{border:1px solid var(--line);background:var(--washi);padding:6px;transition:transform .18s,box-shadow .18s}
+.plate:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(43,38,32,.16)}
+.plate .iw{aspect-ratio:1;overflow:hidden;border:1px solid var(--line);position:relative}
+.plate img{width:100%;height:100%;object-fit:cover;filter:saturate(.92) contrast(1.02)}
+.plate .cap{padding:8px 2px 2px;font-size:10.5px;text-align:center}
+.plate .cap .h{font-weight:800;line-height:1.35;min-height:2.7em;display:block}
+.plate .cap .p{display:block;margin-top:5px;font-size:9px;letter-spacing:.16em;color:var(--verm-dk);text-transform:uppercase}
+
+/* palette */
+.pal{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border:1px solid var(--line);background:rgba(255,255,255,.28)}
+.sw{padding:14px 12px;border-right:1px solid var(--line);text-align:center}
+.sw:last-child{border-right:none}
+.sw .chip{width:52px;height:52px;border-radius:50%;margin:0 auto;border:1px solid var(--rule);box-shadow:inset 0 0 0 3px var(--washi)}
+.sw .n{font-size:12px;font-weight:800;margin-top:8px}
+.sw .h{font-size:9px;letter-spacing:.14em;color:var(--ink3);margin-top:2px}
+
+/* provenance — origin ledger */
+.prov{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:0;border:1px solid var(--line);background:rgba(255,255,255,.28)}
+.prov .cell{padding:18px;border-right:1px solid var(--line)}
+.prov .cell:last-child{border-right:none}
+.prov h4{font-size:12px;font-weight:800;letter-spacing:.28em;text-transform:uppercase;color:var(--ink2);margin-bottom:12px}
+.prov h4 .seal{width:24px;height:24px;font-size:11px;margin-left:10px;transform:rotate(-5deg)}
+table.log{width:100%;border-collapse:collapse;font-size:11px}
+table.log th{text-align:left;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--rule);padding:0 10px 7px 0;font-weight:600}
+table.log td{border-bottom:1px dashed var(--line);padding:8px 10px 8px 0;vertical-align:top}
+table.log .ep{font-weight:800}
+table.log .pm{display:block;font-size:9px;color:var(--ink3);max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+td .stmp{
+  display:inline-block;background:var(--verm);color:var(--washi);font-size:9px;font-weight:800;
+  padding:1px 5px;border-radius:2px;letter-spacing:.1em;transform:rotate(-3deg);
+}
+.aff{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:5px 0;font-size:12px;align-items:baseline}
+.aff .tp{font-size:9px;letter-spacing:.16em;color:var(--ink3);text-transform:uppercase}
+.aff .nm{font-weight:800;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aff .v{color:var(--verm-dk);font-weight:800}
+.aff .bar{grid-column:1/-1;height:3px;background:var(--line)}
+.aff .bar i{display:block;height:100%;background:var(--verm)}
+
+/* next */
+.next-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:6px 0 4px}
+.nbtn{
+  border:1px solid var(--ink);background:var(--washi);padding:11px 20px;
+  font-size:12px;font-weight:600;letter-spacing:.14em;transition:all .14s;
+  display:inline-flex;align-items:center;gap:10px;
+}
+.nbtn::after{content:"一";color:var(--verm);font-weight:800}
+.nbtn:hover{background:var(--ink);color:var(--washi)}
+.nbtn:active{transform:translateY(2px)}
+
+footer{text-align:center;margin-top:30px;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink3)}
+footer .kj{font-size:13px;letter-spacing:.5em;color:var(--ink2);margin-bottom:6px}
+
+/* ---------- responsive ---------- */
+@media(max-width:900px){
+  .sheet{padding:30px 34px 28px}
+  .rail{display:none}
+  .aud{grid-template-columns:1fr}
+  .aud .cell{border-right:none;border-bottom:1px solid var(--line)}
+  .aud .cell:last-child{border-bottom:none}
+  .set{grid-template-columns:1fr}
+  .brief{border-right:none;border-bottom:1px solid var(--line)}
+  .plates{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pal{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sw{border-bottom:1px solid var(--line)}
+  .prov{grid-template-columns:1fr}
+  .prov .cell{border-right:none;border-bottom:1px solid var(--line)}
+  .prov .cell:last-child{border-bottom:none}
+  .item .desc{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+  .item .ln1{flex-wrap:wrap;gap:4px 10px}
+  .item .lead{display:none}
+  .item h3{white-space:normal}
+  .item .kj{white-space:normal}
+  .item .price{margin-left:auto}
+  .prov .cell{min-width:0}
+  table.log .pm{max-width:150px}
+}
+@media(max-width:460px){
+  .sheet{margin:12px;padding:22px 18px}
+  .item h3{font-size:16px}
+  .item .price{font-size:13px}
+  .plates{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .pal{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .so .why{padding-right:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="rail l"><span>戦略</span><b>—</b><span>一品料理</span></div>
+  <div class="rail r"><span>旬のもの</span><b>—</b><span>お任せ</span></div>
+
+  <header class="mast">
+    <span class="seal">印</span>
+    <div class="brand-jp">本日のお品書き</div>
+    <h1 id="brand">MARQUE</h1>
+    <div class="sub">TODAY'S SELECTION · STRATEGY → CAMPAIGN → RESULT</div>
+    <div class="meta" id="mast-meta"></div>
+  </header>
+
+  <main id="courses"></main>
+
+  <footer>
+    <div class="kj">一期一会</div>
+    <span>MARQUE — お品書き №32 · SEASONAL DATA, SERVED FRESH</span>
+  </footer>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const pct=x=>Math.round((x||0)*100);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const hasData=Object.keys(B).length>0;
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Barrier Cream',h:'#EDDFCE'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Espresso Bean',h:'#4E362B'}
+];
+const CREAT=[6,7,2,3].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+
+document.getElementById('mast-meta').innerHTML=
+  '<span>BOARD <b>'+esc((B.id||'—').slice(0,8).toUpperCase())+'</b></span>'+
+  '<span>仕入れ <b>'+(B.createdAt?new Date(B.createdAt).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):'—')+'</b></span>'+
+  '<span>検証 <b>'+calls.length+' QLOO · LIVE</b></span>';
+
+const M=document.getElementById('courses');
+const course=(kj,en,no,body)=>{
+  if(!body)return;
+  M.appendChild(el('<section class="course"><div class="course-head"><span class="vk">'+kj+'</span>'+
+    '<div class="tt"><h2>'+esc(en)+'</h2><div class="en">'+esc(no)+'</div></div></div>'+body+'</section>'));
+};
+
+/* 01 — the ask */
+if(B.sub||B.urlContext){
+  const u=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url)||'';
+  const p=esc((B.sub&&B.sub.prompt)||B.title||'').replace(/→/g,'<span class="arr">→</span>');
+  course('お題','The Commission','FIRST COURSE — WHAT WAS ASKED',
+    '<div class="ask-box"><p class="ask-prompt">'+p+'</p>'+
+    (u?'<p class="ask-url">産地 origin — <a href="'+esc(u)+'">'+esc(u)+'</a></p>':'')+
+    '<div class="ask-ctx"><b>'+esc(B.urlContext&&B.urlContext.title||'—')+'</b><br>'+esc(B.urlContext&&B.urlContext.description||'')+'</div></div>');
+}
+
+/* 02 — audience */
+if(AR&&AR.lean){
+  course('旬の観察','The Seasonal Read','SECOND COURSE — AUDIENCE, FRESH TODAY',
+    '<div class="aud">'+
+      '<div class="cell"><span class="vk-l">傾向</span>'+
+        '<div class="lean-name">'+esc(AR.lean.label||'—')+'</div>'+
+        '<div class="lean-conf">read confidence <b>'+pct(AR.lean.confidence)+'</b>/100</div>'+
+        '<div style="margin-top:10px">'+(AR.lean.signals||[]).map(s=>'<div class="sigline">'+esc(s)+'</div>').join('')+'</div>'+
+      '</div>'+
+      '<div class="cell"><span class="vk-l">習慣</span>'+
+        (AR.mediaHabits||[]).map(h=>'<div class="habit"><b>'+esc(h.channel)+'</b><span>'+esc(h.note)+'</span></div>').join('')+
+      '</div>'+
+      '<div class="cell"><span class="vk-l">言葉</span>'+
+        '<div class="vibe">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div>'+
+      '</div>'+
+    '</div>');
+}
+
+/* 03 — strategies */
+if(strats.length){
+  course('本日のおすすめ',"Today's Specials",'THIRD COURSE — FOUR PREPARATIONS, ONE CHOSEN',
+    '<div class="spec">'+strats.map((s,i)=>
+      '<article class="item'+(i===sel?' sel':'')+'">'+(i===sel?'<span class="seal stamp">選</span>':'')+
+      '<div class="ln1"><span class="cat">№ '+(i+1)+' · '+esc((s.id||'').toUpperCase())+'</span>'+
+      '<h3>'+esc(s.title)+'</h3><span class="kj">'+esc(s.angle)+'</span>'+
+      '<span class="lead"></span>'+
+      (s.reach?'<span class="price">'+views(s.reach.estViews)+'<small>EST. VIEWS</small></span>':'')+
+      '</div>'+
+      (i===sel?'<div class="sel-note">— お任せ · chef\'s choice</div>':'')+
+      '<div class="kicker">audience fit '+pct(s.audienceFit&&s.audienceFit.score)+'/100 · '+esc((s.formats||[]).join(' · '))+'</div>'+
+      '<div class="fitbar"><i style="width:'+pct(s.audienceFit&&s.audienceFit.score)+'%"></i></div>'+
+      '<div class="desc"><div class="chs">'+(s.channels||[]).map(c=>'<span>'+esc(c.name)+' <b>'+pct(c.fit)+'%</b>'+(c.why?' — '+esc(c.why):'')+'</span>').join('')+'</div></div>'+
+      (s.reach?'<div class="basis">'+esc(s.reach.basis||'')+'</div>':'')+
+      ((s.watchouts&&s.watchouts[0])?'<div class="watch">'+esc(s.watchouts[0])+'</div>':'')+
+      '</article>').join('')+
+    '</div>');
+}
+
+/* 04 — sold out */
+const anti=B.antiStrategies||[];
+if(anti.length){
+  course('品切れ','Sold Out','NOT SERVED — RULED OUT AT MARKET',
+    '<div class="bin">'+anti.map(a=>
+      '<div class="so"><div class="nm"><span class="t">'+esc(a.title)+'</span> <span class="kj" style="color:var(--ink3);font-size:10px;letter-spacing:.2em">'+esc(a.channel)+'</span></div>'+
+      '<span class="tag">品切れ</span><div class="why">'+esc(a.whyNot)+'</div></div>').join('')+
+    '</div>');
+}
+
+/* 05 — the set course */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  course('献立','The Set Course','FIFTH COURSE — BRIEF + FOUR PLATES',
+    '<div class="set">'+
+      (br?'<div class="brief"><span class="vk-l">本日の献立</span>'+
+      '<h3>'+esc(br.title)+'</h3>'+
+      '<p>'+esc(br.angle)+'</p>'+
+      '<p><b style="letter-spacing:.14em;font-size:10px;color:var(--ink)">FOR</b><br>'+esc(br.audience)+'</p>'+
+      '<div class="km">“'+esc(br.keyMessage)+'”</div>'+
+      '<p class="src">from № '+(sel+1)+' '+esc(selS.title)+' — hero signal '+esc(selS.heroSignal||'—')+'</p></div>':'')+
+      '<div class="plates">'+CREAT.map((m,i)=>
+        '<figure class="plate"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+        '<figcaption class="cap"><span class="h">'+esc(m.head)+'</span><span class="p">作 '+esc(m.provider)+' · №'+(i+1)+'</span></figcaption></figure>').join('')+
+      '</div>'+
+    '</div>');
+}
+
+/* 06 — palette */
+course('彩り','The Colouring','SIXTH COURSE — HOUSE INKS',
+  '<div class="pal">'+PALETTE.map(s=>
+    '<div class="sw"><div class="chip" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="h">'+s.h.toUpperCase()+'</div></div>').join('')+
+  '</div>');
+
+/* 07 — provenance */
+const QB=B.qlooBundle;
+if(B.evidence||QB){
+  const affs=(QB&&QB.affinities)||[];
+  course('産地記録','Origin Record','SEVENTH COURSE — TRACED & STAMPED',
+    '<div class="prov"><div class="cell">'+
+    '<h4>仕入れ帳 — supply ledger <span class="seal">検</span></h4>'+
+    '<table class="log"><thead><tr><th>endpoint</th><th>n</th><th>ms</th><th>stamp</th></tr></thead><tbody>'+
+    calls.map(c=>'<tr><td><span class="ep">'+esc(c.endpoint)+'</span><span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+kv[1]).join(' '))+'</span></td>'+
+      '<td>'+esc(c.n)+'</td><td>'+esc(c.tookMs)+'</td><td><span class="stmp">'+esc((c.mode||'').toUpperCase())+'</span></td></tr>').join('')+
+    '</tbody></table>'+
+    '<p style="font-size:10px;letter-spacing:.2em;color:var(--ink3);margin-top:12px;text-transform:uppercase">仕入れ日 — fetched '+(B.fetchedAt?new Date(B.fetchedAt).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'}):'—')+'</p></div>'+
+    '<div class="cell"><h4>産地別 — affinities by origin</h4>'+
+    affs.map(g=>g.entities.slice(0,4).map(e=>'<div class="aff"><span class="tp">'+esc(g.type.replace('urn:entity:',''))+'</span><span class="nm">'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span><div class="bar"><i style="width:'+pct(e.affinity)+'%"></i></div></div>').join('')).join('')+
+    '</div></div>');
+}
+
+/* 08 — next */
+course('次回','Next Visit','FINAL COURSE — RESERVE THE NEXT DISH',
+  '<div class="next-row">'+
+  ['Campaign Microsite','Brandbook PDF','Video Cut','Performance Plan'].map(x=>'<button class="nbtn">'+x+'</button>').join('')+
+  '</div>');
+})();
+</script>
+</body>
+</html>

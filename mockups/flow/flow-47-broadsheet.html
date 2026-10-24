@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Marque Gazette — Strategy Edition</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23EFE7D3'/%3E%3Crect x='8' y='10' width='48' height='6' fill='%231A1712'/%3E%3Crect x='8' y='22' width='48' height='3' fill='%231A1712'/%3E%3Crect x='8' y='30' width='30' height='3' fill='%231A1712'/%3E%3Crect x='8' y='38' width='30' height='3' fill='%231A1712'/%3E%3Crect x='42' y='30' width='14' height='18' fill='%238C2B1E'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap" rel="stylesheet">
+<style>
+:root{
+  --news:#EFE7D3;
+  --news-2:#E7DEC4;
+  --ink:#1A1712;
+  --dim:#5C5344;
+  --red:#8C2B1E;
+  --hair:#B3A684;
+  --body:Georgia,'Times New Roman',serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#211C15;
+  color:var(--ink);font-family:var(--body);font-size:13px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(140,43,30,.25)}
+a{color:var(--ink);text-decoration:underline}
+a:hover{color:var(--red)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+
+.sheet{
+  max-width:1160px;margin:24px auto 60px;
+  background:var(--news);
+  background-image:radial-gradient(ellipse 80% 50% at 30% 0%,rgba(255,255,255,.3),transparent 60%),repeating-linear-gradient(17deg,transparent 0 40px,rgba(80,60,30,.03) 40px 41px);
+  border:1px solid #0d0b08;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);
+  padding:clamp(14px,3vw,36px) clamp(12px,3vw,38px) 40px;
+}
+
+/* ===== masthead ===== */
+.mast{text-align:center;border-bottom:4px double var(--ink);padding-bottom:14px}
+.mast .topline{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);font-family:var(--mono);overflow:hidden;gap:10px}
+.mast h1{
+  font-family:'UnifrakturMaguntia',Georgia,serif;font-weight:400;
+  font-size:clamp(38px,8vw,84px);line-height:1.05;margin:8px 0 4px;
+}
+.mast .rule{display:flex;align-items:center;gap:10px;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim)}
+.mast .rule::before,.mast .rule::after{content:"";flex:1;border-top:1px solid var(--ink)}
+.mast .rule i{font-style:normal;color:var(--red)}
+.dateline{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px 16px;border-bottom:1px solid var(--ink);padding:8px 2px;font-size:10.5px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+
+/* ===== section rules ===== */
+.sect{margin-top:22px}
+.sect>.band{
+  display:flex;align-items:center;gap:12px;margin-bottom:14px;
+  border-top:2px solid var(--ink);border-bottom:1px solid var(--ink);padding:5px 0;
+}
+.sect>.band h2{font-size:clamp(13px,2vw,17px);font-weight:700;letter-spacing:.24em;text-transform:uppercase;white-space:nowrap}
+.sect>.band .dots{flex:1;overflow:hidden;white-space:nowrap;color:var(--hair);letter-spacing:.2em;font-size:9px;user-select:none}
+.sect>.band .pg{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+
+/* lead story */
+.lead .h{font-size:clamp(22px,4.4vw,40px);font-weight:700;line-height:1.05;text-transform:uppercase;text-align:center;letter-spacing:.01em;margin-bottom:6px}
+.lead .h em{font-style:normal;color:var(--red)}
+.lead .deck{text-align:center;font-style:italic;font-size:clamp(12.5px,1.8vw,15px);color:var(--dim);border-bottom:1px solid var(--ink);padding-bottom:10px;margin-bottom:12px}
+.cols{column-count:3;column-gap:26px;column-rule:1px solid var(--hair);text-align:justify;hyphens:auto;font-size:12.5px}
+.cols p{margin-bottom:9px}
+.dropcap{float:left;font-size:54px;line-height:.8;padding:4px 8px 0 0;font-weight:700;color:var(--red)}
+.byline{font-size:10px;font-family:var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--dim);text-align:center;margin-bottom:8px}
+.cols .kicker{font-variant:small-caps;letter-spacing:.1em;font-size:12.5px}
+
+/* readership report */
+.census{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr) minmax(0,.9fr);gap:0;border:1.5px solid var(--ink)}
+.census>div{padding:14px 18px;border-right:1px solid var(--hair)}
+.census>div:last-child{border-right:none}
+.census .lbl{font-size:9px;font-family:var(--mono);letter-spacing:.28em;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:8px}
+.census .lean{font-size:clamp(24px,3.4vw,34px);font-weight:700;line-height:1;text-transform:uppercase}
+.census .conf{font-size:11px;font-style:italic;color:var(--dim);margin:6px 0 10px}
+.census .meter{height:12px;border:1.5px solid var(--ink);padding:1.5px;margin-bottom:12px}
+.census .meter i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--ink) 0 4px,var(--news) 4px 6px)}
+.census ul{list-style:none}
+.census li{font-size:12px;padding:4px 0;border-bottom:1px dotted var(--hair)}
+.census li::before{content:"❧ "}
+.census .hab{display:grid;grid-template-columns:78px 1fr;gap:3px 10px;font-size:12px;padding:6px 0;border-bottom:1px dotted var(--hair)}
+.census .hab:last-child{border-bottom:none}
+.census .hab b{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;padding-top:2px}
+.census .vibes{display:flex;flex-wrap:wrap;gap:7px}
+.census .vibes span{font-size:10.5px;font-variant:small-caps;letter-spacing:.08em;border:1px solid var(--ink);padding:2px 9px;background:rgba(255,255,255,.4)}
+
+/* strategy advertisements */
+.ads{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.ad{
+  border:2.5px solid var(--ink);padding:3px;
+  background:linear-gradient(#F3ECDB,#EAE0C6);
+}
+.ad .in{border:1px solid var(--ink);padding:14px 16px;height:100%;position:relative;text-align:center}
+.ad .in::before{content:"❦";position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--news);padding:0 8px;color:var(--red);font-size:14px}
+.ad .kind{font-size:8.5px;font-family:var(--mono);letter-spacing:.3em;text-transform:uppercase;color:var(--dim);padding:2px 76px 0}
+.ad h3{font-size:clamp(19px,2.8vw,26px);font-weight:700;text-transform:uppercase;line-height:1.05;margin:6px 0}
+.ad .ang{font-size:11px;font-variant:small-caps;letter-spacing:.14em;color:var(--red);border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:4px 0;margin-bottom:10px}
+.ad table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:9px}
+.ad td{padding:4px 2px;border-bottom:1px dotted var(--hair);vertical-align:top;text-align:left}
+.ad .cn{font-variant:small-caps;letter-spacing:.1em;font-weight:700;white-space:nowrap}
+.ad .dots2{flex:1}
+.ad .cb{display:inline-block;width:62px;height:8px;border:1px solid var(--ink);vertical-align:0;margin-right:6px;padding:1px}
+.ad .cb i{display:block;height:100%;background:var(--ink)}
+.ad .cv{font-family:var(--mono);font-size:10px}
+.ad .why{display:block;font-style:italic;color:var(--dim);font-size:10.5px}
+.ad .fmt{font-size:10px;font-variant:small-caps;letter-spacing:.1em;margin:6px 0}
+.ad .fmt b{border:1px solid var(--ink);padding:1px 7px;margin:0 3px;display:inline-block}
+.ad .circ{border-top:1.5px solid var(--ink);margin-top:8px;padding-top:8px;font-size:11px}
+.ad .circ b{font-size:17px}
+.ad .circ small{display:block;font-style:italic;color:var(--dim);font-size:10.5px;margin-top:3px}
+.ad .cau{font-size:10px;color:var(--red);margin-top:8px;font-variant:small-caps;letter-spacing:.06em}
+.ad .best{position:absolute;top:8px;right:8px;border:2.5px double var(--red);color:var(--red);font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:3px 8px;transform:rotate(4deg)}
+
+/* classifieds */
+.classifieds{column-count:2;column-gap:26px;column-rule:1px solid var(--hair)}
+.cls{break-inside:avoid;border:1px solid var(--ink);padding:9px 12px;margin-bottom:10px;font-size:11.5px;position:relative;background:rgba(255,255,255,.3)}
+.cls b{text-transform:uppercase;text-decoration:line-through;text-decoration-color:var(--red);letter-spacing:.04em}
+.cls .chan{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-left:6px}
+.cls p{font-style:italic;color:var(--dim);margin-top:3px}
+.cls .stamp{position:absolute;top:6px;right:8px;font-family:var(--mono);font-size:7.5px;letter-spacing:.18em;color:var(--red);border:1px solid var(--red);padding:1px 5px;transform:rotate(-3deg)}
+
+/* grand advertisements — brief + creatives */
+.grand{display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.5fr);gap:0;border:2.5px solid var(--ink)}
+.grand .brief{padding:16px 20px;border-right:1px solid var(--hair);text-align:center}
+.grand .brief .ed{font-size:9px;font-family:var(--mono);letter-spacing:.28em;text-transform:uppercase;color:var(--dim)}
+.grand .brief h3{font-size:clamp(19px,3vw,27px);font-weight:700;text-transform:uppercase;line-height:1.05;margin:8px 0}
+.grand .brief .ba{font-style:italic;color:var(--red);font-size:12px;margin-bottom:12px}
+.grand .brief dl{display:grid;grid-template-columns:74px 1fr;gap:7px 12px;font-size:12px;text-align:left}
+.grand .brief dt{font-size:8.5px;font-family:var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--dim);padding-top:2px}
+.grand .brief dd.msg{font-weight:700;font-size:13.5px}
+.grand .brief .hr{border:none;border-top:1px solid var(--ink);width:60%;margin:14px auto}
+.grand .brief .foot-note{font-size:10px;font-style:italic;color:var(--dim)}
+.gads{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.gad{padding:12px;border-right:1px solid var(--hair);border-bottom:1px solid var(--hair)}
+.gad:nth-child(2n){border-right:none}
+.gad:nth-last-child(-n+2){border-bottom:none}
+.gad .frame{border:2px solid var(--ink);padding:3px;background:#fff}
+.gad .frame2{border:1px solid var(--ink)}
+.gad img{width:100%;aspect-ratio:4/3;object-fit:cover;filter:sepia(.55) contrast(1.05) brightness(1.02)}
+.gad figcaption{margin-top:8px;text-align:center}
+.gad .h{font-size:11.5px;font-variant:small-caps;letter-spacing:.06em}
+.gad .p{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-top:3px}
+
+/* inks */
+.inks{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}
+.ink2{text-align:center}
+.ink2 .sw{height:56px;border:2px solid var(--ink);padding:3px;background:#fff}
+.ink2 .sw i{display:block;height:100%}
+.ink2 .n{font-variant:small-caps;font-size:12.5px;letter-spacing:.06em;margin-top:7px}
+.ink2 .h{font-family:var(--mono);font-size:8.5px;color:var(--dim);letter-spacing:.1em}
+
+/* wire — provenance */
+.wire .pre{font-size:12.5px;font-style:italic;margin-bottom:14px;text-align:center}
+.wire .pre b{font-variant:small-caps;font-style:normal;letter-spacing:.1em}
+.wiregrid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1.05fr);gap:0;border:1.5px solid var(--ink)}
+.wiregrid>div{padding:14px 18px}
+.wiregrid .l{border-right:1px solid var(--hair)}
+table.tg{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10px}
+.tg th{font-family:var(--body);font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);text-align:left;border-bottom:1.5px solid var(--ink);padding:4px}
+.tg td{padding:6px 4px;border-bottom:1px dotted var(--hair);vertical-align:top}
+.tg .pm{display:block;color:var(--dim);font-size:8.5px;overflow-wrap:anywhere}
+.tg .md{border:1px solid var(--red);color:var(--red);font-size:8px;padding:0 4px}
+.corr .g{font-size:10px;font-family:var(--mono);letter-spacing:.26em;text-transform:uppercase;border-bottom:1px solid var(--ink);padding-bottom:4px;margin:12px 0 5px}
+.corr .g:first-child{margin-top:0}
+.corr .row{display:flex;align-items:center;gap:10px;font-size:11.5px;padding:4px 0;border-bottom:1px dotted var(--hair)}
+.corr .row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:italic}
+.corr .row .cb{width:56px;height:7px;border:1px solid var(--ink);padding:1px}
+.corr .row .cb i{display:block;height:100%;background:var(--ink)}
+.corr .row .v{font-family:var(--mono);font-size:9px}
+
+/* telegraph orders */
+.orders{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+.order{
+  font-variant:small-caps;font-size:13px;letter-spacing:.1em;
+  background:transparent;border:1.5px solid var(--ink);padding:9px 20px;transition:.15s;position:relative;
+}
+.order::before,.order::after{content:"❦";position:absolute;top:50%;transform:translateY(-50%);font-size:9px;color:var(--dim)}
+.order::before{left:6px}.order::after{right:6px}
+.order{padding-left:24px;padding-right:24px}
+.order:hover{border-color:var(--red);color:var(--red)}
+.order:active{background:var(--ink);color:var(--news)}
+
+.colophon{margin-top:26px;border-top:4px double var(--ink);padding-top:10px;text-align:center;font-size:10px;font-variant:small-caps;letter-spacing:.2em;color:var(--dim)}
+.empty{border:1.5px dashed var(--ink);padding:44px;text-align:center;font-style:italic;margin-top:22px}
+
+@media(max-width:920px){
+  .cols{column-count:2}
+  .census{grid-template-columns:1fr}
+  .census>div{border-right:none;border-bottom:1px solid var(--hair)}
+  .census>div:last-child{border-bottom:none}
+  .ads{grid-template-columns:1fr}
+  .grand{grid-template-columns:1fr}
+  .grand .brief{border-right:none;border-bottom:1px solid var(--hair)}
+  .wiregrid{grid-template-columns:1fr}
+  .wiregrid .l{border-right:none;border-bottom:1px solid var(--hair)}
+  .inks{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:720px){
+  .sect>.band{flex-wrap:wrap;row-gap:2px}
+  .sect>.band .dots{display:none}
+  .sect>.band h2{white-space:normal}
+  .sect>.band .pg{flex-basis:100%;text-align:right}
+}
+@media(max-width:600px){
+  .cols,.classifieds{column-count:1}
+  .gads{grid-template-columns:1fr}
+  .gad{border-right:none!important;border-bottom:1px solid var(--hair)!important}
+  .gad:last-child{border-bottom:none!important}
+  .inks{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header class="mast">
+    <div class="topline"><span>VOL. IV — No. <span id="m-no">—</span></span><span>PRICE: ONE PROMPT</span><span>ALL THE SIGNALS THAT ARE FIT TO PRINT</span></div>
+    <h1>The Marque Gazette</h1>
+    <div class="rule"><span>— ESTABLISHED MMXXVI <i>·</i> PRINTED ON LIVE QLOO WIRE <i>·</i> EVENING EDITION —</span></div>
+    <div class="dateline"><span id="m-date">—</span><span id="m-id">—</span><span>FOUR STRATEGIES ADVERTISED HEREIN</span></div>
+  </header>
+  <main id="app"></main>
+  <footer class="colophon">THIS JOURNAL IS COMPOSED, SET &amp; PRESSED BY THE MARQUE PRINTING OFFICE · SUBSCRIPTIONS BY WIRE ONLY</footer>
+</div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const pct=x=>Math.round((x||0)*100);
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dots=n=>'·'.repeat(n);
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Barrier Cream',h:'#EDDFCE'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Espresso Bean',h:'#4E362B'}
+];
+const CREAT=[4,5,0,11].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+
+document.getElementById('m-no').textContent=(B.id||'0000').slice(0,4).toUpperCase();
+document.getElementById('m-date').textContent=B.createdAt?new Date(B.createdAt).toDateString().toUpperCase():'—';
+document.getElementById('m-id').textContent='LEDGER '+(B.id||'—').slice(0,8).toUpperCase();
+
+const M=document.getElementById('app');
+const sect=(title,pg,body)=>{
+  if(!body)return;
+  M.appendChild(el('<section class="sect"><div class="band"><h2>'+esc(title)+'</h2><span class="dots" aria-hidden="true">'+dots(120)+'</span><span class="pg">'+esc(pg)+'</span></div>'+body+'</section>'));
+};
+
+/* THE LEAD — ask + url as front page story */
+{
+  const u=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url)||'';
+  const story='The public is hereby advised that the house of <b>Marque &amp; Co.</b> has accepted a most singular commission: <b>“'+esc((B.sub&&B.sub.prompt)||B.title||'')+'”</b>. '+
+  'The instruction, delivered by wire and verified at the customary desk, names <b>'+esc((B.urlContext&&B.urlContext.title)||'the principal house')+'</b> as the party of interest. '+
+  'Of that establishment the record reads: “'+esc((B.urlContext&&B.urlContext.description)||'—')+'”'+
+  (u?' Correspondents may inspect the premises at <a href="'+esc(u)+'">'+esc(u)+'</a>.':'');
+  const p2='Four strategies were thereupon draughted, weighed against the tastes of the readership, and are advertised in these pages for public consideration. '+
+  'A further four notions, judged injurious to the enterprise, are struck out in the classified notices overleaf. '+
+  'The editor vouches for every signal: each was received across the Qloo wire in '+(B.qlooBundle&&B.qlooBundle.mode||'live')+' mode and is reproduced without embellishment.';
+  sect('The Commission','FRONT PAGE · COLUMN FIRST',
+    '<div class="lead"><div class="h">'+esc(B.title||'—').replace(/→/g,' <em>→</em>')+'</div>'+
+    '<div class="deck">A campaign distilled for the younger set — particulars within</div>'+
+    '<div class="byline">FROM OUR OWN CORRESPONDENT · FILED BY WIRE</div>'+
+    '<div class="cols"><p><span class="dropcap">'+esc((B.title||'M').charAt(0))+'</span>'+story+'</p><p>'+p2+'</p></div></div>');
+}
+
+/* READERSHIP — audience census */
+if(AR&&AR.lean){
+  sect('Census of Readership','REPORT OF THE ENUMERATOR',
+    '<div class="census">'+
+    '<div><span class="lbl">Predominant character</span><div class="lean">'+esc(AR.lean.label||'—')+'</div>'+
+    '<div class="conf">the enumerator is '+pct(AR.lean.confidence)+' in 100 certain</div>'+
+    '<div class="meter"><i style="width:'+pct(AR.lean.confidence)+'%"></i></div>'+
+    '<ul>'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></div>'+
+    '<div><span class="lbl">Habitual resorts</span>'+(AR.mediaHabits||[]).map(h=>'<div class="hab"><b>'+esc(h.channel)+'</b><span>'+esc(h.note)+'</span></div>').join('')+'</div>'+
+    '<div><span class="lbl">Words in common parlance</span><div class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div>'+
+    '<p style="font-size:10.5px;font-style:italic;color:var(--dim);margin-top:12px">— Enumerated this '+ (B.fetchedAt?new Date(B.fetchedAt).toDateString():'day') +' under seal of the office.</p></div>'+
+    '</div>');
+}
+
+/* ADVERTISEMENTS — strategies */
+if(strats.length){
+  sect('Notices of Strategy','FOUR PROPOSITIONS, FAIRLY PRICED',
+    '<div class="ads">'+strats.map((s,i)=>
+      '<article class="ad"><div class="in">'+(i===sel?'<span class="best">Recommended</span>':'')+
+      '<div class="kind">ADVERTISEMENT · '+['FIRST','SECOND','THIRD','FOURTH'][i]+' INSERTION</div>'+
+      '<h3>'+esc(s.title)+'</h3><div class="ang">'+esc(s.angle)+'</div>'+
+      '<table>'+(s.channels||[]).map(c=>'<tr><td class="cn">'+esc(c.name)+'</td><td><span class="cb"><i style="width:'+pct(c.fit)+'%"></i></span><span class="cv">'+f2(c.fit)+'</span><span class="why">efficacy per '+esc(c.why||'—')+'</span></td></tr>').join('')+'</table>'+
+      '<div class="fmt">SUPPLIED AS '+(s.formats||[]).map(f=>'<b>'+esc(f)+'</b>').join('')+'</div>'+
+      '<div class="circ">EXPECTED CIRCULATION — <b>'+views(s.reach&&s.reach.estViews)+'</b> readers<small>'+esc(s.reach&&s.reach.basis||'')+'</small></div>'+
+      ((s.watchouts&&s.watchouts[0])?'<div class="cau">CAUTION. '+esc(s.watchouts[0])+'</div>':'')+
+      '<div style="font-family:var(--mono);font-size:8px;letter-spacing:.24em;color:var(--dim);margin-top:9px">FIT CERTIFIED '+f2(s.audienceFit&&s.audienceFit.score)+' · MARQUE ASSAY OFFICE</div>'+
+      '</div></article>').join('')+'</div>');
+}
+
+/* CLASSIFIEDS — struck out */
+if(anti.length){
+  sect('Classified Notices','ITEMS DECLINED FOR INSERTION',
+    '<div class="classifieds">'+anti.map(a=>'<div class="cls"><span class="stamp">NOT RUN</span><b>'+esc(a.title)+'.</b><span class="chan">'+esc(a.channel)+'</span><p>'+esc(a.whyNot)+'</p></div>').join('')+'</div>');
+}
+
+/* GRAND ADVERTISEMENT — brief + creative ads */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sect('Grand Advertisement','THE EDITOR’S OWN ENDORSEMENT',
+    '<div class="grand"><div class="brief"><div class="ed">— BY APPOINTMENT —</div>'+
+    (br?'<h3>'+esc(br.title)+'</h3><p class="ba">'+esc(br.angle)+'</p>'+
+    '<dl><dt>Addressed to</dt><dd>'+esc(br.audience)+'</dd>'+
+    '<dt>Promise</dt><dd class="msg">“'+esc(br.keyMessage)+'”</dd>'+
+    '<dt>Bears the mark of</dt><dd>'+esc(selS.heroSignal||'—')+'</dd></dl>':'<p class="ba">no endorsement written</p>')+
+    '<hr class="hr"><p class="foot-note">None genuine without the mark. Beware imitations.</p>'+
+    '</div>'+
+    '<div class="gads">'+CREAT.map(m=>
+      '<figure class="gad"><div class="frame"><div class="frame2"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div></div>'+
+      '<figcaption><span class="h">'+esc(m.head)+'</span><span class="p">engraved &amp; printed by '+esc(m.provider)+' · patent applied for</span></figcaption></figure>').join('')+
+    '</div></div>');
+}
+
+/* PRINTING INKS */
+sect('The Printing Inks','FIVE SORTS, GROUND DAILY',
+  '<div class="inks">'+PALETTE.map((s,i)=>
+    '<div class="ink2"><div class="sw"><i style="background:'+s.h+'"></i></div><div class="n">'+esc(s.n)+'</div><div class="h">SORT '+(i+1)+' · '+s.h.toUpperCase()+'</div></div>').join('')+
+  '</div>');
+
+/* THE WIRE — provenance */
+if(B.evidence||affs.length){
+  sect('Our Sources','BY ELECTRIC TELEGRAPH · QLOO WIRE',
+    '<div class="wire"><p class="pre"><b>ATTESTATION.</b> Every signal printed above arrived by the Qloo wire in '+
+    '<b>'+(B.qlooBundle&&B.qlooBundle.mode?B.qlooBundle.mode.toUpperCase():'—')+' mode</b> across <b>'+calls.length+' dispatches</b>. The editor stakes the reputation of this journal upon their fidelity.</p>'+
+    '<div class="wiregrid"><div class="l"><div class="band" style="border-top:none"><h2 style="font-size:12px">Dispatch Register</h2><span class="dots">'+dots(40)+'</span><span class="pg">api calls</span></div>'+
+    '<table class="tg"><thead><tr><th>Wire</th><th>N</th><th>Ms</th><th>Mode</th></tr></thead><tbody>'+
+    calls.map(c=>'<tr><td>'+esc(c.endpoint)+'<span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,18)).join(' '))+'</span></td>'+
+      '<td>'+esc(c.n)+'</td><td>'+esc(c.tookMs)+'</td><td><span class="md">'+esc(c.mode)+'</span></td></tr>').join('')+
+    '</tbody></table></div>'+
+    '<div class="corr"><div class="band" style="border-top:none"><h2 style="font-size:12px">Correspondents Report</h2><span class="dots">'+dots(40)+'</span><span class="pg">affinities</span></div>'+
+    affs.map(g=>'<div class="g">re: '+esc(g.type.replace('urn:entity:',''))+'</div>'+
+      g.entities.slice(0,4).map(e=>'<div class="row"><span class="nm">'+esc(e.name)+'</span><span class="cb"><i style="width:'+pct(e.affinity)+'%"></i></span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('')+
+    '</div></div></div>');
+}
+
+/* TELEGRAPH ORDERS — next */
+sect('Telegraph Orders','DIRECT THE NEXT IMPRESSION',
+  '<div class="orders">'+['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button class="order">'+x+'</button>').join('')+'</div>');
+
+if(!M.children.length)M.appendChild(el('<div class="empty">STOP PRESS — data.js failed to arrive by wire. This edition suppressed.</div>'));
+})();
+</script>
+</body>
+</html>

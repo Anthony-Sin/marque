@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARQUE FOUNDRY — Specimen — Rhode peptide lip tint → Gen Z</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300;0,400;0,600;0,800;0,900;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f5f1e8;
+    --sheet:#fbf8f1;
+    --ink:#191510;
+    --mut:#6e6455;
+    --dim:#9b9078;
+    --hair:#d8d0bd;
+    --red:#b83a22;
+    --sans:"Archivo",-apple-system,"Segoe UI",sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:
+      radial-gradient(800px 300px at 50% -8%, rgba(25,21,16,.05), transparent 60%), var(--paper);
+    color:var(--ink);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  ::selection{background:var(--red);color:var(--paper)}
+  a{color:var(--red);text-decoration:none;border-bottom:1px solid rgba(184,58,34,.35)}
+  a:hover{background:rgba(184,58,34,.08)}
+  a:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+  .vol{max-width:1080px;margin:0 auto;padding:30px 20px 90px}
+
+  /* ===== sheet w/ registration marks ===== */
+  .sheet{position:relative;background:var(--sheet);border:1px solid var(--hair);
+    padding:34px 40px 30px;margin:0 0 46px;
+    box-shadow:0 1px 0 rgba(25,21,16,.06),0 16px 36px rgba(25,21,16,.07);
+    transition:transform .2s,box-shadow .2s}
+  .sheet:hover{transform:translateY(-2px);box-shadow:0 24px 48px rgba(25,21,16,.11)}
+  .reg{position:absolute;width:16px;height:16px;pointer-events:none}
+  .reg::before,.reg::after{content:"";position:absolute;background:var(--mut)}
+  .reg::before{left:50%;top:0;bottom:0;width:1px}
+  .reg::after{top:50%;left:0;right:0;height:1px}
+  .reg i{position:absolute;inset:4px;border:1px solid var(--mut);border-radius:50%;background:var(--paper)}
+  .reg.tl{top:-17px;left:-17px}.reg.tr{top:-17px;right:-17px}
+  .reg.bl{bottom:-17px;left:-17px}.reg.br{bottom:-17px;right:-17px}
+
+  .shead{display:flex;align-items:baseline;gap:14px;border-bottom:2px solid var(--ink);
+    padding-bottom:10px;margin-bottom:22px;flex-wrap:wrap}
+  .shead .foundry{font-weight:900;font-size:12px;letter-spacing:.28em;text-transform:uppercase}
+  .shead .sname{font-weight:300;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+  .shead .no{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--red);letter-spacing:.1em}
+  .alpha{font-family:var(--sans);font-weight:600;font-size:11px;letter-spacing:.32em;color:var(--dim);
+    text-transform:uppercase;margin-bottom:22px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+  .kicker{font-size:10.5px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+
+  /* title sheet */
+  .display{font-weight:900;letter-spacing:-.03em;line-height:.98;
+    font-size:clamp(44px,8.4vw,96px);text-wrap:balance}
+  .display .arrow{color:var(--red);font-weight:300}
+  .display .thin{font-weight:300;color:var(--mut)}
+  .meta-row{display:flex;gap:26px;margin-top:22px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;color:var(--mut)}
+  .meta-row b{color:var(--ink);font-weight:400}
+  .src-line{margin-top:16px;padding-top:14px;border-top:1px solid var(--hair);display:flex;gap:14px;flex-wrap:wrap;align-items:baseline}
+  .src-line .u{font-family:var(--mono);font-size:13px;color:var(--red)}
+  .src-line .d{font-style:italic;color:var(--mut);font-size:13px}
+
+  /* audience sheet */
+  .lean-set{font-weight:900;font-size:clamp(38px,7vw,80px);letter-spacing:-.02em;line-height:1}
+  .conf-set{font-weight:300;font-size:clamp(60px,10vw,120px);line-height:1;color:var(--red);font-variant-numeric:tabular-nums}
+  .conf-set sup{font-size:.28em;font-weight:600;color:var(--mut);letter-spacing:.06em}
+  .pts{border-left:1px solid var(--hair);padding-left:20px}
+  .pt-row{display:flex;align-items:baseline;gap:14px;padding:5px 0;border-bottom:1px dotted var(--hair)}
+  .pt-row .sz{font-family:var(--mono);font-size:10px;color:var(--red);width:44px;flex:none;text-align:right}
+  .pt-row .tx{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .setcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:30px;align-items:start}
+  .setcols>*,.strat-grid>*,.kill>*{min-width:0}
+  .habit-t{width:100%;border-collapse:collapse;margin-top:8px}
+  .habit-t td{font-family:var(--mono);font-size:11.5px;padding:6px 8px;border-bottom:1px solid var(--hair);color:var(--mut)}
+  .habit-t td:first-child{color:var(--ink);font-weight:400}
+  .sig-line{font-style:italic;color:var(--mut);font-size:13px;padding-top:10px}
+
+  /* strategy sheets */
+  .stitle{font-weight:900;font-size:clamp(34px,5.6vw,62px);letter-spacing:-.025em;line-height:1;margin-bottom:6px}
+  .stitle .idx{color:var(--red);font-weight:300;font-size:.5em;vertical-align:super;letter-spacing:0}
+  .sangle{font-style:italic;font-weight:400;font-size:16px;color:var(--mut);margin-bottom:20px}
+  .strat-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:30px}
+  .sizes{border-right:1px solid var(--hair);padding-right:24px}
+  .metrics .mrow{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--hair);font-size:13px}
+  .metrics .mrow .k{color:var(--mut);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase}
+  .metrics .mrow .v{font-variant-numeric:tabular-nums;font-weight:600}
+  .metrics .mrow .v.big{font-size:20px;color:var(--red);font-weight:800}
+  .metrics .mrow .v.it{font-style:italic;font-weight:400;color:var(--mut)}
+  .watch-ln{margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--mut);border-left:2px solid var(--red);padding-left:10px}
+
+  /* killed sheet */
+  .kill{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 40px}
+  .kill .krow{display:flex;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid var(--hair)}
+  .kill .nm{font-weight:800;font-size:19px;color:var(--mut);text-decoration:line-through;text-decoration-color:var(--red);white-space:nowrap}
+  .kill .ch{font-family:var(--mono);font-size:10px;color:var(--red);letter-spacing:.14em}
+  .kill .wy{font-size:12px;color:var(--mut);font-style:italic;flex:1}
+
+  /* proof sheet */
+  .brief-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:24px}
+  .brief-grid .b .k{font-size:9.5px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;color:var(--red);margin-bottom:5px}
+  .brief-grid .b .v{font-size:14px}
+  .brief-grid .b .v.big2{font-weight:800;font-size:19px;letter-spacing:-.01em}
+  .brief-grid .b .v.it{font-style:italic;color:var(--mut)}
+  .proofs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+  .proof{border:1px solid var(--ink);padding:10px 10px 8px;background:#fff;position:relative}
+  .proof::after{content:"PROOF";position:absolute;top:12px;right:-6px;background:var(--red);color:#fff;
+    font-size:8px;font-weight:800;letter-spacing:.22em;padding:2px 8px 2px 10px;transform:rotate(4deg)}
+  .proof .ph{aspect-ratio:1/1;overflow:hidden;background:#e9e4d6}
+  .proof img{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(.98);transition:filter .25s}
+  .proof:hover img{filter:contrast(1.04) saturate(1.06)}
+  .proof .cap{font-family:var(--mono);font-size:10px;color:var(--mut);padding-top:7px;display:flex;justify-content:space-between;gap:6px}
+  .proof .cap .hd{color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+
+  /* colophon */
+  .colo-t{width:100%;border-collapse:collapse}
+  .colo-t th{font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);
+    text-align:left;padding:5px 10px;border-bottom:1px solid var(--ink)}
+  .colo-t td{font-family:var(--mono);font-size:11px;padding:6px 10px;border-bottom:1px solid var(--hair);color:var(--mut);overflow-wrap:anywhere}
+  .colo-t td.ep{color:var(--ink)}
+  .colo-t td.n{text-align:right;font-variant-numeric:tabular-nums}
+  .colo-t th.n{text-align:right}
+  .affrow{display:flex;align-items:baseline;gap:12px;padding:6px 0;border-bottom:1px dotted var(--hair);font-size:13px}
+  .affrow .ty{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--red);width:66px;flex:none}
+  .affrow .ents{flex:1;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .affrow .p{font-family:var(--mono);font-size:11px;color:var(--mut)}
+
+  /* pigments + next */
+  .pig-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;margin-bottom:26px}
+  .pig .b{height:56px;border:1px solid var(--hair)}
+  .pig .nm{font-weight:800;font-size:12px;margin-top:6px}
+  .pig .hx{font-family:var(--mono);font-size:10px;color:var(--mut)}
+  .nextrow{display:flex;gap:14px;flex-wrap:wrap}
+  .nextrow a{font-weight:800;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);
+    border:2px solid var(--ink);padding:10px 24px;text-decoration:none;transition:all .15s}
+  .nextrow a:hover{background:var(--ink);color:var(--paper)}
+  .nextrow a::after{content:" →";color:var(--red)}
+
+  .folio{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--dim);
+    letter-spacing:.14em;margin-top:10px;text-transform:uppercase}
+
+  @media (max-width:860px){
+    .setcols,.strat-grid{grid-template-columns:1fr}
+    .sizes{border-right:none;padding-right:0;border-bottom:1px solid var(--hair);padding-bottom:18px}
+    .pts{border-left:none;padding-left:0}
+    .proofs{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .brief-grid{grid-template-columns:1fr}
+    .kill{grid-template-columns:1fr}
+    .sheet{padding:26px 20px}
+    .pig-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
+  @media (max-width:480px){.proofs{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.pig-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="vol" id="vol"></div>
+
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+const B=(window.DATA&&window.DATA.board)||{};
+const esc=s=>String(s==null?"—":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const K=v=>v>=1e3?Math.round(v/1e3)+"K":v;
+const pct=v=>Math.round((v||0)*100);
+const ALPHA="ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789 →·—&";
+
+const sub=B.sub||{},uc=B.urlContext||{};
+const st=B.strategies||[],anti=B.antiStrategies||[];
+const ar=B.audienceRead||{},lean=ar.lean||{};
+const ev=B.evidence||{},aff=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const br=st[0]&&st[0].brief||{};
+const pool=((window.MEDIA||{}).pool||[]).map(m=>({img:m.img.replace(/^\.\//,"../"),head:m.head,provider:m.provider}));
+const picks=[0,6,10,13].map(i=>pool[i]).filter(Boolean);
+const pal=[["Peptide Blush","#F3D9D2"],["Glaze Cream","#F7EFE4"],["Barrier Beige","#E4CDBB"],["Toast","#7A5A46"],["Espresso","#2E211B"]];
+
+const reg=`<span class="reg tl"><i></i></span><span class="reg tr"><i></i></span><span class="reg bl"><i></i></span><span class="reg br"><i></i></span>`;
+const shead=(no,name,total)=>`<div class="shead"><span class="foundry">Marque Foundry</span><span class="sname">${name}</span><span class="no">No. ${no} / ${total}</span></div><div class="alpha">${ALPHA}</div>`;
+const TOTAL=9;
+let html="";
+
+/* No.1 — title / ask */
+html+=`<section class="sheet">${reg}${shead(1,"Title page · the ask",TOTAL)}
+  <div class="kicker">Commission</div>
+  <div class="display">${esc((sub.prompt||B.title||"—").split("→")[0])}<span class="arrow"> →</span> <span class="thin">${esc((sub.prompt||"").split("→")[1]||"")}</span></div>
+  <div class="meta-row"><span>CLIENT <b>${esc(uc.title||"—")}</b></span><span>BOARD <b>${esc(String(B.id||"").slice(0,8))}</b></span><span>SET <b>${(B.fetchedAt||"").slice(0,10)}</b></span><span>WEIGHTS <b>300–900</b></span></div>
+  <div class="src-line"><span class="u">${esc((sub.url||uc.url||"—").replace(/^https?:\/\//,""))}</span><span class="d">${esc(uc.description||"")}</span></div>
+</section>`;
+
+/* No.2 — audience specimen */
+const vibes=(ar.vibeWords||[]);
+html+=`<section class="sheet">${reg}${shead(2,"Audience · cut no. 1",TOTAL)}
+  <div class="setcols">
+    <div>
+      <div class="kicker">Disposition</div>
+      <div class="lean-set">${esc(lean.label||"—")}</div>
+      <div class="conf-set">${pct(lean.confidence)}<sup>% CONF.</sup></div>
+      <div class="sig-line">${esc((lean.signals||[]).join(" · "))}</div>
+    </div>
+    <div class="pts">
+      <div class="kicker">Vocabulary — shown at graded sizes</div>
+      ${vibes.map((v,i)=>{const sz=[40,30,22,16,12][i]||11;return `<div class="pt-row"><span class="sz">${sz}pt</span><span class="tx" style="font-size:${Math.min(sz,34)}px">${esc(v)}</span></div>`;}).join("")}
+      <table class="habit-t">${(ar.mediaHabits||[]).map(h=>`<tr><td>${esc(h.channel)}</td><td>${esc(h.note)}</td></tr>`).join("")}</table>
+    </div>
+  </div>
+</section>`;
+
+/* No.3-6 — strategy sheets */
+st.forEach((s,i)=>{
+  const msg=s.brief&&s.brief.keyMessage||s.title;
+  html+=`<section class="sheet">${reg}${shead(3+i,"Strategy · sort "+(i+1)+" of 4",TOTAL)}
+  <div class="kicker">${i===0?"Selected cut":"Candidate cut"}</div>
+  <div class="stitle"><span class="idx">S${i+1}&nbsp;</span>${esc(s.title)}</div>
+  <div class="sangle">${esc(s.angle)} — hero signal: ${esc(s.heroSignal||"—")}</div>
+  <div class="strat-grid">
+    <div class="sizes">
+      ${[34,24,17,12].map(sz=>`<div class="pt-row"><span class="sz">${sz}pt</span><span class="tx" style="font-size:${sz}px;font-weight:${sz>20?800:400}">${esc(msg)}</span></div>`).join("")}
+      <div class="watch-ln">WATCH — ${esc((s.watchouts||[])[0]||"—")}</div>
+    </div>
+    <div class="metrics">
+      ${(s.channels||[]).map(c=>`<div class="mrow"><span class="k">${esc(c.name)} · ${esc(c.why||"")}</span><span class="v">${pct(c.fit)}</span></div>`).join("")}
+      <div class="mrow"><span class="k">formats</span><span class="v it">${esc((s.formats||[]).join(", "))}</span></div>
+      <div class="mrow"><span class="k">audience fit</span><span class="v big">${pct(s.audienceFit&&s.audienceFit.score)}</span></div>
+      <div class="mrow"><span class="k">est. views</span><span class="v">${K(s.reach&&s.reach.estViews||0)}</span></div>
+      <div class="mrow"><span class="k">basis</span><span class="v it" style="max-width:60%;text-align:right">${esc(s.reach&&s.reach.basis||"—")}</span></div>
+    </div>
+  </div>
+</section>`;});
+
+/* No.7 — rejected cuts */
+html+=`<section class="sheet">${reg}${shead(7,"Rejected cuts",TOTAL)}
+  <div class="kicker">Withdrawn from this face</div>
+  <div class="kill">${anti.map(a=>`
+    <div class="krow"><span class="nm">${esc(a.title)}</span><span class="ch">${esc(a.channel)}</span><span class="wy">${esc(a.whyNot)}</span></div>`).join("")}
+  </div>
+</section>`;
+
+/* No.8 — proof of production */
+html+=`<section class="sheet">${reg}${shead(8,"Proof of production",TOTAL)}
+  <div class="brief-grid">
+    <div class="b"><div class="k">Campaign</div><div class="v big2">${esc(br.title||"—")}</div></div>
+    <div class="b"><div class="k">Angle</div><div class="v it">${esc(br.angle||"—")}</div></div>
+    <div class="b"><div class="k">Audience</div><div class="v">${esc(br.audience||"—")}</div></div>
+  </div>
+  <div class="pt-row" style="border-top:1px solid var(--ink);padding-top:14px"><span class="sz">MSG</span><span class="tx" style="font-size:20px;font-weight:600">“${esc(br.keyMessage||"—")}”</span></div>
+  <div class="proofs" style="margin-top:20px">${picks.map((m,i)=>`
+    <div class="proof"><div class="ph"><img src="${m.img}" alt="" loading="lazy" onerror="this.closest('.proof').style.display='none'"></div>
+    <div class="cap"><span class="hd">P.${i+1} ${esc(m.head)}</span><span>${esc(m.provider)}</span></div></div>`).join("")}
+  </div>
+</section>`;
+
+/* No.9 — colophon */
+html+=`<section class="sheet">${reg}${shead(9,"Colophon · provenance",TOTAL)}
+  <div class="kicker">Evidence calls — ${esc(ev.qlooMode||"")} mode · source ${esc(ev.source||"—")}</div>
+  <table class="colo-t"><thead><tr><th>№</th><th>Endpoint</th><th class="hideS">Parameters</th><th class="n">ms</th><th class="n">n</th><th>Mode</th></tr></thead>
+  <tbody>${(ev.calls||[]).map((c,i)=>`<tr><td class="n">${i+1}</td><td class="ep">${esc(c.endpoint)}</td>
+    <td class="hideS">${esc(Object.entries(c.params||{}).map(([k,v])=>k+"="+String(v).slice(0,18)).join("  "))}</td>
+    <td class="n">${c.tookMs}</td><td class="n">${c.n}</td><td>${esc(c.mode)}</td></tr>`).join("")}</tbody></table>
+  <div style="margin-top:20px">${aff.map(a=>`
+    <div class="affrow"><span class="ty">${esc((a.type||"").replace("urn:entity:",""))}</span>
+    <span class="ents">${a.entities.slice(0,5).map(e=>esc(e.name)).join(" · ")}</span>
+    <span class="p">${a.entities[0]?pct(a.entities[0].affinity)/100:""}</span></div>`).join("")}</div>
+  <div class="kicker" style="margin-top:26px">Pigments</div>
+  <div class="pig-grid">${pal.map(p=>`<div class="pig"><div class="b" style="background:${p[1]}"></div><div class="nm">${p[0]}</div><div class="hx">${p[1]}</div></div>`).join("")}</div>
+  <div class="kicker">Next faces</div>
+  <div class="nextrow"><a href="#" onclick="return false">Website</a><a href="#" onclick="return false">Brandbook</a><a href="#" onclick="return false">Video</a></div>
+  <div class="folio"><span>Marque Foundry · Specimen ${esc(String(B.id||"").slice(0,8))}</span><span>Set in Archivo · printed on screen</span></div>
+</section>`;
+
+document.getElementById("vol").innerHTML=html;
+</script>
+</body>
+</html>
