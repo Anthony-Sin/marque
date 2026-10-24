@@ -47,7 +47,7 @@ img{display:block;max-width:100%}
 .knurl{border-bottom:2px solid var(--line);height:12px;
   background:repeating-linear-gradient(115deg,#33332F 0 5px,#222220 5px 10px);
   box-shadow:inset 0 -2px 3px rgba(0,0,0,.5),inset 0 2px 3px rgba(0,0,0,.5)}
-.ring .tag{position:absolute;top:clamp(14px,3.6vw,20px);right:clamp(12px,3.8vw,26px);
+.ring .tag{display:inline-block;margin-bottom:10px;
   font-size:8.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--idx);font-weight:600}
 .eng-name{font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--eng2);margin-bottom:6px}
 
@@ -299,7 +299,7 @@ if(selS||CREAT.length){
   '<dt>Metered by</dt><dd>key light '+esc(selS.heroSignal||'—')+' · exposure '+f2((selS.audienceFit&&selS.audienceFit.score)||0)+'</dd></dl>'
   :'<div class="ang">Plate unexposed.</div>')+
   '</div>'+
-  '<div><div style="font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--eng2);margin-bottom:8px">Test exposures — straight out of camera</div>'+
+  '<div style="padding-top:20px"><div style="font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--eng2);margin-bottom:8px">Test exposures — straight out of camera</div>'+
   '<div class="exps">'+CREAT.map(m=>'<figure class="exp"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
   '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">rendered by <b>'+esc(m.provider)+'</b></div></figcaption></figure>').join('')+'</div></div></div>');
 }

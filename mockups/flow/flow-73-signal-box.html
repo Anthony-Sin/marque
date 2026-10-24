@@ -117,7 +117,7 @@ section{margin-top:26px}
   transform-origin:bottom center;border-radius:3px;transition:transform .3s ease}
 .lev.out .arm{transform:rotate(-24deg)}
 .lev .grip{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:26px;height:15px;border-radius:7px;border:2px solid rgba(0,0,0,.35)}
-.lev .nplate{position:absolute;top:5px;left:50%;transform:translateX(-50%);background:var(--beam);color:var(--wall);
+.lev .nplate{position:absolute;bottom:5px;left:8px;background:var(--beam);color:var(--wall);
   font-family:var(--mono);font-size:11px;padding:1px 9px;border-radius:2px}
 .lev .body{padding:10px 13px 12px;flex:1;display:flex;flex-direction:column}
 .lev h3{font-size:clamp(19px,3vw,23px);font-weight:600;text-transform:uppercase;letter-spacing:.04em;line-height:1.02}
@@ -316,7 +316,7 @@ if(strats.length){
 
 /* collared = ruled out */
 if(anti.length){
-  sec('CLD','Collared &amp; Out of Use','levers spiked by the district inspector',
+  sec('CLD','Collared \u0026 Out of Use','levers spiked by the district inspector',
   '<div class="collars">'+anti.map(a=>'<div class="dead"><div class="ch">spared route: '+esc(a.channel)+'</div>'+
   '<h4><s>'+esc(a.title)+'</s></h4><div class="why">inspector\'s mark — '+esc(a.whyNot)+'</div>'+
   '<span class="collartag">collar fitted · do not pull</span></div>').join('')+'</div>');
@@ -326,7 +326,7 @@ if(anti.length){
 const selS=sel!=null?strats[sel]:strats[0];
 if(selS||CREAT.length){
   const br=selS&&selS.brief;
-  sec('WTT','Working Timetable &amp; Notices','the train the box was built for',
+  sec('WTT','Working Timetable \u0026 Notices','the train the box was built for',
   '<div class="wtt"><div class="tcard">'+
   (br?'<div class="sal">WTT entry · booked path '+esc(selS.title)+'</div><h3>'+esc(br.title)+'</h3>'+
   '<div class="ang">'+esc(br.angle)+'</div>'+

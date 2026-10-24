@@ -75,7 +75,7 @@ section{margin-top:28px}
 .strat{display:grid;grid-template-columns:170px 1fr;gap:clamp(16px,3vw,28px)}
 @media(max-width:640px){.strat{grid-template-columns:1fr}}
 .depth{position:relative;border-left:2px solid var(--ink);padding-left:10px;font-family:var(--mono);font-size:10px;color:var(--mut)}
-.depth .d{height:38px;position:relative}
+.depth .d{height:40px;position:relative}
 .depth .d::before{content:"";position:absolute;left:-10px;top:0;width:10px;height:1.5px;background:var(--ink)}
 .depth .d span{position:absolute;top:-6px;left:6px}
 .layers .layer{border:1.5px solid var(--ink);border-bottom:none;padding:7px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;
@@ -258,7 +258,7 @@ sec('001','Context Record — Surface','first context of the season, assigned at
 '<div>Fieldwalking<b>'+(U?'<a href="'+esc(U)+'">'+esc(U)+'</a>':'—')+'</b></div>'+
 '<div>Place-name<b>'+esc((B.urlContext&&B.urlContext.title)||'—')+'</b></div>'+
 '</div>'+
-'<div class="desc">Director\'s reading — '+esc(((B.urlContext&&B.urlContext.description)||'').slice(0,150))+'</div>'+
+'<div class="desc">Director\'s reading — '+esc(((B.urlContext&&B.urlContext.description)||'').slice(0,140))+'…</div>'+
 '</div></div>');
 
 /* stratigraphy = audience */
@@ -268,7 +268,7 @@ if(AR&&AR.lean){
     .concat((AR.mediaHabits||[]).map(h=>({n:h.channel,t:h.note})));
   sec('STR','Stratigraphy Column','read the section — the finds are layered',
   '<div class="strat"><div class="depth">'+layers.map((l,i)=>'<div class="d"><span>'+(i*20)+'cm</span></div>').join('')+'</div>'+
-  '<div><div class="layers">'+layers.slice(0,5).map((l,i)=>'<div class="layer l'+(i+1)+'"><span class="nm">'+esc(l.n)+'</span><span class="nt">'+esc(l.t)+'</span></div>').join('')+'</div>'+
+  '<div><div class="layers">'+layers.map((l,i)=>'<div class="layer l'+Math.min(i+1,5)+'"><span class="nm">'+esc(l.n)+'</span><span class="nt">'+esc(l.t)+'</span></div>').join('')+'</div>'+
   '<div class="stratkey">Section reads <b>'+Math.round((AR.lean.confidence||0)*100)+'% legible</b> — the deeper the context, the surer the attribution.</div>'+
   '<div class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div></div>');
 }
@@ -279,7 +279,7 @@ if(strats.length){
   '<div class="plan">'+strats.map((s,i)=>{
     const fit=(s.audienceFit&&s.audienceFit.score)||0;
     return '<div class="sq'+(i===sel?' open':'')+'"><span class="pin" style="top:6px;left:6px"></span><span class="pin" style="bottom:6px;right:6px"></span>'+
-    '<div class="sqn">SQ '+SQ[i]+(i===sel?' · OPEN':'')+'</div><div class="ctxl">Context '+String(i+1).padStart(3,'0')+'0'+(i+1)+'</div>'+
+    '<div class="sqn">SQ '+SQ[i]+(i===sel?' · OPEN':'')+'</div><div class="ctxl">Context '+String((i+1)*10)+'</div>'+
     '<h3>'+esc(s.title)+'</h3><div class="ang">'+esc(s.angle||'')+'</div>'+
     '<div class="exc"><div class="bar"><i style="width:'+Math.round(fit*100)+'%"></i></div><b>'+Math.round(fit*100)+'%</b></div>'+
     '<div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);margin-top:2px">Excavated — audience fit '+f2(fit)+'</div>'+
@@ -294,7 +294,7 @@ if(strats.length){
 
 /* sterile squares = ruled out */
 if(anti.length){
-  sec('STR','Backfilled &amp; Sterile','probed, found barren, reinstated',
+  sec('STR','Backfilled \u0026 Sterile','probed, found barren, reinstated',
   '<div class="sterile">'+anti.map(a=>'<div class="ster"><div class="ch">probe sterile · '+esc(a.channel)+'</div>'+
   '<h4><s>'+esc(a.title)+'</s></h4><div class="why">site notebook — '+esc(a.whyNot)+'</div>'+
   '<span class="tag">backfilled '+esc(DATE)+'</span></div>').join('')+'</div>');
@@ -325,7 +325,7 @@ sec('MUN','Munsell Readings','soil colours called at midday light',
 
 /* site diary = qloo */
 if(calls.length||affs.length){
-  sec('SDY','Site Diary &amp; Register','logged before tools-down — Qloo survey returns, '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live'),
+  sec('SDY','Site Diary \u0026 Register','logged before tools-down — Qloo survey returns, '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live'),
   '<div class="diary"><div><table><tr><th>Entry / instrument</th><th>Logged</th><th>Duration</th><th>Reads</th><th>Fields</th></tr>'+
   calls.map((c,i)=>'<tr><td><b>'+String(9+i)+'/'+esc(DATE.slice(0,6))+'</b> · '+esc(c.endpoint)+'<br><span class="win">'+esc(c.mode)+'</span></td>'+
   '<td class="mono">'+esc((c.at||'').slice(11,19))+'Z</td><td class="mono">'+esc(c.tookMs)+' ms</td><td class="mono">n='+esc(c.n)+'</td><td class="mono">'+esc(Object.keys(c.params||{}).length)+'</td></tr>').join('')+'</table>'+

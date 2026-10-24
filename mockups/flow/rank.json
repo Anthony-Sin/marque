@@ -43,10 +43,10 @@
   {"name":"flow-45-apothecary","style":"apothecary dispensary","blurb":"Latin formulae and tincture bottles; cautions carry real notes."},
   {"name":"flow-53-guide-rouge","style":"Michelin-style guide","blurb":"Inspected établissements get stars; non retenus list rules out."},
   {"name":"flow-54-philatelic-bureau","style":"stamp album sheet","blurb":"Perforated commemoratives per strategy; postmarks stamp provenance."},
-  {"name":"flow-60-poolside","style":"resort brochure","blurb":"Marque Palms amenities per strategy; shuttered facilities rule out, concierge book logs the calls."},
-  {"name":"flow-61-fight-card","style":"boxing fight-night card","blurb":"Tale of the tape weighs the audience; tonight's bouts pit each strategy against the feed."},
-  {"name":"flow-63-auction-catalog","style":"auction house catalogue","blurb":"Lots offered at the Strategy→Campaign sale; registered bidder paddle files the audience."},
-  {"name":"flow-30-field-journal","style":"handwritten field journal","blurb":"Kraft pages, tally marks and stamps; observed like a naturalist."},
-  {"name":"flow-70-pit-board","style":"casino pit board","blurb":"Graveyard-shift felt board; the audience rated like a known player at 80% theo, strategies dealt as tables in play."},
-  {"name":"flow-51-ticket-stubs","style":"railway ticket wallet","blurb":"Punched stubs per strategy; season ticket holds the audience."}
+  {"name":"flow-73-signal-box","style":"railway signal box","blurb":"Train described and repeated back; block-shelf instruments needle each channel line-clear or blocked."},
+  {"name":"flow-76-aperture-ring","style":"engraved lens barrel","blurb":"Focus ring locks the audience at distance; aperture click-stops meter each strategy's exposure fit."},
+  {"name":"flow-77-dig-grid","style":"archaeological trench plan","blurb":"Context records and a stratigraphy column layer the finds; deeper the context, surer the attribution."},
+  {"name":"flow-74-destination-blind","style":"bus destination blind","blurb":"Linen blind scrolls departure and calling points; strategies listed as stops with standees estimated."},
+  {"name":"flow-78-wristbands","style":"festival wristband desk","blurb":"GA band issued at the gate; crowd profile scanned lane-by-lane and every beep logged."},
+  {"name":"flow-75-merit-sash","style":"scout merit sash","blurb":"Enrolment night signs the book; rank assessment ticks requirements and badges sew on per strategy."}
 ]
