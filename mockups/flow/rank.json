@@ -41,12 +41,12 @@
   {"name":"flow-55-safety-card","style":"airline safety card","blurb":"Seat-pocket placard; exits per route, prohibited channels confiscated at boarding."},
   {"name":"flow-50-anatomy-atlas","style":"anatomical atlas","blurb":"Dissection figures with Latin notes; tonus bar encodes fit."},
   {"name":"flow-45-apothecary","style":"apothecary dispensary","blurb":"Latin formulae and tincture bottles; cautions carry real notes."},
+  {"name":"flow-82-rally-roadbook","style":"rally roadbook","blurb":"Crew signs on at start control; tulip diagrams and running kilometres leg each strategy to its target reach."},
   {"name":"flow-53-guide-rouge","style":"Michelin-style guide","blurb":"Inspected établissements get stars; non retenus list rules out."},
+  {"name":"flow-80-tide-tables","style":"almanac tide tables","blurb":"Passage ordered at the quayside; port conditions read the audience and channel sets tide each strategy's sailing window."},
   {"name":"flow-54-philatelic-bureau","style":"stamp album sheet","blurb":"Perforated commemoratives per strategy; postmarks stamp provenance."},
-  {"name":"flow-73-signal-box","style":"railway signal box","blurb":"Train described and repeated back; block-shelf instruments needle each channel line-clear or blocked."},
-  {"name":"flow-76-aperture-ring","style":"engraved lens barrel","blurb":"Focus ring locks the audience at distance; aperture click-stops meter each strategy's exposure fit."},
-  {"name":"flow-77-dig-grid","style":"archaeological trench plan","blurb":"Context records and a stratigraphy column layer the finds; deeper the context, surer the attribution."},
-  {"name":"flow-74-destination-blind","style":"bus destination blind","blurb":"Linen blind scrolls departure and calling points; strategies listed as stops with standees estimated."},
-  {"name":"flow-78-wristbands","style":"festival wristband desk","blurb":"GA band issued at the gate; crowd profile scanned lane-by-lane and every beep logged."},
-  {"name":"flow-75-merit-sash","style":"scout merit sash","blurb":"Enrolment night signs the book; rank assessment ticks requirements and badges sew on per strategy."}
+  {"name":"flow-81-dome-schedule","style":"observatory night log","blurb":"TAC-accepted proposal under red lamps; seeing report reads the audience and instruments queue strategies for dark time."},
+  {"name":"flow-83-cellar-book","style":"wine merchant's cellar book","blurb":"Consignment entered into bond; the bin register racks each strategy by drinking window, cases forecast."},
+  {"name":"flow-84-darts-501","style":"pub darts chalkboard","blurb":"Fixture chalked at the Marque Arms; form guide reads the crowd and 501-down scoring legs each strategy to a finish."},
+  {"name":"flow-79-pegboard","style":"hardware store pegboard","blurb":"Work order clipped to the pegboard; the regular measured up on a tag, parts pulled per strategy down the aisles."}
 ]

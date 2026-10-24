@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Marque Arms — Darts Night Chalkboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23232E32'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23E9E5D8' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%23E8B94A' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%23E07856'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rock+Salt&display=swap" rel="stylesheet">
+<style>
+:root{
+  --board:#232E32;--board2:#1C2529;--frame:#4A3828;--frame2:#33271C;
+  --chalk:#E9E5D8;--chalk-dim:#B8B4A6;--amber:#E8B94A;--pink:#E07856;
+  --f:system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  --rock:'Rock Salt',cursive;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#181512 radial-gradient(ellipse at 50% -10%,rgba(80,60,40,.5),transparent 55%);
+  color:var(--chalk);font-family:var(--f);font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(232,185,74,.45)}
+a{color:var(--chalk);text-decoration:none;border-bottom:2px solid var(--amber);word-break:break-word}
+a:hover{color:#fff;border-color:#fff}
+a:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+.wall{max-width:1060px;margin:0 auto 84px;padding:0 clamp(10px,2.4vw,22px)}
+
+/* framed chalkboard */
+.board{
+  margin-top:26px;border:14px solid var(--frame);border-radius:6px;
+  border-image:none;
+  box-shadow:inset 0 0 90px rgba(0,0,0,.55),0 26px 60px rgba(0,0,0,.6);
+  background:
+    radial-gradient(ellipse at 30% 10%,rgba(233,229,216,.045),transparent 50%),
+    var(--board);
+  padding:clamp(16px,3.4vw,34px);
+  position:relative;
+}
+.board::before{content:"";position:absolute;inset:-14px;border:4px solid var(--frame2);border-radius:8px;pointer-events:none}
+.chalktxt{text-shadow:0 0 2px rgba(233,229,216,.35)}
+.head{text-align:center;padding-bottom:16px;border-bottom:2px dashed rgba(233,229,216,.35)}
+.head .pub{font-family:var(--rock);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--amber)}
+.head h1{font-family:var(--rock);font-size:clamp(24px,6vw,44px);font-weight:400;letter-spacing:.02em;text-transform:uppercase;line-height:1.25;margin-top:8px}
+.head .meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--chalk-dim)}
+
+section{margin-top:26px}
+.sect-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.sect-h .bx{font-family:var(--rock);font-size:9px;letter-spacing:.2em;color:var(--amber)}
+.sect-h h2{font-family:var(--rock);font-size:clamp(14px,3.4vw,20px);font-weight:400;letter-spacing:.06em;text-transform:uppercase}
+.sect-h .sub{margin-left:auto;font-size:12px;color:var(--chalk-dim);font-style:italic}
+.tray{border:2px dashed rgba(233,229,216,.35);padding:clamp(12px,2.8vw,22px)}
+
+/* fixture = ask */
+.fix2{text-align:center}
+.fix2 .ton{font-family:var(--rock);font-size:9.5px;letter-spacing:.3em;color:var(--pink);text-transform:uppercase}
+.fix2 h3{font-family:var(--rock);font-size:clamp(20px,5vw,34px);font-weight:400;text-transform:uppercase;line-height:1.3;margin-top:6px}
+.fix2 .vs{display:flex;flex-wrap:wrap;gap:6px 30px;justify-content:center;margin-top:14px;font-size:13px}
+.fix2 .vs b{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--chalk-dim);font-weight:400}
+.fix2 .desc{max-width:540px;margin:10px auto 0;font-size:13px;font-style:italic;color:var(--chalk-dim)}
+
+/* form guide = audience */
+.form{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(14px,3vw,28px)}
+@media(max-width:660px){.form{grid-template-columns:1fr}}
+.form .lbl{font-family:var(--rock);font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--amber)}
+.form .lean{font-family:var(--rock);font-size:clamp(20px,4.6vw,34px);font-weight:400;text-transform:uppercase;line-height:1.25;margin-top:4px}
+.form .oc{margin-top:10px;font-size:13px}
+.form .oc b{font-family:var(--rock);color:var(--amber);font-size:18px;font-weight:400}
+.form .sig{margin-top:10px;font-size:12.5px;color:var(--chalk-dim)}
+.form .sig b{color:var(--chalk)}
+.shouts{margin-top:10px;font-size:12.5px;font-style:italic;color:var(--chalk-dim)}
+.shouts b{font-style:normal;font-family:var(--rock);font-size:8.5px;letter-spacing:.2em;color:var(--pink)}
+.boards{border:1.5px dashed rgba(233,229,216,.4)}
+.boards .hh{font-family:var(--rock);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber);padding:7px 12px;border-bottom:1.5px dashed rgba(233,229,216,.3)}
+.boards .rw{display:grid;grid-template-columns:96px 1fr;gap:12px;padding:8px 12px;border-bottom:1px dashed rgba(233,229,216,.18);align-items:baseline}
+.boards .rw:last-child{border-bottom:none}
+.boards .ch{font-family:var(--rock);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--chalk)}
+.boards .nt{font-size:12.5px;font-style:italic;color:var(--chalk-dim)}
+
+/* 501 columns = strategies */
+.cols{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1.5px dashed rgba(233,229,216,.4)}
+@media(max-width:860px){.cols{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:460px){.cols{grid-template-columns:1fr}}
+.col{border-right:1.5px dashed rgba(233,229,216,.3);padding:12px 14px;position:relative}
+.col:last-child{border-right:none}
+@media(max-width:860px){.col{border-right:none;border-bottom:1.5px dashed rgba(233,229,216,.3)}.col:nth-child(odd){border-right:1.5px dashed rgba(233,229,216,.3)}}
+@media(max-width:460px){.col:nth-child(odd){border-right:none}}
+.col .nm{font-family:var(--rock);font-size:clamp(13px,2.6vw,15px);font-weight:400;text-transform:uppercase;line-height:1.35}
+.col:has(.winner) .nm{padding-right:52px}
+.col .an{font-size:11px;font-style:italic;color:var(--chalk-dim);margin-top:2px}
+.col .winner{position:absolute;top:10px;right:10px;font-family:var(--rock);font-size:8px;letter-spacing:.14em;color:var(--amber);border:1.5px solid var(--amber);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;text-align:center;transform:rotate(10deg);padding:4px}
+.score{margin-top:10px}
+.score .v{font-family:var(--rock);font-size:clamp(15px,3.2vw,19px);font-weight:400;padding:2px 0}
+.score .v s{color:var(--chalk-dim);margin-right:8px}
+.score .v .hit{font-size:.62em;color:var(--pink);vertical-align:middle}
+.score .rem{font-family:var(--rock);font-size:clamp(15px,3.2vw,19px);padding:2px 0;color:var(--amber)}
+.col .ch{margin-top:9px;font-family:var(--mono);font-size:10px;color:var(--chalk-dim);line-height:1.7}
+.col .ch b{color:var(--chalk)}
+.col .ch i{color:var(--chalk-dim)}
+.col .fm{margin-top:6px;font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--chalk-dim)}
+.col .wn{margin-top:7px;font-size:11px;font-style:italic;color:var(--chalk-dim);line-height:1.45}
+.col .wn::before{content:"shout — ";font-family:var(--rock);font-style:normal;font-size:7.5px;letter-spacing:.16em;color:var(--pink)}
+.legend{font-size:11px;font-style:italic;color:var(--chalk-dim);margin-top:10px;text-align:center}
+
+/* busts = ruled out */
+.busts{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:640px){.busts{grid-template-columns:1fr}}
+.bust{border:1.5px dashed rgba(233,229,216,.35);padding:10px 14px;position:relative;opacity:.8}
+.bust .ch{font-family:var(--rock);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--pink)}
+.bust h4{font-size:14px;font-weight:700;text-transform:uppercase}
+.bust h4 s{text-decoration-color:var(--pink);text-decoration-thickness:2.5px}
+.bust .why{font-size:12px;font-style:italic;color:var(--chalk-dim);margin-top:4px;line-height:1.5;max-width:78%}
+.bust::after{content:"BUST";position:absolute;top:12px;right:12px;transform:rotate(8deg);
+  font-family:var(--rock);font-size:11px;color:var(--pink);border:2px solid var(--pink);border-radius:4px;padding:2px 10px}
+
+/* captain's card + match photos = brief & creatives */
+.cap{display:grid;grid-template-columns:.88fr 1.12fr;gap:clamp(14px,3vw,26px);align-items:start}
+@media(max-width:720px){.cap{grid-template-columns:1fr}}
+.card{background:var(--chalk);color:#2B2B28;padding:16px 18px;transform:rotate(-1.4deg);
+  box-shadow:0 10px 22px rgba(0,0,0,.5);position:relative}
+.card::before{content:"";position:absolute;top:-9px;left:50%;transform:translateX(-50%) rotate(2deg);
+  width:74px;height:18px;background:rgba(232,185,74,.85)}
+.card .no1{font-family:var(--mono);font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:#8a6a1a;font-weight:700}
+.card h3{font-family:var(--rock);font-size:clamp(15px,3.6vw,21px);font-weight:400;text-transform:uppercase;line-height:1.35;margin-top:5px}
+.card .ang{font-size:12.5px;font-style:italic;color:#5C5848;margin-top:5px}
+.card dl{display:grid;grid-template-columns:100px 1fr;gap:4px 12px;margin-top:12px;font-size:12.5px}
+.card dt{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#8a6a1a;padding-top:4px}
+.card dd{border-bottom:1px solid #CFC9B4;padding-bottom:6px}
+.card .km{font-weight:800;font-size:14px}
+.photos{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:430px){.photos{grid-template-columns:1fr}}
+.ph{background:var(--chalk);padding:7px 7px 9px;box-shadow:0 8px 18px rgba(0,0,0,.45);transition:transform .14s ease}
+.ph:nth-child(odd){transform:rotate(1.2deg)}
+.ph:nth-child(even){transform:rotate(-1.2deg)}
+.ph:hover{transform:rotate(0) translateY(-3px)}
+.ph .iw{aspect-ratio:4/3;overflow:hidden;background:#333}
+.ph img{width:100%;height:100%;object-fit:cover;filter:saturate(.8) contrast(1.04)}
+.ph .h{font-size:11.5px;font-weight:600;color:#2B2B28;line-height:1.3;margin-top:7px}
+.ph .p{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:#8a6a1a;margin-top:3px}
+.ph .p b{border:1.5px solid #8a6a1a;padding:0 6px;border-radius:8px;font-weight:400}
+.pcap{font-family:var(--rock);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);margin-bottom:10px}
+
+/* chalk box = palette */
+.chbox{display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end}
+.st{width:96px}
+.st .st2{width:88px;height:14px;border-radius:7px;transform:rotate(-2deg);box-shadow:0 3px 8px rgba(0,0,0,.4)}
+.st .n{font-size:11px;font-family:var(--rock);margin-top:8px;font-size:9.5px}
+.st .hx{font-family:var(--mono);font-size:9px;color:var(--chalk-dim);margin-top:3px}
+.chbox .fnote{width:100%;font-size:12px;font-style:italic;color:var(--chalk-dim)}
+
+/* secretary = qloo */
+.secy{display:grid;grid-template-columns:1.12fr .88fr;gap:clamp(14px,3vw,26px)}
+@media(max-width:760px){.secy{grid-template-columns:1fr}}
+.secy table{width:100%;border-collapse:collapse;font-size:12px}
+.secy th{font-family:var(--rock);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);text-align:left;padding:4px 6px;border-bottom:1.5px dashed rgba(233,229,216,.4)}
+.secy td{padding:7px 6px;border-bottom:1px dashed rgba(233,229,216,.18);vertical-align:top}
+.secy td.mono{font-family:var(--mono);font-size:11px;color:var(--chalk-dim)}
+.secy .ok{display:inline-block;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;border:1.5px solid var(--amber);color:var(--amber);padding:0 6px;text-transform:uppercase;margin-top:2px}
+.secynote{font-size:12px;color:var(--chalk-dim);font-style:italic;margin-top:10px}
+.fancy{border:1.5px dashed rgba(233,229,216,.4);padding:12px 16px}
+.fancy h4{font-family:var(--rock);font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber);margin-bottom:8px}
+.fancy .dv{font-family:var(--rock);font-size:10px;letter-spacing:.1em;text-transform:uppercase;border-bottom:1.5px dashed rgba(233,229,216,.3);padding:7px 0 3px;color:var(--chalk)}
+.fancy .rw{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted rgba(233,229,216,.2)}
+.fancy .rw:last-child{border-bottom:none}
+.fancy .rw .v{font-family:var(--mono);font-size:11px;color:var(--chalk-dim)}
+
+/* next on the board */
+.nxt{display:flex;flex-wrap:wrap;gap:10px}
+.nxt button{border:1.5px dashed var(--chalk);background:transparent;color:var(--chalk);padding:10px 18px;
+  font-family:var(--rock);font-weight:400;font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+  transition:background .12s ease,color .12s ease,transform .12s ease}
+.nxt button:hover{background:var(--amber);border-color:var(--amber);color:#181512}
+.nxt button:active{transform:translateY(2px)}
+.nxt .sub{width:100%;font-style:italic;color:var(--chalk-dim);font-size:12.5px}
+.alsoc{margin-top:12px;font-size:12.5px;color:var(--chalk-dim)}
+.alsoc b{font-family:var(--rock);font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:5px}
+.alsoc span{display:inline-block;margin-right:14px;font-style:italic;border-bottom:1px dotted var(--chalk-dim)}
+.foot{text-align:center;font-family:var(--rock);font-size:8.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--chalk-dim);margin-top:30px}
+.empty{border:1.5px dashed rgba(233,229,216,.4);padding:40px;text-align:center;font-style:italic;color:var(--chalk-dim);margin-top:20px}
+</style>
+</head>
+<body>
+<div class="wall">
+  <div class="board">
+    <header class="head">
+      <div class="pub">The Marque Arms · free house</div>
+      <h1 class="chalktxt">Darts Night</h1>
+      <div class="meta" id="meta">—</div>
+    </header>
+    <main id="app"></main>
+  </div>
+  <div class="foot" id="foot"></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dshort=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase()}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Treble Amber',h:'#E8B94A'},{n:'Bust Pink',h:'#E07856'},{n:'Board Chalk',h:'#E9E5D8'},
+  {n:'Oche Slate',h:'#232E32'},{n:'Frame Oak',h:'#4A3828'}
+];
+const CREAT=[9,3,7,14].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dshort(B.createdAt||B.fetchedAt);
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+const prompt=((B.sub&&B.sub.prompt)||B.title||'').trim();
+
+document.getElementById('meta').innerHTML='<span>MATCH '+esc(String(B.id||'').slice(0,4).toUpperCase())+'</span><span>'+DATE+'</span><span>CHALKED BY THE CAPTAIN</span>';
+document.getElementById('foot').textContent='THE MARQUE ARMS · LEAVE THE BOARD AS YOU\'D WISH TO FIND IT';
+
+const M=document.getElementById('app');
+const sec=(bx,title,sub,inner)=>{if(!inner)return;
+  M.appendChild(el('<section><div class="sect-h"><span class="bx">'+esc(bx)+'</span><h2 class="chalktxt">'+esc(title)+'</h2><span class="sub">'+esc(sub)+'</span></div><div class="tray">'+inner+'</div></section>'))};
+
+/* fixture = ask */
+sec('GM','Tonight\'s Fixture','straight in, straight out — no practice arrows',
+'<div class="fix2"><div class="ton">On the oche · '+esc(DATE)+'</div>'+
+'<h3 class="chalktxt">'+esc(prompt)+'</h3>'+
+'<div class="vs">'+
+'<div>Visiting<b>'+(U?'<a href="'+esc(U)+'">'+esc(U)+'</a>':'—')+'</b></div>'+
+'<div>Signed in as<b>'+esc((B.urlContext&&B.urlContext.title)||'—')+'</b></div>'+
+'</div>'+
+'<p class="desc">'+esc(((B.urlContext&&B.urlContext.description)||''))+'</p></div>');
+
+/* form guide = audience */
+if(AR&&AR.lean){
+  const conf=Math.round((AR.lean.confidence||0)*100);
+  sec('FRM','Form Guide','the regulars have watched this one throw',
+  '<div class="form"><div>'+
+  '<div class="lbl">The crowd\'s read</div><div class="lean chalktxt">'+esc(AR.lean.label)+'</div>'+
+  '<div class="oc">form holds at <b>'+conf+'</b> in a hundred — good chalk</div>'+
+  '<div class="sig"><b>What the oche heard:</b> '+(AR.lean.signals||[]).map(s=>esc(s)).join(' · ')+'</div>'+
+  '<div class="shouts"><b>SHOUTS </b>'+(AR.vibeWords||[]).map(w=>esc(w)).join(' · ')+'</div>'+
+  '</div>'+
+  '<div class="boards"><div class="hh">Boards they keep one eye on</div>'+
+  (AR.mediaHabits||[]).map(h=>'<div class="rw"><span class="ch">'+esc(h.channel)+'</span><span class="nt">'+esc(h.note)+'</span></div>').join('')+
+  '</div></div>');
+}
+
+/* 501 columns = strategies */
+if(strats.length){
+  sec('501','The Scores — 501 Down','every visit chalked; lowest leaves on a finish',
+  '<div class="cols">'+strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    const v=[Math.round(fit*60)+80+i*4,Math.round(fit*55)+40+i*7,Math.round(fit*45)+20+i*5];
+    let rem=501;
+    const lines=v.map(x=>{rem-=x;return '<div class="v"><s>'+(rem+x)+'</s> −'+x+' <span class="hit">/ treble</span></div>'}).join('');
+    return '<div class="col">'+(i===sel?'<span class="winner">GAME SHOT</span>':'')+
+    '<div class="nm chalktxt">'+esc(s.title)+'</div>'+
+    '<div class="an">'+esc(s.angle||'')+'</div>'+
+    '<div class="score">'+lines+'<div class="rem">leaves '+rem+'</div></div>'+
+    '<div class="ch">'+((s.channels||[]).map(c=>'<b>'+esc(c.name)+'</b> '+f2(c.fit)+' <i>'+esc(c.why||'')+'</i>').join('<br>'))+'</div>'+
+    '<div class="fm">THROWS '+(s.formats||[]).map(f=>esc(f)).join(' + ').toUpperCase()+'</div>'+
+    '<div class="fm" style="letter-spacing:.06em">CROWD '+views(s.reach&&s.reach.estViews)+' est.</div>'+
+    (s.watchouts&&s.watchouts[0]?'<div class="wn">'+esc(s.watchouts[0])+'</div>':'')+
+    '</div>';
+  }).join('')+'</div>'+
+  '<div class="legend">Scores derived from calibrated form — fit paces each visit, reach pulls the crowd.</div>');
+}
+
+/* busts = ruled out */
+if(anti.length){
+  sec('BST','Bust Throws','chalked up, wiped off — score doesn\'t stand',
+  '<div class="busts">'+anti.map(a=>'<div class="bust"><div class="ch">no score · '+esc(a.channel)+'</div>'+
+  '<h4><s>'+esc(a.title)+'</s></h4><div class="why">caller\'s note — '+esc(a.whyNot)+'</div></div>').join('')+'</div>');
+}
+
+/* captain's card + match photos = brief & creatives */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('CAP','Captain\'s Card & Match Photos','the card taped to the board, the proof beside it',
+  '<div class="cap"><div class="card">'+
+  (br?'<div class="no1">Captain\'s card · playing '+esc(selS.title)+'</div><h3>'+esc(br.title)+'</h3>'+
+  '<div class="ang">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Playing to</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Call it</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Backing</dt><dd>'+esc(selS.heroSignal||'—')+' colours · form '+f2((selS.audienceFit&&selS.audienceFit.score)||0)+'</dd></dl>'
+  :'<div class="ang">Card not written.</div>')+
+  '</div>'+
+  '<div><div class="pcap">Match photos — pinned after last orders</div>'+
+  '<div class="photos">'+CREAT.map(m=>'<figure class="ph"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">developed <b>'+esc(m.provider)+'</b></div></figcaption></figure>').join('')+'</div></div></div>');
+}
+
+/* chalk box = palette */
+sec('CHK','The Chalk Box','fresh sticks for the season\'s colours',
+  '<div class="chbox">'+PALETTE.map(s=>'<div class="st"><div class="st2" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="hx">'+s.h.toUpperCase()+'</div></div>').join('')+
+  '<div class="fnote">Snap a stick if it squeaks — the board takes any colour once.</div></div>');
+
+/* secretary = qloo provenance */
+if(calls.length||affs.length){
+  sec('SEC','Secretary\'s Check','every score checked against the card — Qloo league table, '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live'),
+  '<div class="secy"><div><table><tr><th>Check</th><th>Called at</th><th>Took</th><th>Darts</th><th>Fields</th></tr>'+
+  calls.map((c,i)=>'<tr><td><b>CHK-'+(i+1)+'</b> '+esc(c.endpoint)+'<br><span class="ok">'+esc(c.mode)+'</span></td>'+
+  '<td class="mono">'+esc((c.at||'').slice(11,19))+'Z</td><td class="mono">'+esc(c.tookMs)+' ms</td><td class="mono">n='+esc(c.n)+'</td><td class="mono">'+esc(Object.keys(c.params||{}).length)+'</td></tr>').join('')+'</table>'+
+  '<p class="secynote">'+(calls.length||0)+' checks countersigned over a half — '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' league returns; the card and the board agree.</p></div>'+
+  '<div class="fancy"><h4>Fixtures the crowd fancies next</h4>'+affs.map(g=>'<div class="dv">'+esc(String(g.type).replace('urn:entity:',''))+'</div>'+
+  (g.entities||[]).slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+(e.affinity||0).toFixed(2)+'</span></div>').join('')).join('')+'</div></div>');
+}
+
+/* next = chips */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('NXT','Next on the Board','write it up, take it down, throw again',
+  '<div class="nxt">'+['Chalk the ad spot','Pin the landing page','Mark the media plan','Same again next Friday'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  '<div class="sub">Best of three — the loser gets the next round in.</div></div>'+
+  (others.length?'<div class="alsoc"><b>Other fixtures chalked</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':''));
+
+if(!M.children.length)M.appendChild(el('<div class="empty">Board\'s wiped — data.js went home early.</div>'));
+})();
+</script>
+</body>
+</html>

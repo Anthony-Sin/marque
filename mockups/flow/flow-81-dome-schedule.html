@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque Observatory — Tonight's Observing Run</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%230B0E13'/%3E%3Cpath d='M32 10a22 22 0 0 1 22 22H10A22 22 0 0 1 32 10z' fill='none' stroke='%23C8C2B8' stroke-width='3'/%3E%3Cpath d='M32 10v22' stroke='%23E04B33' stroke-width='4'/%3E%3Crect x='8' y='32' width='48' height='4' fill='%23C8C2B8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --dome:#0B0E13;--panel:#12161D;--panel2:#171C25;--line:#2A3240;
+  --txt:#C8C2B8;--mut:#6F6E68;--faint:#484C55;
+  --lamp:#E04B33;--lamp-dk:#8C2E1E;
+  --f:'Red Hat Mono',ui-monospace,'SF Mono',Menlo,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--dome) radial-gradient(ellipse at 50% -20%,rgba(60,70,90,.35),transparent 60%);
+  color:var(--txt);font-family:var(--f);font-size:14px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(224,75,51,.5)}
+a{color:var(--txt);text-decoration:none;border-bottom:1.5px solid var(--lamp);word-break:break-word}
+a:hover{color:#fff;border-color:#fff}
+a:focus-visible,button:focus-visible{outline:3px solid var(--lamp);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+.dome{max-width:980px;margin:0 auto 84px;padding:0 clamp(10px,2.4vw,22px)}
+
+/* dome status header */
+.status{margin-top:26px;border:1.5px solid var(--line);background:var(--panel);
+  display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:14px clamp(14px,3.4vw,28px);position:relative}
+.status::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--lamp)}
+.status h1{font-size:clamp(19px,4.6vw,30px);font-weight:700;letter-spacing:.02em;text-transform:uppercase}
+.status h1 span{color:var(--lamp)}
+.status .st{font-size:11px;letter-spacing:.14em;text-transform:uppercase;text-align:right;color:var(--mut);line-height:1.7}
+.status .st b{color:var(--lamp);font-weight:500}
+
+/* night arc */
+.arc{margin-top:14px;border:1.5px solid var(--line);background:var(--panel);padding:12px 16px 8px}
+.arc .lbl{font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--mut);display:flex;justify-content:space-between}
+.arc .bar{position:relative;height:22px;margin-top:8px;
+  background:linear-gradient(90deg,#3A2E33 0%,#1A2130 12%,#0B0E13 30%,#0B0E13 70%,#1A2130 88%,#3A2E33 100%);
+  border:1px solid var(--line)}
+.arc .bar .tick{position:absolute;top:0;bottom:0;width:1px;background:var(--faint)}
+.arc .bar .obs{position:absolute;top:-4px;width:8px;height:30px;border-left:2px solid var(--lamp)}
+.arc .bar .obs i{position:absolute;top:-1px;left:2px;font-size:8px;color:var(--lamp);font-style:normal}
+.arc .hrs{display:flex;justify-content:space-between;font-size:9px;color:var(--faint);margin-top:4px;letter-spacing:.1em}
+
+section{margin-top:26px}
+.sect-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.sect-h .bx{font-size:9.5px;letter-spacing:.22em;background:var(--lamp);color:var(--dome);padding:3px 9px;font-weight:700;text-transform:uppercase}
+.sect-h h2{font-size:clamp(16px,3.6vw,23px);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.sect-h .sub{margin-left:auto;font-size:11.5px;color:var(--mut);font-style:italic}
+.tray{border:1.5px solid var(--line);background:var(--panel);padding:clamp(14px,3vw,24px)}
+
+/* proposal card = ask */
+.prop{display:grid;grid-template-columns:1.2fr .8fr;gap:clamp(12px,3vw,26px)}
+@media(max-width:640px){.prop{grid-template-columns:1fr}}
+.prop .no{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--lamp)}
+.prop h3{font-size:clamp(20px,4.8vw,32px);font-weight:700;text-transform:uppercase;line-height:1.1;margin-top:3px}
+.prop .abs{margin-top:8px;font-size:12.5px;font-style:italic;color:var(--mut);max-width:52ch}
+.prop dl{display:grid;grid-template-columns:96px 1fr;gap:4px 12px;font-size:12px}
+.prop dt{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);padding-top:3px}
+.prop dd{border-bottom:1px dashed var(--line);padding-bottom:5px}
+.prop .badge{display:inline-block;margin-top:10px;border:1.5px solid var(--lamp);color:var(--lamp);
+  font-size:10px;letter-spacing:.22em;text-transform:uppercase;padding:4px 12px}
+
+/* seeing report = audience */
+.see{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(12px,3vw,26px);align-items:start}
+@media(max-width:660px){.see{grid-template-columns:1fr}}
+.see .class{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--lamp)}
+.see .lean{font-size:clamp(24px,5.2vw,38px);font-weight:700;text-transform:uppercase;line-height:1.05}
+.see .arcsec{margin-top:8px;font-size:13px}
+.see .arcsec b{color:var(--lamp);font-size:20px}
+.see .sig{margin-top:10px;font-size:12px;color:var(--mut)}
+.see .sig b{color:var(--txt);font-size:9px;letter-spacing:.24em;text-transform:uppercase;display:block;margin-bottom:3px}
+.stars{margin-top:10px;font-size:11px;letter-spacing:.12em}
+.stars span{display:inline-block;border:1px solid var(--line);padding:2px 9px;margin:0 5px 5px 0}
+.stars span::before{content:"· ";color:var(--lamp)}
+.habit{border:1px solid var(--line);background:var(--panel2)}
+.habit .hh{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);padding:7px 12px;border-bottom:1px solid var(--line)}
+.habit .rw{display:grid;grid-template-columns:100px 1fr;gap:12px;padding:8px 12px;border-bottom:1px dashed var(--line);align-items:baseline}
+.habit .rw:last-child{border-bottom:none}
+.habit .ch{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--lamp)}
+.habit .nt{font-size:12px;color:var(--txt)}
+
+/* session blocks = strategies */
+.sched{display:grid;gap:0;border:1px solid var(--line)}
+.blk{display:grid;grid-template-columns:104px 14px 1fr;gap:14px;padding:14px 16px;border-bottom:1px dashed var(--line);position:relative}
+.blk:last-child{border-bottom:none}
+.blk:hover{background:rgba(224,75,51,.05)}
+.blk .tm{text-align:right;font-size:12px;color:var(--mut);padding-top:3px}
+.blk .tm b{display:block;font-size:16px;color:var(--txt);font-weight:500}
+.blk .dur{display:block;font-size:10px;color:var(--faint)}
+.blk .rail{position:relative}
+.blk .rail::before{content:"";position:absolute;left:6px;top:-16px;bottom:-16px;width:2px;background:var(--line)}
+.blk:first-child .rail::before{top:20px}
+.blk:last-child .rail::before{bottom:auto;height:22px}
+.blk .rail i{position:absolute;left:1.5px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--dome);border:2.5px solid var(--mut)}
+.blk.on .rail i{border-color:var(--lamp);box-shadow:0 0 10px rgba(224,75,51,.6)}
+.blk .tt{font-size:clamp(16px,3.4vw,21px);font-weight:700;text-transform:uppercase;line-height:1.1}
+.blk .tt .pr{font-size:9px;letter-spacing:.2em;color:var(--lamp);vertical-align:middle;margin-left:8px;border:1px solid var(--lamp);padding:1px 6px}
+.blk .ang{font-size:11.5px;font-style:italic;color:var(--mut)}
+.blk .row{display:flex;flex-wrap:wrap;gap:3px 18px;margin-top:7px;font-size:11px}
+.blk .row .ch{color:var(--txt)}
+.blk .row .ch b{color:var(--lamp);font-weight:500}
+.blk .row .ch i{color:var(--mut)}
+.blk .row .fr{color:var(--mut);letter-spacing:.1em;text-transform:uppercase;font-size:10px}
+.blk .row .rv{margin-left:auto;color:var(--txt)}
+.blk .row .rv b{color:var(--lamp);font-weight:500;font-size:14px}
+.blk .warn{font-size:11px;font-style:italic;color:var(--mut);margin-top:5px}
+.blk .warn::before{content:"NOTE — ";font-style:normal;font-size:8.5px;letter-spacing:.2em;color:var(--lamp)}
+@media(max-width:560px){.blk{grid-template-columns:70px 10px 1fr;gap:8px}.blk .tm b{font-size:13px}}
+
+/* lost sessions = ruled out */
+.lost{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(max-width:640px){.lost{grid-template-columns:1fr}}
+.lx{border:1px dashed var(--line);background:var(--panel2);padding:10px 14px;opacity:.8}
+.lx .ch{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--lamp)}
+.lx h4{font-size:15px;font-weight:700;text-transform:uppercase}
+.lx h4 s{text-decoration-color:var(--lamp)}
+.lx .why{font-size:11.5px;font-style:italic;color:var(--mut);margin-top:3px;line-height:1.5}
+
+/* finding chart + plates = brief & creatives */
+.fcwrap{display:grid;grid-template-columns:.92fr 1.08fr;gap:clamp(14px,3vw,26px);align-items:start}
+@media(max-width:760px){.fcwrap{grid-template-columns:1fr}}
+.fchart{border:1.5px solid var(--line);background:radial-gradient(circle at 50% 42%,rgba(224,75,51,.07),transparent 55%),var(--dome);padding:18px;position:relative}
+.fchart::before{content:"";position:absolute;inset:10px;border:1px solid var(--line);pointer-events:none}
+.fchart .xh{position:absolute;left:50%;top:50%;width:74px;height:74px;transform:translate(-50%,-58%);border:1px solid var(--lamp);border-radius:50%;opacity:.5;pointer-events:none}
+.fchart .xh::before,.fchart .xh::after{content:"";position:absolute;background:var(--lamp);opacity:.8}
+.fchart .xh::before{left:50%;top:-12px;bottom:-12px;width:1px}
+.fchart .xh::after{top:50%;left:-12px;right:-12px;height:1px}
+.fchart .no1{font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--lamp)}
+.fchart h3{font-size:clamp(19px,4.4vw,28px);font-weight:700;text-transform:uppercase;line-height:1.1;margin-top:3px}
+.fchart .ang{font-size:12px;font-style:italic;color:var(--mut);margin-top:5px}
+.fchart dl{display:grid;grid-template-columns:104px 1fr;gap:4px 12px;margin-top:12px;font-size:12px;position:relative}
+.fchart dt{font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);padding-top:3px}
+.fchart dd{border-bottom:1px dashed var(--line);padding-bottom:5px}
+.fchart .km{font-weight:700;font-size:14px;color:#fff}
+.glass{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:430px){.glass{grid-template-columns:1fr}}
+.plate{border:1.5px solid var(--line);background:#05070A;transition:transform .14s ease,border-color .14s ease}
+.plate:hover{transform:translateY(-3px);border-color:var(--lamp)}
+.plate .iw{aspect-ratio:4/3;overflow:hidden;border-bottom:1.5px solid var(--line)}
+.plate img{width:100%;height:100%;object-fit:cover;filter:saturate(.85)}
+.plate figcaption{padding:8px 12px 10px}
+.plate .h{font-size:12px;font-weight:500;line-height:1.35}
+.plate .p{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--lamp);margin-top:4px}
+.plate .p b{border:1px solid var(--lamp);padding:0 6px;border-radius:8px;font-weight:400}
+.gcap{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--lamp);margin-bottom:8px}
+
+/* filter wheel = palette */
+.filters{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end}
+.flt{text-align:center;width:92px}
+.flt .disc{width:64px;height:64px;border-radius:50%;margin:0 auto;border:2px solid var(--line);position:relative}
+.flt .disc::before{content:"";position:absolute;inset:-9px;border:1px dashed var(--faint);border-radius:50%}
+.flt .n{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;margin-top:12px}
+.flt .hx{font-size:9px;color:var(--mut)}
+.filters .fnote{width:100%;font-size:11.5px;font-style:italic;color:var(--mut)}
+
+/* night log = qloo */
+.logwrap{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(14px,3vw,26px)}
+@media(max-width:760px){.logwrap{grid-template-columns:1fr}}
+.log{border:1px solid var(--line);background:var(--dome);padding:12px 16px;font-size:11.5px}
+.log .ln{padding:5px 0;border-bottom:1px dashed var(--line);display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.log .ln:last-child{border-bottom:none}
+.log .t{color:var(--lamp);flex:0 0 auto}
+.log .e{color:var(--txt)}
+.log .m{margin-left:auto;color:var(--mut);font-size:10px}
+.log .ok{border:1px solid var(--lamp);color:var(--lamp);font-size:8.5px;letter-spacing:.14em;padding:0 6px;text-transform:uppercase}
+.lognote{font-size:11.5px;color:var(--mut);font-style:italic;margin-top:9px}
+.cat{border:1px solid var(--line);background:var(--panel2);padding:12px 16px}
+.cat h4{font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--lamp);margin-bottom:6px}
+.cat .dv{font-weight:700;text-transform:uppercase;font-size:11.5px;letter-spacing:.12em;border-bottom:1px solid var(--line);padding:6px 0 2px}
+.cat .rw{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.cat .rw:last-child{border-bottom:none}
+.cat .rw .v{font-size:10.5px;color:var(--mut)}
+
+/* apply = next */
+.apply{display:flex;flex-wrap:wrap;gap:10px}
+.apply button{border:1.5px solid var(--txt);background:transparent;color:var(--txt);padding:9px 18px;
+  font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  transition:background .12s ease,color .12s ease,transform .12s ease,border-color .12s ease}
+.apply button:hover{background:var(--lamp);border-color:var(--lamp);color:var(--dome)}
+.apply button:active{transform:translateY(2px)}
+.apply .sub{width:100%;font-style:italic;color:var(--mut);font-size:12px}
+.alsoc{margin-top:12px;font-size:12px;color:var(--mut)}
+.alsoc b{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--lamp);display:block;margin-bottom:4px}
+.alsoc span{display:inline-block;margin-right:14px;font-style:italic;border-bottom:1px dotted var(--mut)}
+.foot{text-align:center;font-size:9.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--faint);margin-top:30px}
+.empty{border:1.5px solid var(--line);padding:40px;text-align:center;font-style:italic;color:var(--mut);margin-top:20px}
+</style>
+</head>
+<body>
+<div class="dome">
+  <header class="status">
+    <h1>Marque Observatory <span>· Night Log</span></h1>
+    <div class="st" id="st">—</div>
+  </header>
+  <div class="arc" id="arc"></div>
+  <main id="app"></main>
+  <div class="foot" id="foot"></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dshort=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase()}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Lamp Red',h:'#E04B33'},{n:'Photographic Grey',h:'#C8C2B8'},{n:'Dome Steel',h:'#6F6E68'},
+  {n:'Midnight Dome',h:'#0B0E13'},{n:'Twilight Slate',h:'#2A3240'}
+];
+const CREAT=[7,3,8,11].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dshort(B.createdAt||B.fetchedAt);
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+const prompt=((B.sub&&B.sub.prompt)||B.title||'').trim();
+
+document.getElementById('st').innerHTML='DOME <b>OPEN</b> · SLIT 042°<br>RUN '+esc(String(B.id||'').slice(0,4).toUpperCase())+' · '+DATE+' · LAMPS RED';
+document.getElementById('foot').textContent='MARQUE OBSERVATORY · NO WHITE LIGHT PAST THIS POINT';
+
+/* night arc — 18:00 → 06:00 with observation ticks from call times */
+(function(){
+  const arc=document.getElementById('arc');
+  const t0=18,t1=30; // 18:00 → 06:00 next day as hours
+  const pct=h=>Math.min(100,Math.max(0,(h-t0)/(t1-t0)*100));
+  let ticks='';
+  for(let h=18;h<=30;h++){ticks+='<span class="tick" style="left:'+pct(h)+'%"></span>'}
+  const groups={};
+  calls.forEach(c=>{const k=(c.at||'').slice(11,16);(groups[k]=groups[k]||[]).push(c)});
+  const obs=Object.keys(groups).slice(0,6).map(k=>{
+    const h=parseInt(k.slice(0,2),10)+parseInt(k.slice(3,5),10)/60;
+    const p=pct(h);
+    return '<span class="obs" style="left:'+p+'%"><i>'+groups[k].length+'× '+esc(k)+'Z</i></span>';
+  }).join('');
+  const hrs=[18,20,22,0,2,4,6].map(h=>'<span>'+String(h).padStart(2,'0')+':00</span>').join('');
+  arc.innerHTML='<div class="lbl"><span>Civil twilight</span><span>Astronomical night</span><span>Dawn</span></div>'+
+  '<div class="bar">'+ticks+obs+'</div><div class="hrs">'+hrs+'</div>';
+})();
+
+const M=document.getElementById('app');
+const sec=(bx,title,sub,inner)=>{if(!inner)return;
+  M.appendChild(el('<section><div class="sect-h"><span class="bx">'+esc(bx)+'</span><h2>'+esc(title)+'</h2><span class="sub">'+esc(sub)+'</span></div><div class="tray">'+inner+'</div></section>'))};
+
+/* proposal = ask */
+sec('TAC','Observing Proposal','accepted by the time allocation committee',
+'<div class="prop"><div><div class="no">Proposal '+esc(String(B.id||'').slice(0,8).toUpperCase())+' · scheduled '+esc(DATE)+'</div>'+
+'<h3>'+esc(prompt)+'</h3>'+
+'<span class="badge">Rated — queue priority</span></div>'+
+'<div><dl><dt>Field centre</dt><dd>'+(U?'<a href="'+esc(U)+'">'+esc(U)+'</a>':'—')+'</dd>'+
+'<dt>Source cat.</dt><dd>'+esc((B.urlContext&&B.urlContext.title)||'—')+'</dd>'+
+'<dt>Abstract</dt><dd>'+esc(((B.urlContext&&B.urlContext.description)||'').slice(0,150))+'</dd></dl></div></div>');
+
+/* seeing report = audience */
+if(AR&&AR.lean){
+  const conf=(AR.lean.confidence||0);
+  sec('ATM','Seeing Report','read at dusk by the night assistant',
+  '<div class="see"><div>'+
+  '<div class="class">Transparency class</div><div class="lean">'+esc(AR.lean.label)+'</div>'+
+  '<div class="arcsec">seeing <b>'+conf.toFixed(2)+'″</b> — '+Math.round(conf*100)+'% confidence, photometric</div>'+
+  '<div class="sig"><b>Guide star tells</b>'+(AR.lean.signals||[]).map(s=>esc(s)).join(' · ')+'</div>'+
+  '<div class="stars">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div>'+
+  '<div class="habit"><div class="hh">Instrument channels in the beam tonight</div>'+
+  (AR.mediaHabits||[]).map(h=>'<div class="rw"><span class="ch">'+esc(h.channel)+'</span><span class="nt">'+esc(h.note)+'</span></div>').join('')+
+  '</div></div>');
+}
+
+/* session schedule = strategies */
+if(strats.length){
+  let t=20*60; // minutes since noon-ish, start 20:00
+  const hm=m=>{const h=Math.floor(m/60)%24;const mm=m%60;return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0')};
+  const blocks=strats.map((s,i)=>{
+    const dur=Math.round(((s.reach&&s.reach.estViews)||100000)/100000)*30+30; // 30m per 100K + 30 base
+    const start=t;const end=t+dur;t=end+20; // slew 20m
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    return '<div class="blk'+(i===sel?' on':'')+'">'+
+    '<div class="tm"><b>'+hm(start)+'</b><span class="dur">'+hm(end)+' end · '+dur+'m</span></div>'+
+    '<div class="rail"><i></i></div>'+
+    '<div><div class="tt">'+esc(s.title)+(i===sel?'<span class="pr">ON SKY</span>':'')+'</div>'+
+    '<div class="ang">'+esc(s.angle||'')+'</div>'+
+    '<div class="row">'+(s.channels||[]).map(c=>'<span class="ch"><b>'+esc(c.name)+'</b> '+f2(c.fit)+' <i>'+esc(c.why||'')+'</i></span>').join('')+'</div>'+
+    '<div class="row"><span class="fr">SEQ '+(s.formats||[]).map(f=>esc(f)).join(' × ').toUpperCase()+'</span>'+
+    '<span class="rv">EXP <b>'+views(s.reach&&s.reach.estViews)+'</b> est · PR '+f2(fit)+'</span></div>'+
+    (s.watchouts&&s.watchouts[0]?'<div class="warn">'+esc(s.watchouts[0])+'</div>':'')+
+    '</div></div>';
+  }).join('');
+  sec('OBS','Observing Blocks','slew, expose, slew — the night in order',
+  '<div class="sched">'+blocks+'</div>');
+}
+
+/* lost sessions = ruled out */
+if(anti.length){
+  sec('LST','Lost to the Weather','blocks struck from the schedule — log says why',
+  '<div class="lost">'+anti.map(a=>'<div class="lx"><div class="ch">lost · '+esc(a.channel)+'</div>'+
+  '<h4><s>'+esc(a.title)+'</s></h4><div class="why">night log — '+esc(a.whyNot)+'</div></div>').join('')+'</div>');
+}
+
+/* finding chart + plates = brief & creatives */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('FC','Finding Chart & Plate Archive','identify the field, match the plates',
+  '<div class="fcwrap"><div class="fchart"><span class="xh"></span>'+
+  (br?'<div class="no1">Chart for block '+esc(selS.title)+'</div><h3>'+esc(br.title)+'</h3>'+
+  '<div class="ang">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Field population</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Chart caption</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Reference star</dt><dd>'+esc(selS.heroSignal||'—')+' · mag '+f2((selS.audienceFit&&selS.audienceFit.score)||0)+'</dd></dl>'
+  :'<div class="ang">Chart not plotted.</div>')+
+  '</div>'+
+  '<div><div class="gcap">Plate archive — emulsions developed in-house</div>'+
+  '<div class="glass">'+CREAT.map(m=>'<figure class="plate"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">emulsion <b>'+esc(m.provider)+'</b></div></figcaption></figure>').join('')+'</div></div></div>');
+}
+
+/* filter wheel = palette */
+sec('FLT','Filter Wheel','slot the right glass for the night\'s seeing',
+  '<div class="filters">'+PALETTE.map(s=>'<div class="flt"><div class="disc" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="hx">'+s.h.toUpperCase()+'</div></div>').join('')+
+  '<div class="fnote">Wheel positions logged; never swap glass while the shutter is open.</div></div>');
+
+/* night log = qloo provenance */
+if(calls.length||affs.length){
+  sec('LOG','Readout — Night Log','every exposure timestamped by the Qloo clock, '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live'),
+  '<div class="logwrap"><div><div class="log">'+
+  calls.map((c,i)=>'<div class="ln"><span class="t">['+esc((c.at||'').slice(11,19))+'Z]</span><span class="e">EXPOSE '+esc(c.endpoint)+'</span>'+
+  '<span class="ok">'+esc(c.mode)+'</span><span class="m">'+esc(c.tookMs)+'ms → n='+esc(c.n)+' frames · '+esc(Object.keys(c.params||{}).length)+' fields</span></div>').join('')+
+  '</div>'+
+  '<p class="lognote">'+(calls.length||0)+' exposures reduced at dawn — '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' pipeline; headers verified against the schedule.</p></div>'+
+  '<div class="cat"><h4>Calibration catalogue</h4>'+affs.map(g=>'<div class="dv">'+esc(String(g.type).replace('urn:entity:',''))+'</div>'+
+  (g.entities||[]).slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+(e.affinity||0).toFixed(2)+'</span></div>').join('')).join('')+'</div></div>');
+}
+
+/* apply = next */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('TAC+','Apply for Time','proposals due before first light',
+  '<div class="apply">'+['Expose the ad spot','Plate the landing page','Queue the media plan','Re-observe — second epoch'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  '<div class="sub">Submit to the committee — time is allocated by fit, not seniority.</div></div>'+
+  (others.length?'<div class="alsoc"><b>Other runs on the schedule</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':''));
+
+if(!M.children.length)M.appendChild(el('<div class="empty">Clouded out at the source — data.js never reached the dome.</div>'));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque &amp; Fils — The Cellar Book</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%231F3328'/%3E%3Crect x='10' y='8' width='44' height='48' rx='3' fill='%23F2E9D4'/%3E%3Cpath d='M18 20h28M18 30h28M18 40h18' stroke='%2331251C' stroke-width='3'/%3E%3Ccircle cx='44' cy='42' r='7' fill='%237A2031'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;0,800;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wood:#141A16;--leather:#1F3328;--leather2:#2A4535;
+  --paper:#F2E9D4;--paper2:#E9DDC0;--ink:#31251C;--mut:#7C6E55;
+  --wine:#7A2031;--gilt:#C9A45C;--rule:#C9BB96;
+  --f:'Alegreya',Georgia,serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--wood) radial-gradient(ellipse at 50% -10%,rgba(60,80,60,.5),transparent 55%);
+  color:var(--ink);font-family:var(--f);font-size:15.5px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(122,32,49,.35)}
+a{color:var(--ink);text-decoration:none;border-bottom:1.5px solid var(--wine);word-break:break-word}
+a:hover{color:var(--wine);border-color:var(--gilt)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--wine);outline-offset:2px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+.desk{max-width:1020px;margin:0 auto 84px;padding:0 clamp(8px,2.4vw,22px)}
+
+/* tooled leather band */
+.band{margin-top:26px;background:linear-gradient(170deg,var(--leather2),var(--leather));
+  border:1px solid #3D5A47;border-radius:8px 8px 0 0;
+  padding:16px clamp(16px,4vw,34px);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  box-shadow:inset 0 1px 0 rgba(201,164,92,.35),0 10px 30px rgba(0,0,0,.5)}
+.band h1{color:var(--gilt);font-size:clamp(20px,4.8vw,32px);font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.band .vol{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#8FA88F;text-align:right;line-height:1.7}
+.band .vol b{color:var(--gilt);font-weight:400}
+
+/* the bound page */
+.page{
+  background:var(--paper);
+  box-shadow:0 24px 60px rgba(0,0,0,.6),inset 0 0 70px rgba(160,140,95,.22);
+  padding:clamp(16px,3.6vw,38px) clamp(14px,3.6vw,40px) clamp(20px,4vw,42px);
+  border:1px solid var(--rule);border-top:none;border-radius:0 0 6px 6px;
+  position:relative;
+}
+.page::before{content:"";position:absolute;top:0;bottom:0;left:0;width:10px;
+  background:linear-gradient(90deg,rgba(0,0,0,.18),transparent)}
+.page::after{content:"";position:absolute;top:0;bottom:0;right:0;width:10px;
+  background:linear-gradient(-90deg,rgba(122,32,49,.10),transparent)}
+
+section{margin-top:24px}
+.sect-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+.sect-h .bx{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;background:var(--wine);color:var(--paper);padding:2.5px 9px;text-transform:uppercase}
+.sect-h h2{font-size:clamp(17px,3.6vw,23px);font-weight:800;letter-spacing:.03em}
+.sect-h .sub{margin-left:auto;font-size:12.5px;color:var(--mut);font-style:italic}
+.ledge{border-top:2px solid var(--ink);border-bottom:1px solid var(--rule);padding:clamp(12px,2.6vw,20px) 0}
+
+/* consignment = ask */
+.consig{text-align:center}
+.consig .rub{font-size:10.5px;letter-spacing:.38em;text-transform:uppercase;color:var(--wine);font-weight:700}
+.consig h3{font-size:clamp(24px,5.4vw,38px);font-weight:800;line-height:1.08;margin-top:4px}
+.consig .reg{display:flex;flex-wrap:wrap;gap:6px 30px;justify-content:center;margin-top:12px;font-size:13.5px}
+.consig .reg b{display:block;font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.consig .desc{max-width:560px;margin:10px auto 0;font-size:13.5px;font-style:italic;color:#5A4C38}
+.consig .desc::before{content:"“"}.consig .desc::after{content:"”"}
+
+/* cellar conditions = audience */
+.cond{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(14px,3vw,30px)}
+@media(max-width:660px){.cond{grid-template-columns:1fr}}
+.cond .set{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--wine);font-weight:700}
+.cond .lean{font-size:clamp(26px,5.4vw,40px);font-weight:800;line-height:1.02;font-style:italic}
+.cond .thermo{margin-top:12px}
+.cond .thermo .tr{height:14px;border:1.5px solid var(--ink);border-radius:8px;position:relative;overflow:hidden;background:repeating-linear-gradient(90deg,transparent 0 23px,rgba(49,37,28,.2) 23px 24px)}
+.cond .thermo .tr i{position:absolute;inset:1px auto 1px 1px;background:linear-gradient(90deg,var(--wine),#B0523F);border-radius:6px}
+.cond .thermo .lbl2{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--mut);margin-top:4px;letter-spacing:.1em}
+.cond .sig{margin-top:10px;font-size:13px}
+.cond .sig b{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--mut);display:block;margin-bottom:2px}
+.nose{margin-top:10px;font-size:13.5px;font-style:italic;color:#5A4C38}
+.nose b{font-style:normal;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--wine);margin-right:6px}
+.bins{border:1.5px solid var(--ink);background:rgba(255,255,255,.25)}
+.bins .hh{background:var(--ink);color:var(--paper);font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;padding:5px 12px}
+.bins .rw{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:8px 12px;border-bottom:1px dashed var(--rule);align-items:baseline}
+.bins .rw:last-child{border-bottom:none}
+.bins .ch{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--wine)}
+.bins .nt{font-size:13px;font-style:italic;color:#5A4C38}
+
+/* the register = strategies */
+.reg2{border:1.5px solid var(--ink)}
+.rhead,.brow{display:grid;grid-template-columns:52px 1.35fr .95fr .72fr 1.15fr;gap:12px;align-items:center}
+.rhead{background:var(--ink);color:var(--paper);font-size:9px;letter-spacing:.22em;text-transform:uppercase;padding:7px 14px;font-family:var(--mono)}
+.brow{padding:12px 14px;border-bottom:1px dashed var(--rule)}
+.brow:last-child{border-bottom:none}
+.brow:nth-child(odd){background:rgba(201,164,92,.08)}
+.brow.sel{background:rgba(122,32,49,.07);box-shadow:inset 3px 0 0 var(--wine)}
+.cl{display:none;font-family:var(--mono);font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--wine);margin-bottom:2px}
+.bno{font-size:clamp(17px,3.4vw,22px);font-weight:800;font-style:italic;text-align:center}
+.bno small{display:block;font-family:var(--mono);font-size:7.5px;letter-spacing:.2em;font-style:normal;color:var(--mut)}
+.bnm .t{font-size:clamp(16px,3.2vw,19px);font-weight:800;line-height:1.1}
+.bnm .a{font-size:12px;font-style:italic;color:#5A4C38}
+.bnm .f{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-top:3px}
+.bwin .win{position:relative;height:9px;border:1.5px solid var(--ink);background:var(--paper2)}
+.bwin .win i{position:absolute;top:0;bottom:0;left:0;background:var(--wine)}
+.bwin .yrs{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--mut);margin-top:3px}
+.bwin .fv{font-family:var(--mono);font-size:11px;color:var(--wine);margin-top:2px}
+.bcs b{font-size:clamp(15px,3.4vw,19px);font-weight:800;font-variant-numeric:tabular-nums}
+.bcs .cv{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.brack .rw2{font-size:11.5px;line-height:1.45}
+.brack .rw2 b{font-family:var(--mono);font-size:10px;letter-spacing:.05em}
+.brack .rw2 i{color:var(--mut)}
+.bpv{grid-column:1/-1;font-size:11.5px;font-style:italic;color:#5A4C38;border-top:1px dotted var(--rule);padding-top:6px;display:flex;flex-wrap:wrap;gap:3px 18px}
+.bpv b{font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--wine)}
+.bpv .wn::before{content:"cellar note — ";font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase;font-style:normal}
+@media(max-width:760px){
+  .rhead{display:none}
+  .brow{grid-template-columns:44px 1fr 1fr}
+  .cl{display:block}
+  .bnm{grid-column:2/-1}
+  .bpv{grid-column:1/-1}
+}
+
+/* poured off = ruled out */
+.off{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:640px){.off{grid-template-columns:1fr}}
+.pour{border:1.5px dashed var(--mut);padding:10px 14px;opacity:.8;background:rgba(122,32,49,.04)}
+.pour .ch{font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--wine)}
+.pour h4{font-size:15px;font-weight:800}
+.pour h4 s{text-decoration-color:var(--wine);text-decoration-thickness:2px}
+.pour .why{font-size:12px;font-style:italic;color:#5A4C38;margin-top:4px;line-height:1.5}
+
+/* decanting card + labels = brief & creatives */
+.decwrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(14px,3vw,26px);align-items:start}
+@media(max-width:760px){.decwrap{grid-template-columns:1fr}}
+.dec{border:2px solid var(--ink);background:var(--paper);padding:16px 18px;position:relative}
+.dec::before{content:"";position:absolute;inset:4px;border:1px solid var(--rule);pointer-events:none}
+.dec .no1{text-align:center;font-size:9.5px;letter-spacing:.32em;text-transform:uppercase;color:var(--wine);font-weight:700}
+.dec h3{text-align:center;font-size:clamp(20px,4.4vw,28px);font-weight:800;line-height:1.08;margin-top:4px;font-style:italic}
+.dec .ang{text-align:center;font-size:13px;font-style:italic;color:#5A4C38;margin-top:5px}
+.dec dl{display:grid;grid-template-columns:96px 1fr;gap:4px 12px;margin-top:12px;font-size:13px}
+.dec dt{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);padding-top:4px}
+.dec dd{border-bottom:1px solid var(--rule);padding-bottom:6px}
+.dec .km{font-weight:800;font-size:15px}
+.dec .wax{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#B0523F,var(--wine) 65%);
+  margin:14px auto 0;display:flex;align-items:center;justify-content:center;text-align:center;
+  color:var(--paper);font-size:8px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;transform:rotate(7deg);padding:7px}
+.labels{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:430px){.labels{grid-template-columns:1fr}}
+.lab{border:1.5px solid var(--rule);background:#fff;padding:7px 7px 9px;transition:transform .14s ease}
+.lab:hover{transform:translateY(-3px) rotate(-.5deg)}
+.lab .iw{aspect-ratio:4/3;overflow:hidden;border:1px solid var(--paper2)}
+.lab img{width:100%;height:100%;object-fit:cover}
+.lab .h{font-size:12px;font-weight:600;line-height:1.3;margin-top:7px}
+.lab .p{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--wine);margin-top:3px}
+.lab .p b{border:1px solid var(--wine);padding:0 6px;border-radius:8px;font-weight:600}
+.labcap{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--wine);margin-bottom:8px;font-weight:700}
+
+/* samples = palette */
+.samps{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end}
+.smp{width:96px}
+.smp .glass{height:54px;border:1.5px solid var(--ink);border-radius:0 0 6px 6px;position:relative;overflow:hidden}
+.smp .glass i{position:absolute;left:0;right:0;bottom:0;top:8px;display:block}
+.smp .n{font-size:11.5px;font-weight:700;margin-top:6px;font-style:italic}
+.smp .hx{font-family:var(--mono);font-size:9.5px;color:var(--mut)}
+.samps .fnote{width:100%;font-size:12.5px;font-style:italic;color:var(--mut)}
+
+/* merchant invoices = qloo */
+.inv{display:grid;grid-template-columns:1.12fr .88fr;gap:clamp(14px,3vw,26px)}
+@media(max-width:760px){.inv{grid-template-columns:1fr}}
+.inv table{width:100%;border-collapse:collapse;font-size:12.5px}
+.inv th{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);text-align:left;padding:4px 6px;border-bottom:2px solid var(--ink)}
+.inv td{padding:7px 6px;border-bottom:1px dashed var(--rule);vertical-align:top}
+.inv td.mono{font-family:var(--mono);font-size:11px}
+.inv .ok{display:inline-block;font-size:8.5px;letter-spacing:.16em;border:1.5px solid var(--wine);color:var(--wine);padding:0 6px;text-transform:uppercase;margin-top:2px}
+.invnote{font-size:12.5px;color:var(--mut);font-style:italic;margin-top:10px}
+.houses{border:1.5px solid var(--ink);background:rgba(255,255,255,.25);padding:12px 16px}
+.houses h4{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--wine);margin-bottom:6px}
+.houses .dv{font-weight:800;text-transform:uppercase;font-size:12px;letter-spacing:.08em;border-bottom:1.5px solid var(--rule);padding:6px 0 2px}
+.houses .rw{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted var(--rule)}
+.houses .rw:last-child{border-bottom:none}
+.houses .rw .v{font-family:var(--mono);font-size:11.5px;color:var(--mut)}
+
+/* reorder = next */
+.re{display:flex;flex-wrap:wrap;gap:10px}
+.re button{border:1.5px solid var(--ink);background:transparent;color:var(--ink);padding:9px 18px;
+  font-weight:700;font-size:13px;letter-spacing:.03em;
+  transition:background .12s ease,color .12s ease,transform .12s ease}
+.re button:hover{background:var(--wine);border-color:var(--wine);color:var(--paper)}
+.re button:active{transform:translateY(2px)}
+.re .sub{width:100%;font-style:italic;color:var(--mut);font-size:13px}
+.alsoc{margin-top:12px;font-size:13px;color:var(--mut)}
+.alsoc b{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--wine);display:block;margin-bottom:4px}
+.alsoc span{display:inline-block;margin-right:14px;font-style:italic;border-bottom:1px dotted var(--mut)}
+.foot{text-align:center;font-family:var(--mono);font-size:9.5px;letter-spacing:.32em;text-transform:uppercase;color:#5A6B5C;margin-top:28px}
+.empty{border:1.5px solid var(--ink);padding:40px;text-align:center;font-style:italic;color:var(--mut);margin-top:20px}
+</style>
+</head>
+<body>
+<div class="desk">
+  <header class="band">
+    <h1>Marque &amp; Fils · Cellar Book</h1>
+    <div class="vol" id="vol">—</div>
+  </header>
+  <div class="page">
+    <main id="app"></main>
+    <div class="foot" id="foot"></div>
+  </div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dshort=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase()}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Bin Rouge',h:'#7A2031'},{n:'Cellar Gilt',h:'#C9A45C'},{n:'Laid Folio',h:'#F2E9D4'},
+  {n:'Binwood Green',h:'#1F3328'},{n:'Cork',h:'#7C6E55'}
+];
+const CREAT=[8,0,9,13].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const YEAR=new Date(B.createdAt||Date.now()).getFullYear();
+const DATE=dshort(B.createdAt||B.fetchedAt);
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+const prompt=((B.sub&&B.sub.prompt)||B.title||'').trim();
+
+document.getElementById('vol').innerHTML='VOL. '+esc(String(B.id||'').slice(0,4).toUpperCase())+' · CELLAR No. 3<br>ENTERED '+DATE;
+document.getElementById('foot').textContent='MARQUE & FILS · KEEP THE BOOK DRY, KEEP THE CORKS WET';
+
+const M=document.getElementById('app');
+const sec=(bx,title,sub,inner)=>{if(!inner)return;
+  M.appendChild(el('<section><div class="sect-h"><span class="bx">'+esc(bx)+'</span><h2>'+esc(title)+'</h2><span class="sub">'+esc(sub)+'</span></div><div class="ledge">'+inner+'</div></section>'))};
+
+/* consignment = ask */
+sec('№1','Consignment Received','entered in the book before the cases came down',
+'<div class="consig"><div class="rub">Received into bond · '+esc(DATE)+'</div>'+
+'<h3>'+esc(prompt)+'</h3>'+
+'<div class="reg">'+
+'<div>Merchant<b>'+(U?'<a href="'+esc(U)+'">'+esc(U)+'</a>':'—')+'</b></div>'+
+'<div>Shipper<b>'+esc((B.urlContext&&B.urlContext.title)||'—')+'</b></div>'+
+'</div>'+
+'<p class="desc">'+esc(((B.urlContext&&B.urlContext.description)||''))+'</p></div>');
+
+/* cellar conditions = audience */
+if(AR&&AR.lean){
+  const conf=Math.round((AR.lean.confidence||0)*100);
+  sec('№2','Cellar Conditions','the room tells you what the buyer will drink',
+  '<div class="cond"><div>'+
+  '<div class="set">Buyer\'s leaning</div><div class="lean">'+esc(AR.lean.label)+'</div>'+
+  '<div class="thermo"><div class="tr"><i style="width:'+conf+'%"></i></div>'+
+  '<div class="lbl2"><span>cellar confidence '+conf+'%</span><span>steady, no draught</span></div></div>'+
+  '<div class="sig"><b>Tasted at the pipe</b>'+(AR.lean.signals||[]).map(s=>esc(s)).join(' · ')+'</div>'+
+  '<div class="nose"><b>On the nose</b>'+(AR.vibeWords||[]).map(w=>esc(w)).join(', ')+'</div>'+
+  '</div>'+
+  '<div class="bins"><div class="hh">Bins they keep coming back to</div>'+
+  (AR.mediaHabits||[]).map(h=>'<div class="rw"><span class="ch">'+esc(h.channel)+'</span><span class="nt">'+esc(h.note)+'</span></div>').join('')+
+  '</div></div>');
+}
+
+/* the register = strategies */
+if(strats.length){
+  sec('№3','The Bin Register','window marks when to pull the cork; cases are the forecast',
+  '<div class="reg2"><div class="rhead"><span>Bin</span><span>Description</span><span>Drinking window</span><span>Cases</span><span>Racked on</span></div>'+
+  strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    const span=Math.round(4+fit*8); // window length in years
+    const endY=YEAR+span;
+    const cases=Math.max(1,Math.round(((s.reach&&s.reach.estViews)||0)/10000));
+    return '<div class="brow'+(i===sel?' sel':'')+'">'+
+    '<div class="bno">'+String(i+1).padStart(2,'0')+'<small>BIN</small></div>'+
+    '<div class="bnm"><div class="t">'+esc(s.title)+(i===sel?' <span style="font-family:var(--mono);font-style:normal;font-size:9px;letter-spacing:.18em;color:var(--wine)">· CELLARER\'S CHOICE</span>':'')+'</div>'+
+    '<div class="a">'+esc(s.angle||'')+'</div>'+
+    '<div class="f">lies in '+(s.formats||[]).map(f=>esc(f)).join(' · ')+'</div></div>'+
+    '<div class="bwin"><span class="cl">Drinking window</span><div class="win"><i style="width:'+Math.min(100,span*9)+'%"></i></div>'+
+    '<div class="yrs"><span>'+YEAR+'</span><span>'+endY+'</span></div><div class="fv">drinks at '+f2(fit)+'</div></div>'+
+    '<div class="bcs"><span class="cl">Cases</span><b>'+views(s.reach&&s.reach.estViews)+'</b><span class="cv">≈ '+cases+' cases</span></div>'+
+    '<div class="brack"><span class="cl">Racked on</span>'+(s.channels||[]).map(c=>'<div class="rw2"><b>'+esc(c.name)+'</b> '+f2(c.fit)+' <i>'+esc(c.why||'')+'</i></div>').join('')+'</div>'+
+    '<div class="bpv"><span><b>Provenance</b> '+(s.qlooSignals||[]).map(q=>esc(q.entity)+' '+f2(q.affinity)).join(' · ')+' — ex-merchant, first hand</span>'+
+    (s.watchouts&&s.watchouts[0]?'<span class="wn">'+esc(s.watchouts[0])+'</span>':'')+'</div>'+
+    '</div>';
+  }).join('')+'</div>');
+}
+
+/* poured off = ruled out */
+if(anti.length){
+  sec('№4','Poured Off','bins emptied to the kitchen — recorded so we don\'t buy them again',
+  '<div class="off">'+anti.map(a=>'<div class="pour"><div class="ch">poured off · '+esc(a.channel)+'</div>'+
+  '<h4><s>'+esc(a.title)+'</s></h4><div class="why">cellarer\'s note — '+esc(a.whyNot)+'</div></div>').join('')+'</div>');
+}
+
+/* decanting card + label scans = brief & creatives */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('№5','Decanting Card & Label Scans','stand it up, read the card, pour',
+  '<div class="decwrap"><div class="dec">'+
+  (br?'<div class="no1">Decanting card · from bin '+esc(selS.title)+'</div><h3>'+esc(br.title)+'</h3>'+
+  '<div class="ang">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Serve to</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Say over the glass</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Bin signal</dt><dd>ex-'+esc(selS.heroSignal||'—')+' · drinks at '+f2((selS.audienceFit&&selS.audienceFit.score)||0)+'</dd></dl>'+
+  '<div class="wax">Sealed M&amp;F</div>'
+  :'<div class="ang">Card unwritten.</div>')+
+  '</div>'+
+  '<div><div class="labcap">Label scans — peeled dry, pressed flat</div>'+
+  '<div class="labels">'+CREAT.map(m=>'<figure class="lab"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">bottled by <b>'+esc(m.provider)+'</b></div></figcaption></figure>').join('')+'</div></div></div>');
+}
+
+/* samples = palette */
+sec('№6','Cellar Samples','drawn from the pipes — hold to the lamp',
+  '<div class="samps">'+PALETTE.map(s=>'<div class="smp"><div class="glass"><i style="background:'+s.h+'"></i></div><div class="n">'+esc(s.n)+'</div><div class="hx">'+s.h.toUpperCase()+'</div></div>').join('')+
+  '<div class="fnote">Colour judged against the lamp, not the label — the book records what was poured.</div></div>');
+
+/* merchant invoices = qloo provenance */
+if(calls.length||affs.length){
+  sec('№7','Merchant Invoices','paper trail from broker to bin — Qloo ledger, '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live'),
+  '<div class="inv"><div><table><tr><th>Invoice</th><th>Cut at</th><th>Carriage</th><th>Lots</th><th>Terms</th></tr>'+
+  calls.map((c,i)=>'<tr><td><b>INV-'+String(i+1).padStart(3,'0')+'</b> '+esc(c.endpoint)+'<br><span class="ok">'+esc(c.mode)+'</span></td>'+
+  '<td class="mono">'+esc((c.at||'').slice(11,19))+'Z</td><td class="mono">'+esc(c.tookMs)+' ms</td><td class="mono">n='+esc(c.n)+'</td><td class="mono">'+esc(Object.keys(c.params||{}).length)+' flds</td></tr>').join('')+'</table>'+
+  '<p class="invnote">'+(calls.length||0)+' invoices clipped to this page — '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' broker, provenance follows the bottle.</p></div>'+
+  '<div class="houses"><h4>Comparable houses the buyer follows</h4>'+affs.map(g=>'<div class="dv">'+esc(String(g.type).replace('urn:entity:',''))+'</div>'+
+  (g.entities||[]).slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+(e.affinity||0).toFixed(2)+'</span></div>').join('')).join('')+'</div></div>');
+}
+
+/* reorder slips = next */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('№8','Reorder Slips','fill one in when the bin runs light',
+  '<div class="re">'+['Bottle the ad spot','Cork the landing page','Ship the media plan','Lay down another vintage'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  '<div class="sub">Slip goes in the spike — the merchant ships by return van.</div></div>'+
+  (others.length?'<div class="alsoc"><b>Other consignments in bond</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':''));
+
+if(!M.children.length)M.appendChild(el('<div class="empty">The cellar stood empty — data.js corked on the way down.</div>'));
+})();
+</script>
+</body>
+</html>
