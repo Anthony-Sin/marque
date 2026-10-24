@@ -22,6 +22,8 @@ const PROMPT_IDEAS = [
 ];
 
 const ALL_CHANNELS = ['instagram', 'tiktok', 'youtube', 'tv', 'streaming', 'podcast', 'ooh', 'guerrilla', 'email', 'press'];
+// hunt lanes that don't produce media artifacts — hidden from the "hunts:" chips
+const NONMEDIA_HUNTS = new Set(['ooh', 'maps']);
 // plain-English channel glossary — jargon like "guerrilla" explains itself on hover
 const CHAN_GLOSS = {
   instagram: 'Instagram — feed posts, Reels, Stories',
@@ -711,6 +713,16 @@ export default function Strategy() {
   const curSel = new Set(selEx[curScope] || []);
   const wildList = (exState?.data?.examples || []).slice(0, 16);
   const selExamples = wildList.filter((e) => curSel.has(exKey(e)));
+  // "hunts:" chips — one per media lane (a platform hunted 2-3× shows once);
+  // failed only when every hunt on that lane failed
+  const huntChips = [];
+  for (const h of exState?.data?.hunts || []) {
+    const p = String(h.platform || '').toLowerCase();
+    if (!p || NONMEDIA_HUNTS.has(p)) continue;
+    const cur2 = huntChips.find((c) => c.p === p);
+    if (cur2) { cur2.queries.push(h.query); cur2.failed = cur2.failed && !!h.failed; }
+    else huntChips.push({ p, queries: [h.query].filter(Boolean), failed: !!h.failed });
+  }
   const toggleWild = (e) => {
     if (!curScope) return;
     const k = exKey(e);
@@ -773,18 +785,11 @@ export default function Strategy() {
   // fresh card → fresh notes + fresh pull steer
   useEffect(() => { setNotes(''); setWildHint(''); }, [sel]);
 
-  // auto-pull references once a card is open — real-time unless already cached.
-  // fires only when the scope has no entry yet, so re-opens hit cache instantly.
+  // reference pulls are strictly on-demand (Pull references button / Enter) —
+  // opening a card must not fire network scrapes. Session cache still restores
+  // previously pulled results on revisit.
   const pullAnim = useRef(null);
   const [pullPhase, setPullPhase] = useState(0);
-  useEffect(() => {
-    // hold the pull until the detail fetch lands — the full strategy carries
-    // channel types/brief context the slim card lacks, and it resolves hunts better
-    if (detState?.status !== 'done' && detState?.status !== 'error') return;
-    const s = detState.strategy || cur;   // error → pull on the slim card rather than never
-    if (s && !ex[wildScope(s)]) loadExamples(s, '');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [detState?.status]);
   useEffect(() => {
     if (exState?.status === 'loading') {
       pullAnim.current = setInterval(() => setPullPhase((p) => p + 1), 900);
@@ -1398,7 +1403,7 @@ export default function Strategy() {
 
                     {!!full.watchouts?.length && (
                       <div className="stg-watch">
-                        <span className="stg-ml rose">Watchouts</span>
+                        <span className="stg-ml rose">Watch-outs</span>
                         <ul>{full.watchouts.map((w, i) => (
                           <li key={i}><Typed text={w} delay={700 + i * 160} cps={90} /></li>
                         ))}</ul>
@@ -1552,12 +1557,12 @@ export default function Strategy() {
                           {!!selExamples.length && <b className="stg-wild-n">{selExamples.length} selected</b>}
                         </span>
                       )}
-                      {exState?.status === 'done' && !!(exState.data?.hunts || []).length && (
+                      {exState?.status === 'done' && !!huntChips.length && (
                         <span className="stg-wild-hunts">
-                          hunts: {exState.data.hunts.map((h, i) => (
-                            <span key={i} className={h.failed ? 'stg-hunt stg-hunt-fail' : 'stg-hunt'}
-                              title={h.failed ? `${h.query} — pull failed, no real artifact found` : h.query}>
-                              {h.failed && <Icon name="x" size={9} />}{chanLabel(h.platform)}
+                          hunts: {huntChips.map((h) => (
+                            <span key={h.p} className={h.failed ? 'stg-hunt stg-hunt-fail' : 'stg-hunt'}
+                              title={h.failed ? `${h.queries.join(' · ')} — pull failed, no real artifact found` : h.queries.join(' · ')}>
+                              {h.failed && <Icon name="x" size={9} />}{chanLabel(h.p)}
                             </span>
                           ))}
                         </span>

@@ -98,3 +98,26 @@ Post-round-5 wins: VersionTabs lazy iframes (IntersectionObserver), Gate 'error'
 - Video: veo failure notes persist on the creative; the badge reads "watch · ffmpeg" and opens a playable <video> lightbox.
 - Image click → lightbox zoom (desktop); tap pins action veil (touch).
 - Top nav collapsed to logo-only; section links live on the strategy board's plans row.
+
+## Round-11 adversarial sweep (QA agent, ~04:00) — findings board
+
+MED (fixer agent assigned):
+- [ ] Free-text brief inherits active-board Qloo signals → contaminates provenance
+- [ ] Promote caption leaks "YourBrand" placeholder + junk Qloo hashtags
+- [ ] Strategy detail auto-pulls media examples on mount (yt-dlp) → on-demand only
+
+LOW (fixer agent):
+- [ ] DELETE /api/websites/:id/versions/:vid lacks last-version guard
+- [ ] hunts chip row: dedupe platforms, drop non-media (OOH/Maps)
+- [ ] "WATCHOUTS" header → "Watch-outs"
+- [ ] .stg-chipbar-prompt ~62px squeeze at 390px
+- [ ] Campaign delete: window.confirm → styled Modal
+
+LOW (noted, later):
+- Google Fonts render-blocking CDN → consider self-host/font-display
+- Creative overlay clips lockup at 390px (~8px)
+- Promote panel: no platform-aspect mismatch hint
+- Stale huel.com audit reads as "yours" — no recency/ownership marker
+- Brandbook "Taste signature · failed" badge — no retry affordance
+- Engine chip sets inconsistent between composer and editor
+- dash-plan-top ~6px text overflow; icon buttons lack aria-labels

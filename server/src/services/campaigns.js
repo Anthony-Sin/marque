@@ -27,13 +27,12 @@ function flattenBundle(bundle) {
   return out;
 }
 
-function pickQlooSignals(profile, prompt = '', n = 5) {
+function pickQlooSignals(profile, prompt = '', n = 5, board = null) {
   let all = flattenAffinities(profile);
-  // profile bundle empty → fall back to the most recent strategy board's bundle
-  if (!all.length) {
-    const boards = list('boards') || [];
-    for (let i = boards.length - 1; i >= 0 && !all.length; i--) all = flattenBundle(boards[i]?.qlooBundle);
-  }
+  // profile bundle empty → the named board's bundle stands in. Without an
+  // explicit board context the brief borrows no provenance — a free-typed ask
+  // must not inherit whatever board happens to be active.
+  if (!all.length && board) all = flattenBundle(board.qlooBundle);
   if (!all.length) return [];
   const words = new Set(prompt.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 3));
   const scored = all.map((s) => {
@@ -44,7 +43,7 @@ function pickQlooSignals(profile, prompt = '', n = 5) {
   return scored.sort((a, b) => b.score - a.score).slice(0, n).map(({ entity, type, affinity }) => ({ entity, type, affinity }));
 }
 
-export async function generateBrief({ prompt, productId, ingredients }, profile) {
+export async function generateBrief({ prompt, productId, ingredients, boardId, strategyId }, profile) {
   const product = productId ? find('catalog', productId) : null;
   const affinities = flattenAffinities(profile).slice(0, 12);
   // pasted-link flow (Creatify/Zeely pattern): scrape the URL so copy + art
@@ -90,7 +89,12 @@ export async function generateBrief({ prompt, productId, ingredients }, profile)
   const suggestions = Array.isArray(brief?.suggestions)
     ? brief.suggestions.slice(0, 3).map((s) => ({ title: s.title || '', angle: s.angle || '', keyMessage: s.keyMessage || '' }))
     : [];
-  return { brief: out, suggestions, qlooSignals: pickQlooSignals(profile, `${prompt || ''} ${out.title} ${out.angle}`) };
+  // board signals attach only when the request names its board/strategy —
+  // the strategy handoff carries boardId; a free-typed ask keeps its own
+  const srcBoard = (boardId && find('boards', boardId))
+    || (strategyId && (list('boards') || []).find((b) => (b.strategies || []).some((s) => s.id && s.id === strategyId)))
+    || null;
+  return { brief: out, suggestions, qlooSignals: pickQlooSignals(profile, `${prompt || ''} ${out.title} ${out.angle}`, 5, srcBoard) };
 }
 
 const COPY_SYS = `You are a social-media copywriter writing ad creative for feeds (Instagram/TikTok/YouTube). Return JSON {"headline","body","cta","layout":{"vpos","hpos"}}.

@@ -7,6 +7,7 @@ import Composer, { arCss, isRaster, MediaFallback } from '../components/Composer
 import CreativeCard from '../components/CreativeCard.jsx';
 import CreativeEditor from '../components/CreativeEditor.jsx';
 import EvidenceDrawer from '../components/EvidenceDrawer.jsx';
+import Modal from '../components/Modal.jsx';
 import Wayfind from '../components/Wayfind.jsx';
 import { QlooBadge, SignalChips } from '../components/Qloo.jsx';
 import { chanLabel } from '../labels.js';
@@ -46,6 +47,7 @@ export default function Campaigns() {
   const [editing, setEditing] = useState(null);      // creative in the editor modal
   const [animating, setAnimating] = useState('');    // creative id currently animating
   const [evi, setEvi] = useState(false);
+  const [deleting, setDeleting] = useState(null);  // campaign pending delete confirm
   const [handoff, setHandoff] = useState(null);      // {strategy, notes, prompt, productId, exampleRefs?, auto?, output?, strategyIdx?}
   const autoRan = useRef(false);                     // produce-flow auto-confirm fires once
   const [liveAspect, setLiveAspect] = useState('4:5'); // composer's real pill state
@@ -97,7 +99,13 @@ export default function Campaigns() {
       }
       const merged = lines.filter(Boolean).join('\n');
       setSeed({ text: merged, productId: data.productId || null });
-      genBrief({ prompt: merged, productId: data.productId || undefined });
+      genBrief({
+        prompt: merged,
+        productId: data.productId || undefined,
+        // board context → the brief may carry that board's taste signals
+        boardId: data.boardId || undefined,
+        strategyId: data.strategyId || data.strategy?.id || undefined,
+      });
       say(data.auto ? `Strategy loaded — producing ${({ ads: 'ad set', motion: 'motion ad', video: 'AI video' })[data.output] || 'output'}` : 'Strategy loaded — drafting your brief');
     } catch { /* malformed stash — ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -145,6 +153,15 @@ export default function Campaigns() {
     return { strat: [...byStrat.values()], other };
   }, [campaigns]);
 
+  const confirmDelete = async () => {
+    const c = deleting;
+    setDeleting(null);
+    if (!c?.id) return;
+    await api.deleteCampaign(c.id).catch(() => {});
+    setCampaigns((cs) => (cs || []).filter((x) => x.id !== c.id));
+    if (openId === c.id) show(null);
+  };
+
   // one campaign summary card — shared by grouped + ungrouped lists.
   // SVG/empty creatives get a branded fallback tile instead of a raw empty box.
   const campCard = (c) => (
@@ -179,12 +196,9 @@ export default function Campaigns() {
       <div className="foot">
         <span className="muted small">{c.creatives?.length || 0} creative{(c.creatives?.length || 0) === 1 ? '' : 's'}</span>
         <span className="grow" />
-        <button className="icon-btn sm camp-del" title="Delete campaign" onClick={async (e) => {
+        <button className="icon-btn sm camp-del" title="Delete campaign" onClick={(e) => {
           e.stopPropagation();
-          if (!window.confirm(`Delete "${c.brief?.title || 'this campaign'}"?`)) return;
-          await api.deleteCampaign(c.id).catch(() => {});
-          setCampaigns((cs) => (cs || []).filter((x) => x.id !== c.id));
-          if (openId === c.id) show(null);
+          setDeleting(c);
         }}><Icon name="trash" size={13} /></button>
         <button className="btn sm" onClick={() => show(c.id)}>Open</button>
       </div>
@@ -606,6 +620,22 @@ export default function Campaigns() {
             <Icon name="sparkle" size={13} /> Start a brief
           </button>
         </div>
+      )}
+
+      {deleting && (
+        <Modal narrow title="Delete this campaign?" onClose={() => setDeleting(null)}
+          footer={(
+            <>
+              <button className="btn ghost" onClick={() => setDeleting(null)}>Cancel</button>
+              <button className="btn pf-danger-solid" onClick={confirmDelete}>
+                <Icon name="trash" size={14} /> Delete
+              </button>
+            </>
+          )}>
+          <p className="muted" style={{ margin: 0 }}>
+            “{deleting.brief?.title || 'Untitled campaign'}” and its creatives will be removed.
+          </p>
+        </Modal>
       )}
     </div>
   );

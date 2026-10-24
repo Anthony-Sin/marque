@@ -61,7 +61,7 @@
 @keyframes stgChipIn { from { opacity: 0; transform: translateY(-10px) scale(.97); } }
 .stg-chipbar-ic { color: var(--lime); display: inline-flex; flex: none; }
 .stg-chipbar-prompt {
-  flex: 1; min-width: 0; font-family: var(--font-display); font-style: italic;
+  flex: 1 1 150px; min-width: 150px; font-family: var(--font-display); font-style: italic;
   font-size: 15px; color: var(--ink-2);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }

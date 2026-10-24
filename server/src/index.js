@@ -988,6 +988,7 @@ app.post('/api/websites/improve', h(async (req, res) => {
 app.delete('/api/websites/:id/versions/:vid', h(async (req, res) => {
   const w = find('websites', req.params.id);
   if (!w) return res.status(404).json({ error: 'not found' });
+  if ((w.versions || []).length <= 1) return res.status(400).json({ error: 'keep at least one version' });
   const versions = w.versions.filter((v) => v.id !== req.params.vid);
   if (versions.length === w.versions.length) return res.status(404).json({ error: 'version not found' });
   const activeVersion = w.activeVersion === req.params.vid ? versions.at(-1)?.id || null : w.activeVersion;

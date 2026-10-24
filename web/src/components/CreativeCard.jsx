@@ -79,12 +79,14 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
   // hashtags come from real topical material — product, brief words, taste
   // entities — never channel names (#web isn't a thing anyone posts)
   const tagWord = (s) => String(s || '').split(/\s+/).slice(0, 2).map((w) => (w[0] || '').toUpperCase() + w.slice(1)).join('').replace(/[^A-Za-z0-9]/g, '');
+  // brief-derived words first, raw taste entities last (they're names, not
+  // topics) — placeholder brand name never becomes a literal hashtag
   const tags = [...new Set([
-    ...(campaign?.product ? [tagWord(campaign.product)] : []),
-    ...(profile?.name ? [tagWord(profile.name)] : []),
-    ...(campaign?.brief?.title || '').split(/\s+/).filter((w) => w.length > 3).slice(0, 3).map(tagWord).map((w) => `#${w}`),
-    ...(campaign?.qlooSignals || []).slice(0, 3).map((q) => `#${tagWord(q.entity || q)}`),
-  ])].filter((t) => t.length > 3 && t.length < 26).slice(0, 6);
+    ...(campaign?.product ? [`#${tagWord(campaign.product)}`] : []),
+    ...(profile?.name && profile.name !== 'Your Brand' ? [`#${tagWord(profile.name)}`] : []),
+    ...(campaign?.brief?.title || '').split(/\s+/).filter((w) => w.length > 3).slice(0, 3).map((w) => `#${tagWord(w)}`),
+    ...(campaign?.qlooSignals || []).slice(0, 2).map((q) => `#${tagWord(q.entity || q)}`),
+  ])].filter((t) => t.length > 4 && t.length < 26).slice(0, 4);
   const caption = [
     creative.headline || campaign?.brief?.title || '',
     creative.body || '',
