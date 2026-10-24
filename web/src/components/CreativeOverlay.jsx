@@ -22,6 +22,12 @@ export default function CreativeOverlay({ creative, profile, chrome = false }) {
   const inkOnPill = pickInk(accent);
   return (
     <div className={`co-stack st-${st}`} style={{ '--accent': accent, '--ink-on-accent': inkOnPill }}>
+      {/* brand lockup — every ad unit carries the brand mark, like real paid social */}
+      <div className={`co-lockup v-${vpos}`}>
+        <span className="co-lockup-bar" style={{ background: accent }} />
+        <span className="co-lockup-name">{profile?.name || 'Brand'}</span>
+      </div>
+      {!!creative?.badge && <div className="co-badge" style={{ background: accent, color: inkOnPill }}>{creative.badge}</div>}
       <div className={`co-scrim v-${vpos}`} />
       <div className={`co-card`}>
         <div className={`co-grid v-${vpos} h-${hpos}`}>

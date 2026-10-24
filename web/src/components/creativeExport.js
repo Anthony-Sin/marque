@@ -95,6 +95,36 @@ export async function renderCreativePNG(creative, profile, campaign, aspect = '1
     ctx.fillStyle = 'rgba(10,12,6,0.26)'; ctx.fillRect(0, 0, W, H);
   }
 
+  // 2b) brand lockup + offer badge — same ad-unit chrome as the DOM overlay
+  {
+    const lkY = Math.round(H * 0.055);
+    ctx.fillStyle = accent;
+    ctx.fillRect(padX, lkY, Math.round(W * 0.028), Math.round(H * 0.008));
+    ctx.font = `800 ${Math.round(20 * (W / 1080))}px Inter, sans-serif`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = Math.round(8 * (W / 1080));
+    ctx.fillStyle = '#fff';
+    ctx.fillText(String(profile?.name || 'Brand').toUpperCase(), padX + Math.round(W * 0.028) + Math.round(W * 0.014), lkY + Math.round(H * 0.004));
+    ctx.shadowBlur = 0;
+    if (creative.badge) {
+      const bTxt = String(creative.badge).toUpperCase();
+      ctx.font = `900 ${Math.round(24 * (W / 1080))}px Inter, sans-serif`;
+      const bw = ctx.measureText(bTxt).width, bpx = Math.round(24 * (W / 1080)) * 1.1;
+      const bx = W - padX - bw - bpx * 2, by = lkY - Math.round(24 * (W / 1080)) * 0.8;
+      ctx.save();
+      ctx.translate(bx + (bw + bpx * 2) / 2, by + Math.round(24 * (W / 1080)) * 0.8);
+      ctx.rotate(0.05);
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(-(bw + bpx * 2) / 2 + 4, -Math.round(24 * (W / 1080)) * 0.8 + 4, bw + bpx * 2, Math.round(24 * (W / 1080)) * 1.8);
+      ctx.fillStyle = accent;
+      ctx.fillRect(-(bw + bpx * 2) / 2, -Math.round(24 * (W / 1080)) * 0.8, bw + bpx * 2, Math.round(24 * (W / 1080)) * 1.8);
+      ctx.fillStyle = pickInkForExport(accent);
+      ctx.textAlign = 'center';
+      ctx.fillText(bTxt, 0, Math.round(24 * (W / 1080)) * 0.1);
+      ctx.restore();
+    }
+  }
+
   const u = W / 1080;
   try {
     await Promise.all([
@@ -282,4 +312,12 @@ export async function exportCreativePNG(creative, profile, campaign) {
   a.download = `marque-${creative.id}.png`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+
+// ink color on accent — same rule as the DOM overlay's pickInk
+function pickInkForExport(hex) {
+  const c = String(hex || '').replace('#', '');
+  if (c.length !== 6) return '#141412';
+  const r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#141412' : '#f4f3ec';
 }

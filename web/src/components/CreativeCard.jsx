@@ -246,6 +246,11 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
       </div>
       <div className="meta">
         <span className="ttl" title={creative.headline}>{creative.headline || 'Untitled creative'}</span>
+        {!!creative.score && (
+          <span className="cc-score" title="Model-estimated thumbstop strength — not a measured metric">
+            est <b>{creative.score}</b>
+          </span>
+        )}
         {!!creative.imageError && (
           <span className="cc-err" title={creative.imageError}>
             image unavailable{retrying ? ' — retrying…' : ' — hit Retry'}

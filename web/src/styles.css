@@ -775,3 +775,30 @@ input:not([type=checkbox]):not([type=radio]), textarea, select { border-radius: 
   background: #f2f0ea; color: #c2410c; font-size: 11px; font-weight: 600;
 }
 .res-fail span { color: var(--ink-3); font-weight: 500; }
+
+/* ---------- ad-unit lockup + offer badge (composite overlays) ---------- */
+.co-lockup {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 3;
+  display: flex; align-items: center; gap: 8px; padding: 5.5cqw 6cqw 0;
+  pointer-events: none;
+}
+.co-lockup.v-bottom { /* copy sits low → lockup stays top; copy-top ads park it bottom */
+  top: 0;
+}
+.co-lockup-bar { width: 26px; height: 4px; flex: 0 0 auto; }
+.co-lockup-name {
+  font-size: clamp(7px, 2.9cqw, 20px); font-weight: 800; text-transform: uppercase;
+  letter-spacing: .12em; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.55);
+}
+.co-badge {
+  position: absolute; top: 5.5cqw; right: 5cqw; z-index: 3;
+  padding: 1.6cqw 3cqw; font-size: clamp(7px, 3cqw, 22px); font-weight: 900;
+  text-transform: uppercase; letter-spacing: .06em; transform: rotate(3deg);
+  box-shadow: 0.8cqw 0.8cqw 0 rgba(0,0,0,.55); pointer-events: none;
+}
+/* estimated thumbstop score chip on the card meta row */
+.cc-score {
+  font-size: 10px; font-weight: 800; color: var(--ink-3);
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.cc-score b { color: var(--ink); }

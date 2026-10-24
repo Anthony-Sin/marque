@@ -195,8 +195,9 @@ async function planCreatives(campaign, profile, product, n) {
           `Brief: ${JSON.stringify(campaign.brief || {}).slice(0, 700)}.`,
           product?.name ? `Product: ${product.name}${product.description ? ` — ${String(product.description).slice(0, 200)}` : ''}.` : '',
           campaign.notes ? `Notes: ${campaign.notes}` : '',
-          `Return {"items":[{"angle","medium","format","direction"}]} — exactly ${n} items.`,
+          `Return {"items":[{"angle","medium","format","direction","badge","overlayStyle","score"}]} — exactly ${n} items.`,
           `angle = the creative angle (short). medium = "video" | "image" | "copy" — pick video when the brief/notes ask for demos, motion, how-it-works, before/after or the product benefits from movement; image for stills; copy for text-led cards. format = platform shape ("reel","spot","carousel","billboard"). direction = one line of shot/art direction.`,
+          `badge = short offer/claim sticker ("NEW","4.9★","LIMITED") or "" when none fits. overlayStyle = one of performance|ugc|editorial|marker|brutalist|glass — pick the treatment that fits the angle (ugc for creator-style, editorial for luxury, performance for direct-response). score = your predicted thumbstop strength 40-98 (honest estimate, not random).`,
           `Vary mediums across the set — a real campaign mixes formats. If notes ask for product demos, at least half should be video.`,
         ].filter(Boolean).join('\n'),
       },
@@ -207,6 +208,9 @@ async function planCreatives(campaign, profile, product, n) {
         medium: ['video', 'image', 'copy'].includes(it.medium) ? it.medium : 'image',
         format: String(it.format || '').slice(0, 40),
         direction: String(it.direction || '').slice(0, 220),
+        badge: String(it.badge || '').slice(0, 16),
+        overlayStyle: ['performance', 'ugc', 'editorial', 'marker', 'brutalist', 'glass'].includes(it.overlayStyle) ? it.overlayStyle : null,
+        score: Math.max(40, Math.min(98, Math.round(+it.score || 0) || 0)) || null,
       }))
       .filter((it) => it.angle);
     return items.length ? items : null;
@@ -239,7 +243,9 @@ async function oneCreative(campaign, profile, product, angle, plan = null) {
   if (plan) {
     creative.medium = plan.medium;
     if (plan.format) creative.format = plan.format;
-    // video/dem creatives get a queued videoState so the animate lane is primed
+    if (plan.badge) creative.badge = plan.badge;
+    if (plan.overlayStyle) creative.overlayStyle = plan.overlayStyle;
+    if (plan.score) creative.score = plan.score;   // model-estimated thumbstop, shown as "est"
     if (plan.medium === 'video') creative.videoState = 'idle';
   }
   const refs = [];
