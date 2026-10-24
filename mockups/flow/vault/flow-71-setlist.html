@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Blue Marque — Tonight’s Sets</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%2314100D'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23F5EDDC' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%237A2E2E'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#14100D;--bg2:#1D1712;--paper:#F5EDDC;--cream:#EFE3C8;--ox:#7A2E2E;--ox2:#9C3B3B;
+  --mut:#9C8B72;--line:#3A2E22;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --mark:'Permanent Marker',cursive;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--bg) radial-gradient(ellipse at 50% -8%,rgba(122,46,46,.35),transparent 55%);
+  color:var(--paper);font-family:var(--sans);font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(122,46,46,.6)}
+a{color:var(--ox2);text-decoration:none;border-bottom:1.5px solid var(--ox2)}
+a:hover{color:var(--paper);border-color:var(--paper)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--ox2);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+.club{max-width:900px;margin:0 auto 90px;padding:0 clamp(10px,2.6vw,24px)}
+
+/* marquee */
+.marquee{
+  margin-top:26px;border:2px solid var(--cream);border-radius:6px;position:relative;
+  padding:clamp(18px,4.6vw,32px) clamp(16px,5vw,40px);text-align:center;
+  background:linear-gradient(#241B13,#191209);
+  box-shadow:0 0 0 6px var(--bg), 0 0 0 8px var(--line), 0 14px 40px rgba(0,0,0,.6);
+}
+.marquee::before,.marquee::after{
+  content:"";position:absolute;top:-14px;left:0;right:0;height:12px;
+  background:radial-gradient(circle at 10px 6px,var(--cream) 0 3px,transparent 3.6px);background-size:28px 12px;opacity:.9;
+}
+.marquee::after{top:auto;bottom:-14px}
+.marquee .clubname{font-size:clamp(11px,2.4vw,14px);letter-spacing:.55em;text-transform:uppercase;color:var(--ox2)}
+.marquee h1{font-family:var(--mark);font-size:clamp(30px,7vw,56px);line-height:1.05;color:var(--paper);margin-top:8px}
+.marquee .tonight{display:flex;justify-content:center;gap:clamp(14px,4vw,34px);flex-wrap:wrap;margin-top:12px}
+.marquee .tonight div{font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut)}
+.marquee .tonight b{display:block;font-size:13px;letter-spacing:.1em;color:var(--cream);margin-top:2px}
+.marquee .admit{margin-top:14px;display:inline-block;border:1.5px dashed var(--cream);padding:4px 18px;
+  font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--cream)}
+
+section{margin-top:34px}
+.sec-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sec-h .no{font-family:var(--mark);color:var(--ox2);font-size:clamp(20px,4vw,26px)}
+.sec-h h2{font-family:var(--mark);font-weight:400;font-size:clamp(21px,4.4vw,32px);color:var(--paper)}
+.sec-h .sub{margin-left:auto;font-style:italic;color:var(--mut);font-size:12px}
+
+/* the bill = ask */
+.bill{border:1.5px solid var(--cream);background:var(--bg2);padding:clamp(16px,4vw,26px) clamp(16px,4.4vw,32px);position:relative}
+.bill .presents{font-size:9.5px;letter-spacing:.4em;text-transform:uppercase;color:var(--mut)}
+.bill .act{font-family:var(--mark);font-size:clamp(26px,5.4vw,42px);line-height:1.05;color:var(--paper);margin-top:6px}
+.bill .with{margin-top:8px;font-size:12.5px;color:var(--mut)}
+.bill .with b{color:var(--cream);font-weight:600}
+.bill .desc{margin-top:8px;font-size:12.5px;font-style:italic;color:var(--mut);max-width:64ch}
+.bill .tape{position:absolute;top:-10px;left:50%;transform:translateX(-50%) rotate(-2deg);width:110px;height:20px;background:rgba(245,237,220,.22)}
+
+/* the room = audience */
+.room{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(14px,3vw,28px)}
+@media(max-width:700px){.room{grid-template-columns:1fr}}
+.napkin{background:var(--cream);color:#3A2E22;padding:16px 18px;transform:rotate(-.7deg);
+  box-shadow:0 8px 22px rgba(0,0,0,.4);position:relative}
+.napkin::after{content:"";position:absolute;inset:6px;border:1px dashed rgba(122,46,46,.4)}
+.napkin .k{font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--ox);font-weight:800}
+.napkin .who{font-family:var(--mark);font-size:clamp(24px,4.6vw,34px);line-height:1.1;margin-top:4px}
+.napkin .cap{display:flex;align-items:center;gap:10px;margin-top:8px;position:relative;z-index:1}
+.napkin .cap .pct{font-family:var(--mark);font-size:26px;color:var(--ox)}
+.napkin .cap .cb{flex:1;height:9px;border:1.5px solid #3A2E22;background:#fff}
+.napkin .cap .cb i{display:block;height:100%;background:var(--ox)}
+.napkin .dig{margin-top:10px;font-family:var(--mark);font-size:17px;line-height:1.5;position:relative;z-index:1}
+.napkin .dig em{font-style:normal;color:var(--ox)}
+.door ul{list-style:none}
+.door li{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.door li:last-child{border-bottom:none}
+.door .w{font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--cream);font-size:11.5px;white-space:nowrap}
+.door .n{text-align:right;color:var(--mut);font-style:italic}
+.door .obs{margin-top:10px;font-family:var(--mark);font-size:16.5px;line-height:1.55;color:var(--cream)}
+.door .obs span{display:block}
+
+/* set list */
+.sets{position:relative;padding-left:0}
+.set{
+  background:var(--cream);color:#3A2E22;padding:14px 20px 16px;margin-bottom:18px;position:relative;
+  box-shadow:0 8px 22px rgba(0,0,0,.4);transform:rotate(.4deg);
+}
+.set:nth-child(2n){transform:rotate(-.5deg)}
+.set:last-child{margin-bottom:0}
+.set .setno{position:absolute;top:-12px;left:16px;background:var(--ox);color:var(--cream);font-family:var(--mark);
+  font-size:15px;padding:2px 14px;transform:rotate(-2deg)}
+.set .enc{position:absolute;top:-12px;right:16px;background:#3A2E22;color:var(--cream);font-family:var(--mark);font-size:12px;padding:3px 12px;transform:rotate(1.5deg)}
+.set h3{font-family:var(--mark);font-size:clamp(24px,4.8vw,34px);line-height:1.05;color:#241B13}
+.set .groove{font-size:12px;font-style:italic;color:var(--ox);margin-top:1px}
+.tunes{margin-top:10px;list-style:none;counter-reset:t}
+.tunes li{display:flex;gap:10px;align-items:baseline;padding:4.5px 0;border-bottom:1px dashed rgba(58,46,34,.3);font-size:13.5px}
+.tunes li:last-child{border-bottom:none}
+.tunes li::before{counter-increment:t;content:counter(t) ".";font-family:var(--mark);color:var(--ox);font-size:15px;flex:0 0 20px}
+.tunes .tn{font-weight:600}
+.tunes .tn i{display:block;font-style:italic;font-weight:400;font-size:11px;color:#6B5B44}
+.tunes .tmp{margin-left:auto;font-family:var(--mark);font-size:16px;color:var(--ox);white-space:nowrap}
+.set .closer{margin-top:9px;font-size:12px;color:#6B5B44}
+.set .closer b{font-family:var(--mark);font-size:19px;color:var(--ox);font-weight:400}
+.set .closer i{display:block}
+.set .arr{margin-top:7px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#6B5B44}
+.set .cut{margin-top:8px;font-family:var(--mark);font-size:15px;color:var(--ox);line-height:1.4;border-top:1px dashed rgba(58,46,34,.3);padding-top:7px}
+.set .cut::before{content:"// ";color:#3A2E22}
+
+/* cut tunes = anti */
+.cuts{border:1.5px dashed var(--ox2);padding:16px 20px;background:rgba(122,46,46,.1)}
+.cuts .row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 26px}
+@media(max-width:620px){.cuts .row{grid-template-columns:1fr}}
+.cuts .ct{padding:7px 0;border-bottom:1px dotted var(--line)}
+.cuts .ct .t{font-family:var(--mark);font-size:18px;color:var(--cream)}
+.cuts .ct .t s{text-decoration-color:var(--ox2);text-decoration-thickness:2.5px}
+.cuts .ct .c{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ox2)}
+.cuts .ct .w{font-size:12px;font-style:italic;color:var(--mut);margin-top:2px}
+
+/* encore card = brief + vinyl */
+.encore{display:grid;grid-template-columns:.92fr 1.08fr;gap:clamp(16px,3.4vw,30px)}
+@media(max-width:780px){.encore{grid-template-columns:1fr}}
+.ecard{background:var(--paper);color:#241B13;padding:18px 20px;transform:rotate(-.5deg);box-shadow:0 8px 22px rgba(0,0,0,.4)}
+.ecard .sal{font-size:9px;letter-spacing:.34em;text-transform:uppercase;color:var(--ox);font-weight:800}
+.ecard h3{font-family:var(--mark);font-size:clamp(25px,4.8vw,36px);line-height:1.05}
+.ecard .body{font-size:13.5px;margin-top:7px}
+.ecard dl{display:grid;grid-template-columns:112px 1fr;gap:4px 14px;margin-top:12px;font-size:13px}
+.ecard dt{font-size:8.5px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--ox);padding-top:4px}
+.ecard dd{border-bottom:1px solid #D8CBAE;padding-bottom:6px}
+.ecard .km{font-family:var(--mark);font-size:18px;line-height:1.3}
+.ecard .sig{margin-top:10px;font-family:var(--mark);font-size:16px;color:var(--ox)}
+.wax{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:430px){.wax{grid-template-columns:1fr}}
+.rec{position:relative;transition:transform .15s ease}
+.rec:hover{transform:rotate(1.5deg) scale(1.02)}
+.rec .disc{position:relative;aspect-ratio:1/1;border-radius:50%;overflow:hidden;
+  background:repeating-radial-gradient(circle at 50% 50%,#0A0806 0 2px,#151009 2px 4px);
+  box-shadow:0 8px 20px rgba(0,0,0,.55)}
+.rec .disc img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.rec .lbl{position:absolute;inset:31%;border-radius:50%;background:var(--ox);color:var(--cream);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px;
+  border:1.5px solid var(--cream);z-index:2}
+.rec .lbl .side{font-size:7px;letter-spacing:.2em;text-transform:uppercase}
+.rec .lbl .pr{font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;margin-top:3px;font-weight:700;border-top:1px solid rgba(245,237,220,.5);padding-top:3px}
+.rec .cap{margin-top:8px;font-size:12px;color:var(--cream);text-align:center;line-height:1.35;padding:0 8px}
+.rec .cap b{display:block;font-family:var(--mark);font-weight:400;font-size:14.5px}
+
+/* gels = palette */
+.gels{display:flex;flex-wrap:wrap;gap:14px}
+.gel{width:118px;text-align:center}
+.gel .sw{height:52px;border:1.5px solid var(--cream);position:relative;overflow:hidden}
+.gel .sw i{position:absolute;inset:0}
+.gel .sw::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.28),transparent 45%,rgba(0,0,0,.18));box-shadow:inset 0 0 0 1px rgba(255,255,255,.15)}
+.gel .n{font-family:var(--mark);font-size:14px;margin-top:6px;color:var(--paper)}
+.gel .hx{font-size:9px;color:var(--mut)}
+
+/* liner notes = qloo */
+.liner{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(14px,3vw,26px)}
+@media(max-width:760px){.liner{grid-template-columns:1fr}}
+.tracks{border:1.5px solid var(--cream);background:var(--bg2);padding:12px 16px}
+.tracks h4,.pers h4{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--ox2);margin-bottom:8px}
+.tracks .tr{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
+.tracks .tr:last-child{border-bottom:none}
+.tracks .tr .nm{font-weight:600;color:var(--cream)}
+.tracks .tr .nm i{display:block;font-style:italic;font-weight:400;font-size:10.5px;color:var(--mut)}
+.tracks .tr .d{font-size:10.5px;color:var(--mut);white-space:nowrap;padding-top:2px}
+.tracks .mode{margin-top:10px;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+.tracks .mode b{color:var(--cream)}
+.pers{border:1.5px solid var(--cream);background:var(--bg2);padding:12px 16px}
+.pers .dv{font-family:var(--mark);font-size:16px;color:var(--cream);border-bottom:1.5px solid var(--ox);padding:5px 0 2px}
+.pers .rw{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:4px 0;border-bottom:1px dotted var(--line)}
+.pers .rw:last-child{border-bottom:none}
+.pers .rw .v{font-size:10.5px;color:var(--mut);font-family:ui-monospace,monospace}
+
+/* next gig */
+.nextrow{display:flex;flex-wrap:wrap;gap:10px}
+.nextrow button{border:1.5px solid var(--cream);background:transparent;color:var(--cream);padding:9px 20px;
+  font-family:var(--mark);font-size:16px;transition:background .12s ease,color .12s ease,transform .12s ease}
+.nextrow button:hover{background:var(--ox);border-color:var(--ox)}
+.nextrow button:active{transform:translateY(2px)}
+.nextrow .sub{width:100%;font-style:italic;color:var(--mut);font-size:12px}
+.alsoc{margin-top:12px;font-size:12px;color:var(--mut)}
+.alsoc b{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--ox2);display:block;margin-bottom:4px}
+.alsoc span{display:inline-block;margin-right:14px;font-style:italic;border-bottom:1px dotted var(--mut)}
+.foot{text-align:center;font-size:9px;letter-spacing:.34em;text-transform:uppercase;color:var(--mut);margin-top:36px}
+.empty{border:1.5px solid var(--cream);padding:40px;text-align:center;font-style:italic;color:var(--mut);margin-top:20px}
+</style>
+</head>
+<body>
+<div class="club">
+  <header class="marquee">
+    <div class="clubname">The Blue Marque · Basement Club</div>
+    <h1 id="m-act">Tonight Only</h1>
+    <div class="tonight">
+      <div>Doors<b>8:00 PM</b></div>
+      <div>Sets<b>Four, no breaks</b></div>
+      <div>Date<b id="m-date">—</b></div>
+      <div>Cover<b id="m-no">—</b></div>
+    </div>
+    <div class="admit">Strategy → Campaign → Final Result</div>
+  </header>
+  <main id="app"></main>
+  <div class="foot" id="foot"></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dshort=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase()}catch(e){return '—'}};
+
+const GELS=[
+  {n:'Blush Gel',h:'#EFB7AE'},{n:'House Milk',h:'#F7F0E5'},{n:'Warm Straw',h:'#F3E6CE'},
+  {n:'Amber Spot',h:'#B98A6F'},{n:'Smoke Brown',h:'#4E362B'}
+];
+const CREAT=[6,1,9,13].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dshort(B.createdAt||B.fetchedAt);
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+const prompt=((B.sub&&B.sub.prompt)||B.title||'').trim();
+
+document.getElementById('m-act').textContent=prompt||'Tonight Only';
+document.getElementById('m-date').textContent=DATE;
+document.getElementById('m-no').textContent='№ '+String(B.id||'—').slice(0,8).toUpperCase();
+document.getElementById('foot').textContent='THE BLUE MARQUE · 47 MARQUE ST · TIP THE SERVERS · SETS TAPED LIVE VIA QLOO';
+
+const M=document.getElementById('app');
+const sec=(no,title,sub,inner)=>{if(!inner)return;
+  M.appendChild(el('<section><div class="sec-h"><span class="no">'+esc(no)+'</span><h2>'+esc(title)+'</h2><span class="sub">'+esc(sub)+'</span></div>'+inner+'</section>'))};
+
+/* the bill = ask */
+sec('01','On the Bill','one night only, no openers',
+'<div class="bill"><div class="tape"></div>'+
+'<div class="presents">The Blue Marque presents</div>'+
+'<div class="act">'+esc(prompt)+'</div>'+
+'<div class="with">presented with '+(U?'<a href="'+esc(U)+'">'+esc(U)+'</a>':'—')+' — <b>'+esc((B.urlContext&&B.urlContext.title)||'')+'</b></div>'+
+'<div class="desc">'+esc((B.urlContext&&B.urlContext.description)||'')+'</div></div>');
+
+/* the room = audience */
+if(AR&&AR.lean){
+  sec('02','The Room Tonight','crowd read from the stage, before the first note',
+  '<div class="room"><div class="napkin"><div class="k">Who showed up</div>'+
+  '<div class="who">'+esc(AR.lean.label)+'</div>'+
+  '<div class="cap"><span class="pct">'+Math.round((AR.lean.confidence||0)*100)+'%</span><span class="cb"><i style="width:'+Math.round((AR.lean.confidence||0)*100)+'%"></i></span><span style="font-size:9px;color:#6B5B44">capacity<br>of read</span></div>'+
+  '<div class="k" style="margin-top:8px">They dig</div><div class="dig">'+(AR.vibeWords||[]).map(w=>'<em>'+esc(w)+'</em>').join(' · ')+'</div></div>'+
+  '<div class="door"><ul>'+(AR.mediaHabits||[]).map(h=>'<li><span class="w">'+esc(h.channel)+'</span><span class="n">'+esc(h.note)+'</span></li>').join('')+'</ul>'+
+  '<div class="obs">'+(AR.lean.signals||[]).map(s=>'<span>“'+esc(s)+'”</span>').join('')+'</div></div></div>');
+}
+
+/* sets I–IV = strategies */
+if(strats.length){
+  sec('03','Sets I–IV','order is fixed — the closer is picked already',
+  '<div class="sets">'+strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    return '<div class="set"><span class="setno">SET '+['I','II','III','IV'][i]+'</span>'+(i===sel?'<span class="enc">THE CLOSER</span>':'')+
+    '<h3>'+esc(s.title)+'</h3><div class="groove">'+esc(s.angle||'')+' feel · room fit '+f2(fit)+'</div>'+
+    '<ul class="tunes">'+(s.channels||[]).map(c=>'<li><span class="tn">'+esc(c.name)+'<i>'+esc(c.why||'')+'</i></span><span class="tmp">'+f2(c.fit)+'</span></li>').join('')+
+    '<li><span class="tn">arrangement<i>'+(s.formats||[]).map(f=>esc(f)).join(' · ')+'</i></span><span class="tmp">'+f2(fit)+'</span></li></ul>'+
+    '<div class="closer">House count — <b>'+views(s.reach&&s.reach.estViews)+'</b> heads<i>'+esc(s.reach&&s.reach.basis||'')+'</i></div>'+
+    (s.watchouts&&s.watchouts[0]?'<div class="cut">'+esc(s.watchouts[0])+'</div>':'')+
+    '</div>';
+  }).join('')+'</div>');
+}
+
+/* encore card = brief + 45s */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('04','Encore Card','what they’ll hum on the way out',
+  '<div class="encore"><div class="ecard">'+
+  (br?'<div class="sal">Encore · from set '+['I','II','III','IV'][sel!=null?sel:0]+' — '+esc(selS.title)+'</div><h3>'+esc(br.title)+'</h3>'+
+  '<div class="body">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Played for</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>The hook</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Written on</dt><dd>a '+esc(selS.heroSignal||'—')+' riff · fit '+f2((selS.audienceFit&&selS.audienceFit.score)||0)+'</dd></dl>'+
+  '<div class="sig">— bandleader, Marque desk</div>'
+  :'<div class="body">No encore written.</div>')+
+  '</div>'+
+  '<div><div style="font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--mut);margin-bottom:8px">45s in the crate — four singles</div>'+
+  '<div class="wax">'+CREAT.map((m,i)=>'<figure class="rec"><div class="disc"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'">'+
+  '<div class="lbl"><span class="side">Side '+('ABCD'[i]||i)+' · 45</span><span class="pr">'+esc(m.provider)+'</span></div></div>'+
+  '<figcaption class="cap"><b>'+esc(m.head)+'</b></figcaption></figure>').join('')+'</div></div></div>');
+}
+
+/* cut tunes = anti */
+if(anti.length){
+  sec('05','Cut from the Book','rehearsed once, never played',
+  '<div class="cuts"><div class="row">'+anti.map(a=>'<div class="ct"><div class="c">key of: '+esc(a.channel)+'</div>'+
+  '<div class="t"><s>'+esc(a.title)+'</s></div><div class="w">why it got cut — '+esc(a.whyNot)+'</div></div>').join('')+'</div></div>');
+}
+
+/* gels = palette */
+sec('06','Lighting Gels','what the stage looks like under these',
+  '<div class="gels">'+GELS.map(s=>'<div class="gel"><div class="sw"><i style="background:'+s.h+'"></i></div><div class="n">'+esc(s.n)+'</div><div class="hx">'+s.h.toUpperCase()+'</div></div>').join('')+'</div>');
+
+/* liner notes = qloo */
+if(calls.length||affs.length){
+  sec('07','Liner Notes','recorded live — Qloo remote unit, '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' take',
+  '<div class="liner"><div class="tracks"><h4>Tape log — reels in the booth</h4>'+
+  calls.map((c,i)=>'<div class="tr"><span class="nm">Reel '+(i+1)+' · '+esc(c.endpoint)+'<i>'+esc((c.at||'').slice(11,19))+'Z · '+esc(Object.keys(c.params||{}).length)+' tracks</i></span><span class="d">'+esc(c.tookMs)+' ms · n='+esc(c.n)+' · '+esc(c.mode)+'</span></div>').join('')+
+  '<div class="mode">All reels cut <b>'+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+'</b> — no overdubs.</div></div>'+
+  '<div class="pers"><h4>Personnel — who sat in</h4>'+affs.map(g=>'<div class="dv">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+  g.entities.slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('')+'</div></div>');
+}
+
+/* next gig */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('08','Next Gig','the booker wants an answer by midnight',
+  '<div class="nextrow">'+['Press single — the ad spot','Live album — landing page','Tour poster — media plan','One more set — remix'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  '<div class="sub">Same band, new chart — every deliverable is scored by closing time.</div></div>'+
+  (others.length?'<div class="alsoc"><b>Other acts in the book</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':''));
+
+if(!M.children.length)M.appendChild(el('<div class="empty">The stage is dark — data.js missed soundcheck.</div>'));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque Apiary — Inspection Log</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23F6ECD8'/%3E%3Cpath d='M32 8 L50 18 V40 L32 54 L14 40 V18 Z' fill='none' stroke='%23C78A1B' stroke-width='4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --kraft:#EFE3CB;--page:#FBF4E4;--ink:#4A3B28;--mut:#9B8A6E;
+  --honey:#C78A1B;--honeyd:#A36F10;--line:#D8C9A5;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --hand:'Caveat',cursive;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#6B5232 radial-gradient(ellipse at 50% -10%,rgba(239,227,203,.18),transparent 55%);
+  color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(199,138,27,.3)}
+a{color:var(--honeyd);text-decoration:none;border-bottom:1.5px solid var(--honeyd)}
+a:hover{color:var(--ink);border-color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--honey);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+.desk{max-width:980px;margin:0 auto 80px;padding:0 clamp(10px,2.6vw,24px)}
+
+/* logbook cover strip */
+.loghead{
+  margin-top:26px;background:linear-gradient(150deg,#8A6B3F,#6B5232);
+  border:1px solid #543f24;border-radius:8px 8px 3px 3px;color:var(--kraft);
+  padding:clamp(18px,4.4vw,32px) clamp(16px,4.6vw,38px);position:relative;
+  box-shadow:0 12px 34px rgba(0,0,0,.4);
+}
+.loghead::after{content:"";position:absolute;left:0;right:0;bottom:10px;height:2px;background:rgba(246,236,216,.3)}
+.loghead .apiary{font-size:9.5px;letter-spacing:.4em;text-transform:uppercase;color:#E4CD9B}
+.loghead h1{font-family:var(--hand);font-weight:700;font-size:clamp(34px,7vw,56px);line-height:1;color:#FBF4E4;margin-top:2px}
+.loghead .row{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:10px}
+.loghead .row div{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:rgba(246,236,216,.7)}
+.loghead .row b{display:block;font-family:var(--hand);font-size:19px;letter-spacing:0;text-transform:none;color:var(--page);margin-top:1px}
+
+/* logbook pages */
+section{margin-top:18px}
+.page{
+  background:var(--page);border:1px solid var(--line);border-radius:3px;position:relative;overflow:hidden;
+  box-shadow:0 2px 0 rgba(0,0,0,.2),5px 6px 0 rgba(0,0,0,.15);
+  padding:clamp(16px,3.6vw,28px) clamp(16px,4vw,34px);
+  background-image:repeating-linear-gradient(0deg,transparent 0 27px,rgba(107,82,50,.08) 27px 28px);
+}
+.page::before{content:"";position:absolute;top:0;bottom:0;left:12px;width:1px;background:rgba(199,138,27,.3)}
+.page-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.page-h .stamp{font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:#fff;background:var(--honey);padding:3px 10px}
+.page-h h2{font-family:var(--hand);font-size:clamp(26px,5vw,38px);font-weight:700;color:var(--ink);line-height:1}
+.page-h .sub{margin-left:auto;font-size:10.5px;color:var(--mut);font-style:italic}
+.k{font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--honeyd);font-weight:800}
+.hand{font-family:var(--hand);font-size:22px;line-height:1.25;color:var(--ink)}
+.hand.big{font-size:clamp(28px,5.4vw,40px);font-weight:700}
+
+/* visit record */
+.visit{display:grid;grid-template-columns:1fr 1fr;gap:8px 26px}
+@media(max-width:640px){.visit{grid-template-columns:1fr}}
+.vf{border-bottom:1.5px dotted var(--line);padding-bottom:4px;min-width:0}
+.vf .hand{overflow-wrap:anywhere}
+
+/* temperament form */
+.temp{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(14px,3vw,30px)}
+@media(max-width:720px){.temp{grid-template-columns:1fr}}
+.checks{list-style:none;font-size:13px}
+.checks li{display:flex;gap:9px;align-items:baseline;padding:5px 0;border-bottom:1px dotted var(--line)}
+.checks li::before{content:"";flex:0 0 auto;width:11px;height:11px;border:1.5px solid var(--ink);margin-top:2px;
+  background:linear-gradient(45deg,transparent 44%,var(--honey) 44% 56%,transparent 56%),
+             linear-gradient(-45deg,transparent 44%,var(--honey) 44% 56%,transparent 56%)}
+.checks li b{color:var(--honeyd)}
+.meter{display:flex;align-items:center;gap:10px;margin-top:8px}
+.meter .pct{font-family:var(--hand);font-size:30px;font-weight:700;color:var(--honeyd)}
+.meter .mb{flex:1;max-width:170px;height:12px;border:1.5px solid var(--ink);background:#fff;border-radius:6px;overflow:hidden}
+.meter .mb i{display:block;height:100%;background:linear-gradient(90deg,#E4B04A,var(--honey))}
+.blooms{display:flex;flex-wrap:wrap;gap:6px}
+.blooms span{font-family:var(--hand);font-size:17px;border:1.5px solid var(--honeyd);color:var(--honeyd);
+  border-radius:14px;padding:0 11px;background:rgba(199,138,27,.08)}
+
+/* supers = strategies */
+.supers{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,3vw,24px)}
+@media(max-width:700px){.supers{grid-template-columns:1fr}}
+.super{border:2px solid var(--ink);background:linear-gradient(#FFF9EC,var(--page));position:relative;
+  box-shadow:3px 4px 0 rgba(0,0,0,.12);transition:transform .15s ease,box-shadow .15s ease}
+.super:hover{transform:translateY(-2px);box-shadow:3px 8px 0 rgba(0,0,0,.14)}
+.super .rail{height:14px;background:repeating-linear-gradient(90deg,var(--ink) 0 10px,transparent 10px 18px);opacity:.9}
+.super .inn{padding:12px 16px 14px}
+.super .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.super .no{font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--mut);font-weight:800}
+.super .no b{color:var(--honeyd)}
+.super h3{font-family:var(--hand);font-size:clamp(25px,4.4vw,33px);font-weight:700;line-height:1.05}
+.super .flav{font-style:italic;font-size:12px;color:var(--mut);margin-top:1px}
+.frames{display:flex;gap:8px;margin-top:10px;align-items:flex-end}
+.frame{flex:1;min-width:0}
+.frame .fb{height:64px;border:1.5px solid var(--ink);background:#fff;position:relative;overflow:hidden}
+.frame .fb i{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(#E9BC55,var(--honey))}
+.frame .fb::after{content:"";position:absolute;inset:0;background:
+  repeating-linear-gradient(0deg,transparent 0 8px,rgba(74,59,40,.18) 8px 9px),
+  repeating-linear-gradient(90deg,transparent 0 8px,rgba(74,59,40,.18) 8px 9px)}
+.frame .fl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-top:4px;text-align:center}
+.frame .fl b{display:block;font-family:var(--hand);font-size:16px;letter-spacing:0;text-transform:none;color:var(--honeyd)}
+.super .yield{margin-top:10px;border-top:1.5px dashed var(--line);padding-top:7px;font-size:11.5px}
+.super .yield b{font-family:var(--hand);font-size:23px;color:var(--honeyd);font-weight:700}
+.super .yield i{display:block;color:var(--mut);font-size:10.5px}
+.super .fmts{font-size:10.5px;color:var(--mut);margin-top:2px}
+.super .queen{margin-top:8px;font-size:10.5px;font-style:italic;color:var(--mut);border-top:1px dotted var(--line);padding-top:6px}
+.super .queen b{font-style:normal;font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--honeyd);display:block}
+
+/* pulled frames = anti */
+.pulled .page-in{border-left:4px solid #B9A582}
+.dead{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:640px){.dead{grid-template-columns:1fr}}
+.df{border:1.5px solid var(--line);background:rgba(185,165,130,.12);padding:10px 14px;position:relative}
+.df .x{position:absolute;top:10px;right:12px;font-family:var(--hand);font-size:26px;color:var(--honeyd);transform:rotate(6deg)}
+.df .ch{font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+.df h4{font-family:var(--hand);font-size:22px;font-weight:700}
+.df h4 s{text-decoration-color:var(--honeyd);text-decoration-thickness:2px}
+.df .why{font-size:11.5px;font-style:italic;color:var(--mut);max-width:82%}
+
+/* harvest ticket = brief + jars */
+.harvest{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(16px,3.4vw,30px);align-items:start}
+@media(max-width:780px){.harvest{grid-template-columns:1fr}}
+.ticket{border:2px solid var(--honeyd);background:#FFF9EC;padding:16px 18px;position:relative;
+  box-shadow:inset 0 0 0 1px rgba(163,111,16,.35)}
+.ticket::before{content:"";position:absolute;top:0;bottom:0;left:0;width:8px;
+  background:repeating-linear-gradient(0deg,var(--honeyd) 0 5px,transparent 5px 11px)}
+.ticket .sal{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--honeyd);font-weight:800;padding-left:8px}
+.ticket h3{font-family:var(--hand);font-size:clamp(30px,5.4vw,42px);font-weight:700;line-height:1;padding-left:8px}
+.ticket .body{font-size:13.5px;margin-top:6px;padding-left:8px}
+.ticket dl{display:grid;grid-template-columns:110px 1fr;gap:4px 14px;margin-top:12px;font-size:12.5px;padding-left:8px}
+.ticket dt{font-size:8px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--honeyd);padding-top:4px}
+.ticket dd{border-bottom:1px solid var(--line);padding-bottom:6px}
+.ticket .km{font-family:var(--hand);font-size:21px;font-weight:700}
+.jars{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:430px){.jars{grid-template-columns:1fr}}
+.jar{background:#fff;border:1px solid var(--line);box-shadow:2px 3px 0 rgba(0,0,0,.1);
+  border-radius:4px 4px 10px 10px;overflow:hidden;transition:transform .15s ease;position:relative}
+.jar::before{content:"";position:absolute;top:0;left:0;right:0;height:9px;background:repeating-linear-gradient(90deg,var(--honey) 0 8px,#E4B04A 8px 16px);z-index:2}
+.jar:hover{transform:translateY(-3px)}
+.jar .iw{aspect-ratio:1/1;overflow:hidden;background:var(--kraft);margin-top:9px}
+.jar .iw img{width:100%;height:100%;object-fit:cover}
+.jar figcaption{padding:7px 9px;border-top:1.5px solid var(--line);background:#FFF9EC}
+.jar .h{font-family:var(--hand);font-size:17px;line-height:1.15}
+.jar .p{font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--honeyd);margin-top:2px}
+.jar .p b{border:1px solid var(--honeyd);padding:0 5px;border-radius:8px}
+
+/* pfund scale = palette */
+.pfund{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end}
+.gd{width:108px;text-align:center}
+.gd .jar2{height:58px;border:1.5px solid var(--ink);border-top:7px solid var(--honeyd);background:#fff;padding:6px;border-radius:0 0 8px 8px}
+.gd .jar2 i{display:block;height:100%;border-radius:0 0 4px 4px}
+.gd .n{font-family:var(--hand);font-size:17px;margin-top:5px}
+.gd .hx{font-size:9px;color:var(--mut)}
+.scalebar{flex:1 1 100%;height:8px;border:1.5px solid var(--ink);margin-top:4px;
+  background:linear-gradient(90deg,#F7F0E5,#F3E6CE,#EFB7AE,#B98A6F,#4E362B)}
+.scalelbl{flex:1 1 100%;display:flex;justify-content:space-between;font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+
+/* forage registry = qloo */
+.forage{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(14px,3vw,26px)}
+@media(max-width:780px){.forage{grid-template-columns:1fr}}
+.flog table{width:100%;border-collapse:collapse;font-size:11.5px}
+.flog th{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);text-align:left;padding:4px 6px;border-bottom:2px solid var(--ink)}
+.flog td{padding:6px;border-bottom:1px dotted var(--line);font-size:11px;vertical-align:top}
+.flog td.hand{font-family:var(--hand);font-size:16px}
+.flog .lot{display:inline-block;font-size:8px;letter-spacing:.14em;border:1.5px solid var(--honeyd);color:var(--honeyd);padding:0 5px;text-transform:uppercase}
+.srcs{border:1.5px solid var(--ink);background:#fff;padding:12px 16px}
+.srcs h4{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--honeyd);margin-bottom:8px}
+.srcs .dv{font-family:var(--hand);font-weight:700;font-size:19px;border-bottom:1.5px solid var(--ink);padding:5px 0 1px;line-height:1.1}
+.srcs .rw{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:3.5px 0;border-bottom:1px dotted var(--line)}
+.srcs .rw:last-child{border-bottom:none}
+.srcs .rw .v{font-family:var(--hand);font-size:16px;color:var(--honeyd)}
+
+/* next visit */
+.nextrow{display:flex;flex-wrap:wrap;gap:10px}
+.nextrow button{border:1.5px solid var(--ink);background:#FFF9EC;padding:9px 18px;
+  font-family:var(--hand);font-weight:700;font-size:19px;
+  transition:background .12s ease,color .12s ease,transform .12s ease}
+.nextrow button:hover{background:var(--honey);border-color:var(--honeyd);color:#fff}
+.nextrow button:active{transform:translateY(2px)}
+.nextrow .sub{width:100%;font-style:italic;color:var(--mut);font-size:11.5px}
+.alsoc{margin-top:12px;font-size:11.5px;color:var(--mut)}
+.alsoc b{font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--honeyd);display:block;margin-bottom:4px}
+.alsoc span{display:inline-block;margin-right:14px;font-family:var(--hand);font-size:17px;border-bottom:1px dotted var(--mut)}
+.foot{text-align:center;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(246,236,216,.6);margin-top:30px}
+.empty{background:var(--page);padding:40px;text-align:center;font-style:italic;color:var(--mut);margin-top:20px}
+</style>
+</head>
+<body>
+<div class="desk">
+  <header class="loghead">
+    <div class="apiary">Marque Apiary · Field Logbook</div>
+    <h1>Hive Inspection Record</h1>
+    <div class="row">
+      <div>Apiarist<b>The Marque Desk</b></div>
+      <div>Visit date<b id="h-date">—</b></div>
+      <div>Logbook №<b id="h-no">—</b></div>
+      <div>Weather<b>Clear, bees flying</b></div>
+    </div>
+  </header>
+  <main id="app"></main>
+  <div class="foot" id="foot"></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dshort=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase()}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Extra White',h:'#F7F0E5'},{n:'Water White',h:'#F3E6CE'},{n:'Light Amber',h:'#EFB7AE'},
+  {n:'Amber',h:'#B98A6F'},{n:'Dark Amber',h:'#4E362B'}
+];
+const CREAT=[2,7,13,4].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dshort(B.createdAt||B.fetchedAt);
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+const prompt=((B.sub&&B.sub.prompt)||B.title||'').trim();
+
+document.getElementById('h-date').textContent=DATE;
+document.getElementById('h-no').textContent=String(B.id||'—').slice(0,8).toUpperCase();
+document.getElementById('foot').textContent='MARQUE APIARY · LOG № '+String(B.id||'—').slice(0,8).toUpperCase()+' · '+DATE+' · SIGNED, THE APIARIST';
+
+const M=document.getElementById('app');
+const sec=(stamp,title,sub,inner,cls)=>{if(!inner)return;
+  M.appendChild(el('<section'+(cls?' class="'+cls+'"':'')+'><div class="page"><div class="page-h"><span class="stamp">'+esc(stamp)+'</span><h2>'+esc(title)+'</h2><span class="sub">'+esc(sub)+'</span></div>'+inner+'</div></section>'))};
+
+/* the visit = ask */
+sec('VISIT','Purpose of Visit','why the veil went on today',
+'<div class="visit">'+
+'<div class="vf"><div class="k">Work requested</div><div class="hand big">'+esc(prompt)+'</div></div>'+
+'<div class="vf"><div class="k">Site inspected</div><div class="hand">'+(U?'<a href="'+esc(U)+'">'+esc(U)+'</a>':'—')+'</div></div>'+
+'<div class="vf"><div class="k">Operation on file</div><div class="hand">'+esc((B.urlContext&&B.urlContext.title)||'—')+'</div></div>'+
+'<div class="vf"><div class="k">Notes from last visit</div><div class="hand">'+esc(((B.urlContext&&B.urlContext.description)||'').slice(0,140))+'</div></div>'+
+'</div>');
+
+/* colony temperament = audience */
+if(AR&&AR.lean){
+  sec('COLONY','Temperament on Opening','ticked off at the hive, not from the truck',
+  '<div class="temp"><div>'+
+  '<div class="k">Colony disposition</div><div class="hand big">'+esc(AR.lean.label)+'</div>'+
+  '<div class="meter"><span class="pct">'+Math.round((AR.lean.confidence||0)*100)+'%</span><span class="mb"><i style="width:'+Math.round((AR.lean.confidence||0)*100)+'%"></i></span><span style="font-size:9px;color:var(--mut)">calm &amp;<br>workable</span></div>'+
+  '<div class="k" style="margin-top:12px">Forage they favour</div><div class="blooms" style="margin-top:6px">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div>'+
+  '<div><ul class="checks">'+
+  (AR.mediaHabits||[]).map(h=>'<li><span><b>'+esc(h.channel)+'</b> — '+esc(h.note)+'</span></li>').join('')+
+  (AR.lean.signals||[]).map(s=>'<li><span>'+esc(s)+'</span></li>').join('')+
+  '</ul></div></div>');
+}
+
+/* supers = strategies */
+if(strats.length){
+  sec('HIVE','The Four Supers','brood below, honey up top — pull the best',
+  '<div class="supers">'+strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    return '<div class="super"><div class="rail"></div><div class="inn">'+
+    '<div class="top"><h3>'+esc(s.title)+'</h3><div class="no">Super '+(i+1)+'/4'+(i===sel?' · <b>ready to pull</b>':'')+'</div></div>'+
+    '<div class="flav">character: '+esc(s.angle||'')+' · strength '+f2(fit)+'</div>'+
+    '<div class="frames">'+(s.channels||[]).map(c=>'<div class="frame"><div class="fb"><i style="height:'+Math.round((c.fit||0)*100)+'%"></i></div><div class="fl"><b>'+f2(c.fit)+'</b>'+esc(c.name)+'</div></div>').join('')+
+    '<div class="frame"><div class="fb"><i style="height:'+Math.round(fit*100)+'%"></i></div><div class="fl"><b>'+f2(fit)+'</b>colony fit</div></div></div>'+
+    '<div class="fmts">comb drawn as: '+(s.formats||[]).map(f=>esc(f)).join(' · ')+'</div>'+
+    '<div class="yield">Est. yield — <b>'+views(s.reach&&s.reach.estViews)+'</b> views<i>'+esc(s.reach&&s.reach.basis||'')+'</i></div>'+
+    (s.watchouts&&s.watchouts[0]?'<div class="queen"><b>Queen note</b>'+esc(s.watchouts[0])+'</div>':'')+
+    '</div></div>';
+  }).join('')+'</div>');
+}
+
+/* pulled frames = anti */
+if(anti.length){
+  sec('CULL','Frames Pulled & Melted','burr comb — scraped off the top bars',
+  '<div class="dead">'+anti.map(a=>'<div class="df"><span class="x">✕</span>'+
+  '<div class="ch">comb drawn toward: '+esc(a.channel)+'</div><h4><s>'+esc(a.title)+'</s></h4>'+
+  '<div class="why">why it came out — '+esc(a.whyNot)+'</div></div>').join('')+'</div>',
+  'pulled');
+}
+
+/* harvest ticket = brief + jars */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('HARVEST','Harvest Ticket','what went through the extractor',
+  '<div class="harvest"><div class="ticket">'+
+  (br?'<div class="sal">Lot · '+esc(selS.title)+' — '+esc(selS.angle||'')+'</div><h3>'+esc(br.title)+'</h3>'+
+  '<div class="body">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Bottled for</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Label reads</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Single-origin</dt><dd>forage: '+esc(selS.heroSignal||'—')+' · strength '+f2((selS.audienceFit&&selS.audienceFit.score)||0)+'</dd></dl>'
+  :'<div class="body">Nothing capped this week.</div>')+
+  '</div>'+
+  '<div><div class="k" style="margin-bottom:8px">Jars filled &amp; labelled — 4</div>'+
+  '<div class="jars">'+CREAT.map(m=>'<figure class="jar"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">extracted by <b>'+esc(m.provider)+'</b></div></figcaption></figure>').join('')+'</div></div></div>');
+}
+
+/* pfund scale = palette */
+sec('GRADING','Grading on the Pfund Scale','held to the light, darkest to lightest',
+  '<div class="pfund">'+PALETTE.map(s=>'<div class="gd"><div class="jar2"><i style="background:'+s.h+'"></i></div><div class="n">'+esc(s.n)+'</div><div class="hx">'+s.h.toUpperCase()+'</div></div>').join('')+
+  '<div class="scalebar"></div><div class="scalelbl"><span>lighter</span><span>darker</span></div></div>');
+
+/* forage registry = qloo */
+if(calls.length||affs.length){
+  sec('FORAGE','Forage & Lot Registry','every lot traced — Qloo nectar survey, '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live'),
+  '<div class="forage"><div class="srcs"><h4>Nectar sources within flight range</h4>'+
+  affs.map(g=>'<div class="dv">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+  g.entities.slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('')+'</div>'+
+  '<div class="flog"><table><tr><th>Lot / survey call</th><th>Logged</th><th>Took</th><th>Frames</th><th>Mode</th></tr>'+
+  calls.map(c=>'<tr><td><b>'+esc(c.endpoint)+'</b><br><span class="lot">'+esc(c.mode)+'</span></td>'+
+  '<td class="hand">'+esc((c.at||'').slice(11,19))+'Z</td><td class="hand">'+esc(c.tookMs)+' ms</td><td class="hand">n='+esc(c.n)+'</td><td class="hand">'+esc(c.mode)+'</td></tr>').join('')+
+  '</table><p style="font-size:10.5px;color:var(--mut);font-style:italic;margin-top:8px">Each lot traced through '+calls.length+' apiary surveys — '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' forage data, not guesswork.</p></div></div>');
+}
+
+/* next visit */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('NEXT','Next Visit','written before the smoker goes out',
+  '<div class="nextrow">'+['Re-queen the weak colony','Add a fifth super','Bottle the campaign batch','Sell at the gate stand'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  '<div class="sub">Same hives, fresh frames — every deliverable is capped and dated.</div></div>'+
+  (others.length?'<div class="alsoc"><b>Other colonies in the yard</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':''));
+
+if(!M.children.length)M.appendChild(el('<section><div class="page"><div class="empty">The logbook is blank — data.js never reached the yard.</div></div></section>'));
+})();
+</script>
+</body>
+</html>

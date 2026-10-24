@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque Passport Office — Campaign Travel Document</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%231E2A4A'/%3E%3Ccircle cx='32' cy='30' r='14' fill='none' stroke='%23C9A24B' stroke-width='2.5'/%3E%3Cpath d='M18 30h28M32 16c-5 5-5 23 0 28M32 16c5 5 5 23 0 28' fill='none' stroke='%23C9A24B' stroke-width='1.6'/%3E%3C/svg%3E">
+<style>
+:root{
+  --navy:#1E2A4A;--navy2:#26355F;--paper:#F5EFE2;--paper2:#FBF7EC;
+  --ink:#2B2F3A;--mut:#8A8271;--red:#B5342F;--gold:#C9A24B;--line:#CFC4A6;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#101522 radial-gradient(ellipse at 50% 0%,rgba(38,53,95,.55),transparent 60%);
+  color:var(--ink);font-family:var(--sans);font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(201,162,75,.35)}
+a{color:var(--red);text-decoration:none;border-bottom:1.5px solid var(--red)}
+a:hover{color:var(--navy);border-color:var(--navy)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+.desk{max-width:980px;margin:0 auto 80px;padding:0 clamp(10px,2.6vw,24px)}
+
+/* cover */
+.cover{
+  margin-top:26px;background:linear-gradient(160deg,var(--navy2),var(--navy) 60%);
+  border:1px solid #0d1428;border-radius:10px 10px 4px 4px;color:var(--paper);
+  padding:clamp(22px,5vw,40px) clamp(18px,5vw,44px);position:relative;
+  box-shadow:0 14px 40px rgba(0,0,0,.5), inset 0 0 0 2px rgba(201,162,75,.28);
+}
+.cover::after{content:"";position:absolute;inset:9px;border:1.5px solid rgba(201,162,75,.5);border-radius:6px;pointer-events:none}
+.cover .republic{font-size:9px;letter-spacing:.42em;text-transform:uppercase;color:var(--gold);text-align:center}
+.cover h1{
+  text-align:center;font-size:clamp(26px,5.6vw,44px);font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;margin-top:6px;color:var(--paper);
+  text-shadow:0 1px 0 rgba(0,0,0,.4);
+}
+.cover .crest{
+  width:74px;height:74px;margin:12px auto 8px;border:2.5px solid var(--gold);border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  box-shadow:inset 0 0 0 2px rgba(201,162,75,.25);
+}
+.cover .crest i{display:block;width:44px;height:1.6px;background:var(--gold)}
+.cover .crest b{font-size:8px;letter-spacing:.3em;color:var(--gold)}
+.cover .doctype{text-align:center;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:rgba(245,239,226,.75)}
+.cover .issue{display:flex;justify-content:space-between;gap:12px;margin-top:18px;flex-wrap:wrap}
+.cover .issue div{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(245,239,226,.65)}
+.cover .issue b{display:block;font-size:12.5px;color:var(--paper);letter-spacing:.08em;margin-top:2px}
+
+/* generic page */
+section{margin-top:22px}
+.page{
+  background:var(--paper2) repeating-linear-gradient(0deg,transparent 0 26px,rgba(30,42,74,.045) 26px 27px);
+  border:1px solid var(--line);border-radius:3px;
+  box-shadow:0 2px 0 rgba(0,0,0,.22), 5px 7px 0 rgba(0,0,0,.16);
+  padding:clamp(16px,3.6vw,28px) clamp(16px,4vw,34px);position:relative;overflow:hidden;
+}
+.page::before{content:"";position:absolute;top:0;bottom:0;left:14px;width:1px;background:rgba(181,52,47,.25)}
+.page-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px;border-bottom:2px solid var(--navy);padding-bottom:8px}
+.page-h .pn{font-family:var(--mono);font-size:10px;color:var(--paper);background:var(--navy);padding:3px 9px;letter-spacing:.16em}
+.page-h h2{font-size:clamp(17px,3.4vw,24px);font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--navy)}
+.page-h .sub{margin-left:auto;font-size:11px;color:var(--mut);font-style:italic}
+
+/* identity fields */
+.fields{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 22px}
+@media(max-width:640px){.fields{grid-template-columns:1fr}}
+.f{border-bottom:1px solid var(--line);padding-bottom:6px;min-width:0}
+.f .k{font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--mut);font-weight:700}
+.f .v{font-size:15px;font-weight:600;margin-top:2px;overflow-wrap:anywhere}
+.f .v.big{font-size:clamp(19px,3.6vw,25px);font-weight:700}
+.f .v.mono{font-family:var(--mono);font-size:12px}
+.mrz{
+  margin-top:16px;background:var(--navy);color:rgba(245,239,226,.85);font-family:var(--mono);
+  font-size:clamp(9px,1.9vw,12.5px);letter-spacing:.14em;padding:8px 14px;border-radius:2px;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+.idd{display:grid;grid-template-columns:120px 1fr;gap:18px;align-items:start}
+@media(max-width:560px){.idd{grid-template-columns:1fr}}
+.idphoto{
+  width:120px;aspect-ratio:3/4;background:var(--navy);border:1px solid var(--line);position:relative;
+  display:flex;align-items:center;justify-content:center;color:var(--gold);
+  font-size:9px;letter-spacing:.2em;text-transform:uppercase;text-align:center;padding:8px;
+}
+.idphoto::after{content:"";position:absolute;inset:5px;border:1px dashed rgba(201,162,75,.6)}
+@media(max-width:560px){.idphoto{width:96px}}
+.gauge{display:flex;align-items:center;gap:10px;margin-top:6px}
+.gauge .pct{font-size:21px;font-weight:700;color:var(--navy)}
+.gauge .gb{flex:1;max-width:180px;height:10px;border:1.5px solid var(--navy);background:#fff}
+.gauge .gb i{display:block;height:100%;background:var(--red)}
+.sigrow{display:flex;flex-wrap:wrap;gap:6px}
+.sigrow span{font-size:11.5px;border:1.5px solid var(--navy);padding:1px 9px;background:#fff}
+ul.notes{list-style:none;font-size:12.5px}
+ul.notes li{padding:4px 0;border-bottom:1px dotted var(--line)}
+ul.notes li:last-child{border-bottom:none}
+ul.notes li b{color:var(--navy)}
+
+/* visa stamps */
+.visas{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,3vw,26px)}
+@media(max-width:700px){.visas{grid-template-columns:1fr}}
+.vpage{position:relative;min-height:150px;border:1.5px dashed var(--line);padding:16px 16px 14px;background:rgba(255,255,255,.5)}
+.vpage .pg{position:absolute;top:6px;right:10px;font-family:var(--mono);font-size:9px;color:var(--mut);letter-spacing:.15em}
+.visa{
+  border:2.5px solid var(--navy);border-radius:6px;padding:12px 14px;position:relative;
+  transform:rotate(-1.1deg);color:var(--navy);
+  box-shadow:inset 0 0 0 1.5px rgba(30,42,74,.35);
+  transition:transform .15s ease;
+}
+.vpage:nth-child(2n) .visa{transform:rotate(1.2deg)}
+.vpage:hover .visa{transform:rotate(0)}
+.visa .vh{display:flex;justify-content:space-between;gap:10px;align-items:baseline;border-bottom:1.5px solid var(--navy);padding-bottom:6px;margin-bottom:7px}
+.visa h3{font-size:clamp(16px,3vw,21px);font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.visa .vtype{font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;font-weight:700}
+.visa .row{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:2.5px 0;border-bottom:1px dotted rgba(30,42,74,.3)}
+.visa .row:last-of-type{border-bottom:none}
+.visa .row .k{letter-spacing:.12em;text-transform:uppercase;font-size:8.5px;padding-top:2px;color:rgba(30,42,74,.7)}
+.visa .row .val{text-align:right;font-weight:600}
+.visa .row .val i{font-style:italic;font-weight:400;font-size:10px;display:block;color:rgba(30,42,74,.65)}
+.round{
+  position:absolute;right:10px;bottom:10px;width:92px;height:92px;border-radius:50%;
+  border:2.5px solid var(--red);color:var(--red);transform:rotate(9deg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;padding:10px;line-height:1.35;
+  box-shadow:inset 0 0 0 1.5px rgba(181,52,47,.4);background:rgba(251,247,236,.55);pointer-events:none;
+}
+.round b{font-size:16px;letter-spacing:0}
+.visa .stay{margin-top:8px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding-right:100px}
+.visa .stay b{font-size:14px}
+.visa .wo{margin-top:8px;font-size:10.5px;font-style:italic;color:rgba(30,42,74,.75);border-top:1px dashed rgba(30,42,74,.4);padding-top:6px;padding-right:100px}
+.visa .wo b{font-style:normal;font-size:8px;letter-spacing:.22em;color:var(--red);display:block}
+
+/* refused */
+.ref .vpage{border-color:rgba(181,52,47,.4);background:rgba(181,52,47,.045)}
+.ref .rt{position:absolute;top:12px;right:12px;border:2.5px solid var(--red);color:var(--red);
+  font-size:9.5px;font-weight:800;letter-spacing:.2em;padding:4px 10px;transform:rotate(4deg);
+  text-transform:uppercase;background:rgba(251,247,236,.7)}
+.ref h4{font-size:clamp(15px,3vw,19px);font-weight:700;text-transform:uppercase;color:var(--ink)}
+.ref h4 s{text-decoration-color:var(--red);text-decoration-thickness:2px}
+.ref .ch{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);padding-right:118px}
+.ref .why{font-size:12px;font-style:italic;color:var(--mut);margin-top:4px;max-width:80%}
+
+/* official visa = brief */
+.ovisa{
+  border:2px solid var(--gold);background:linear-gradient(140deg,#FBF7EC,#F1EAD6);
+  padding:clamp(16px,4vw,26px);position:relative;
+  box-shadow:inset 0 0 0 1px rgba(201,162,75,.4), 4px 5px 0 rgba(0,0,0,.14);
+}
+.ovisa .seal{position:absolute;top:-16px;right:22px;width:64px;height:64px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#E4C87A,var(--gold) 65%);color:var(--navy);
+  display:flex;align-items:center;justify-content:center;font-size:7px;letter-spacing:.14em;
+  text-transform:uppercase;font-weight:800;text-align:center;padding:8px;transform:rotate(-8deg);
+  box-shadow:0 3px 6px rgba(0,0,0,.25)}
+.ovisa .sal{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--red);font-weight:700}
+.ovisa h3{font-size:clamp(22px,4.4vw,34px);font-weight:800;line-height:1.1;color:var(--navy);margin-top:4px}
+.ovisa .body{font-size:14px;margin-top:8px;max-width:62ch}
+.ovisa dl{display:grid;grid-template-columns:120px 1fr;gap:5px 16px;margin-top:14px;font-size:13px}
+.ovisa dt{font-size:8.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--red);padding-top:4px}
+.ovisa dd{border-bottom:1px solid var(--line);padding-bottom:7px}
+.ovisa .km{font-weight:700;font-size:15.5px}
+.plates{margin-top:18px}
+.plates .eh{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut);margin-bottom:10px}
+.photos{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:860px){.photos{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:430px){.photos{grid-template-columns:1fr}}
+.photo{background:#fff;border:1px solid var(--line);padding:7px 7px 0;box-shadow:2px 3px 0 rgba(0,0,0,.14);
+  transform:rotate(-.6deg);transition:transform .15s ease}
+.photo:nth-child(2n){transform:rotate(.7deg)}
+.photo:hover{transform:rotate(0) scale(1.03)}
+.photo .iw{aspect-ratio:1/1;overflow:hidden;background:var(--paper)}
+.photo .iw img{width:100%;height:100%;object-fit:cover}
+.photo figcaption{padding:7px 2px}
+.photo .h{font-size:12px;line-height:1.4}
+.photo .p{font-size:8.5px;letter-spacing:.14em;color:var(--red);text-transform:uppercase;margin-top:2px}
+
+/* ink pads */
+.pads{display:flex;flex-wrap:wrap;gap:16px}
+.pad{width:110px;text-align:center}
+.pad .tin{height:60px;border:2px solid var(--navy);background:#fff;padding:7px}
+.pad .tin i{display:block;height:100%;border-radius:3px}
+.pad .n{font-size:12px;font-weight:700;margin-top:6px}
+.pad .hx{font-size:9px;font-family:var(--mono);color:var(--mut)}
+
+/* movement record */
+.mov{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(14px,3vw,26px)}
+@media(max-width:780px){.mov{grid-template-columns:1fr}}
+.mov table{width:100%;border-collapse:collapse;font-size:11.5px}
+.mov th{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);text-align:left;padding:4px 6px;border-bottom:2px solid var(--navy)}
+.mov td{padding:6px;border-bottom:1px dotted var(--line);font-family:var(--mono);font-size:10.5px;vertical-align:top}
+.mov td b{font-family:var(--sans);font-size:11.5px}
+.mov .tag{display:inline-block;font-size:8px;letter-spacing:.16em;border:1.5px solid var(--red);color:var(--red);padding:0 5px;text-transform:uppercase;margin-right:5px}
+.nats{border:1.5px solid var(--navy);background:#fff;padding:12px 16px}
+.nats h4{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.nats .dv{font-weight:700;text-transform:uppercase;font-size:12px;border-bottom:1.5px solid var(--navy);padding:7px 0 3px}
+.nats .rw{display:flex;justify-content:space-between;gap:10px;font-size:12px;padding:4px 0;border-bottom:1px dotted var(--line)}
+.nats .rw:last-child{border-bottom:none}
+.nats .rw .v{font-size:10.5px;font-family:var(--mono);color:var(--mut)}
+
+/* next */
+.nextrow{display:flex;flex-wrap:wrap;gap:10px}
+.nextrow button{border:1.5px solid var(--navy);background:#fff;padding:10px 20px;font-weight:700;
+  font-size:12.5px;text-transform:uppercase;letter-spacing:.1em;
+  transition:background .12s ease,color .12s ease,transform .12s ease}
+.nextrow button:hover{background:var(--red);border-color:var(--red);color:#fff}
+.nextrow button:active{transform:translateY(2px)}
+.nextrow .sub{width:100%;font-style:italic;color:var(--mut);font-size:12px}
+.alsoc{margin-top:12px;font-size:12px;color:var(--mut)}
+.alsoc b{font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:4px}
+.alsoc span{display:inline-block;margin-right:14px;font-style:italic;border-bottom:1px dotted var(--mut)}
+.foot{text-align:center;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:rgba(245,239,226,.55);margin-top:30px}
+.empty{background:var(--paper2);padding:40px;text-align:center;font-style:italic;color:var(--mut);margin-top:20px}
+</style>
+</head>
+<body>
+<div class="desk">
+  <header class="cover">
+    <div class="republic">The Republic of Good Taste · Department of Campaign Affairs</div>
+    <h1>Marque<br>Campaign Passport</h1>
+    <div class="crest"><b>M</b><i></i><i></i><i></i><b>Q</b></div>
+    <div class="doctype">Travel document · strategy → campaign → final result</div>
+    <div class="issue">
+      <div>Document №<b id="c-no">—</b></div>
+      <div>Date of issue<b id="c-date">—</b></div>
+      <div>Issuing authority<b>MARQUE DESK</b></div>
+    </div>
+  </header>
+  <main id="app"></main>
+  <div class="foot" id="foot"></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dshort=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase()}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Crème Fraîche',h:'#F3E6CE'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Espresso Bean',h:'#4E362B'}
+];
+const CREAT=[1,5,8,12].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dshort(B.createdAt||B.fetchedAt);
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+const prompt=((B.sub&&B.sub.prompt)||B.title||'').trim();
+const mrz=('P<MRQ'+prompt.toUpperCase().replace(/[^A-Z0-9]+/g,'<')+'<<<<<<<<<<<<<<<<<<<<<<<<<<').slice(0,44);
+
+document.getElementById('c-no').textContent=String(B.id||'—').slice(0,8).toUpperCase();
+document.getElementById('c-date').textContent=DATE;
+document.getElementById('foot').textContent='MARQUE PASSPORT OFFICE · COUNTER 4 · '+DATE+' · THIS DOCUMENT CONTAINS '+strats.length+' VALID VISAS';
+
+const M=document.getElementById('app');
+const sec=(pn,title,sub,inner)=>{if(!inner)return;
+  M.appendChild(el('<section><div class="page"><div class="page-h"><span class="pn">'+esc(pn)+'</span><h2>'+esc(title)+'</h2><span class="sub">'+esc(sub)+'</span></div>'+inner+'</div></section>'))};
+
+/* identity page = the ask */
+sec('PAGE 01','Document of Purpose','why this traveller is going',
+'<div class="idd"><div class="idphoto">Holder<br>photo<br>on file</div><div class="fields">'+
+'<div class="f"><div class="k">Journey requested</div><div class="v big">'+esc(prompt)+'</div></div>'+
+'<div class="f"><div class="k">Port of origin (URL)</div><div class="v">'+(U?'<a href="'+esc(U)+'">'+esc(U)+'</a>':'—')+'</div></div>'+
+'<div class="f"><div class="k">Nationality of brand</div><div class="v">'+esc((B.urlContext&&B.urlContext.title)||'—')+'</div></div>'+
+'<div class="f" style="grid-column:1/-1"><div class="k">Declaration of goods</div><div class="v">'+esc((B.urlContext&&B.urlContext.description)||'')+'</div></div>'+
+'</div></div><div class="mrz">'+esc(mrz)+'<br>MARQUE&lt;&lt;CAMPAIGN&lt;&lt;'+esc((B.board||'STRATEGY'))+'&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;'+DATE.replace(/ /g,'')+'</div>');
+
+/* bearer profile = audience */
+if(AR&&AR.lean){
+  sec('PAGE 02','Bearer Profile','read at the border — Gen Z cohort',
+  '<div class="idd"><div class="idphoto">Bearer<br>“'+esc(AR.lean.label)+'”</div><div class="fields">'+
+  '<div class="f"><div class="k">Registered as</div><div class="v big">'+esc(AR.lean.label)+'</div>'+
+  '<div class="gauge"><span class="pct">'+Math.round((AR.lean.confidence||0)*100)+'%</span><span class="gb"><i style="width:'+Math.round((AR.lean.confidence||0)*100)+'%"></i></span><span style="font-size:9.5px;color:var(--mut)">match<br>certainty</span></div></div>'+
+  '<div class="f"><div class="k">Travels with (vibe)</div><div class="v"><div class="sigrow">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div></div>'+
+  '<div class="f"><div class="k">Ports frequented</div><ul class="notes">'+(AR.mediaHabits||[]).map(h=>'<li><b>'+esc(h.channel)+'</b> — '+esc(h.note)+'</li>').join('')+'</ul></div>'+
+  '<div class="f" style="grid-column:1/-1"><div class="k">Border officer’s observations</div><ul class="notes">'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></div>'+
+  '</div></div>');
+}
+
+/* visa pages = strategies */
+if(strats.length){
+  sec('PAGES 03–06','Visas Granted','four entries authorised — duration varies',
+  '<div class="visas">'+strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    return '<div class="vpage"><span class="pg">VISA PAGE '+(i+3)+' / 06'+(i===sel?' · EXPRESS':'')+'</span>'+
+    '<div class="visa"><div class="vh"><h3>'+esc(s.title)+'</h3><span class="vtype">Class '+(i===sel?'E-1':'T-'+(i+1))+'</span></div>'+
+    '<div class="row"><span class="k">Routing</span><span class="val">“'+esc(s.angle||'')+'”</span></div>'+
+    (s.channels||[]).map(c=>'<div class="row"><span class="k">via '+esc(c.name)+'</span><span class="val">stamp duty '+f2(c.fit)+'<i>'+esc(c.why||'')+'</i></span></div>').join('')+
+    '<div class="row"><span class="k">Baggage</span><span class="val">'+(s.formats||[]).map(f=>esc(f)).join(' · ')+'</span></div>'+
+    '<div class="stay">Duration of stay — <b>'+views(s.reach&&s.reach.estViews)+' impressions</b><br><span style="text-transform:none;letter-spacing:0;font-weight:400;font-style:italic;color:rgba(30,42,74,.65)">'+esc(s.reach&&s.reach.basis||'')+'</span></div>'+
+    (s.watchouts&&s.watchouts[0]?'<div class="wo"><b>Conditions of entry</b>'+esc(s.watchouts[0])+'</div>':'')+
+    '</div><div class="round"><span>Port of entry</span><b>'+f2(fit)+'</b><span>'+esc(s.heroSignal||'MARQUE')+'</span></div></div>';
+  }).join('')+'</div>');
+}
+
+/* refused entry = anti */
+if(anti.length){
+  sec('ANNEX R','Refused at the Border','stamps the officer declined to give',
+  '<div class="visas ref">'+anti.map(a=>'<div class="vpage"><span class="rt">Entry refused</span>'+
+  '<div class="ch">sought passage via: '+esc(a.channel)+'</div><h4><s>'+esc(a.title)+'</s></h4>'+
+  '<div class="why">Officer’s reason — '+esc(a.whyNot)+'</div></div>').join('')+'</div>');
+}
+
+/* official visa = brief + plates */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('INSET V-1','Official Visa — Full Page','the one the trip is really for',
+  '<div class="ovisa"><div class="seal">Marque<br>seal</div>'+
+  (br?'<div class="sal">Visa class · '+esc(selS.title)+' — '+esc(selS.angle||'')+'</div><h3>'+esc(br.title)+'</h3>'+
+  '<div class="body">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Granted to</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Entitles bearer to say</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Issued under</dt><dd>Signal № '+esc(selS.heroSignal||'—')+' · certainty '+f2((selS.audienceFit&&selS.audienceFit.score)||0)+'</dd></dl>'
+  :'<div class="body">No visa was pasted on this page.</div>')+
+  '<div class="plates"><div class="eh">Photographic plates — four exposures, do not fold</div>'+
+  '<div class="photos">'+CREAT.map(m=>'<figure class="photo"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">exposed by '+esc(m.provider)+'</div></figcaption></figure>').join('')+'</div></div></div>');
+}
+
+/* ink pads = palette */
+sec('COUNTER','Consular Ink Pads','approved inks for every stamp in this book',
+  '<div class="pads">'+PALETTE.map(s=>'<div class="pad"><div class="tin"><i style="background:'+s.h+'"></i></div><div class="n">'+esc(s.n)+'</div><div class="hx">'+s.h.toUpperCase()+'</div></div>').join('')+'</div>');
+
+/* movement record = qloo */
+if(calls.length||affs.length){
+  sec('ANNEX M','Movement Record','every crossing logged — Qloo frontier bureau, '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live'),
+  '<div class="mov"><div><table><tr><th>Checkpoint</th><th>Time</th><th>Transit</th><th>Party</th><th>Mode</th></tr>'+
+  calls.map(c=>'<tr><td><b>'+esc(c.endpoint)+'</b><br><span class="tag">'+esc(c.mode)+'</span>'+esc(Object.keys(c.params||{}).length)+' fields</td>'+
+  '<td>'+esc((c.at||'').slice(11,19))+'Z</td><td>'+esc(c.tookMs)+' ms</td><td>n='+esc(c.n)+'</td><td>'+esc(c.mode)+'</td></tr>').join('')+'</table></div>'+
+  '<div class="nats"><h4>Nationals observed at this border</h4>'+affs.map(g=>'<div class="dv">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+  g.entities.slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('')+'</div></div>');
+}
+
+/* issue next document */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('COUNTER 4','Issue Next Document','window closes at six',
+  '<div class="nextrow">'+['Press pass','Crew visa','Diplomatic pouch','Return ticket'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  '<div class="sub">Same bearer, new papers — every deliverable is stamped tonight.</div></div>'+
+  (others.length?'<div class="alsoc"><b>Other travellers in the queue</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':''));
+
+if(!M.children.length)M.appendChild(el('<div class="empty">This passport is blank — data.js never reached the counter.</div>'));
+})();
+</script>
+</body>
+</html>

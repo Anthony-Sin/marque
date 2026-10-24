@@ -32,7 +32,9 @@
   {"name":"flow-65-airmail-post","style":"par avion post office","blurb":"Strategies franked as airmail envelopes with stamp-denominated fit; customs declaration files the recipient."},
   {"name":"flow-31-manifesto","style":"constructivist manifesto","blurb":"Theses and red geometry; ruled-outs argued as counter-claims."},
   {"name":"flow-34-vhs-rental","style":"video rental store","blurb":"Staff-pick tapes per strategy; member file holds the audience."},
+  {"name":"flow-68-ward-chart","style":"hospital ward chart","blurb":"Clipboard admission-to-treatment chart; audience read as diagnosis at 80% certainty, strategies prescribed as courses A-D."},
   {"name":"flow-28-darkroom","style":"photo darkroom bench","blurb":"Safelight red; strategies develop through chemical bath stages."},
+  {"name":"flow-67-passport","style":"campaign passport","blurb":"Navy travel document with MRZ strip; journey stamped strategy→campaign→final result, bearer profile reads the audience."},
   {"name":"flow-66-tailor-pattern","style":"tailor's pattern draft","blurb":"Strategies drafted as pattern pieces on grain with fit callouts; client measurements take the audience."},
   {"name":"flow-29-isometric","style":"isometric pipeline","blurb":"Iso blocks stage the pipeline across a printed grid plane."},
   {"name":"flow-09-museum","style":"museum exhibition catalogue","blurb":"Plates and wall labels; the audience read as exhibited specimen."},
@@ -45,8 +47,6 @@
   {"name":"flow-61-fight-card","style":"boxing fight-night card","blurb":"Tale of the tape weighs the audience; tonight's bouts pit each strategy against the feed."},
   {"name":"flow-63-auction-catalog","style":"auction house catalogue","blurb":"Lots offered at the Strategy→Campaign sale; registered bidder paddle files the audience."},
   {"name":"flow-30-field-journal","style":"handwritten field journal","blurb":"Kraft pages, tally marks and stamps; observed like a naturalist."},
-  {"name":"flow-20-botanical-plate","style":"botanical plate","blurb":"Species plates with dotted leaders; ruled-outs pressed flat."},
-  {"name":"flow-10-terminal","style":"zsh transcript","blurb":"Literal command transcript; mono, dense and on-metaphor."},
-  {"name":"flow-51-ticket-stubs","style":"railway ticket wallet","blurb":"Punched stubs per strategy; season ticket holds the audience."},
-  {"name":"flow-64-chess-scoresheet","style":"chess federation scoresheet","blurb":"Certified player card for the audience; the match book records four boards of strategy play."}
+  {"name":"flow-70-pit-board","style":"casino pit board","blurb":"Graveyard-shift felt board; the audience rated like a known player at 80% theo, strategies dealt as tables in play."},
+  {"name":"flow-51-ticket-stubs","style":"railway ticket wallet","blurb":"Punched stubs per strategy; season ticket holds the audience."}
 ]
