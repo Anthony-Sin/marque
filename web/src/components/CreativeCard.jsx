@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from './Icon.jsx';
 import { api } from '../api.js';
 import { arCss, downloadAsset, fileExt, isRaster, MediaFallback } from './Composer.jsx';
+import CreativeOverlay from './CreativeOverlay.jsx';
+import { exportCreativePNG } from './creativeExport.js';
+import { chanLabel } from '../labels.js';
 import { useApp } from '../App.jsx';
 
 // Creative thumbnail in the campaign grid. Hover reveals a bottom action bar
@@ -14,6 +17,27 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
   const [g, setG] = useState(null); // optimistic grade override until the PATCH lands
   const [promote, setPromote] = useState(false);
   const [retrying, setRetrying] = useState(false);
+  const [pinned, setPinned] = useState(false);   // touch tap reveals the veil actions
+  const [delArm, setDelArm] = useState(false);   // two-tap confirm for delete
+  const [deling, setDeling] = useState(false);
+  const [zoom, setZoom] = useState(false);       // lightbox — image zoom / video playback
+  // coarse pointers tap to pin the veil; mouse click opens the lightbox
+  const COARSE = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
+
+  useEffect(() => {
+    if (!zoom) return;
+    const onKey = (e) => { if (e.key === 'Escape') setZoom(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [zoom]);
+
+  // promote panel closes on Escape like every other overlay
+  useEffect(() => {
+    if (!promote) return;
+    const onKey = (e) => { if (e.key === 'Escape') setPromote(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [promote]);
 
   const retryImage = async () => {
     if (retrying) return;
@@ -27,10 +51,15 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
 
   // ready-to-post kit — caption + hashtags composed from the creative + campaign context
   const chans = campaign?.brief?.channels || [];
+  // hashtags come from real topical material — product, brief words, taste
+  // entities — never channel names (#web isn't a thing anyone posts)
+  const tagWord = (s) => String(s || '').split(/\s+/).slice(0, 2).map((w) => (w[0] || '').toUpperCase() + w.slice(1)).join('').replace(/[^A-Za-z0-9]/g, '');
   const tags = [...new Set([
-    ...chans.map((c) => `#${String(c).replace(/\s+/g, '')}`),
-    ...(campaign?.qlooSignals || []).slice(0, 3).map((q) => `#${String(q.entity || q).replace(/[^A-Za-z0-9]/g, '')}`),
-  ])].filter((t) => t.length > 2).slice(0, 6);
+    ...(campaign?.product ? [tagWord(campaign.product)] : []),
+    ...(profile?.name ? [tagWord(profile.name)] : []),
+    ...(campaign?.brief?.title || '').split(/\s+/).filter((w) => w.length > 3).slice(0, 3).map(tagWord).map((w) => `#${w}`),
+    ...(campaign?.qlooSignals || []).slice(0, 3).map((q) => `#${tagWord(q.entity || q)}`),
+  ])].filter((t) => t.length > 3 && t.length < 26).slice(0, 6);
   const caption = [
     creative.headline || campaign?.brief?.title || '',
     creative.body || '',
@@ -46,8 +75,13 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
     if (dl) return;
     setDl(true);
     try {
-      const src = video ? creative.videoPath : creative.imagePath;
-      await downloadAsset(src, `marque-${creative.id}.${video ? 'mp4' : fileExt(creative.imagePath)}`);
+      if (!video && creative.cleanImage) {
+        // composite the overlay into the export — downloads what you see
+        await exportCreativePNG(creative, profile, campaign);
+      } else {
+        const src = video ? creative.videoPath : creative.imagePath;
+        await downloadAsset(src, `marque-${creative.id}.${video ? 'mp4' : fileExt(creative.imagePath)}`);
+      }
     } catch (e) { say(e.message); }
     setDl(false);
   };
@@ -67,9 +101,16 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
 
   return (
     <div className={`card creative-card${promote ? ' promoting' : ''}`} style={{ '--ar': arCss(aspect) }}>
-      <div className="cc-media">
+      <div className="cc-media" onClick={(e) => {
+        if (e.target.closest('.veil-btn') || e.target.closest('.promote-panel')) return;
+        if (COARSE) { setPinned((p) => !p); return; }
+        setZoom(true);   // desktop: click = zoom/inspect
+      }}>
         {raster ? (
-          <img src={creative.imagePath} alt={creative.headline || 'creative'} loading="lazy" />
+          <div className="co-host">
+            <img src={creative.imagePath} alt={creative.headline || 'creative'} loading="lazy" />
+            {creative.cleanImage && <CreativeOverlay creative={creative} profile={profile} />}
+          </div>
         ) : (
           <MediaFallback
             seed={campaign?.brief?.title || creative.headline}
@@ -78,18 +119,27 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
           />
         )}
         {video && (
-          <span className="badge-v"><Icon name="play" size={10} sw={2.4} /> animated</span>
+          <button type="button" className="badge-v" onClick={(e) => { e.stopPropagation(); setZoom(true); }}
+            title={creative.videoProvider ? `Watch — animated by ${providerLabel(creative.videoProvider)}${creative.videoNote ? ` · ${creative.videoNote}` : ''}` : 'Watch the animated version'}>
+            <Icon name="play" size={10} sw={2.4} /> watch{creative.videoProvider && creative.videoProvider !== 'veo' ? ` · ${providerLabel(creative.videoProvider)}` : ''}
+          </button>
+        )}
+        {!!creative.imageProvider && (
+          <span className={`badge-p p-${String(creative.imageProvider).split('-')[0]}`}
+            title={`Image rendered by ${providerLabel(creative.imageProvider)}`}>
+            {providerLabel(creative.imageProvider)}
+          </span>
         )}
         {(animating || retrying) && (
           <div className="spin-overlay"><div className="spinner" /></div>
         )}
-        <div className="veil">
+        <div className={`veil${pinned ? ' pin' : ''}`}>
           <div className="veil-bar">
-            <button type="button" className="veil-btn" onClick={() => onEdit?.(creative)}>
+            <button type="button" className="veil-btn" title="Edit copy + layout" onClick={() => onEdit?.(creative)}>
               <Icon name="edit" size={12} /> <span>Edit</span>
             </button>
             {!raster && (
-              <button type="button" className="veil-btn" title="Retry image generation" disabled={retrying} onClick={retryImage}>
+              <button type="button" className={`veil-btn${creative.imageError ? ' failed' : ''}`} title={creative.imageError ? `Last image failed — ${creative.imageError}. Retry` : 'Retry image generation'} disabled={retrying} onClick={retryImage}>
                 <Icon name="refresh" size={12} /> <span>Retry</span>
               </button>
             )}
@@ -98,13 +148,28 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
               <Icon name="send" size={12} /> <span>{promote ? 'Close' : 'Promote'}</span>
             </button>
             {aspect === '9:16' && (
-              <button type="button" className="veil-btn" disabled={animating}
+              <button type="button" className="veil-btn" title="Animate" disabled={animating}
                 onClick={() => onAnimate?.(creative)}>
                 <Icon name="film" size={12} /> <span>Animate</span>
               </button>
             )}
+            <button type="button" className="veil-btn" title={video ? 'Play video' : 'Zoom'} onClick={(e) => { e.stopPropagation(); setZoom(true); }}>
+              <Icon name={video ? 'play' : 'eye'} size={12} /> <span>{video ? 'Play' : 'Zoom'}</span>
+            </button>
             <button type="button" className="veil-btn" title="Download" disabled={dl} onClick={download}>
-              {dl ? <span className="spinner" /> : <Icon name="download" size={12} />} <span>Save</span>
+              {dl ? <span className="spinner" /> : <Icon name="download" size={12} />} <span>Download</span>
+            </button>
+            <button type="button" className={`veil-btn${delArm ? ' failed' : ''}`}
+              title={delArm ? 'Click again to delete this creative' : 'Delete creative'}
+              disabled={deling}
+              onClick={async () => {
+                if (!delArm) { setDelArm(true); setTimeout(() => setDelArm(false), 2600); return; }
+                setDeling(true);
+                try { await api.deleteCreative(creative.id); onChanged?.(); }
+                catch (e) { say(e.message); }
+                setDeling(false); setDelArm(false);
+              }}>
+              {deling ? <span className="spinner" /> : <Icon name="trash" size={12} />} <span>{delArm ? 'Sure?' : 'Delete'}</span>
             </button>
           </div>
         </div>
@@ -117,7 +182,7 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
             <p className="promote-caption">{caption}</p>
             {!!chans.length && (
               <div className="promote-chans">
-                {chans.map((c) => <span key={c} className="chan-chip">{c}</span>)}
+                {chans.map((c) => <span key={c} className="chan-chip">{chanLabel(c)}</span>)}
               </div>
             )}
             <button className="btn lime sm" onClick={copyCaption}><Icon name="copy" size={12} /> Copy caption</button>
@@ -126,6 +191,12 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
       </div>
       <div className="meta">
         <span className="ttl" title={creative.headline}>{creative.headline || 'Untitled creative'}</span>
+        {!!creative.imageError && (
+          <span className="cc-err" title={creative.imageError}>
+            image unavailable{retrying ? ' — retrying…' : ' — hit Retry'}
+          </span>
+        )}
+
         <span className="grade" role="radiogroup" aria-label="Grade this creative"
           title={grade ? `Grade ${grade}/5` : 'Not graded'}>
           {[1, 2, 3, 4, 5].map((n) => (
@@ -136,6 +207,29 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
           ))}
         </span>
       </div>
+      {zoom && (
+        <div className="lightbox" role="dialog" aria-modal="true" aria-label={video ? 'Animated creative' : 'Creative zoom'} onClick={() => setZoom(false)}>
+          <button type="button" className="lightbox-x" aria-label="Close" onClick={() => setZoom(false)}><Icon name="x" size={18} /></button>
+          {video ? (
+            <div className="lightbox-media" onClick={(e) => e.stopPropagation()}>
+              <video src={creative.videoPath} poster={raster ? creative.imagePath : undefined} controls autoPlay loop muted playsInline />
+              <div className="lightbox-cap">
+                animated · {providerLabel(creative.videoProvider || 'ffmpeg-render')}
+                {!!creative.videoNote && <span className="lightbox-note"> — {creative.videoNote}</span>}
+              </div>
+            </div>
+          ) : raster ? (
+            <img className="lightbox-media" src={creative.imagePath} alt={creative.headline || 'creative'} onClick={(e) => e.stopPropagation()} />
+          ) : (
+            <div className="lightbox-cap">No image stored for this creative{creative.imageError ? ` — ${creative.imageError}` : ''}</div>
+          )}
+        </div>
+      )}
     </div>
   );
+}
+
+// honest provider label — local model output is named, not hidden behind "AI"
+function providerLabel(p) {
+  return { 'local-sd-turbo': 'local · sd-turbo', local: 'local', gemini: 'gemini', pollinations: 'pollinations', 'ffmpeg-render': 'ffmpeg', veo: 'veo' }[p] || p;
 }

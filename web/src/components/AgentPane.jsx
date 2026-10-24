@@ -30,15 +30,46 @@ export default function AgentPane() {
     setMsgs(next);
     setInput('');
     setBusy(true);
+    // optimistic assistant bubble — tokens stream into it live
+    setMsgs((m) => [...m, { role: 'assistant', content: '', tools: [], streaming: true }]);
     try {
-      const res = await api.agent(next.map((m) => ({ role: m.role, content: m.content })));
+      const res = await api.agentStream(next.map((m) => ({ role: m.role, content: m.content })), (ev, data) => {
+        if (ev === 'token') {
+          setMsgs((m) => {
+            const c = [...m];
+            c[c.length - 1] = { ...c[c.length - 1], content: c[c.length - 1].content + (data?.delta || ''), thinking: false };
+            return c;
+          });
+        } else if (ev === 'thinking') {
+          setMsgs((m) => {
+            const c = [...m];
+            if (!c[c.length - 1].content) c[c.length - 1] = { ...c[c.length - 1], thinking: true };
+            return c;
+          });
+        } else if (ev === 'tool') {
+          const label = { qloo_search: 'Searching taste graph', qloo_insights: 'Reading affinities', update_profile: 'Patching profile' }[data?.label] || data?.label;
+          setMsgs((m) => {
+            const c = [...m];
+            c[c.length - 1] = { ...c[c.length - 1], tools: [...(c[c.length - 1].tools || []), `${label}${data?.detail ? ` — ${data.detail}` : ''}`] };
+            return c;
+          });
+        }
+      });
       const tools = [];
-      if (Array.isArray(res.tools)) tools.push(...res.tools);
-      if (res.patch) tools.push('profile updated');
-      setMsgs((m) => [...m, { role: 'assistant', content: res.reply || 'Done.', tools }]);
-      if (res.patch) await refresh();
+      if (res?.patch) tools.push('profile updated');
+      setMsgs((m) => {
+        const c = [...m];
+        const last = c[c.length - 1];
+        c[c.length - 1] = { ...last, content: res?.reply || last.content || 'Done.', tools: [...(last.tools || []), ...tools], streaming: false };
+        return c;
+      });
+      if (res?.patch) await refresh();
     } catch (e) {
-      setMsgs((m) => [...m, { role: 'assistant', content: `Something went wrong — ${e.message}. Try again?` }]);
+      setMsgs((m) => {
+        const c = [...m];
+        c[c.length - 1] = { ...c[c.length - 1], content: `Something went wrong — ${e.message}. Try again?`, streaming: false };
+        return c;
+      });
     } finally {
       setBusy(false);
     }
@@ -50,12 +81,14 @@ export default function AgentPane() {
         <Icon name="sparkle" size={16} />
         Marque Agent
         <span className="grow" />
-        <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'demo'} />
+        <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Qloo API" />
       </div>
       <div className="agent-body" ref={bodyRef}>
         {msgs.map((m, i) => (
-          <div key={i} className={`msg ${m.role === 'user' ? 'user' : 'bot'}`}>
-            {m.content}
+          <div key={i} className={`msg ${m.role === 'user' ? 'user' : 'bot'}${m.streaming ? ' streaming' : ''}`}>
+            {m.thinking && !m.content && <span className="think-note">reasoning…</span>}
+            {m.content || (m.streaming ? ' ' : '')}
+            {m.streaming && <span className="caret" />}
             {!!m.tools?.length && (
               <div className="tools">
                 {m.tools.map((t, j) => <span key={j} className="tool-chip">{t}</span>)}
@@ -63,7 +96,7 @@ export default function AgentPane() {
             )}
           </div>
         ))}
-        {busy && (
+        {busy && !msgs.at(-1)?.streaming && (
           <div className="msg bot pf-typing" aria-label="thinking">
             <span className="pf-dot" /><span className="pf-dot" /><span className="pf-dot" />
           </div>

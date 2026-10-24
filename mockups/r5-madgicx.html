@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque — Studio Cockpit</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08060f;
+    --bg2:#0d0919;
+    --panel:#14101f;
+    --panel2:#191329;
+    --line:rgba(158,132,255,.10);
+    --line2:rgba(158,132,255,.16);
+    --txt:#ece8f8;
+    --muted:#8f86ab;
+    --muted2:#6e6589;
+    --vio:#7b5cff;
+    --vio2:#9a7bff;
+    --vio-soft:rgba(123,92,255,.16);
+    --green:#2dd4a7;
+    --r:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    color:var(--txt);
+    background:
+      radial-gradient(1100px 500px at 70% -10%, rgba(123,92,255,.14), transparent 60%),
+      radial-gradient(800px 500px at 10% 0%, rgba(70,40,160,.18), transparent 55%),
+      var(--bg);
+    min-height:100%;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .app{display:flex;min-height:100vh}
+
+  /* ---------- icon rail ---------- */
+  .rail{
+    width:72px;flex:0 0 72px;
+    border-right:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(20,14,36,.85),rgba(12,9,22,.9));
+    display:flex;flex-direction:column;align-items:center;
+    padding:18px 0;gap:6px;
+    position:sticky;top:0;height:100vh;
+  }
+  .rail .logo{
+    width:38px;height:38px;border-radius:11px;
+    background:linear-gradient(135deg,#8f6bff,#5b3ce0);
+    display:grid;place-items:center;
+    box-shadow:0 6px 18px rgba(123,92,255,.45), inset 0 1px 0 rgba(255,255,255,.25);
+    margin-bottom:18px;
+  }
+  .rail .logo svg{width:20px;height:20px}
+  .rail button{
+    width:44px;height:44px;border-radius:13px;border:0;cursor:pointer;
+    background:transparent;color:var(--muted);
+    display:grid;place-items:center;
+    transition:all .18s ease;position:relative;
+  }
+  .rail button svg{width:20px;height:20px}
+  .rail button:hover{color:var(--txt);background:rgba(123,92,255,.10)}
+  .rail button.on{color:#fff;background:linear-gradient(135deg,rgba(139,107,255,.9),rgba(91,60,224,.9));box-shadow:0 4px 14px rgba(123,92,255,.4)}
+  .rail .sp{flex:1}
+  .rail .dot{position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%;background:var(--green);border:2px solid #120d20}
+
+  /* ---------- main ---------- */
+  main{flex:1;min-width:0;padding:26px 34px 60px}
+  .wrap{max-width:1180px;margin:0 auto}
+
+  /* greeting header */
+  .greet{display:flex;align-items:center;gap:14px;margin-bottom:22px;animation:up .5s ease both}
+  .ava{
+    width:52px;height:52px;border-radius:14px;flex:0 0 52px;
+    background:linear-gradient(135deg,#2a2145,#181130);
+    border:1px solid var(--line2);
+    display:grid;place-items:center;
+    font-weight:800;font-size:19px;
+    background-image:linear-gradient(135deg,#8f6bff,#4a2fd0);
+    box-shadow:0 8px 20px rgba(123,92,255,.35);
+  }
+  .greet h1{font-size:23px;font-weight:700;letter-spacing:-.02em}
+  .greet h1 .n{color:var(--vio2)}
+  .greet .sub{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .greet .right{margin-left:auto;display:flex;gap:10px}
+  .iconbtn{
+    width:40px;height:40px;border-radius:11px;
+    background:var(--panel);border:1px solid var(--line2);
+    color:var(--muted);display:grid;place-items:center;cursor:pointer;
+    transition:all .18s;
+  }
+  .iconbtn:hover{color:var(--txt);border-color:rgba(158,132,255,.35);transform:translateY(-1px)}
+  .iconbtn svg{width:17px;height:17px}
+  .askbtn{
+    height:40px;padding:0 16px;border-radius:11px;cursor:pointer;
+    background:rgba(123,92,255,.10);border:1px solid rgba(139,107,255,.4);
+    color:#c9b8ff;font:600 13px 'Inter',sans-serif;
+    display:flex;align-items:center;gap:8px;
+    transition:all .18s;
+  }
+  .askbtn:hover{background:rgba(123,92,255,.2);border-color:rgba(139,107,255,.7);transform:translateY(-1px);box-shadow:0 4px 16px rgba(123,92,255,.25)}
+  .askbtn svg{width:15px;height:15px}
+
+  /* ---------- two zones ---------- */
+  .zones{display:grid;grid-template-columns:1.08fr 1fr;gap:18px;margin-bottom:26px}
+  .card{
+    background:linear-gradient(180deg,var(--panel2),var(--panel));
+    border:1px solid var(--line);
+    border-radius:var(--r);
+    padding:20px 22px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03);
+    animation:up .55s ease both;
+  }
+  .zones .card:nth-child(2){animation-delay:.08s}
+  .card h2{font-size:16.5px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:baseline;gap:8px}
+  .card h2 .chip{font-size:11px;font-weight:600;color:var(--muted);background:rgba(255,255,255,.05);border:1px solid var(--line);padding:2px 8px;border-radius:20px}
+  .card .cardhead{display:flex;align-items:center;margin-bottom:14px}
+  .card .cardhead .mini{margin-left:auto}
+
+  /* glance rows */
+  .plist{max-height:272px;overflow-y:auto;margin:0 -6px 0 -6px;padding:0 6px;scrollbar-width:thin;scrollbar-color:rgba(139,107,255,.35) transparent}
+  .plist::-webkit-scrollbar{width:5px}
+  .plist::-webkit-scrollbar-thumb{background:rgba(139,107,255,.3);border-radius:4px}
+  .prow{
+    display:flex;align-items:center;gap:11px;
+    padding:8px 8px;border-radius:11px;
+    transition:background .15s;
+  }
+  .prow:hover{background:rgba(123,92,255,.08)}
+  .prow .mono{
+    width:34px;height:34px;border-radius:10px;flex:0 0 34px;
+    display:grid;place-items:center;
+    font-size:13px;font-weight:800;
+    border:1px solid var(--line2);
+  }
+  .prow .pt{min-width:0}
+  .prow .pt .t{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .prow .pt .s{font-size:11px;color:var(--muted);margin-top:2px}
+  .prow .reach{margin-left:auto;font-size:12px;font-weight:700;color:#b8aee0;white-space:nowrap}
+  .prow .st{width:7px;height:7px;border-radius:50%;flex:0 0 7px;background:#3a3152}
+  .prow.live .st{background:var(--green);box-shadow:0 0 8px rgba(45,212,167,.7)}
+
+  .coverage{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px}
+  .coverage .cico{width:34px;height:34px;border-radius:50%;border:1px dashed rgba(139,107,255,.6);display:grid;place-items:center;color:var(--vio2)}
+  .coverage .cico svg{width:16px;height:16px}
+  .coverage .ct{flex:1}
+  .coverage .cl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:7px}
+  .coverage .cl b{color:var(--txt);font-weight:700}
+  .bar{height:7px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden}
+  .bar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,#6a48f0,#a183ff);transition:width 1.1s cubic-bezier(.22,.8,.24,1)}
+
+  /* instruments */
+  .inst{padding:13px 0;border-bottom:1px solid var(--line)}
+  .inst:last-of-type{border-bottom:0;padding-bottom:4px}
+  .inst .top{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+  .inst .top svg{width:15px;height:15px}
+  .inst .name{font-size:13px;font-weight:600;color:#cfc8e6}
+  .inst .vals{margin-left:auto;font-size:13px;color:var(--muted)}
+  .inst .vals b{color:var(--txt);font-size:14px;font-weight:700}
+  .inst .pct{font-size:10.5px;font-weight:700;color:var(--vio2);background:var(--vio-soft);padding:2px 7px;border-radius:20px;margin-left:8px}
+  .inst .pct.g{color:var(--green);background:rgba(45,212,167,.14)}
+  .bar i.g{background:linear-gradient(90deg,#159a76,#3ce8b8)}
+  .bar i.l{background:linear-gradient(90deg,#8f6bff,#c4b0ff)}
+
+  /* ---------- tab bar ---------- */
+  .tabs{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line);margin-bottom:16px;animation:up .6s .14s ease both}
+  .tab{
+    padding:10px 16px;font-size:13px;font-weight:600;color:var(--muted);
+    display:flex;align-items:center;gap:8px;cursor:pointer;border:0;background:none;
+    border-bottom:2px solid transparent;margin-bottom:-1px;
+  }
+  .tab.on{color:var(--vio2);border-bottom-color:var(--vio)}
+  .tab .cnt{font-size:10.5px;background:var(--vio-soft);color:var(--vio2);border-radius:20px;padding:1px 7px;font-weight:700}
+  .tabs .sort{margin-left:auto;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;padding:8px 4px;cursor:pointer}
+  .tabs .sort:hover{color:var(--txt)}
+  .tabs .sort svg{width:13px;height:13px}
+
+  /* ---------- feed ---------- */
+  .feed{display:flex;flex-direction:column;gap:12px}
+  .frow{
+    display:flex;align-items:center;gap:16px;
+    background:linear-gradient(180deg,rgba(28,21,46,.75),rgba(20,15,34,.85));
+    border:1px solid var(--line);
+    border-radius:15px;padding:15px 18px;
+    transition:border-color .18s, transform .18s, box-shadow .18s;
+    animation:up .5s ease both;
+  }
+  .frow:hover{border-color:rgba(158,132,255,.3);transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+  .frow.hot{
+    border-color:rgba(139,107,255,.45);
+    background:linear-gradient(180deg,rgba(64,45,120,.32),rgba(30,21,52,.6));
+    box-shadow:0 0 0 1px rgba(139,107,255,.15), 0 10px 30px rgba(80,55,180,.22);
+  }
+  .tile{
+    width:52px;height:52px;border-radius:12px;flex:0 0 52px;
+    display:grid;place-items:center;
+    font-size:17px;font-weight:800;color:#fff;
+    border:1px solid var(--line2);
+    text-shadow:0 1px 4px rgba(0,0,0,.4);
+  }
+  .fmain{min-width:0;flex:1}
+  .fmain .ft{font-size:15px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
+  .badge{font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#0d0a18;background:linear-gradient(90deg,#8f6bff,#b79dff);padding:3px 8px;border-radius:6px}
+  .fmeta{display:flex;align-items:center;gap:7px;margin-top:8px;flex-wrap:wrap}
+  .chan{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11px;font-weight:600;color:#bdb4d8;
+    background:rgba(255,255,255,.045);border:1px solid var(--line);
+    padding:4px 10px 4px 8px;border-radius:20px;
+  }
+  .chan svg{width:12px;height:12px}
+  .fmeta .sep{width:3px;height:3px;border-radius:50%;background:#443a5e}
+  .fmeta .mi{font-size:11.5px;color:var(--muted);white-space:nowrap}
+  .freach{text-align:right;margin-left:8px;white-space:nowrap}
+  .freach .v{font-size:16px;font-weight:800;letter-spacing:-.01em}
+  .freach .l{font-size:10.5px;color:var(--muted2);margin-top:2px;text-transform:uppercase;letter-spacing:.08em}
+  .del{
+    width:38px;height:38px;border-radius:11px;border:1px solid var(--line);
+    background:transparent;color:var(--muted2);cursor:pointer;
+    display:grid;place-items:center;transition:all .16s;
+  }
+  .del:hover{color:#ff7b92;border-color:rgba(255,123,146,.4);background:rgba(255,123,146,.08)}
+  .del svg{width:16px;height:16px}
+  .open{
+    height:40px;padding:0 22px;border-radius:11px;border:0;cursor:pointer;
+    font:700 13px 'Inter',sans-serif;color:#fff;
+    background:linear-gradient(135deg,#8a63ff,#6a41e8);
+    box-shadow:0 4px 16px rgba(123,92,255,.4), inset 0 1px 0 rgba(255,255,255,.2);
+    transition:all .16s;
+  }
+  .open:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(123,92,255,.55);filter:brightness(1.1)}
+  .open:active{transform:translateY(0)}
+
+  /* ---------- recent ---------- */
+  .recent{margin-top:34px;animation:up .6s .3s ease both}
+  .recent h3{font-size:14px;font-weight:700;color:#cfc8e6;margin-bottom:14px;display:flex;align-items:center;gap:9px}
+  .recent h3 span{font-size:11px;color:var(--muted);font-weight:500}
+  .strip{display:flex;gap:14px;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin;scrollbar-color:rgba(139,107,255,.35) transparent}
+  .strip::-webkit-scrollbar{height:5px}
+  .strip::-webkit-scrollbar-thumb{background:rgba(139,107,255,.3);border-radius:4px}
+  .rcard{
+    flex:0 0 172px;border-radius:14px;overflow:hidden;
+    background:var(--panel);border:1px solid var(--line);
+    transition:all .18s;cursor:pointer;
+  }
+  .rcard:hover{transform:translateY(-3px);border-color:rgba(158,132,255,.35);box-shadow:0 12px 28px rgba(0,0,0,.45)}
+  .rcard .im{height:96px;overflow:hidden;background:#1c1531}
+  .rcard img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+  .rcard:hover img{transform:scale(1.06)}
+  .rcard .cap{padding:9px 11px}
+  .rcard .cap .t{font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rcard .cap .s{font-size:10.5px;color:var(--muted2);margin-top:2px}
+
+  @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @media (max-width:900px){.zones{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- icon rail -->
+  <aside class="rail">
+    <div class="logo" title="Marque">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 18V6l5 7 3-4 4 5 4-6v10" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <button class="on" title="Overview"><svg viewBox="0 0 24 24" fill="none"><path d="M4 13h6V4H4zM14 20h6v-9h-6zM4 20h6v-4H4zM14 8h6V4h-6z" fill="currentColor"/></svg></button>
+    <button title="Plans"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 3 8l9 5 9-5-9-5zM3 13l9 5 9-5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+    <button title="Media"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="10" r="1.6" fill="currentColor"/><path d="m6 17 4.5-4.5 3 3L17 12l4 4.5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></button>
+    <button title="Analytics"><svg viewBox="0 0 24 24" fill="none"><path d="M5 20V11M11 20V5M17 20v-6M3 20h18" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+    <button title="Automations"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 5 13.5h5L10 22l8-11.5h-5L13 2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="dot"></span></button>
+    <div class="sp"></div>
+    <button title="Settings"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+  </aside>
+
+  <main>
+    <div class="wrap">
+
+      <!-- greeting -->
+      <header class="greet">
+        <div class="ava">M</div>
+        <div>
+          <h1>Good evening, <span class="n" id="attn">0</span> plans need attention</h1>
+          <div class="sub" id="updated">Updated just now</div>
+        </div>
+        <div class="right">
+          <div class="iconbtn" title="Configure"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+          <button class="askbtn"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l1.7 4.6L18.5 9l-4.8 1.4L12 15l-1.7-4.6L5.5 9l4.8-1.4L12 3zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z" fill="currentColor"/></svg>Ask Marque to draft a plan</button>
+        </div>
+      </header>
+
+      <!-- zones -->
+      <section class="zones">
+        <div class="card">
+          <div class="cardhead">
+            <h2>Your studio at a glance</h2>
+            <span class="mini chip" id="plancount"></span>
+          </div>
+          <div class="plist" id="plist"></div>
+          <div class="coverage">
+            <div class="cico"><svg viewBox="0 0 24 24" fill="none"><path d="M13 2 5 13.5h5L10 22l8-11.5h-5L13 2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+            <div class="ct">
+              <div class="cl"><span>Plan coverage</span><b id="covlab"></b></div>
+              <div class="bar"><i id="covbar"></i></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardhead">
+            <h2>Studio totals <span class="chip" id="totchip"></span></h2>
+          </div>
+          <div id="insts"></div>
+        </div>
+      </section>
+
+      <!-- tab bar -->
+      <nav class="tabs">
+        <button class="tab on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3 3 8l9 5 9-5-9-5zM3 13l9 5 9-5" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>All plans <span class="cnt" id="tabcount">0</span></button>
+        <button class="tab">Needs attention <span class="cnt" id="tabcount2">0</span></button>
+        <div class="sort">Newest first <svg viewBox="0 0 24 24" fill="none"><path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      </nav>
+
+      <!-- feed -->
+      <section class="feed" id="feed"></section>
+
+      <!-- recent work -->
+      <section class="recent">
+        <h3>Recent work <span>generated in this studio</span></h3>
+        <div class="strip" id="strip"></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script src="dash-data.js"></script>
+<script src="media-data.js"></script>
+<script>
+(function(){
+  var D = window.DASH || {plans:[],recent:[]};
+  var M = window.MEDIA || {pool:[]};
+  var plans = D.plans || [];
+  var pool = M.pool || [];
+
+  /* ---- computed ---- */
+  var totalPlans = plans.length;
+  var totalStrat = plans.reduce(function(a,p){return a+(p.strategyCount||0)},0);
+  var totalReach = plans.reduce(function(a,p){return a+(p.estViews||0)},0);
+  var creatives = pool.length;
+  var activePlans = plans.filter(function(p){return p.active});
+  var attention = totalPlans - activePlans.length;
+
+  /* ---- helpers ---- */
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+  function fmtReach(v){ if(v>=1e6){var n=v/1e6; return (Math.round(n*10)/10)+'M'} if(v>=1e3) return Math.round(v/1e3)+'K'; return String(v) }
+  function fmtDate(iso){ var d=new Date(iso); return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) }
+  function monoColor(i){ var g=[['#8f6bff','#4a2fd0'],['#e0639c','#7a2c78'],['#3fb6a8','#1e5f6e'],['#e0a44f','#8a4a1e'],['#5b8ef0','#2c3f8a'],['#c46be0','#5f2c8a'],['#6bd08a','#22603a']]; var c=g[i%g.length]; return 'linear-gradient(135deg,'+c[0]+','+c[1]+')' }
+
+  var CHAN = {
+    tiktok:{label:'TikTok', svg:'<svg viewBox="0 0 24 24" fill="none"><path d="M9 17.5a3.5 3.5 0 1 0 3.5-3.5V4.2c.6 2.3 2.3 4 4.7 4.3v3c-1.8 0-3.4-.6-4.7-1.6v7.6A6.5 6.5 0 1 1 6 11" fill="#5ee7e0" transform="scale(.92) translate(1,1)"/></svg>'},
+    instagram:{label:'Instagram', svg:'<svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="#e879c6" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#e879c6" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.3" fill="#e879c6"/></svg>'},
+    guerrilla:{label:'Guerrilla', svg:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-6.5-5.4-6.5-10.3A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.7C18.5 15.6 12 21 12 21z" stroke="#a3e635" stroke-width="2"/><circle cx="12" cy="10.6" r="2.2" fill="#a3e635"/></svg>'},
+    streaming:{label:'Streaming', svg:'<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5.5" width="18" height="13" rx="3.5" stroke="#b98bff" stroke-width="2"/><path d="M10.2 9.4v5.2l4.6-2.6-4.6-2.6z" fill="#b98bff"/></svg>'}
+  };
+  function chanChip(c){ var k=CHAN[c]||{label:c,svg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="#8f86ab"/></svg>'}; return '<span class="chan">'+k.svg+esc(k.label)+'</span>' }
+
+  /* ---- header ---- */
+  document.getElementById('attn').textContent = attention;
+  var newest = plans.reduce(function(m,p){ var t=new Date(p.createdAt).getTime(); return t>m?t:m },0);
+  if(newest){
+    var mins = Math.floor((Date.now()-newest)/60000);
+    var txt = mins<1 ? 'Updated just now' : mins<60 ? 'Updated '+mins+'m ago' : mins<1440 ? 'Updated '+Math.floor(mins/60)+'h ago' : 'Updated '+Math.floor(mins/1440)+'d ago';
+    document.getElementById('updated').textContent = txt;
+  }
+
+  /* ---- left card: plan list ---- */
+  var pl = document.getElementById('plist');
+  document.getElementById('plancount').textContent = totalPlans+' plans';
+  pl.innerHTML = plans.map(function(p,i){
+    var initial = esc((p.title||'?').trim().charAt(0).toUpperCase());
+    return '<div class="prow'+(p.active?' live':'')+'" title="'+esc(p.title)+'">'
+      +'<span class="st"></span>'
+      +'<span class="mono" style="background:'+monoColor(i)+'">'+initial+'</span>'
+      +'<span class="pt"><span class="t">'+esc(p.title)+'</span><br><span class="s">'+(p.strategyCount||0)+' strategies · '+((p.channels||[]).length)+' channels</span></span>'
+      +'<span class="reach">'+fmtReach(p.estViews||0)+'</span>'
+      +'</div>';
+  }).join('');
+
+  document.getElementById('covlab').textContent = 'active '+activePlans.length+' of '+totalPlans;
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){
+    document.getElementById('covbar').style.width = (totalPlans? (activePlans.length/totalPlans*100):0)+'%';
+  })});
+
+  /* ---- right card: instruments ---- */
+  var INST = [
+    {name:'Total plans', icon:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 3 3 8l9 5 9-5-9-5zM3 13l9 5 9-5" stroke="#9a7bff" stroke-width="2" stroke-linejoin="round"/></svg>', val:totalPlans, cap:10, cls:''},
+    {name:'Strategies', icon:'<svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h10M4 18h13" stroke="#b7a2ff" stroke-width="2.2" stroke-linecap="round"/></svg>', val:totalStrat, cap:40, cls:'l'},
+    {name:'Combined reach', icon:'<svg viewBox="0 0 24 24" fill="none"><path d="M3 18c3-1 4.5-8 7.5-8s3.5 4 6 4 3.5-6 4.5-9" stroke="#3ce8b8" stroke-width="2.2" stroke-linecap="round"/></svg>', val:totalReach, cap:2000000, cls:'g', fmt:fmtReach},
+    {name:'Creatives', icon:'<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2.5" stroke="#9a7bff" stroke-width="1.8"/><circle cx="8.5" cy="10" r="1.6" fill="#9a7bff"/><path d="m6 17 4.5-4.5 3 3L17 12l4 4.5" stroke="#9a7bff" stroke-width="1.8" stroke-linejoin="round"/></svg>', val:creatives, cap:20, cls:''}
+  ];
+  var iw = document.getElementById('insts');
+  iw.innerHTML = INST.map(function(it,i){
+    var f = it.fmt || function(v){return v};
+    var pct = Math.round(it.val/it.cap*100);
+    return '<div class="inst">'
+      +'<div class="top">'+it.icon+'<span class="name">'+it.name+'</span>'
+      +'<span class="vals"><b class="cv" data-v="'+it.val+'" data-f="'+i+'">0</b> / '+f(it.cap)+'<span class="pct '+it.cls+'">'+pct+'%</span></span></div>'
+      +'<div class="bar"><i class="'+it.cls+'" data-w="'+Math.min(100,pct)+'"></i></div>'
+      +'</div>';
+  }).join('');
+  document.getElementById('totchip').textContent = 'live totals';
+
+  /* animate bars + count up */
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){
+    var bars = iw.querySelectorAll('.bar i');
+    for(var i=0;i<bars.length;i++) bars[i].style.width = bars[i].getAttribute('data-w')+'%';
+  })});
+  var cvs = iw.querySelectorAll('.cv');
+  for(var k=0;k<cvs.length;k++)(function(el){
+    var target = +el.getAttribute('data-v');
+    var fmt = INST[+el.getAttribute('data-f')].fmt || function(v){return v};
+    var t0 = performance.now(), dur = 950;
+    function tick(t){ var p = Math.min(1,(t-t0)/dur); p = 1-Math.pow(1-p,3);
+      el.textContent = fmt(Math.round(target*p));
+      if(p<1) requestAnimationFrame(tick); }
+    requestAnimationFrame(tick);
+  })(cvs[k]);
+
+  /* ---- feed ---- */
+  document.getElementById('tabcount').textContent = totalPlans;
+  document.getElementById('tabcount2').textContent = attention;
+  var sorted = plans.slice().sort(function(a,b){ return (b.active?1:0)-(a.active?1:0) });
+  var feed = document.getElementById('feed');
+  feed.innerHTML = sorted.map(function(p,i){
+    var initial = esc((p.title||'?').trim().charAt(0).toUpperCase());
+    var chips = (p.channels||[]).map(chanChip).join('');
+    return '<div class="frow'+(p.active?' hot':'')+'" style="animation-delay:'+(0.18+i*0.06)+'s">'
+      +'<div class="tile" style="background:'+monoColor(i+2)+'">'+initial+'</div>'
+      +'<div class="fmain">'
+      +'  <div class="ft">'+esc(p.title)+(p.active?'<span class="badge">Active</span>':'')+'</div>'
+      +'  <div class="fmeta">'+chips+'<span class="sep"></span><span class="mi">'+(p.strategyCount||0)+' strategies</span><span class="sep"></span><span class="mi">'+fmtDate(p.createdAt)+'</span></div>'
+      +'</div>'
+      +'<div class="freach"><div class="v">'+fmtReach(p.estViews||0)+'</div><div class="l">est. reach</div></div>'
+      +'<button class="del" title="Delete plan"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V5.2A1.2 1.2 0 0 1 10.2 4h3.6A1.2 1.2 0 0 1 15 5.2V7M6.5 7l.9 12a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4l.9-12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>'
+      +'<button class="open">Open</button>'
+      +'</div>';
+  }).join('');
+
+  /* delete / open interactions */
+  feed.addEventListener('click',function(e){
+    var d = e.target.closest('.del');
+    if(d){ var r = d.closest('.frow'); r.style.transition='opacity .3s, transform .3s'; r.style.opacity='0'; r.style.transform='translateX(24px)'; setTimeout(function(){r.remove()},300); return; }
+    var o = e.target.closest('.open');
+    if(o){ o.textContent='Opening…'; setTimeout(function(){o.textContent='Open'},900); }
+  });
+
+  /* ---- recent strip ---- */
+  var strip = document.getElementById('strip');
+  var cards = (D.recent||[]).map(function(r){
+    return '<div class="rcard"><div class="im"><img src="'+esc(r.thumb)+'" alt="" onerror="this.closest(\'.rcard\').remove()"></div>'
+      +'<div class="cap"><div class="t">'+esc(r.title)+'</div><div class="s">'+(r.n||0)+' creatives</div></div></div>';
+  });
+  pool.slice(0,7).forEach(function(m){
+    cards.push('<div class="rcard"><div class="im"><img src="'+esc(m.img)+'" alt="" onerror="this.closest(\'.rcard\').remove()"></div>'
+      +'<div class="cap"><div class="t">'+esc(m.head||'creative')+'</div><div class="s">'+esc(m.provider||'')+'</div></div></div>');
+  });
+  strip.innerHTML = cards.join('');
+})();
+</script>
+</body>
+</html>

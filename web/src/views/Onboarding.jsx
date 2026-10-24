@@ -41,6 +41,11 @@ export default function Onboarding() {
   const [altOpen, setAltOpen] = useState(false);
   const [scratchOpen, setScratchOpen] = useState(false);
   const [tplBusy, setTplBusy] = useState(null);
+  const [hasProfile, setHasProfile] = useState(false);
+
+  useEffect(() => {
+    api.getProfile().then((d) => setHasProfile(!!d?.profile)).catch(() => {});
+  }, []);
 
   const finish = async () => {
     await refresh();
@@ -112,6 +117,12 @@ export default function Onboarding() {
           <input type="checkbox" checked={listing} onChange={(e) => setListing(e.target.checked)} />
           <span>Include public business-listing details when available</span>
         </label>
+        {hasProfile && (
+          <p className="muted small" style={{ margin: '10px 0 0' }}>
+            You already have a Business Profile — generating a new one will replace it.{' '}
+            <button type="button" className="btn ghost sm" onClick={() => nav('/')}>Go to Dashboard →</button>
+          </p>
+        )}
         {phase === 'error' && (
           <div className="ob-error">
             <Icon name="x" size={14} />
@@ -182,7 +193,7 @@ function Building({ stage, status, url }) {
                     : <Icon name={s.icon} size={13} />}
               </span>
               <span>{s.label}</span>
-              {s.qloo && i === stage && <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'demo'} />}
+              {s.qloo && i === stage && <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Qloo API" />}
             </div>
           ))}
         </div>

@@ -30,6 +30,36 @@ export const api = {
   templateProfile: (templateId) => req('POST', '/api/profile/template', { templateId }),
   updateProfile: (patch) => req('PUT', '/api/profile', { patch }),
   agent: (messages) => req('POST', '/api/agent', { messages }),
+  // SSE agent chat — onEvent('token',{delta}) per streamed reply token,
+  // 'tool' {label,detail} per tool call, 'done' {reply,patch,evidence}.
+  agentStream: async (messages, onEvent) => {
+    const r = await fetch('/api/agent/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages }),
+    });
+    if (!r.ok || !r.body) throw new Error(`agent stream → ${r.status}`);
+    const reader = r.body.getReader();
+    const dec = new TextDecoder();
+    let buf = ''; let final = null;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let cut;
+      while ((cut = buf.indexOf('\n\n')) >= 0) {
+        const frame = buf.slice(0, cut); buf = buf.slice(cut + 2);
+        const ev = (frame.match(/^event: (.+)$/m) || [])[1];
+        const raw = (frame.match(/^data: (.+)$/m) || [])[1];
+        if (!ev || !raw) continue;
+        let data = null; try { data = JSON.parse(raw); } catch {}
+        if (ev === 'done') final = data;
+        else if (ev === 'error') throw new Error(data?.error || 'agent failed');
+        else onEvent?.(ev, data);
+      }
+    }
+    return final;
+  },
   // qloo
   qlooSearch: (query) => req('POST', '/api/qloo/search', { query }),
   qlooInsights: (type, params) => req('POST', '/api/qloo/insights', { type, ...params }),
@@ -43,11 +73,44 @@ export const api = {
   syncCatalogImage: (id) => req('POST', `/api/catalog/${id}/sync-image`),
   // strategy board
   strategy: (prompt, productId, url) => req('POST', '/api/strategy', { prompt, productId, url }),
+  // SSE strategy generation — onEvent(name, data) fires per pipeline stage:
+  // 'stage' (scraping), 'audience' (taste-graph read), 'strategies', 'anti',
+  // 'done' ({board}), 'error'. Returns the final board.
+  strategyStream: async (prompt, productId, url, onEvent) => {
+    const r = await fetch('/api/strategy/stream', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, productId, url }),
+    });
+    if (!r.ok || !r.body) throw new Error(`stream → ${r.status}`);
+    const reader = r.body.getReader();
+    const dec = new TextDecoder();
+    let buf = ''; let finalBoard = null;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let cut;
+      while ((cut = buf.indexOf('\n\n')) >= 0) {
+        const frame = buf.slice(0, cut); buf = buf.slice(cut + 2);
+        const ev = (frame.match(/^event: (.+)$/m) || [])[1];
+        const raw = (frame.match(/^data: (.+)$/m) || [])[1];
+        if (!ev || !raw) continue;
+        let data = null; try { data = JSON.parse(raw); } catch {}
+        if (ev === 'done') finalBoard = data?.board;
+        else if (ev === 'error') throw new Error(data?.error || 'strategy failed');
+        else onEvent?.(ev, data);
+      }
+    }
+    onEvent?.('done', { board: finalBoard });
+    return finalBoard;
+  },
   getStrategy: () => req('GET', '/api/strategy'),
-  strategyExamples: (strategy, audienceRead) => req('POST', '/api/strategy/examples', { strategy, audienceRead }),
+  strategyExamples: (strategy, audienceRead, hint, boardId) => req('POST', '/api/strategy/examples', { strategy, audienceRead, hint, boardId }),
   // multi-plan boards
   boards: () => req('GET', '/api/boards'),
   board: (id) => req('GET', `/api/boards/${id}`),
+  boardStrategy: (id, idx) => req('GET', `/api/boards/${id}/strategies/${idx}`),
   activateBoard: (id) => req('POST', `/api/boards/${id}/activate`),
   renameBoard: (id, title) => req('PATCH', `/api/boards/${id}`, { title }),
   deleteBoard: (id) => req('DELETE', `/api/boards/${id}`),
@@ -57,10 +120,12 @@ export const api = {
   campaignBrief: (payload) => req('POST', '/api/campaigns/brief', payload),
   createCampaign: (payload) => req('POST', '/api/campaigns', payload),
   getCampaign: (id) => req('GET', `/api/campaigns/${id}`),
+  deleteCampaign: (id) => req('DELETE', `/api/campaigns/${id}`),
   editCreative: (id, patch) => req('POST', `/api/creatives/${id}/edit`, patch),
-  regenCreativeImage: (id, prompt) => req('POST', `/api/creatives/${id}/regenerate-image`, { prompt }),
+  regenCreativeImage: (id, prompt, provider) => req('POST', `/api/creatives/${id}/regenerate-image`, { prompt, provider }),
   fixCreativeLayout: (id) => req('POST', `/api/creatives/${id}/fix-layout`),
   animateCreative: (id) => req('POST', `/api/creatives/${id}/animate`),
+  deleteCreative: (id) => req('DELETE', `/api/creatives/${id}`),
   // photoshoot
   listPhotoshoot: () => req('GET', '/api/photoshoot'),
   createPhotoshoot: (payload) => req('POST', '/api/photoshoot', payload),

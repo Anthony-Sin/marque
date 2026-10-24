@@ -1,7 +1,9 @@
 // campaign briefs + creative generation (copy via TensorMux, image via Gemini, SVG fallback)
 import { chatJSON } from './tensor.js';
 import { genImageResilient } from './media.js';
-import { find, uid, saveAssetBuf, registerImage } from './store.js';
+import { find, list, update, uid, saveAssetBuf, registerImage } from './store.js';
+import { fetchSite } from './scraper.js';
+import { tuning } from '../tuning.js';
 
 const BRIEF_SYS = `You are a senior marketing strategist. Given a brand profile and a campaign prompt, return JSON:
 {"title":"campaign name","angle":"one line positioning angle","audience":"who this targets","keyMessage":"the single message","channels":[2-4 of "instagram","tiktok","facebook","email","print","web"],"suggestions":[{...2 more alternative briefs as {"title","angle","keyMessage"}}]}.
@@ -15,8 +17,21 @@ function flattenAffinities(profile) {
   return out;
 }
 
+function flattenBundle(bundle) {
+  const out = [];
+  for (const aff of bundle?.affinities || []) {
+    for (const e of aff.entities || []) out.push({ entity: e.name, type: aff.type, affinity: e.affinity ?? 0 });
+  }
+  return out;
+}
+
 function pickQlooSignals(profile, prompt = '', n = 5) {
-  const all = flattenAffinities(profile);
+  let all = flattenAffinities(profile);
+  // profile bundle empty → fall back to the most recent strategy board's bundle
+  if (!all.length) {
+    const boards = list('boards') || [];
+    for (let i = boards.length - 1; i >= 0 && !all.length; i--) all = flattenBundle(boards[i]?.qlooBundle);
+  }
   if (!all.length) return [];
   const words = new Set(prompt.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 3));
   const scored = all.map((s) => {
@@ -30,6 +45,20 @@ function pickQlooSignals(profile, prompt = '', n = 5) {
 export async function generateBrief({ prompt, productId, ingredients }, profile) {
   const product = productId ? find('catalog', productId) : null;
   const affinities = flattenAffinities(profile).slice(0, 12);
+  // pasted-link flow (Creatify/Zeely pattern): scrape the URL so copy + art
+  // direction have the real product as subject, not invented brand soup
+  const link = /https?:\/\/[^\s)>"']+/i.exec(prompt || '')?.[0];
+  const PUBLIC_HOST = (() => {
+    try { return !/^(localhost|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|::1|\[::1\]|.*\.local$)/i.test(new URL(link || 'http://x').hostname); }
+    catch { return false; }
+  })();
+  let urlContext = null;
+  if (link && PUBLIC_HOST) {
+    try {
+      const s = await fetchSite(link);
+      urlContext = { url: link, title: s.title || '', description: (s.description || s.meta?.description || '').slice(0, 300) };
+    } catch { urlContext = { url: link }; }
+  }
   const brief = await chatJSON([
     { role: 'system', content: BRIEF_SYS },
     {
@@ -37,6 +66,7 @@ export async function generateBrief({ prompt, productId, ingredients }, profile)
       content: JSON.stringify({
         brand: { name: profile?.name, tagline: profile?.tagline, description: profile?.description, tone: profile?.tone, audience: profile?.audience },
         product: product ? { name: product.name, description: product.description } : null,
+        site: urlContext,
         ingredients: ingredients || null,
         tasteSignals: affinities,
         prompt,
@@ -48,8 +78,13 @@ export async function generateBrief({ prompt, productId, ingredients }, profile)
     angle: brief?.angle || '',
     audience: brief?.audience || profile?.audience || '',
     keyMessage: brief?.keyMessage || '',
-    channels: Array.isArray(brief?.channels) ? brief.channels.slice(0, 4) : ['instagram'],
+    // model sometimes invents enum-ish names ("instagram_reels") — normalize to
+    // the canonical channel token so chips/targeting stay consistent
+    channels: Array.isArray(brief?.channels)
+      ? brief.channels.slice(0, 4).map((c) => String(c).toLowerCase().replace(/_/g, ' ').trim().split(' ')[0]).filter(Boolean)
+      : ['instagram'],
   };
+  if (urlContext) out.urlContext = urlContext;
   const suggestions = Array.isArray(brief?.suggestions)
     ? brief.suggestions.slice(0, 3).map((s) => ({ title: s.title || '', angle: s.angle || '', keyMessage: s.keyMessage || '' }))
     : [];
@@ -59,23 +94,76 @@ export async function generateBrief({ prompt, productId, ingredients }, profile)
 const COPY_SYS = `You are a social-media copywriter writing ad creative for feeds (Instagram/TikTok/YouTube). Return JSON {"headline","body","cta","layout":{"vpos","hpos"}}.
 Rules: headline <= 7 words and MUST be a scroll-stopping hook written for the target audience — specific, punchy, native to social (never generic slogans like "records reality" or "the neutral standard"); body <= 15 words, conversational, drives the key message; cta <= 4 words and action-first ("See it in action", "Grab yours"). layout.vpos: "top"|"middle"|"bottom"; layout.hpos: "left"|"center"|"right" — where text should sit on the image.`;
 
-const ANGLES = ['product-led', 'lifestyle', 'offer', 'social-proof'];
+const ANGLES = tuning('creativeAngles');
+const CAPS = tuning('copyBudgets');
 
+// The image prompt needs a concrete SUBJECT — a real product/site — or art
+// direction collapses into abstract brand gradients. Resolve in order:
+// 1) catalog product   2) the scraped site saved on the strategy's board
+// 3) the "Original ask:" line the strategy handoff writes into notes
+export async function resolveProductContext(campaign) {
+  const viaCatalog = campaign.productId ? find('catalog', campaign.productId) : null;
+  if (viaCatalog) return viaCatalog;
+  // pasted-link brief carries its own scrape — the freshest subject signal.
+  // big sites bot-block plain fetch; then the domain itself is the subject
+  // ("drink-huel") so prompts still name something concrete.
+  const uc = campaign.brief?.urlContext;
+  if (uc?.url) {
+    const host = (() => { try { return new URL(uc.url).hostname.replace(/^www\./, '').split('.')[0]; } catch { return ''; } })();
+    const name = uc.title || host || uc.url;
+    return { name, description: (uc.description || '').slice(0, 300), site: uc.url };
+  }
+  const boards = list('boards') || [];
+  // boardId is the only collision-free key — deterministic boards reuse
+  // strategy ids (st1/st2) AND titles, so it's checked first
+  const board = boards.find((b) => b.id === campaign.boardId)
+    || boards.find((b) => (b.strategies || []).some((s) => s.title && s.title === campaign.strategyTitle))
+    || boards.find((b) => (b.strategies || []).some((s) => s.id === campaign.strategyId));
+  // board was made before urlContext persisted — lazily re-scrape + cache
+  if (board && !board.urlContext && board.sub?.url) {
+    try {
+      const s = await fetchSite(board.sub.url);
+      board.urlContext = { url: board.sub.url, title: s.title, description: s.description || s.meta?.description || '' };
+      update('boards', board.id, { urlContext: board.urlContext });
+    } catch { board.urlContext = { url: board.sub.url }; }
+  }
+  if (board?.urlContext?.title || board?.urlContext?.description) {
+    return { name: board.urlContext.title || board.urlContext.url, description: (board.urlContext.description || '').slice(0, 300), site: board.urlContext.url };
+  }
+  // no scrape stored — fall back to the ask text itself (notes "Original ask:"
+  // line, or the board's submitted prompt) so the subject is still concrete
+  const ask = /Original ask:\s*(.+)/i.exec(campaign.notes || '')?.[1]?.trim() || board?.sub?.prompt;
+  if (ask) {
+    const name = ask
+      .replace(/^help me (build|make|create|launch|position|analyze)\s+(a\s+)?(campaign|ad|strategy|strategies|plan)\s+(for|about|of|on)?\s*/i, '')
+      .replace(/\s*→.*$/, '')
+      .replace(/https?:\/\/\S+/g, '')
+      .trim().slice(0, 90) || ask.slice(0, 90);
+    return { name, description: ask.slice(0, 300) };
+  }
+  return null;
+}
+
+// Background image prompt — the photo layer ONLY. Copy is composited as a DOM
+// overlay (see CreativeOverlay.jsx), so the image must ship TEXT-FREE with
+// negative space reserved where the overlay will sit. This is how the winning
+// ad tools composite — never bake glyphs into pixels.
 function composeImagePrompt(campaign, profile, copy, product, angle) {
   const c = profile?.colors || {};
   const affNames = flattenAffinities(profile).slice(0, 3).map((a) => a.entity).join(', ');
+  const brandName = product?.name || profile?.name;
+  const vpos = copy?.layout?.vpos || 'bottom';
+  const space = vpos === 'top' ? 'upper third' : vpos === 'middle' ? 'center band' : 'lower third';
   return [
-    `A finished ${campaign.aspectRatio || '1:1'} social-media ad creative, native to ${(campaign.brief?.channels || [])[0] || 'instagram'} feed, for the brand "${profile?.name}" (${angle} angle). It must look like real platform content — strong focal subject, brand-true styling, not a generic stock-ad gradient.`,
+    `Editorial ad photograph for "${brandName}" (${angle} angle), ${campaign.aspectRatio || '1:1'} composition native to ${(campaign.brief?.channels || [])[0] || 'instagram'} — the actual product/subject front and center, shot like real platform content, not a generic stock gradient.`,
     campaign.brief?.angle ? `Campaign angle: ${campaign.brief.angle}.` : '',
-    product ? `Featuring the product "${product.name}"${product.description ? ` — ${product.description}` : ''}.` : '',
-    `Brand palette: primary ${c.primary}, secondary ${c.secondary}, accent ${c.accent}, background ${c.background}, text ${c.text}. Use these exact colors.`,
-    `Typography style: ${profile?.fonts?.heading || 'modern sans'} headlines.`,
+    product ? `Featuring: "${product.name}"${product.description ? ` — ${product.description}` : ''}.` : '',
+    `CRITICAL: absolutely NO text, words, letters, typography, logos, captions, labels or watermarks anywhere in the image — that means NO newspapers, magazines, books, posters, packaging, signage, screens or any printed materials; plain unmarked objects and surfaces only.`,
+    `Compose with clean, uncluttered negative space in the ${space} (a headline will be overlaid there later) — keep the subject away from that zone.`,
+    `Art direction palette: primary ${c.primary}, secondary ${c.secondary}, accent ${c.accent}.`,
     profile?.tone?.length ? `Mood: ${profile.tone.join(', ')}.` : '',
-    affNames ? `Cultural vibe for art direction reference: ${affNames}.` : '',
-    `Render this exact text legibly on the image in the brand style — headline: "${copy.headline}"`,
-    copy.body ? `body line: "${copy.body}"` : '',
-    copy.cta ? `and a button-style CTA: "${copy.cta}".` : '',
-    `Place the text toward the ${copy.layout?.vpos || 'bottom'} ${copy.layout?.hpos || 'left'} with strong contrast. Clean, professional ad composition, no watermarks.`,
+    affNames ? `Cultural vibe for art direction: ${affNames}.` : '',
+    `Professional commercial photography, sharp focus, rich color grading, high detail.`,
   ].filter(Boolean).join(' ');
 }
 
@@ -94,7 +182,38 @@ export function placeholderCreative(profile, copy) {
   return saveAssetBuf(Buffer.from(svg), 'svg');
 }
 
-async function oneCreative(campaign, profile, product, angle) {
+// agentic plan — the model picks each creative's medium + angle from the
+// brief/product/notes so output isn't one fixed medium: product demos, video
+// spots, stills, copy-led cards all on the table depending on the ask.
+async function planCreatives(campaign, profile, product, n) {
+  try {
+    const j = await chatJSON([
+      { role: 'system', content: 'You plan ad creatives for a campaign. Strict JSON only.' },
+      {
+        role: 'user', content: [
+          `Brand: ${profile?.name || 'brand'} — ${profile?.tagline || ''}. Audience: ${profile?.audience || ''}.`,
+          `Brief: ${JSON.stringify(campaign.brief || {}).slice(0, 700)}.`,
+          product?.name ? `Product: ${product.name}${product.description ? ` — ${String(product.description).slice(0, 200)}` : ''}.` : '',
+          campaign.notes ? `Notes: ${campaign.notes}` : '',
+          `Return {"items":[{"angle","medium","format","direction"}]} — exactly ${n} items.`,
+          `angle = the creative angle (short). medium = "video" | "image" | "copy" — pick video when the brief/notes ask for demos, motion, how-it-works, before/after or the product benefits from movement; image for stills; copy for text-led cards. format = platform shape ("reel","spot","carousel","billboard"). direction = one line of shot/art direction.`,
+          `Vary mediums across the set — a real campaign mixes formats. If notes ask for product demos, at least half should be video.`,
+        ].filter(Boolean).join('\n'),
+      },
+    ], { maxTokens: 1600 });
+    const items = (Array.isArray(j?.items) ? j.items : [])
+      .map((it) => ({
+        angle: String(it.angle || '').slice(0, 60),
+        medium: ['video', 'image', 'copy'].includes(it.medium) ? it.medium : 'image',
+        format: String(it.format || '').slice(0, 40),
+        direction: String(it.direction || '').slice(0, 220),
+      }))
+      .filter((it) => it.angle);
+    return items.length ? items : null;
+  } catch { return null; }
+}
+
+async function oneCreative(campaign, profile, product, angle, plan = null) {
   const copy = await chatJSON([
     { role: 'system', content: COPY_SYS },
     {
@@ -108,21 +227,32 @@ async function oneCreative(campaign, profile, product, angle) {
     },
   ], { maxTokens: 3000 });
   const safe = {
-    headline: String(copy?.headline || campaign.brief?.title || profile?.name || 'New').split(' ').slice(0, 10).join(' '),
-    body: String(copy?.body || campaign.brief?.keyMessage || '').split(' ').slice(0, 24).join(' '),
-    cta: String(copy?.cta || 'Learn more').split(' ').slice(0, 5).join(' '),
+    headline: String(copy?.headline || campaign.brief?.title || profile?.name || 'New').split(' ').slice(0, CAPS.headlineMaxWords).join(' '),
+    body: String(copy?.body || campaign.brief?.keyMessage || '').split(' ').slice(0, CAPS.bodyMaxWords).join(' '),
+    cta: String(copy?.cta || 'Learn more').split(' ').slice(0, CAPS.ctaMaxWords).join(' '),
     layout: {
       vpos: ['top', 'middle', 'bottom'].includes(copy?.layout?.vpos) ? copy.layout.vpos : 'bottom',
       hpos: ['left', 'center', 'right'].includes(copy?.layout?.hpos) ? copy.layout.hpos : 'left',
     },
   };
-  const creative = { id: uid(), headline: safe.headline, body: safe.body, cta: safe.cta, layout: safe.layout, angle };
+  const creative = { id: uid(), headline: safe.headline, body: safe.body, cta: safe.cta, layout: safe.layout, angle, cleanImage: true };
+  if (plan) {
+    creative.medium = plan.medium;
+    if (plan.format) creative.format = plan.format;
+    // video/dem creatives get a queued videoState so the animate lane is primed
+    if (plan.medium === 'video') creative.videoState = 'idle';
+  }
   const refs = [];
   if (product?.image) refs.push({ path: product.image });
   for (const im of (campaign.ingredients?.images || profile?.images?.slice(0, 1).map((i) => i.path) || [])) refs.push({ path: im });
   try {
-    const g = await genImageResilient(composeImagePrompt(campaign, profile, safe, product, angle), {
+    const g = await genImageResilient(
+      composeImagePrompt(campaign, profile, safe, product, angle) +
+      (plan?.direction ? ` Shot direction: ${plan.direction}.` : '') +
+      (plan?.medium === 'video' ? ' Frame this like a still pulled from a product demo video — subject mid-action, motion-ready composition.' : ''),
+      {
       aspectRatio: campaign.aspectRatio || '1:1',
+      provider: campaign.imageProvider,
       refs: refs.slice(0, 3),
     });
     creative.imagePath = g.path;
@@ -136,11 +266,20 @@ async function oneCreative(campaign, profile, product, angle) {
   return creative;
 }
 
-export async function generateCreatives(campaign, profile, n = 4) {
-  const product = campaign.productId ? find('catalog', campaign.productId) : null;
+export async function generateCreatives(campaign, profile, n = 4, onProgress = null) {
+  const product = await resolveProductContext(campaign);
+  onProgress?.({ stage: 'planning mediums', done: 0, total: n });
+  const plan = await planCreatives(campaign, profile, product, n);
   const creatives = [];
   for (let i = 0; i < n; i++) {
-    creatives.push(await oneCreative(campaign, profile, product, ANGLES[i % ANGLES.length]));
+    const p = plan?.[i] || null;
+    onProgress?.({ stage: `writing + rendering${p ? ` · ${p.medium}` : ''}`, done: i, total: n });
+    try {
+      creatives.push(await oneCreative(campaign, profile, product, p?.angle || ANGLES[i % ANGLES.length], p));
+    } catch (e) {
+      creatives.push({ id: `cr-${Date.now()}-${i}`, failed: true, imageError: String(e?.message || e).slice(0, 200), headline: 'Generation failed' });
+    }
+    onProgress?.({ stage: 'writing + rendering', done: i + 1, total: n });
   }
   return creatives;
 }

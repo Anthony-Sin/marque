@@ -85,6 +85,6 @@ ${page(`<div class="kicker">02 — Voice</div><h2>How we sound</h2><div style="m
 ${page(`<div class="kicker">03 — Palette</div><div class="swatches">${swatches}</div><div class="note">${esc(book?.paletteNote || '')}</div>`)}
 ${page(`<div class="kicker">04 — Typography</div>${fontSample}`)}
 ${page(`<div class="kicker">05 — Imagery</div><div class="grid">${imgGrid || '<p>No imagery yet.</p>'}</div>`)}
-${page(`<div class="kicker">06 — Taste Signature</div><p class="story">Where our audience's culture overlaps — measured affinities that inform partnerships, playlists, placements and creative direction.</p><div style="margin-top:16px">${affRows || '<p>No taste data yet.</p>'}</div><div class="powered">Powered by Qloo${profile?.qloo?.mode === 'fixture' ? ' — demo data' : ''}</div>`)}
+${page(`<div class="kicker">06 — Taste Signature</div><p class="story">Where our audience's culture overlaps — measured affinities that inform partnerships, playlists, placements and creative direction.</p><div style="margin-top:16px">${affRows || '<p>No taste data yet.</p>'}</div><div class="powered">Powered by Qloo${profile?.qloo?.mode === 'partial' ? ' — some taste calls failed' : profile?.qloo?.mode === 'error' ? ' — taste calls failed' : profile?.qloo?.mode === 'off' ? ' — not configured' : ''}</div>`)}
 </body></html>`;
 }

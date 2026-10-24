@@ -1,21 +1,30 @@
 // Gemini API: image generation/edits (gemini image model) + Veo long-running video
 import { ENV } from '../config.js';
+import { tuning } from '../tuning.js';
 import { saveAssetBuf, readAsset } from './store.js';
 
 const G = 'https://generativelanguage.googleapis.com/v1beta';
 
-export function geminiConfigured() { return !!ENV.geminiKey; }
+export function geminiConfigured() { return !!ENV.geminiKeys?.length || !!ENV.geminiKey; }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// key pool: round-robin spreads load across AI Studio projects; a 429 on one
+// key jumps to the next instead of burning the whole fallback chain
+let keyIdx = 0;
+const pool = () => (ENV.geminiKeys?.length ? ENV.geminiKeys : [ENV.geminiKey].filter(Boolean));
+function nextKey() {
+  const p = pool();
+  if (!p.length) return '';
+  const k = p[keyIdx % p.length];
+  keyIdx = (keyIdx + 1) % p.length;
+  return k;
+}
+export function geminiKeyCount() { return pool().length; }
+
 // env-pinned model first, then known image-capable fallbacks (deprecation/quota safety)
-const IMAGE_FALLBACKS = [
-  'gemini-3.1-flash-image-preview', 'gemini-3.1-flash-lite-image', 'gemini-2.5-flash-image',
-  'gemini-3-pro-image', 'nano-banana-pro-preview', 'gemini-nano-banana-2.1',
-];
-const VIDEO_FALLBACKS = [
-  'veo-3.1-generate-preview', 'veo-3.0-generate-001', 'veo-3.0-fast-generate-001', 'veo-2.0-generate-001',
-];
+const IMAGE_FALLBACKS = tuning('geminiImageFallbacks');
+const VIDEO_FALLBACKS = tuning('geminiVideoFallbacks');
 
 function refPart(ref) {
   if (!ref) return null;
@@ -52,7 +61,7 @@ async function tryImageModel(model, prompt, opts, parts) {
     if (withAR && opts.aspectRatio) generationConfig.imageConfig = { aspectRatio: opts.aspectRatio };
     return { contents: [{ parts: [{ text: prompt }, ...parts] }], generationConfig };
   };
-  const url = `${G}/models/${model}:generateContent?key=${ENV.geminiKey}`;
+  const url = `${G}/models/${model}:generateContent?key=${nextKey()}`;
   let data;
   try {
     data = await post(url, makeBody(true));
@@ -117,7 +126,7 @@ export async function genVideo(prompt, opts = {}) {
   const errs = [];
   for (const model of models) {
     try {
-      const data = await post(`${G}/models/${model}:predictLongRunning?key=${ENV.geminiKey}`, { instances: [instance], parameters });
+      const data = await post(`${G}/models/${model}:predictLongRunning?key=${nextKey()}`, { instances: [instance], parameters });
       opName = data?.name;
       if (opName) break;
       errs.push(`${model}: no operation name`);
@@ -130,16 +139,16 @@ export async function genVideo(prompt, opts = {}) {
     e.quota = errs.length && errs.every((s) => /429|quota|RESOURCE_EXHAUSTED/i.test(s));
     throw e;
   }
-  const deadline = Date.now() + 6 * 60 * 1000;
+  const deadline = Date.now() + tuning('videoPollTimeoutMs');
   while (Date.now() < deadline) {
     await sleep(10000);
-    const st = await fetch(`${G}/${opName}?key=${ENV.geminiKey}`).then((r) => r.json());
+    const st = await fetch(`${G}/${opName}?key=${nextKey()}`).then((r) => r.json());
     if (st.error) throw new Error(`gemini video op: ${st.error.message || JSON.stringify(st.error).slice(0, 300)}`);
     if (!st.done) continue;
     const uri = st.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
     if (!uri) throw new Error(`gemini video done but no uri (${JSON.stringify(st.response)?.slice(0, 300)})`);
-    let res = await fetch(uri, { headers: { 'x-goog-api-key': ENV.geminiKey } });
-    if (!res.ok) res = await fetch(uri + (uri.includes('?') ? '&' : '?') + `key=${ENV.geminiKey}`);
+    let res = await fetch(uri, { headers: { 'x-goog-api-key': nextKey() } });
+    if (!res.ok) res = await fetch(uri + (uri.includes('?') ? '&' : '?') + `key=${nextKey()}`);
     if (!res.ok) throw new Error(`video download ${res.status}`);
     return saveAssetBuf(Buffer.from(await res.arrayBuffer()), 'mp4');
   }

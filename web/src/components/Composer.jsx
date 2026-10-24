@@ -169,6 +169,7 @@ export default function Composer({
   placeholder = 'Describe the campaign you want to create',
   disclaimer = 'Marque can make mistakes, so double-check it.',
   onGenerate,
+  onAspect,             // (ar) => {} — live pill state, so parents never go stale
 }) {
   const { profile, say } = useApp();
   const nav = useNavigate();
@@ -176,7 +177,8 @@ export default function Composer({
   const [prompt, setPrompt] = useState('');
   const [productId, setProductId] = useState(() => searchParams.get('product') || '');
   const [images, setImages] = useState([]);      // asset paths, ≤3
-  const [aspect, setAspect] = useState('4:5');
+  const [aspect, setAspectState] = useState('4:5');
+  const setAspect = (a) => { setAspectState(a); onAspect?.(a); };
   const [menu, setMenu] = useState(null);        // 'product' | 'images' | 'aspect'
 
   useEffect(() => {
@@ -243,7 +245,7 @@ export default function Composer({
             <div className="menu-title">Ingredients — up to 3</div>
             {profileImages.length ? (
               <div className="img-pick">
-                {profileImages.map((im) => (
+                {profileImages.filter((im) => im.path).map((im) => (
                   <button key={im.id || im.path} className={images.includes(im.path) ? 'sel' : ''}
                     title={im.caption || ''} onClick={() => toggleImg(im.path)}>
                     <img src={im.path} alt={im.caption || 'asset'} />

@@ -1,0 +1,93 @@
+{
+  "_comment": "All marque heuristics + fallbacks live here — edit freely, no code changes needed. Env overrides: TUNING_JSON (path), or individual JSON in env vars like TUNING_ANGLES='[...]'.",
+  "aspectDims": {
+    "1:1": [1024, 1024],
+    "4:5": [960, 1200],
+    "9:16": [720, 1280],
+    "16:9": [1280, 720],
+    "4:1": [1280, 320],
+    "3:4": [960, 1280],
+    "4:3": [1280, 960]
+  },
+  "localAspectDims": {
+    "1:1": [512, 512],
+    "4:5": [512, 640],
+    "9:16": [448, 792],
+    "16:9": [768, 432],
+    "4:1": [896, 256]
+  },
+  "geminiImageFallbacks": [
+    "gemini-3.1-flash-image-preview",
+    "gemini-3.1-flash-lite-image",
+    "gemini-2.5-flash-image",
+    "gemini-3-pro-image",
+    "nano-banana-pro-preview",
+    "gemini-nano-banana-2.1"
+  ],
+  "geminiVideoFallbacks": [
+    "veo-3.1-generate-preview",
+    "veo-3.0-generate-001",
+    "veo-3.0-fast-generate-001",
+    "veo-2.0-generate-001"
+  ],
+  "creativeAngles": ["product-led", "lifestyle", "offer", "social-proof"],
+  "shootTemplates": {
+    "studio": "clean studio product shot, soft gradient backdrop, professional lighting",
+    "lifestyle": "in-use lifestyle scene, natural window light, candid editorial feel",
+    "flat-lay": "overhead flat-lay arrangement on a neutral textured surface",
+    "detail": "extreme close-up macro highlighting texture, materials and details",
+    "outdoor": "natural outdoor scene with golden-hour light"
+  },
+  "allChannels": ["instagram", "tiktok", "youtube", "tv", "streaming", "podcast", "ooh", "guerrilla", "email", "press"],
+  "typeChannel": {
+    "urn:entity:tv_show": "tv",
+    "urn:entity:movie": "streaming",
+    "urn:entity:podcast": "podcast",
+    "urn:entity:artist": "tiktok",
+    "urn:entity:brand": "instagram",
+    "urn:entity:place": "guerrilla",
+    "urn:entity:book": "press",
+    "urn:entity:person": "youtube"
+  },
+  "channelReachPriors": {
+    "instagram": 52000,
+    "tiktok": 88000,
+    "youtube": 41000,
+    "tv": 190000,
+    "streaming": 130000,
+    "podcast": 24000,
+    "ooh": 95000,
+    "guerrilla": 38000,
+    "email": 9000,
+    "press": 64000
+  },
+  "leanRules": {
+    "craft-progressive": {
+      "confidence": 0.66,
+      "watchout": "AI-forward messaging can read as gimmicky here — lead with human craft and keep generated assets subtle.",
+      "boost": ["guerrilla", "ooh", "press"],
+      "penalize": ["streaming"],
+      "note": "Craft/heritage/indie affinities — novelty-cautious, provenance-led."
+    },
+    "early-adopter": {
+      "confidence": 0.7,
+      "note": "Tech/venture/modern affinities — this crowd rewards AI-native, interactive creative.",
+      "boost": ["tiktok", "youtube", "streaming"],
+      "penalize": []
+    },
+    "mass-market pragmatic": {
+      "confidence": 0.55,
+      "note": "Mainstream affinities — broad channels fine; value-led messaging beats novelty.",
+      "boost": ["tv", "instagram"],
+      "penalize": []
+    }
+  },
+  "copyBudgets": {
+    "headlineMaxWords": 10,
+    "bodyMaxWords": 24,
+    "ctaMaxWords": 5
+  },
+  "agentMaxSteps": 6,
+  "videoPollTimeoutMs": 360000,
+  "exampleCacheSize": 30
+}

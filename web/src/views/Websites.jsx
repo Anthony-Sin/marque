@@ -37,8 +37,11 @@ export default function Websites() {
   const site = sites?.[0] || null;
 
   const reload = async () => {
-    try { setSites((await api.listWebsites()).websites || []); }
-    catch (e) { say(e.message); setSites([]); }
+    try {
+      const d = await api.listWebsites();
+      setSites(d.websites || []);
+      if (d.lastAudit) { setImp((cur) => cur || d.lastAudit); if (d.lastAudit.url && !impUrl) setImpUrl(d.lastAudit.url); }
+    } catch (e) { say(e.message); setSites([]); }
   };
   useEffect(() => { reload(); }, []);
 
@@ -143,7 +146,7 @@ export default function Websites() {
   const renderImprove = () => (
     <div className="imp-wrap">
       <div className="card imp-ask">
-        <h3 className="display">Improve my site</h3>
+        <h3 className="display">Site audit</h3>
         <p className="muted small">
           We scrape your live site, check which socials it links, then rank concrete fixes —
           benchmarked against the brands your audience already loves.
@@ -163,6 +166,13 @@ export default function Websites() {
             {impBusy ? 'Analyzing…' : 'Analyze vs competitors'}
           </button>
         </div>
+        {!imp && !impBusy && (
+          <div className="imp-checks">
+            <div className="imp-check"><Icon name="globe" size={14} /><b>Scrape</b><span>Page copy, structure & social links</span></div>
+            <div className="imp-check"><Icon name="qloo" size={14} /><b>Benchmark</b><span>Against brands your audience loves</span></div>
+            <div className="imp-check"><Icon name="check" size={14} /><b>Fix list</b><span>Ranked by impact × effort</span></div>
+          </div>
+        )}
       </div>
 
       {impBusy && (
@@ -292,7 +302,7 @@ export default function Websites() {
     return (
       <>
         <div className="row wrap" style={{ justifyContent: 'flex-end', marginBottom: 4 }}>
-          <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'demo'} />
+          <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Qloo API" />
         </div>
 
         <VersionTabs

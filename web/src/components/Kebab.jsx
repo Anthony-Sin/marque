@@ -43,6 +43,7 @@ export default function Kebab({ items = [], up = false, corner = false, align = 
             <button
               key={i}
               type="button"
+              role="menuitem"
               className={it.danger ? 'pf-danger' : ''}
               onClick={() => { setOpen(false); it.onClick?.(); }}
             >

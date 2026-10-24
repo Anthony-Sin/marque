@@ -12,7 +12,8 @@ export default function Modal({ title, onClose, children, footer, narrow = false
 
   return (
     <div className="modal-veil" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}>
-      <div className={`modal${narrow ? ' pf-modal-narrow' : ''}`} style={width ? { maxWidth: width } : undefined}>
+      <div className={`modal${narrow ? ' pf-modal-narrow' : ''}`} style={width ? { maxWidth: width } : undefined}
+        role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : 'Dialog'}>
         {(title || onClose) && (
           <div className="pf-modal-head">
             <h3 className="pf-modal-title">{title}</h3>

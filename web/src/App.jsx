@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, createContext, useContext } from 'react';
-import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, useLocation, Navigate, NavLink } from 'react-router-dom';
 import api from './api.js';
 import Icon from './components/Icon.jsx';
 import Wayfind from './components/Wayfind.jsx';
@@ -15,9 +15,15 @@ import BrandBookPage from './views/BrandBook.jsx';
 export const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
 
-// No persistent nav chrome — the Dashboard is the hub and every other view
-// offers a quiet "← Dashboard" wayfinding link at its top-left instead.
-// Locked routes still gate on ctx.board (see Gate below).
+// Logo-only top bar. Section links live inside the Strategy workflow so they
+// carry board context — routes still work when visited directly.
+function TopNav() {
+  return (
+    <nav className="topnav">
+      <NavLink to="/dashboard" className="topnav-logo">marque</NavLink>
+    </nav>
+  );
+}
 
 // Small "locked" placeholder for routes gated behind a generated strategy board.
 function LockedScreen() {
@@ -37,10 +43,22 @@ function LockedScreen() {
   );
 }
 
-// Gate: spinner while the board lookup is in flight, LockedScreen when confirmed absent.
-function Gate({ board, children }) {
+// Gate: spinner while the board lookup is in flight, LockedScreen when confirmed
+// absent, and an honest retry state when the fetch itself failed (network blip
+// must not masquerade as "you have no board").
+function Gate({ board, onRetry, children }) {
   if (board === undefined) {
     return <div className="loading-wrap"><div className="spinner" /></div>;
+  }
+  if (board === 'error') {
+    return (
+      <div className="locked-wrap" style={{ paddingTop: 60 }}>
+        <div className="locked-ic"><Icon name="refresh" size={26} /></div>
+        <h2 className="display">Can't reach the studio</h2>
+        <p>The strategy board didn't respond — check the server and try again.</p>
+        <button className="btn lime" onClick={onRetry}><Icon name="refresh" size={15} /> Retry</button>
+      </div>
+    );
   }
   return board ? children : <LockedScreen />;
 }
@@ -60,16 +78,20 @@ export default function App() {
       setProfile(profile);
     } catch { setProfile(null); }
   };
-  useEffect(() => {
-    refresh();
-    api.status().then(setStatus).catch(() => setStatus(null));
+  const loadBoard = () => {
+    setBoard((b) => (b && b !== 'error' ? b : undefined));
     api.getStrategy()
       // only fill if nothing set yet — a fresh generate() may have landed first
       .then(({ board, boards }) => {
-        setBoard((b) => (b === undefined ? board || null : b));
+        setBoard((b) => (b === undefined || b === 'error' ? board || null : b));
         if (Array.isArray(boards)) setBoards(boards);
       })
-      .catch(() => setBoard(null));
+      .catch(() => setBoard((b) => (b === undefined ? 'error' : b)));
+  };
+  useEffect(() => {
+    refresh();
+    api.status().then(setStatus).catch(() => setStatus(null));
+    loadBoard();
     api.boards()
       .then(({ boards }) => { if (Array.isArray(boards)) setBoards(boards); })
       .catch(() => {}); // older backends — the switcher simply stays empty
@@ -99,6 +121,7 @@ export default function App() {
   return (
     <Ctx.Provider value={ctx}>
       <div className="shell">
+        {inApp && loc.pathname !== '/onboarding' && <TopNav />}
         <div className="main">
           {profile === undefined ? (
             <div className="loading-wrap"><div className="spinner" /></div>
@@ -108,17 +131,18 @@ export default function App() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/strategy/*" element={<StrategyPage />} />
-            <Route path="/profile/*" element={<Gate board={board}><ProfilePage /></Gate>} />
-            <Route path="/campaigns/*" element={<Gate board={board}><CampaignsPage /></Gate>} />
-            <Route path="/photoshoot" element={<Gate board={board}><PhotoshootPage /></Gate>} />
-            <Route path="/websites" element={<Gate board={board}><WebsitesPage /></Gate>} />
-            <Route path="/brandbook" element={<Gate board={board}><BrandBookPage /></Gate>} />
+            <Route path="/profile/*" element={<ProfilePage />} />
+            <Route path="/campaigns/*" element={<Gate board={board} onRetry={loadBoard}><CampaignsPage /></Gate>} />
+            <Route path="/photoshoot" element={<Gate board={board} onRetry={loadBoard}><PhotoshootPage /></Gate>} />
+            <Route path="/websites" element={<Gate board={board} onRetry={loadBoard}><WebsitesPage /></Gate>} />
+            <Route path="/brandbook" element={<Gate board={board} onRetry={loadBoard}><BrandBookPage /></Gate>} />
+            <Route path="/brand-book" element={<Navigate to="/brandbook" replace />} />
             <Route path="*" element={<Navigate to={inApp ? '/dashboard' : '/onboarding'} replace />} />
           </Routes>
           )}
         </div>
       </div>
-      {toast && <div className="toast">{toast}</div>}
+      {toast && <div className="toast" role="status" aria-live="polite">{toast}</div>}
     </Ctx.Provider>
   );
 }

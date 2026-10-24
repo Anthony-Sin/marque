@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
@@ -8,6 +9,7 @@ import CreativeEditor from '../components/CreativeEditor.jsx';
 import EvidenceDrawer from '../components/EvidenceDrawer.jsx';
 import Wayfind from '../components/Wayfind.jsx';
 import { QlooBadge, SignalChips } from '../components/Qloo.jsx';
+import { chanLabel } from '../labels.js';
 import './studio.css';
 
 const EXPECTED_CREATIVES = 4; // server generates 4 per campaign — skeleton count while filling
@@ -24,24 +26,44 @@ const BRIEF_SKEL_FIELDS = [
 
 export default function Campaigns() {
   const { profile, say, status } = useApp();
+  const loc = useLocation();
+  const nav = useNavigate();
   const [campaigns, setCampaigns] = useState(null);
   const [openId, setOpenId] = useState(null);        // campaign detail view
+  // open/close also writes the ?open= deep link: PUSH when opening so browser
+  // Back returns to the list; REPLACE when closing so the back-stack stays clean
+  const show = (id) => {
+    setOpenId(id);
+    nav(id ? `/campaigns?open=${id}` : '/campaigns', { replace: !id });
+  };
   const [brief, setBrief] = useState(null);          // {brief, suggestions, qlooSignals}
   const [draft, setDraft] = useState(null);          // composer payload that produced the brief
   const [seed, setSeed] = useState(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState('idle');        // idle | briefing | generating
   const [making, setMaking] = useState('');          // campaign id currently filling with creatives
+  const [jobProg, setJobProg] = useState(null);      // real {done,total,stage} from the job poll
   const [editing, setEditing] = useState(null);      // creative in the editor modal
   const [animating, setAnimating] = useState('');    // creative id currently animating
   const [evi, setEvi] = useState(false);
   const [handoff, setHandoff] = useState(null);      // {strategy, notes, prompt, productId, exampleRefs?}
+  const [liveAspect, setLiveAspect] = useState('4:5'); // composer's real pill state
+  const [engine, setEngine] = useState('auto');        // campaign-level image engine override
 
   const reload = async () => {
     try { setCampaigns((await api.listCampaigns()).campaigns || []); }
     catch (e) { say(e.message); setCampaigns([]); }
   };
   useEffect(() => { reload(); }, []);
+
+  // deep link: /campaigns?open=<id> (dashboard "Recent work" cards land here)
+  useEffect(() => {
+    const want = new URLSearchParams(loc.search).get('open');
+    if (want && campaigns?.some((c) => c.id === want)) setOpenId(want);
+    else if (want && campaigns) nav('/campaigns', { replace: true });  // stale id — clean the url
+    else if (!want && openId) setOpenId(null);                          // browser Back left the detail
+  }, [loc.search, campaigns]); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   // Strategy board handoff: 'strategyHandoff' is written by the Strategy view's
   // "Use this strategy" button. Consume once → composer chip + auto-start brief.
@@ -80,6 +102,23 @@ export default function Campaigns() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // a drafted-but-unconfirmed brief shouldn't vanish on navigation — stash it
+  // and restore on return (a pending handoff always drafts fresh instead)
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('strategyHandoff')) return;
+      const raw = sessionStorage.getItem('marque.briefDraft');
+      if (raw) { const d = JSON.parse(raw); setBrief(d.brief || null); setDraft(d.draft || null); if (d.handoff) setHandoff(d.handoff); }
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    try {
+      if (brief) sessionStorage.setItem('marque.briefDraft', JSON.stringify({ brief, draft, handoff }));
+      else sessionStorage.removeItem('marque.briefDraft');
+    } catch { /* ignore */ }
+  }, [brief]);
+
   const open = (campaigns || []).find((c) => c.id === openId) || null;
 
   // group "Your campaigns" by the strategy that spawned them (handoff metadata)
@@ -87,8 +126,8 @@ export default function Campaigns() {
     const byStrat = new Map();  // key → { key, title, items }
     const other = [];
     for (const c of campaigns || []) {
-      const key = c.strategyId || c.strategyTitle;
-      if (!key) { other.push(c); continue; }
+      const key = `${c.boardId || ''}:${c.strategyId || c.strategyTitle || ''}`;
+      if (key === ':') { other.push(c); continue; }
       if (!byStrat.has(key)) byStrat.set(key, { key, title: c.strategyTitle || 'strategy', items: [] });
       byStrat.get(key).items.push(c);
     }
@@ -105,7 +144,7 @@ export default function Campaigns() {
       </div>
       {c.brief?.angle && <p className="muted small" style={{ margin: 0 }}>{c.brief.angle}</p>}
       <div className="chip-row mt8">
-        {(c.brief?.channels || []).map((ch) => <span key={ch} className="chan-chip">{ch}</span>)}
+        {(c.brief?.channels || []).map((ch) => <span key={ch} className="chan-chip">{chanLabel(ch)}</span>)}
         <SignalChips signals={c.qlooSignals || []} max={3} />
       </div>
       {!!c.creatives?.length && (
@@ -127,18 +166,30 @@ export default function Campaigns() {
         </div>
       )}
       <div className="foot">
-        <span className="muted small">{c.creatives?.length || 0} creatives</span>
+        <span className="muted small">{c.creatives?.length || 0} creative{(c.creatives?.length || 0) === 1 ? '' : 's'}</span>
         <span className="grow" />
-        <button className="btn sm" onClick={() => setOpenId(c.id)}>Open</button>
+        <button className="icon-btn sm camp-del" title="Delete campaign" onClick={async (e) => {
+          e.stopPropagation();
+          if (!window.confirm(`Delete "${c.brief?.title || 'this campaign'}"?`)) return;
+          await api.deleteCampaign(c.id).catch(() => {});
+          setCampaigns((cs) => (cs || []).filter((x) => x.id !== c.id));
+          if (openId === c.id) show(null);
+        }}><Icon name="trash" size={13} /></button>
+        <button className="btn sm" onClick={() => show(c.id)}>Open</button>
       </div>
     </div>
   );
 
   // skeleton creative tile — image area + title bar shimmer while a campaign fills
+  // generating-state tile — shimmer only under real job progress, labelled so
+  // stored cards and in-flight cards are visually distinct
   const skelCreative = (i, ar) => (
-    <div key={`skel-${i}`} className="card creative-card" style={{ '--ar': arCss(ar) }}>
+    <div key={`skel-${i}`} className="card creative-card cc-making" style={{ '--ar': arCss(ar) }}>
       <div className="cc-media">
         <span className="skel cc-skel-media" />
+        <span className="cc-making-tag">
+          {jobProg ? `${jobProg.stage} ${jobProg.done}/${jobProg.total}` : 'generating — real render in flight'}
+        </span>
       </div>
       <div className="meta"><span className="skel skel-line w70" /></div>
     </div>
@@ -166,22 +217,26 @@ export default function Campaigns() {
         brief: brief.brief,
         productId: draft?.productId,
         ingredients: draft?.ingredients,
-        aspectRatio: draft?.aspectRatio,
+        aspectRatio: liveAspect || draft?.aspectRatio,
         qlooSignals: brief.qlooSignals,   // server persists these onto the campaign
         notes: handoff?.notes || '',      // keep board notes for creative generation
         strategyId: handoff?.strategyId || handoff?.strategy?.id || undefined,
         strategyTitle: handoff?.strategyTitle || handoff?.strategy?.title || undefined,
+        boardId: handoff?.boardId || undefined,
+        provider: engine !== 'auto' ? engine : undefined,
       });
       if (campaign?.id) {
         setMaking(campaign.id);
         await reload();                  // pick up the fresh (still-empty) campaign
-        setOpenId(campaign.id);          // detail view shows skeleton creatives
+        show(campaign.id);               // detail view shows skeleton creatives
         if (job?.id) {
-          await pollJob(job.id).catch((e) => say(e.message));
+          await pollJob(job.id, { onTick: (j) => setJobProg(j.progress || null) }).catch((e) => say(e.message));
+          setJobProg(null);
         }
         await reload();                  // creatives land → staggered fill-in
       } else if (job?.id) {
-        await pollJob(job.id).catch((e) => say(e.message));
+        await pollJob(job.id, { onTick: (j) => setJobProg(j.progress || null) }).catch((e) => say(e.message));
+        setJobProg(null);
         await reload();
       }
       setBrief(null);
@@ -199,7 +254,7 @@ export default function Campaigns() {
       const { job } = await api.animateCreative(creative.id);
       await pollJob(job.id);
       await reload();
-      say('Animation ready — open the creative to watch it');
+      say('Animation ready — Edit the creative to watch it, or Save to download');
     } catch (e) { say(e.message); }
     setAnimating('');
   };
@@ -212,13 +267,13 @@ export default function Campaigns() {
       <div className="section" style={{ paddingBottom: 80 }}>
         <Wayfind />
         <div className="page-head" style={{ textAlign: 'left', padding: '10px 0 18px' }}>
-          <button className="btn ghost sm mb8" onClick={() => setOpenId(null)}>
+          <button className="btn ghost sm mb8" onClick={() => show(null)}>
             ← All campaigns
           </button>
           <h2 className="display" style={{ fontSize: 34 }}>{open.brief?.title || 'Campaign'}</h2>
           {open.brief?.angle && <p className="sub" style={{ margin: 0, maxWidth: 640 }}>{open.brief.angle}</p>}
           <div className="row wrap mt8">
-            {(open.brief?.channels || []).map((c) => <span key={c} className="chan-chip">{c}</span>)}
+            {(open.brief?.channels || []).map((c) => <span key={c} className="chan-chip">{chanLabel(c)}</span>)}
             <span className="chan-chip">{open.aspectRatio || '1:1'}</span>
             <SignalChips signals={open.qlooSignals || []} />
             <button className="btn ghost sm" onClick={() => setEvi(true)}>
@@ -257,7 +312,7 @@ export default function Campaigns() {
             onSaved={() => reload()}
           />
         )}
-        {evi && <EvidenceDrawer signals={open.qlooSignals || []} onClose={() => setEvi(false)} />}
+        {evi && <EvidenceDrawer signals={open.qlooSignals || []} bundle={open.qlooBundle} calls={open.evidence?.calls} onClose={() => setEvi(false)} />}
       </div>
     );
   }
@@ -272,7 +327,9 @@ export default function Campaigns() {
         <p className="sub">Prompt a campaign or continue one below — brief first, creatives after.</p>
       </div>
 
-      <div className="composer-zone">
+      {/* one continuous card — composer on top, the brief materializes inside
+          the same surface once it lands (prompt → brief → confirm, no seam) */}
+      <div className={`composer-zone card flow-card${brief?.brief || phase === 'briefing' ? ' has-brief' : ''}`}>
         {handoff && (
           <div className="camp-src">
             <Icon name="sparkle" size={12} />
@@ -283,11 +340,35 @@ export default function Campaigns() {
             <button className="x" title="Dismiss" onClick={() => setHandoff(null)}>✕</button>
           </div>
         )}
-        <Composer seed={seed} busy={busy} onGenerate={genBrief} />
-      </div>
+        <Composer seed={seed} busy={busy} onGenerate={genBrief} onAspect={setLiveAspect} />
+
+        {/* starter chips — competitor-style tappable brief seeds; they only
+            prefill the composer's prompt, the user still edits before generating */}
+        {!brief?.brief && phase !== 'briefing' && (
+          <div className="starter-row">
+            <span className="starter-eng" title="Image engine for this campaign's creatives">
+              <b>Engine</b>
+              {[['auto', 'auto'], ['local', 'local'], ['gemini', 'gemini']].map(([id, label]) => (
+                <button key={id} type="button" className={`starter-chip eng${engine === id ? ' on' : ''}`}
+                  title={id === 'auto' ? 'Default chain — local first, escalate on failure' : `Force ${label} for all creatives in this campaign`}
+                  onClick={() => setEngine(id)}>{label}</button>
+              ))}
+            </span>
+            <b className="starter-lbl">Try</b>
+            {[
+              ['Product hero', 'A bold product-hero shot for our flagship — clean studio backdrop, strong negative space for the headline'],
+              ['UGC-style testimonial', 'A native-feeling UGC ad: real-person testimonial energy, handheld aesthetic, honest hook in the first line'],
+              ['Launch moment', 'A launch announcement for something new — urgency, single message, built for stories/reels'],
+              ['Problem → fix', 'A problem-agitate-solve ad for busy professionals — the pain first, our product as the obvious fix'],
+            ].map(([name, text]) => (
+              <button key={name} type="button" className="starter-chip" title={text}
+                onClick={() => setSeed({ text, n: Date.now() })}>{name}</button>
+            ))}
+          </div>
+        )}
 
       {phase === 'briefing' && !brief?.brief && (
-        <div className="card pad brief-card" aria-busy="true" aria-label="Drafting your campaign brief">
+        <div className="brief-card in-flow" aria-busy="true" aria-label="Drafting your campaign brief">
           <div className="row" style={{ justifyContent: 'space-between', marginBottom: 8 }}>
             <span className="skel skel-line w55" style={{ height: 18 }} />
             <span className="skel" style={{ width: 52, height: 18, borderRadius: 999 }} />
@@ -310,18 +391,24 @@ export default function Campaigns() {
       )}
 
       {brief?.brief && (
-        <div className="card pad brief-card">
+        <div className="brief-card in-flow">
           <div className="row mat" style={{ '--i': 0, justifyContent: 'space-between', marginBottom: 8 }}>
             <h3>{brief.brief.title || 'Campaign brief'}</h3>
-            <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'demo'} />
+            <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Qloo API" />
           </div>
           <div className="brief-field mat" style={{ '--i': 1 }}><span className="k">Angle</span><span className="v">{brief.brief.angle}</span></div>
           <div className="brief-field mat" style={{ '--i': 2 }}><span className="k">Audience</span><span className="v">{brief.brief.audience}</span></div>
           <div className="brief-field mat" style={{ '--i': 3 }}><span className="k">Key message</span><span className="v">{brief.brief.keyMessage}</span></div>
           <div className="brief-field mat" style={{ '--i': 4 }}>
             <span className="k">Channels</span>
-            <span className="v chip-row">{(brief.brief.channels || []).map((c) => <span key={c} className="chan-chip">{c}</span>)}</span>
+            <span className="v chip-row">{(brief.brief.channels || []).map((c) => <span key={c} className="chan-chip">{chanLabel(c)}</span>)}</span>
           </div>
+          {brief.brief.urlContext && (
+            <div className="brief-field mat" style={{ '--i': 4 }}>
+              <span className="k">Source link</span>
+              <span className="v"><a href={brief.brief.urlContext.url} target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>{brief.brief.urlContext.title || brief.brief.urlContext.url}</a></span>
+            </div>
+          )}
           {!!brief.qlooSignals?.length && (
             <div className="brief-field mat" style={{ '--i': 5 }}>
               <span className="k">Taste signals</span>
@@ -350,6 +437,7 @@ export default function Campaigns() {
           </div>
         </div>
       )}
+      </div>
 
       <div className="section-label">Your campaigns</div>
       {campaigns === null ? (

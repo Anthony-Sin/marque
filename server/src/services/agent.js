@@ -1,7 +1,8 @@
 // profile-editing agent: chat with a small JSON tool-call protocol over Qloo + patches
-import { chatJSON } from './tensor.js';
+import { chatJSON, chatStream, extractJSON } from './tensor.js';
 import { searchEntities, insights } from './qloo.js';
 import { get, set, applyPatch, list, now } from './store.js';
+import { tuning } from '../tuning.js';
 
 const PATCHABLE = new Set(['name', 'tagline', 'description', 'tone', 'values', 'audience', 'colors', 'fonts', 'images', 'catalog']);
 
@@ -53,6 +54,95 @@ async function runTool(tool, args, evidence) {
   }
 }
 
+// Incrementally pulls the "reply" string value out of the model's streamed
+// JSON so tokens render as they arrive — escapes decoded, raw JSON never leaks.
+function makeReplyExtractor(onDelta) {
+  let buf = '', start = -1, emitted = '', done = false;
+  return {
+    feed(chunk) {
+      if (done) return;
+      buf += chunk;
+      if (start < 0) {
+        const m = /"reply"\s*:\s*"/.exec(buf);
+        if (!m) return;
+        start = m.index + m[0].length;
+      }
+      const body = buf.slice(start);
+      let out = '';
+      for (let i = 0; i < body.length; i++) {
+        const c = body[i];
+        if (c === '\\') {
+          const n = body[i + 1];
+          if (n === undefined) break;
+          if (n === 'n') { out += '\n'; i++; }
+          else if (n === 't') { out += '\t'; i++; }
+          else if (n === 'r') { out += '\r'; i++; }
+          else if (n === 'u') {
+            if (body.length <= i + 5) break;
+            const cp = parseInt(body.slice(i + 2, i + 6), 16);
+            if (Number.isNaN(cp)) break;
+            out += String.fromCharCode(cp); i += 5;
+          } else { out += n; i++; }
+          continue;
+        }
+        if (c === '"') { done = true; break; }
+        out += c;
+      }
+      if (out.length > emitted.length) { onDelta(out.slice(emitted.length)); emitted = out; }
+    },
+    get text() { return emitted; },
+  };
+}
+
+function applyAgentPatch(patch, evidence, finalPatch) {
+  const clean = sanitizePatch(patch);
+  if (!clean) return finalPatch;
+  const profile = get('profile') || {};
+  profile.updatedAt = now();
+  const merged = applyPatch(profile, clean);
+  merged.catalog = list('catalog');
+  set('profile', merged);
+  evidence.push({ label: 'update_profile', detail: `patched: ${Object.keys(clean).join(', ')}` });
+  return applyPatch(finalPatch || {}, clean);
+}
+
+// Streaming variant — same agentic loop, but the model's reply text streams
+// token-by-token to the client and tool calls surface as ledger events.
+export async function agentChatStream(messages, onEvent = () => {}) {
+  const profile = get('profile') || null;
+  const evidence = [];
+  const msgs = [
+    { role: 'system', content: `${SYS}\n\nCURRENT PROFILE:\n${JSON.stringify(profile).slice(0, 6000)}` },
+    ...(messages || []).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content || '') })),
+  ];
+  let finalPatch = null;
+  for (let step = 0; step < tuning('agentMaxSteps'); step++) {
+    const extractor = makeReplyExtractor((d) => onEvent('token', { delta: d }));
+    const raw = await chatStream(msgs, {
+      maxTokens: 3000,
+      onToken: (d) => extractor.feed(d),
+      onReasoning: (d) => onEvent('thinking', { delta: d }),
+    });
+    const out = extractJSON(raw);
+    if (out?.tool) {
+      const result = await runTool(out.tool, out.args, evidence);
+      onEvent('tool', { label: out.tool, detail: evidence.at(-1)?.detail || '' });
+      msgs.push(
+        { role: 'assistant', content: JSON.stringify(out) },
+        { role: 'user', content: `TOOL_RESULT ${out.tool}: ${JSON.stringify(result).slice(0, 3000)}` },
+      );
+      if (out.tool === 'update_profile' && result.ok) {
+        finalPatch = applyPatch(finalPatch || {}, sanitizePatch(out.args?.patch) || {});
+      }
+      continue;
+    }
+    finalPatch = applyAgentPatch(out?.patch, evidence, finalPatch);
+    const reply = out?.reply || extractor.text || (typeof raw === 'string' && !out ? raw.slice(0, 1200) : 'Done.');
+    return { reply, patch: finalPatch, evidence: { qloo: evidence } };
+  }
+  return { reply: 'I hit my step limit — try rephrasing that request.', patch: finalPatch, evidence: { qloo: evidence } };
+}
+
 export async function agentChat(messages) {
   const profile = get('profile') || null;
   const evidence = [];
@@ -61,7 +151,7 @@ export async function agentChat(messages) {
     ...(messages || []).map((m) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content || '') })),
   ];
   let finalPatch = null;
-  for (let step = 0; step < 6; step++) {
+  for (let step = 0; step < tuning('agentMaxSteps'); step++) {
     const out = await chatJSON(msgs, { maxTokens: 3000 });
     if (out?.tool) {
       const result = await runTool(out.tool, out.args, evidence);

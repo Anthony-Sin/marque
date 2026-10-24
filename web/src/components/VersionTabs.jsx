@@ -1,7 +1,27 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Icon from './Icon.jsx';
 import { fmtDate } from './Composer.jsx';
 import '../views/studio.css';
+
+// srcDoc iframes are expensive (full doc parse + fonts per version) — mount each
+// one lazily when its tab nears the viewport, keep it mounted after.
+function LazyFrame({ html, title }) {
+  const ref = useRef(null);
+  const [live, setLive] = useState(false);
+  useEffect(() => {
+    if (live || !ref.current) return;
+    const io = new IntersectionObserver((es) => {
+      if (es.some((e) => e.isIntersecting)) { setLive(true); io.disconnect(); }
+    }, { rootMargin: '200px' });
+    io.observe(ref.current);
+    return () => io.disconnect();
+  }, [live]);
+  return (
+    <span ref={ref} style={{ display: 'contents' }}>
+      {live ? <iframe title={title} srcDoc={html} sandbox="" tabIndex={-1} /> : <Icon name="site" size={26} />}
+    </span>
+  );
+}
 
 // "+ Regenerate" tile followed by one thumbnail tab per version: V1 · Oct 22, V2 · …
 export default function VersionTabs({ versions = [], activeId, onPick, onRegenerate, busy }) {
@@ -20,7 +40,7 @@ export default function VersionTabs({ versions = [], activeId, onPick, onRegener
         >
           <span className="thumb">
             {v.html ? (
-              <iframe title={`v${i + 1}`} srcDoc={v.html} sandbox="" tabIndex={-1} />
+              <LazyFrame html={v.html} title={`v${i + 1}`} />
             ) : (
               <Icon name="site" size={26} />
             )}

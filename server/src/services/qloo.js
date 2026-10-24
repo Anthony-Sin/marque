@@ -1,18 +1,24 @@
 // Qloo Taste AI client (GET-only). Every call carries an evidence-trail record.
-// Modes: 'live' (real QLOO_API_KEY) → 'simulated' (LLM synthesizes Qloo-shaped
-// responses so the pipeline stays dynamic) → 'fixture' (static, last resort).
+// NO fallbacks: a call is 'live' or 'error' — failures surface as failures.
 import { ENV } from '../config.js';
-import { chatJSON, tensorConfigured } from './tensor.js';
-import { fixtureEntities, fixtureSearch, fixtureTags } from './qlooFixtures.js';
 
 const normId = (e) => e.id || e.entity_id || e.entityId;
-const normEntity = (e) => ({
-  id: normId(e),
-  name: e.name || e.properties?.name || normId(e),
-  affinity: e.affinity ?? e.query?.affinity,
-  popularity: e.popularity,
-  types: e.types || (e.type ? [e.type] : undefined),
-});
+const normEntity = (e) => {
+  const p = e.properties || {};
+  return {
+    id: normId(e),
+    name: e.name || p.name || normId(e),
+    affinity: e.affinity ?? e.query?.affinity,
+    popularity: e.popularity,
+    types: e.types || (e.type ? [e.type] : e.subtype ? [e.subtype] : undefined),
+    // rich graph payload — what makes the panel feel like real data, not a list
+    image: p.image?.url || p.image || null,
+    tagline: p.tagline || null,
+    keywords: (p.keywords || p.lifestyle || []).slice(0, 5),
+    industries: (p.industries || p.genres || []).slice(0, 3),
+    description: (p.description || '').slice(0, 240) || null,
+  };
+};
 
 async function qget(path, params) {
   const qs = new URLSearchParams();
@@ -24,64 +30,42 @@ async function qget(path, params) {
   const res = await fetch(`${ENV.qlooBase}${path}?${qs.toString()}`, {
     headers: { 'X-Api-Key': ENV.qlooKey },
   });
-  if (!res.ok) throw new Error(`qloo ${res.status} ${path}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`qloo ${res.status} ${path}${body ? ` — ${body.slice(0, 160)}` : ''}`);
+  }
   return res.json();
 }
 
-// wrap a call: live when keyed → LLM-simulated → static fixture
-async function call(endpoint, params, liveFn, fixtureFn, synthFn) {
+// one call: live, or an error record with the real reason — never synthesized
+async function call(endpoint, params, liveFn) {
   const at = new Date().toISOString();
   const t0 = Date.now();
-  let mode = 'fixture', data = null;
   try {
-    if (!ENV.qlooKey) throw new Error('no key');
-    data = await liveFn();
-    mode = 'live';
-  } catch {
-    if (synthFn && tensorConfigured()) {
-      try { data = await synthFn(); mode = 'simulated'; } catch { /* fall to fixture */ }
-    }
-    if (data == null) data = fixtureFn();
+    if (!ENV.qlooKey) throw new Error('QLOO_API_KEY not set');
+    const data = await liveFn();
+    return { mode: 'live', data, call: { endpoint, params, at, tookMs: Date.now() - t0, n: count(data), mode: 'live' } };
+  } catch (e) {
+    const error = String(e?.message || e).slice(0, 300);
+    return {
+      mode: 'error', data: null, error,
+      call: { endpoint, params, at, tookMs: Date.now() - t0, n: 0, mode: 'error', error },
+    };
   }
-  return { mode, data, call: { endpoint, params, at, tookMs: Date.now() - t0, n: count(data), mode } };
 }
 
-const slug = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'x';
-const SIM_SYS = 'You simulate the Qloo Taste AI API. Return culturally plausible, specific, REAL-WORLD entities (actual brands, shows, artists, places — never invented names). Strict JSON only.';
-
-async function synthSearch(query, types) {
-  const j = await chatJSON([
-    { role: 'system', content: SIM_SYS },
-    { role: 'user', content: `Qloo /search simulation. query="${query}" types="${types || 'any'}". Return {"results":[{"name","popularity":0-1,"types":["urn:entity:..."]}]} — up to 6 real entities most likely meant by the query.` },
-  ], { maxTokens: 1200 });
-  return (j.results || []).slice(0, 6).map((e) => ({ id: `sim:${slug(e.name)}`, ...e }));
+function count(d) {
+  const r = d?.results?.entities || d?.results?.tags || d?.results || d?.entities || d?.tags || d || [];
+  return Array.isArray(r) ? r.length : 0;
 }
-async function synthInsights(type, seed, take) {
-  const j = await chatJSON([
-    { role: 'system', content: SIM_SYS },
-    { role: 'user', content: `Qloo /v2/insights simulation. Audience seed: "${seed}". Target entity type: "${type}". Return {"entities":[{"name","affinity":0-1}]} — ${take} real ${type.replace('urn:entity:', '')} entities this audience plausibly over-indexes on, ranked by affinity (highest first, spread 0.35-0.95). Be specific and culturally real.` },
-  ], { maxTokens: 1600 });
-  return (j.entities || []).slice(0, take).map((e) => ({ id: `sim:${slug(e.name)}`, types: [type], ...e }));
-}
-async function synthTags(query, take) {
-  const j = await chatJSON([
-    { role: 'system', content: SIM_SYS },
-    { role: 'user', content: `Qloo /v2/tags simulation. query="${query}". Return {"tags":[{"name"}]} — up to ${take} short lowercase taste tags.` },
-  ], { maxTokens: 800 });
-  return (j.tags || []).slice(0, take).map((t) => ({ id: `urn:tag:${slug(t.name)}`, name: t.name, types: ['urn:tag'] }));
-}
-function count(d) { return (d?.results || d?.entities || d?.tags || d || []).length ?? 0; }
 
 export async function searchEntities(query, types) {
   const params = { query, types: Array.isArray(types) ? types.join(',') : types };
-  const r = await call('/search', params,
-    async () => {
-      const d = await qget('/search', params);
-      return (d.results || d.entities || d || []).map(normEntity);
-    },
-    () => fixtureSearch(query),
-    () => synthSearch(query, params.types));
-  return { mode: r.mode, results: r.data, call: r.call };
+  const r = await call('/search', params, async () => {
+    const d = await qget('/search', params);
+    return (d.results || d.entities || d || []).map(normEntity);
+  });
+  return { mode: r.mode, results: r.data, error: r.error, call: r.call };
 }
 
 export async function insights({ type, entities, tags: tagIds, take = 8, hint }) {
@@ -91,37 +75,28 @@ export async function insights({ type, entities, tags: tagIds, take = 8, hint })
     'signal.interests.tags': Array.isArray(tagIds) ? tagIds.join(',') : tagIds,
     take,
   };
-  const seed = hint || `${type}|${params['signal.interests.entities'] || ''}|${params['signal.interests.tags'] || ''}`;
-  const r = await call('/v2/insights', params,
-    async () => {
-      const d = await qget('/v2/insights', params);
-      return (d.results?.entities || d.entities || d.results || []).map(normEntity);
-    },
-    () => fixtureEntities(type, take, seed),
-    () => synthInsights(type, seed, take));
-  return { mode: r.mode, entities: r.data, call: r.call };
+  const r = await call('/v2/insights', params, async () => {
+    const d = await qget('/v2/insights', params);
+    return (d.results?.entities || d.entities || d.results || []).map((e) => normEntity(e?.entity || e));
+  });
+  return { mode: r.mode, entities: r.data, error: r.error, call: r.call };
 }
 
 export async function tags(query, take = 8) {
   const params = { 'filter.query': query };
-  const r = await call('/v2/tags', params,
-    async () => {
-      const d = await qget('/v2/tags', params);
-      return (d.results?.tags || d.tags || d.results || []).map((t) => ({ id: normId(t) || t.id, name: t.name, types: t.types }));
-    },
-    () => fixtureTags(query, take),
-    () => synthTags(query, take));
-  return { mode: r.mode, tags: r.data, call: r.call };
+  const r = await call('/v2/tags', params, async () => {
+    const d = await qget('/v2/tags', params);
+    return (d.results?.tags || d.tags || d.results || []).map((t) => ({ id: normId(t) || t.id, name: t.name, types: t.types }));
+  });
+  return { mode: r.mode, tags: r.data, error: r.error, call: r.call };
 }
 
-export function qlooMode() { return ENV.qlooKey ? 'live' : tensorConfigured() ? 'simulated' : 'fixture'; }
+export function qlooMode() { return ENV.qlooKey ? 'live' : 'off'; }
 
 export function status() {
   if (!ENV.qlooBase) return { mode: 'off', note: 'Qloo not configured' };
   if (ENV.qlooKey) return { mode: 'live', note: 'Qloo live' };
-  return tensorConfigured()
-    ? { mode: 'simulated', note: 'No Qloo key yet — LLM simulating Qloo-style taste data' }
-    : { mode: 'fixture', note: 'No Qloo key yet — serving demo taste data' };
+  return { mode: 'off', note: 'QLOO_API_KEY missing — taste calls will fail visibly' };
 }
 
 const CAT_KEYWORDS = [
@@ -137,11 +112,12 @@ function pickCategories(profile) {
   const hay = `${profile.name || ''} ${profile.description || ''} ${(profile.values || []).join(' ')} ${(profile.tone || []).join(' ')}`;
   const cats = [];
   for (const [re, t] of CAT_KEYWORDS) if (re.test(hay) && !cats.includes(t)) cats.push(t);
-  for (const t of ['urn:entity:artist', 'urn:entity:brand', 'urn:entity:place', 'urn:entity:movie']) {
-    if (cats.length >= 4) break;
+  // pad to a broad pull — the point is a rich taste map, not a narrow one
+  for (const t of ['urn:entity:artist', 'urn:entity:brand', 'urn:entity:movie', 'urn:entity:place', 'urn:entity:podcast', 'urn:entity:book']) {
+    if (cats.length >= 6) break;
     if (!cats.includes(t)) cats.push(t);
   }
-  return cats.slice(0, 4);
+  return cats.slice(0, 6);
 }
 
 function deriveKeywords(profile) {
@@ -154,39 +130,77 @@ function deriveKeywords(profile) {
   return kws.slice(0, 4);
 }
 
-// Full QlooBundle per API.md — never throws; worst case returns empty fixture bundle.
-export async function enrichProfile(profile) {
+// QlooBundle per API.md — no fallbacks: 'live' when every call succeeded,
+// 'partial' when some did, 'error' when all failed, 'off' without a key.
+function bundleMode(calls) {
+  const modes = calls.map((c) => c?.mode).filter(Boolean);
+  if (!modes.length) return 'error';
+  const live = modes.filter((m) => m === 'live').length;
+  return live === modes.length ? 'live' : live > 0 ? 'partial' : 'error';
+}
+
+// is a /search hit plausibly the subject we asked about? Qloo ranks loosely —
+// "Rhode" returns Sint-Genesius-Rode, a Belgian village ("rhode" is a token
+// inside it, but not what the query means). Require the entity's name to
+// START with the query's first token — "rhode island"✓, "sint-genesius-rode"✗
+function relevantHit(query, e) {
+  const toks = (s) => String(s || '').toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 1);
+  const q = toks(query), n = toks(e?.name);
+  if (!q.length || !n.length) return false;
+  if (n[0] === q[0]) return true;
+  return n.slice(0, 2).join(' ').startsWith(q.join(' '));
+}
+
+export async function enrichProfile(profile, opts = {}) {
   const calls = [];
-  let mode = 'fixture';
   let entity = null;
-  try {
-    const s = await searchEntities(profile.name || 'brand');
-    calls.push(s.call); mode = s.mode;
-    const best = s.results?.[0];
-    if (best) entity = { id: best.id, name: best.name, popularity: best.popularity };
-  } catch { /* keep going */ }
+  const query = profile.name || 'brand';
+  const s = await searchEntities(query);
+  calls.push(s.call);
+  // pick the first hit whose name actually overlaps the query — not results[0]
+  const best = (s.results || []).find((e) => relevantHit(query, e));
+  if (best) entity = { id: best.id, name: best.name, popularity: best.popularity };
 
   const tagList = [];
-  const tagResults = await Promise.all(deriveKeywords(profile).map((kw) => tags(kw).catch(() => null)));
-  for (const t of tagResults) {
-    if (!t) continue;
+  const liveTagIds = [];   // only tags returned by a LIVE call are valid signals
+  const addTags = (t) => {
+    if (!t) return;
     calls.push(t.call);
-    for (const tg of t.tags.slice(0, 3)) if (!tagList.find((x) => x.id === tg.id)) tagList.push(tg);
+    for (const tg of (t.tags || []).slice(0, 3)) {
+      if (!tagList.find((x) => x.id === tg.id)) tagList.push(tg);
+      if (t.call?.mode === 'live' && tg.id) liveTagIds.push(tg.id);
+    }
+  };
+  // tags are the reliable insights anchor — always pull at least one set,
+  // lite mode or not (an entity signal alone 400s when the entity is irrelevant)
+  const kws = deriveKeywords(profile);
+  const tagResults = await Promise.all((opts.lite ? kws.slice(0, 1) : kws).map((kw) => tags(kw)));
+  for (const t of tagResults) addTags(t);
+  // a live-but-empty tag call yields no anchor — walk the remaining keywords
+  // before giving up (never retry the same keyword: same empty result)
+  for (let i = 1; !liveTagIds.length && i < kws.length; i++) {
+    addTags(await tags(kws[i]));
   }
-  const tagIds = tagList.slice(0, 5).map((t) => t.id).filter(Boolean);
+  if (!liveTagIds.length) addTags(await tags(query));
 
-  const hint = `${profile.name || 'brand'} audience — fans of ${entity?.name || profile.name}${tagList.length ? `; taste tags: ${tagList.slice(0, 5).map((t) => t.name).join(', ')}` : ''}`;
+  const hint = `${query} audience — fans of ${entity?.name || query}${profile.audience ? `; ask: ${String(profile.audience).slice(0, 120)}` : ''}${tagList.length ? `; taste tags: ${tagList.slice(0, 5).map((t) => t.name).join(', ')}` : ''}`;
   const types = pickCategories(profile);
   const affinities = [];
+  // anchor: live tags first (proven reliable); the entity id only when it is a
+  // genuine name match — a wrong entity poisons every insights call
+  const signal = liveTagIds.length
+    ? { tags: liveTagIds.slice(0, 3) }
+    : entity?.id ? { entities: [entity.id] } : {};
   const insResults = await Promise.all(types.map((type) =>
-    insights({ type, entities: entity?.id ? [entity.id] : undefined, tags: tagIds.length ? tagIds : undefined, take: 8, hint }).catch(() => null)));
+    insights({ type, ...signal, take: 10, hint })));
   insResults.forEach((r, i) => {
     if (!r) return;
     calls.push(r.call);
-    affinities.push({ type: types[i], entities: r.entities });
+    // a failed insights call still gets a group slot — UI shows "call failed"
+    affinities.push({ type: types[i], entities: r.entities || [], error: r.error || null });
   });
 
-  return { entity, tags: tagList.slice(0, 8), affinities, calls, mode, fetchedAt: new Date().toISOString() };
+  return { entity, tags: tagList.slice(0, 8), affinities, calls, mode: bundleMode(calls), fetchedAt: new Date().toISOString() };
 }
 
 export function qlooEvidence(bundle) {
@@ -194,11 +208,15 @@ export function qlooEvidence(bundle) {
   const ev = [];
   for (const aff of bundle.affinities || []) {
     const top = aff.entities?.[0];
-    if (!top) continue;
     const label = String(aff.type || '').replace('urn:entity:', '');
+    if (aff.error) { ev.push({ label, detail: `insights call failed — ${aff.error}` }); continue; }
+    if (!top) continue;
     const a = typeof top.affinity === 'number' ? ` (${top.affinity.toFixed(2)})` : '';
     ev.push({ label, detail: `Top affinity: ${top.name}${a} via fans of the brand` });
   }
-  ev.push({ label: 'qloo', detail: `${bundle.calls?.length || 0} Qloo calls — ${bundle.mode} mode${bundle.mode === 'fixture' ? ' (demo data)' : ''}` });
+  const mix = {};
+  for (const c of bundle.calls || []) mix[c.mode] = (mix[c.mode] || 0) + 1;
+  const mixStr = Object.entries(mix).map(([m, n]) => `${n} ${m}`).join(' · ');
+  ev.push({ label: 'qloo', detail: `${bundle.calls?.length || 0} Qloo calls — ${mixStr}${bundle.mode === 'partial' ? ' — some failed, see trail' : ''}` });
   return ev;
 }

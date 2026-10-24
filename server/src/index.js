@@ -1,13 +1,15 @@
 // marque server — Express app, routes per docs/API.md, in-memory job runner
 import express from 'express';
 import multer from 'multer';
+import compression from 'compression';
 import fs from 'node:fs';
 import path from 'node:path';
 import { PORT, ASSETS_DIR, WEB_DIST, ENV, DATA_DIR } from './config.js';
+import { tuning } from './tuning.js';
 import * as store from './services/store.js';
 import { chat, chatJSON, tensorConfigured } from './services/tensor.js';
 import { geminiConfigured } from './services/gemini.js';
-import { genImageResilient, genVideoResilient } from './services/media.js';
+import { genImageResilient, genVideoResilient, localgenHealth } from './services/media.js';
 import * as qloo from './services/qloo.js';
 import { fetchSite } from './services/scraper.js';
 import * as brand from './services/brand.js';
@@ -22,12 +24,30 @@ const { get, set, list, push, find, update, remove, uid, now } = store;
 
 store.init();
 const app = express();
+app.use(compression());
 app.use(express.json({ limit: '30mb' }));
-app.use('/assets', express.static(ASSETS_DIR));
+// bad JSON bodies get a clean 400 — never the default HTML stack trace
+app.use((err, _req, res, next) => {
+  if (err?.type === 'entity.parse.failed' || err instanceof SyntaxError) return res.status(400).json({ error: 'malformed JSON body' });
+  if (err?.type === 'entity.too.large' || err?.name === 'MulterError' || err?.code === 'LIMIT_FILE_SIZE')
+    return res.status(413).json({ error: 'payload too large' });
+  next(err);
+});
+app.use('/assets', express.static(ASSETS_DIR, {
+  maxAge: '7d', immutable: true,
+  // user-uploaded SVGs could carry inline script — serve in a CSP sandbox so
+  // direct navigation renders harmlessly; <img> display is unaffected
+  setHeaders: (res) => {
+    res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src 'self' data:; media-src 'self'");
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+  },
+}));
 
 const h = (fn) => (req, res) => Promise.resolve(fn(req, res)).catch((e) => {
   console.error(`[marque] ${req.method} ${req.path} →`, e.message);
-  res.status(500).json({ error: String(e.message || e) });
+  const msg = String(e.message || e);
+  // caller-caused failures (unreachable/private URLs) are 4xx, not 5xx
+  res.status(/private|loopback|link-local|metadata/i.test(msg) ? 400 : 500).json({ error: msg });
 });
 const ok = (res, body) => res.json(body);
 
@@ -50,7 +70,11 @@ app.get('/api/jobs/:id', (req, res) => {
 // ---------- status ----------
 app.get('/api/status', h(async (_req, res) => {
   const q = qloo.status();
-  ok(res, { tensor: tensorConfigured(), gemini: geminiConfigured(), qloo: q.mode, qlooNote: q.note });
+  const lg = await localgenHealth().catch(() => ({ ok: false }));
+  ok(res, {
+    tensor: tensorConfigured(), gemini: geminiConfigured(), qloo: q.mode, qlooNote: q.note,
+    localgen: { configured: !!ENV.localgenUrl, mode: ENV.localgenProvider || 'off', ok: !!lg.ok, model: lg.model },
+  });
 }));
 
 // ---------- profile ----------
@@ -90,6 +114,28 @@ app.delete('/api/profile', h(async (_req, res) => {
   ok(res, { profile: null });
 }));
 app.post('/api/agent', h(async (req, res) => ok(res, await agentChat(req.body?.messages))));
+// Streaming variant — SSE: 'token' {delta} per model token (reply text only,
+// decoded from the JSON envelope), 'tool' per tool call, 'done' final result.
+app.post('/api/agent/stream', async (req, res) => {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+  const send = (event, data) => { try { res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`); } catch { /* client gone */ } };
+  const flush = res.flushHeaders?.bind(res); if (flush) flush();
+  const heartbeat = setInterval(() => { try { res.write(': ping\n\n'); } catch { /* client gone */ } }, 15000);
+  try {
+    const { agentChatStream } = await import('./services/agent.js');
+    const result = await agentChatStream(req.body?.messages, (ev, data) => send(ev, data));
+    send('done', result);
+  } catch (e) {
+    send('error', { error: String(e.message || e) });
+  }
+  clearInterval(heartbeat);
+  res.end();
+});
 
 // ---------- qloo ----------
 app.post('/api/qloo/search', h(async (req, res) => {
@@ -155,11 +201,53 @@ app.post('/api/catalog/:id/sync-image', h(async (req, res) => {
 
 // ---------- strategy boards (plans) ----------
 function boardTitle(prompt) {
-  const t = String(prompt || '').replace(/\s+/g, ' ').trim().slice(0, 48).trim();
-  return t || 'Untitled plan';
+  const t = String(prompt || '').replace(/\s+/g, ' ').trim();
+  if (t.length <= 48) return t || 'Untitled plan';
+  // cut at a word boundary, mark the truncation — no mid-word stumps
+  return `${t.slice(0, 48).replace(/\s+\S*$/, '')}…`;
 }
 function boardSummary(b) {
-  return { id: b.id, title: b.title || 'Untitled plan', createdAt: b.createdAt || null, sub: b.sub || null, strategyCount: (b.strategies || []).length };
+  const strats = b.strategies || [];
+  return {
+    id: b.id, title: b.title || 'Untitled plan', createdAt: b.createdAt || null, sub: b.sub || null, strategyCount: strats.length,
+    // card-level fields so list views don't need a per-board fetch (N+1)
+    titles: strats.slice(0, 3).map((s) => s.title).filter(Boolean),
+    channels: [...new Set(strats.flatMap((s) => (s.channels || []).map((c) => c.name)))].slice(0, 5),
+    qlooMode: honestBoard(b).evidence?.qlooMode || null,
+  };
+}
+// card-level strategy — deep fields (brief/watchouts/formats/fit likes) are
+// served per-card on demand via /api/boards/:id/strategies/:idx so a click
+// actually fetches the campaign board instead of revealing preloaded data.
+function slimStrategy(s) {
+  return {
+    id: s.id, title: s.title, angle: s.angle, heroSignal: s.heroSignal,
+    channels: (s.channels || []).map((c) => ({ name: c.name, fit: c.fit })),
+    audienceFit: { score: s.audienceFit?.score },
+    reach: s.reach, qlooSignals: s.qlooSignals,
+    // card-level context — enough to judge the play without opening it; the
+    // deep fields (watchouts, channel why, fit notes) still fetch on click
+    brief: { audience: s.brief?.audience, keyMessage: s.brief?.keyMessage },
+    formats: (s.formats || []).slice(0, 4),
+  };
+}
+// a board's mode label is recomputed from its own call log on read — every
+// call is 'live' or 'error', so the label is live / partial / error honestly
+function honestBoard(b) {
+  if (!b) return b;
+  const modes = (b.evidence?.calls || []).map((c) => c?.mode).filter(Boolean);
+  if (!modes.length) return b;
+  const live = modes.filter((m) => m === 'live').length;
+  const mode = live === modes.length ? 'live' : live > 0 ? 'partial' : 'error';
+  return {
+    ...b,
+    evidence: b.evidence ? { ...b.evidence, qlooMode: mode } : b.evidence,
+    qlooBundle: b.qlooBundle ? { ...b.qlooBundle, mode } : b.qlooBundle,
+  };
+}
+function slimBoard(b) {
+  b = honestBoard(b);
+  return b && { ...b, strategies: (b.strategies || []).map(slimStrategy) };
 }
 function migrateBoards() {
   // one-time lazy migration: a legacy single 'lastStrategy' becomes the first board
@@ -187,32 +275,76 @@ app.post('/api/strategy', h(async (req, res) => {
     try {
       const s = await fetchSite(inlineUrl);
       urlContext = { url: inlineUrl, title: s.title, description: s.description || s.meta?.description || '' };
-    } catch { urlContext = { url: inlineUrl }; }
+    } catch { urlContext = { url: inlineUrl, scrapeFailed: true }; }
   }
   const finalPrompt = raw || `analyze this product/site and suggest campaign strategies: ${inlineUrl}`;
   const result = await generateStrategies({ prompt: finalPrompt, profile: brand.currentProfile(), product, urlContext });
   result.sub = { prompt: finalPrompt, productId: productId || '', url: inlineUrl || '' };
-  const board = { id: uid(), title: boardTitle(finalPrompt), createdAt: now(), activeStrategyIdx: null, ...result };
+  const board = { id: uid(), title: boardTitle(finalPrompt), createdAt: now(), activeStrategyIdx: null, urlContext, ...result };
   push('boards', board);
   set('activeBoardId', board.id);
   set('lastStrategy', board);   // backward compat: GET /api/strategy + legacy readers
-  ok(res, board);
+  ok(res, slimBoard(board));
 }));
 app.get('/api/strategy', h(async (_req, res) => {
-  ok(res, { board: resolveActiveBoard(), boards: list('boards').map(boardSummary) });
+  ok(res, { board: slimBoard(resolveActiveBoard()), boards: list('boards').map(boardSummary) });
 }));
+// Streaming variant — SSE frames land as each pipeline stage finishes, so the
+// board fills in real time: audience read first (deterministic, ~instant),
+// then strategies, then ruled-out rows, then the saved board.
+app.post('/api/strategy/stream', async (req, res) => {
+  const { prompt, productId, url } = req.body || {};
+  const raw = (prompt || '').trim();
+  const inlineUrl = url || (raw.match(/https?:\/\/\S+/) || [])[0] || null;
+  if (!raw && !inlineUrl) return res.status(400).json({ error: 'prompt required' });
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  });
+  const send = (event, data) => { try { res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`); } catch { /* client gone */ } };
+  const flush = res.flushHeaders?.bind(res); if (flush) flush();
+  try {
+    const product = productId ? find('catalog', productId) : null;
+    let urlContext = null;
+    if (inlineUrl) {
+      send('stage', { stage: 'scraping', url: inlineUrl });
+      try {
+        const s = await fetchSite(inlineUrl);
+        urlContext = { url: inlineUrl, title: s.title, description: s.description || s.meta?.description || '' };
+      } catch { urlContext = { url: inlineUrl, scrapeFailed: true }; }
+      send('stage', { stage: 'scraped', urlContext });
+    }
+    const finalPrompt = raw || `analyze this product/site and suggest campaign strategies: ${inlineUrl}`;
+    const result = await generateStrategies({
+      prompt: finalPrompt, profile: brand.currentProfile(), product, urlContext,
+      onStage: (event, data) => send(event, data),
+    });
+    result.sub = { prompt: finalPrompt, productId: productId || '', url: inlineUrl || '' };
+    const board = { id: uid(), title: boardTitle(finalPrompt), createdAt: now(), activeStrategyIdx: null, urlContext, ...result };
+    push('boards', board);
+    set('activeBoardId', board.id);
+    set('lastStrategy', board);
+    send('done', { board: slimBoard(board) });
+  } catch (e) {
+    send('error', { error: String(e.message || e) });
+  }
+  res.end();
+});
 const exCache = new Map(); // in-memory per-board cache — re-visiting a card doesn't re-scrape
 app.post('/api/strategy/examples', h(async (req, res) => {
-  const { strategy, audienceRead, boardId } = req.body || {};
+  const { strategy, audienceRead, boardId, hint } = req.body || {};
   if (!strategy?.id && !strategy?.title) return res.status(400).json({ error: 'strategy required' });
+  if (strategy.channels !== undefined && !Array.isArray(strategy.channels)) return res.status(400).json({ error: 'strategy.channels must be an array' });
   const skey = strategy.id || strategy.title;
   const scope = boardId || get('activeBoardId') || '';
-  const key = scope ? `${scope}:${skey}` : skey;
+  const key = `${scope ? `${scope}:` : ''}${skey}:${String(hint || '').toLowerCase()}`;
   if (exCache.has(key)) return ok(res, exCache.get(key));
   const exBoard = (boardId && find('boards', boardId)) || resolveActiveBoard();
   const product = exBoard?.sub?.productId ? find('catalog', exBoard.sub.productId) : null;
-  const data = await generateExamples({ strategy, profile: brand.currentProfile(), audienceRead, product });
-  if (exCache.size > 30) exCache.clear();
+  const data = await generateExamples({ strategy, profile: brand.currentProfile(), audienceRead, product, hint, qlooBundle: exBoard?.qlooBundle });
+  if (exCache.size > tuning('exampleCacheSize')) exCache.clear();
   exCache.set(key, data);
   ok(res, data);
 }));
@@ -224,7 +356,24 @@ app.get('/api/boards', h(async (_req, res) => {
 }));
 app.get('/api/boards/:id', h(async (req, res) => {
   const b = find('boards', req.params.id);
-  b ? ok(res, { board: b }) : res.status(404).json({ error: 'board not found' });
+  b ? ok(res, { board: slimBoard(b) }) : res.status(404).json({ error: 'board not found' });
+}));
+// deep fields for ONE strategy — fetched when the user opens the card
+app.get('/api/boards/:id/strategies/:idx', h(async (req, res) => {
+  const b = find('boards', req.params.id);
+  if (!b) return res.status(404).json({ error: 'board not found' });
+  const s = (b.strategies || [])[+req.params.idx];
+  if (!s) return res.status(404).json({ error: 'strategy not found' });
+  const ev = honestBoard(b).evidence;
+  ok(res, {
+    strategy: s,
+    audienceRead: b.audienceRead || null,
+    evidence: ev ? {
+      qlooMode: ev.qlooMode, signals: ev.signals,
+      drivers: ev.drivers, calls: ev.calls,
+      qlooEvidence: ev.qlooEvidence, source: ev.source,
+    } : null,
+  });
 }));
 app.post('/api/boards/:id/activate', h(async (req, res) => {
   const b = find('boards', req.params.id);
@@ -295,13 +444,30 @@ function findCreative(id) {
 }
 function saveCampaign(c) { update('campaigns', c.id, c); return find('campaigns', c.id); }
 
-app.get('/api/campaigns', h(async (_req, res) => ok(res, { campaigns: list('campaigns') })));
+app.get('/api/campaigns', h(async (_req, res) => {
+  const boards = list('boards') || [];
+  ok(res, {
+    campaigns: list('campaigns').map((c) => {
+      const b = boards.find((x) => x.id === c.boardId);
+      return { ...c, qlooBundle: b?.qlooBundle || c.qlooBundle || null, evidence: b?.evidence || c.evidence || null };
+    }),
+  });
+}));
+app.delete('/api/campaigns/:id', h(async (req, res) => {
+  if (!find('campaigns', req.params.id)) return res.status(404).json({ error: 'not found' });
+  remove('campaigns', req.params.id);
+  ok(res, { deleted: req.params.id });
+}));
 app.post('/api/campaigns/brief', h(async (req, res) => {
   ok(res, await campaigns.generateBrief(req.body || {}, brand.currentProfile()));
 }));
 app.post('/api/campaigns', h(async (req, res) => {
-  const { brief, productId, ingredients, aspectRatio, qlooSignals, notes, strategyId, strategyTitle } = req.body || {};
+  const { brief, productId, ingredients, aspectRatio, qlooSignals, notes, strategyId, strategyTitle, boardId, provider } = req.body || {};
   if (!brief?.title) return res.status(400).json({ error: 'brief required' });
+  // Snapshot the source board's bundle only when the caller names it — the
+  // board drives product context (resolveProductContext), so guessing it from
+  // "signals were passed" contaminates the creative copy with the wrong brand.
+  const srcBoard = (boardId && find('boards', boardId)) || null;
   const campaign = {
     id: uid(), createdAt: now(), brief,
     productId: productId || null,
@@ -312,11 +478,15 @@ app.post('/api/campaigns', h(async (req, res) => {
     notes: notes || '',
     strategyId: strategyId || null,
     strategyTitle: strategyTitle || '',
+    boardId: boardId || null,
+    qlooBundle: srcBoard?.qlooBundle || null,
+    evidence: srcBoard?.evidence || null,
+    imageProvider: ['local', 'gemini', 'pollinations'].includes(provider) ? provider : undefined,
   };
   push('campaigns', campaign);
   const profile = brand.currentProfile();
-  const job = runJob('campaign', async () => {
-    const creatives = await campaigns.generateCreatives(campaign, profile, 4);
+  const job = runJob('campaign', async (j) => {
+    const creatives = await campaigns.generateCreatives(campaign, profile, 4, (p) => { j.progress = p; });
     const stored = find('campaigns', campaign.id) || campaign;
     stored.creatives = creatives;
     saveCampaign(stored);
@@ -326,16 +496,19 @@ app.post('/api/campaigns', h(async (req, res) => {
 }));
 app.get('/api/campaigns/:id', h(async (req, res) => {
   const c = find('campaigns', req.params.id);
-  c ? ok(res, { campaign: c }) : res.status(404).json({ error: 'not found' });
+  if (!c) return res.status(404).json({ error: 'not found' });
+  const b = honestBoard((list('boards') || []).find((x) => x.id === c.boardId));
+  ok(res, { campaign: { ...c, qlooBundle: b?.qlooBundle || c.qlooBundle || null, evidence: b?.evidence || c.evidence || null } });
 }));
 app.post('/api/creatives/:id/edit', h(async (req, res) => {
   const hit = findCreative(req.params.id);
   if (!hit) return res.status(404).json({ error: 'not found' });
-  const { headline, body, cta, layout, grade } = req.body || {};
+  const { headline, body, cta, layout, grade, overlayStyle } = req.body || {};
   if (headline != null) hit.creative.headline = headline;
   if (body != null) hit.creative.body = body;
   if (cta != null) hit.creative.cta = cta;
   if (grade != null) hit.creative.grade = Math.max(0, Math.min(5, +grade || 0));
+  if (overlayStyle != null) hit.creative.overlayStyle = String(overlayStyle).slice(0, 24);
   if (layout && typeof layout === 'object') hit.creative.layout = { ...hit.creative.layout, ...layout };
   saveCampaign(hit.campaign);
   ok(res, { creative: hit.creative });
@@ -346,17 +519,24 @@ app.post('/api/creatives/:id/regenerate-image', h(async (req, res) => {
   const profile = brand.currentProfile();
   const c = profile?.colors || {};
   const extra = req.body?.prompt ? `Additional art direction: ${req.body.prompt}.` : '';
+  const prod = await campaigns.resolveProductContext(hit.campaign);
+  const brandName = prod?.name || profile?.name;
+  const vpos = hit.creative.layout?.vpos || 'bottom';
+  const space = vpos === 'top' ? 'upper third' : vpos === 'middle' ? 'center band' : 'lower third';
   const prompt = [
-    `A finished ${hit.campaign.aspectRatio || '1:1'} social media ad creative for "${profile?.name}".`,
-    `Brand palette: ${c.primary}, ${c.secondary}, accent ${c.accent}, background ${c.background}.`,
-    `Render this exact text legibly: headline "${hit.creative.headline}", body "${hit.creative.body}", CTA "${hit.creative.cta}".`,
-    `Text placed ${hit.creative.layout?.vpos || 'bottom'} ${hit.creative.layout?.hpos || 'left'}. ${extra} Clean professional ad composition, no watermarks.`,
+    `Editorial ad photograph for "${brandName}", ${hit.campaign.aspectRatio || '1:1'} composition native to ${(hit.campaign.brief?.channels || [])[0] || 'instagram'} — strong focal subject, real platform content feel, not a generic stock gradient.`,
+    hit.campaign.brief?.angle ? `Campaign angle: ${hit.campaign.brief.angle}.` : '',
+    prod ? `Featuring: "${prod.name}"${prod.description ? ` — ${prod.description}` : ''}.` : '',
+    `CRITICAL: absolutely NO text, words, letters, typography, logos, captions or watermarks — NO newspapers, magazines, books, posters, packaging, signage, screens or printed materials; plain unmarked objects only. Clean negative space in the ${space} for a headline overlay.`,
+    `Art direction palette: ${c.primary}, ${c.secondary}, accent ${c.accent}. ${extra}`,
   ].join(' ');
   try {
-    const g = await genImageResilient(prompt, { aspectRatio: hit.campaign.aspectRatio, refs: (profile?.images || []).slice(0, 1).map((i) => ({ path: i.path })) });
+    const g = await genImageResilient(prompt, { aspectRatio: hit.campaign.aspectRatio, provider: ['local', 'gemini', 'pollinations'].includes(req.body?.provider) ? req.body.provider : undefined, refs: (profile?.images || []).slice(0, 1).map((i) => ({ path: i.path })) });
     hit.creative.imagePath = g.path;
     hit.creative.imageProvider = g.provider;
+    hit.creative.cleanImage = true;
     delete hit.creative.placeholder;
+    delete hit.creative.imageError;
   } catch (e) {
     hit.creative.imagePath = campaigns.placeholderCreative(profile, hit.creative);
     hit.creative.placeholder = true;
@@ -380,6 +560,13 @@ app.post('/api/creatives/:id/fix-layout', h(async (req, res) => {
   saveCampaign(hit.campaign);
   ok(res, { creative: hit.creative });
 }));
+app.delete('/api/creatives/:id', h(async (req, res) => {
+  const hit = findCreative(req.params.id);
+  if (!hit) return res.status(404).json({ error: 'not found' });
+  hit.campaign.creatives = (hit.campaign.creatives || []).filter((x) => x.id !== req.params.id);
+  saveCampaign(hit.campaign);
+  ok(res, { deleted: req.params.id });
+}));
 app.post('/api/creatives/:id/animate', h(async (req, res) => {
   const hit = findCreative(req.params.id);
   if (!hit) return res.status(404).json({ error: 'not found' });
@@ -394,7 +581,7 @@ app.post('/api/creatives/:id/animate', h(async (req, res) => {
       );
       const stored = find('campaigns', hit.campaign.id);
       const cr = stored?.creatives?.find((x) => x.id === hit.creative.id);
-      if (cr) { cr.videoPath = v.path; cr.videoState = 'done'; cr.videoProvider = v.provider; saveCampaign(stored); }
+      if (cr) { cr.videoPath = v.path; cr.videoState = 'done'; cr.videoProvider = v.provider; if (v.note) cr.videoNote = v.note; saveCampaign(stored); }
       return { creativeId: hit.creative.id, videoPath: v.path, provider: v.provider };
     } catch (e) {
       const stored = find('campaigns', hit.campaign.id);
@@ -407,13 +594,7 @@ app.post('/api/creatives/:id/animate', h(async (req, res) => {
 }));
 
 // ---------- photoshoot + images ----------
-const SHOOT_TEMPLATES = {
-  studio: 'clean studio product shot, soft gradient backdrop, professional lighting',
-  lifestyle: 'in-use lifestyle scene, natural window light, candid editorial feel',
-  'flat-lay': 'overhead flat-lay arrangement on a neutral textured surface',
-  detail: 'extreme close-up macro highlighting texture, materials and details',
-  outdoor: 'natural outdoor scene with golden-hour light',
-};
+const SHOOT_TEMPLATES = tuning('shootTemplates');
 
 function runShoot(shot, profile) {
   return runJob('image', async () => {
@@ -498,11 +679,12 @@ app.put('/api/images/:id', h(async (req, res) => {
 }));
 
 // ---------- websites ----------
-app.get('/api/websites', h(async (_req, res) => ok(res, { websites: list('websites') })));
+app.get('/api/websites', h(async (_req, res) => ok(res, { websites: list('websites'), lastAudit: get('lastSiteAudit') || null })));
 app.post('/api/websites', h(async (req, res) => {
   const profile = brand.currentProfile();
   if (!profile) return res.status(400).json({ error: 'build a profile first' });
-  ok(res, { website: await generateWebsite(profile, req.body?.prompt || '') });
+  const prompt = typeof req.body?.prompt === 'string' ? req.body.prompt.trim() : '';
+  ok(res, { website: await generateWebsite(profile, prompt) });
 }));
 app.post('/api/websites/:id/edit', h(async (req, res) => {
   const w = find('websites', req.params.id);
@@ -519,6 +701,15 @@ app.post('/api/websites/:id/publish', h(async (req, res) => {
   if (clash) return res.status(409).json({ error: 'slug already in use' });
   update('websites', w.id, { publishedSlug: slug });
   ok(res, { publishedSlug: slug });
+}));
+app.delete('/api/websites/:id', h(async (req, res) => {
+  if (!find('websites', req.params.id)) return res.status(404).json({ error: 'not found' });
+  remove('websites', req.params.id);
+  ok(res, { deleted: req.params.id });
+}));
+app.delete('/api/brandbook', h(async (_req, res) => {
+  set('brandbook', null);
+  ok(res, { deleted: true });
 }));
 app.post('/api/websites/:id/unpublish', h(async (req, res) => {
   const w = find('websites', req.params.id);
@@ -546,7 +737,9 @@ app.post('/api/websites/improve', h(async (req, res) => {
       `Return {"suggestions":[{"area","fix","why","effort":"low|med|high","impact":"low|med|high"}],"competitorNotes":[{"brand","steal"}]} — 5-8 concrete fixes ranked by impact, each tied to the audience data or a competitor pattern. competitorNotes = what to steal from each adjacent brand.`,
     ].filter(Boolean).join('\n') },
   ], { maxTokens: 2600 });
-  ok(res, { url: target, scraped: !!site, socials: site?.socials || {}, missingSocials: site?.missingSocials || [], suggestions: j.suggestions || [], competitorNotes: j.competitorNotes || [], competitors });
+  const audit = { url: target, scraped: !!site, socials: site?.socials || {}, missingSocials: site?.missingSocials || [], suggestions: j.suggestions || [], competitorNotes: j.competitorNotes || [], competitors, at: now() };
+  set('lastSiteAudit', audit);   // a 20s+ analysis shouldn't vanish on navigation
+  ok(res, audit);
 }));
 app.delete('/api/websites/:id/versions/:vid', h(async (req, res) => {
   const w = find('websites', req.params.id);
@@ -610,12 +803,21 @@ app.post('/api/upload', upload.single('file'), h(async (req, res) => {
   ok(res, { path: p });
 }));
 
+// unknown API paths get a JSON 404, never Express's HTML page
+app.use('/api', (_req, res) => res.status(404).json({ error: 'not found' }));
+
 // ---------- SPA ----------
 if (fs.existsSync(path.join(WEB_DIST, 'index.html'))) {
-  app.use(express.static(WEB_DIST));
+  app.use(express.static(WEB_DIST, { setHeaders: (res, p) => {
+    if (/\.(js|css|woff2?|png|jpe?g|svg|webp|mp4)$/.test(p)) res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+  } }));
   app.get('*', (req, res, next) => {
     if (/^\/(api|assets|s|b)(\/|$)/.test(req.path)) return next();
-    res.sendFile(path.join(WEB_DIST, 'index.html'));
+    res.sendFile(path.join(WEB_DIST, 'index.html'), (err) => {
+      if (err && !res.headersSent) res.status(503).type('html').send(
+        '<meta charset=utf-8><body style="font-family:system-ui;display:grid;place-items:center;min-height:100vh;margin:0">'
+        + '<div style="text-align:center"><h2>Studio is rebuilding…</h2><p>Refresh in a few seconds.</p></div></body>');
+    });
   });
   console.log('[marque] serving web/dist');
 }

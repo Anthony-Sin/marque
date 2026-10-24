@@ -19,7 +19,7 @@ const TEMPLATES = [
   { id: 'flat-lay', label: 'Flat lay', scene: 'flat-lay' },
   { id: 'moody-dark', label: 'Moody · dark', scene: 'moody dark backdrop, dramatic low-key lighting' },
 ];
-const MAX_TEMPLATES = 6; // server currently caps at 4 — extra picks are dropped there
+const MAX_TEMPLATES = 4; // matches the server cap in POST /api/photoshoot
 
 // Small icon-button with a popover menu (action rows on result cards).
 function PopBtn({ icon, label, title, items, disabled }) {
@@ -67,6 +67,7 @@ export default function Photoshoot() {
   const stageNote = useStages(GEN_STAGES, busy);
   // product flow
   const [inputImage, setInputImage] = useState(null);  // {path, caption}
+  const [uploads, setUploads] = useState([]);          // session uploads — shown in the pick-grid
   const [picked, setPicked] = useState([]);            // template ids
   const [custom, setCustom] = useState('');
   const [customOpen, setCustomOpen] = useState(false);
@@ -125,8 +126,8 @@ export default function Photoshoot() {
   // ---------- inputs ----------
   const catalogImgs = (profile?.catalog || []).filter((c) => c.image)
     .map((c) => ({ path: c.image, caption: c.name }));
-  const profileImgs = (profile?.images || []).map((i) => ({ path: i.path, caption: i.caption }));
-  const sources = mode === 'free' ? profileImgs : [...catalogImgs, ...profileImgs];
+  const profileImgs = (profile?.images || []).filter((i) => i.path).map((i) => ({ path: i.path, caption: i.caption }));
+  const sources = mode === 'free' ? [...uploads, ...profileImgs] : [...uploads, ...catalogImgs, ...profileImgs];
 
   const upload = async (e) => {
     const f = e.target.files?.[0];
@@ -135,6 +136,7 @@ export default function Photoshoot() {
     try {
       const { path } = await api.upload(f);
       const img = { path, caption: f.name };
+      setUploads((u) => (u.some((x) => x.path === path) ? u : [img, ...u]));
       if (uploadTarget.current === 'ref') setRefImage(img); else setInputImage(img);
       say('Uploaded');
     } catch (err) { say(err.message); }
@@ -148,7 +150,7 @@ export default function Photoshoot() {
   const generateProduct = () =>
     runAndTrack(() => api.createPhotoshoot({ mode: 'product', inputImage: inputImage.path, templates }));
   const generateFree = () =>
-    runAndTrack(() => api.createPhotoshoot({ mode: 'free', prompt: prompt.trim(), referenceImage: refImage?.path }));
+    runAndTrack(() => api.createPhotoshoot({ mode: 'free', prompt: prompt.trim(), inputImage: refImage?.path }));
 
   const job = (jobs || []).find((j) => j.id === activeJob);
 
@@ -228,7 +230,7 @@ export default function Photoshoot() {
       if (e.status !== 404) return say(e.message);
       try {
         const { profile: p } = await api.updateProfile({
-          patch: { images: [...(profile?.images || []), { id: `img-${Math.random().toString(36).slice(2, 9)}`, path: r.imagePath, caption: 'Studio shot' }] },
+          images: [...(profile?.images || []), { id: `img-${Math.random().toString(36).slice(2, 9)}`, path: r.imagePath, caption: 'Studio shot' }],
         });
         if (p) setProfile(p);
         say('Saved to Business Profile');
@@ -351,9 +353,7 @@ export default function Photoshoot() {
           <div className="step-bar">
             <span className={`step-dot${step === 0 ? ' on' : ''}`}><i>1</i> Product image</span>
             <span className="step-line" />
-            <span className={`step-dot${step === 1 ? ' on' : ''}`}><i>2</i> Templates</span>
-            <span className="step-line" />
-            <span className="step-dot"><i>3</i> Generate</span>
+            <span className={`step-dot${step === 1 ? ' on' : ''}`}><i>2</i> Templates → Generate</span>
           </div>
 
           {step === 0 && (
@@ -454,7 +454,7 @@ export default function Photoshoot() {
                 </span>
               ) : (
                 <span className="pop-wrap">
-                  <FreeRefPicker profileImgs={profileImgs} onPick={setRefImage}
+                  <FreeRefPicker profileImgs={[...uploads, ...profileImgs]} onPick={setRefImage}
                     onUpload={() => { uploadTarget.current = 'ref'; fileRef.current?.click(); }} />
                 </span>
               )}
@@ -524,7 +524,8 @@ export default function Photoshoot() {
           <div className="section-label">History</div>
           <div className="grid" style={{ gap: 10 }}>
             {[...jobs].reverse().map((j) => (
-              <div key={j.id} className={`card job-row${j.id === activeJob ? ' on' : ''}`} onClick={() => setActiveJob(j.id)}>
+              <div key={j.id} className={`card job-row${j.id === activeJob ? ' on' : ''}`} onClick={() => setActiveJob(j.id)}
+                role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveJob(j.id); } }}>
                 <span className={`status-dot ${j.status || 'done'}`} />
                 <Icon name={j.mode === 'product' ? 'bag' : 'sparkle'} size={17} />
                 <div>
@@ -532,7 +533,7 @@ export default function Photoshoot() {
                     {j.mode === 'product' ? 'Product shoot' : (j.prompt || 'Free generation')}
                   </div>
                   <div className="muted small">
-                    {fmtDate(j.createdAt)}{j.templates?.length ? ` · ${j.templates.length} templates` : ''} · {(j.results || []).filter((r) => r.imagePath).length} images
+                    {fmtDate(j.createdAt)}{j.templates?.length ? ` · ${j.templates.length} templates` : ''} · {(j.results || []).filter((r) => r.imagePath).length} image{(j.results || []).filter((r) => r.imagePath).length === 1 ? '' : 's'}
                   </div>
                 </div>
                 <div className="thumbs">

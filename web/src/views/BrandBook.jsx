@@ -58,7 +58,7 @@ export default function BrandBook() {
     // the book's coverImageId/imageIds lookups resolve.
     const nid = `img-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
     const { profile: p } = await api.updateProfile({
-      patch: { images: [...(profile?.images || []), { id: nid, path, caption }] },
+      images: [...(profile?.images || []), { id: nid, path, caption }],
     });
     if (p) setProfile(p);
     return (p?.images || []).find((i) => i.path === path)?.id || nid || path;
@@ -79,14 +79,14 @@ export default function BrandBook() {
   const genCover = async () => {
     setBusy('gen-cover');
     try {
-      const { job } = await api.createPhotoshoot({
+      const { job, shoot } = await api.createPhotoshoot({
         mode: 'free',
         prompt: `Brand book cover for ${profile?.name || 'the brand'} — ${(profile?.tone || []).slice(0, 3).join(', ') || 'clean'} style, palette ${colorList(profile).slice(0, 3).map((c) => c.hex).join(' ')}, elegant editorial layout space`,
       });
       if (job?.id) await pollJob(job.id).catch(() => {});
       const { jobs } = await api.listPhotoshoot();
-      const j = (jobs || []).find((x) => x.id === job?.id) || (jobs || []).at(-1);
-      const path = j?.results?.[0]?.imagePath;
+      const j = (jobs || []).find((x) => x.id === shoot?.id) || (jobs || []).at(-1);
+      const path = (j?.results || []).find((r) => r.imagePath)?.imagePath;
       if (path) { setCover({ path }); say('Cover generated'); }
       else say('No cover image came back');
     } catch (e) { say(e.message); }
@@ -135,7 +135,7 @@ export default function BrandBook() {
     setTimeout(() => URL.revokeObjectURL(u), 60_000);
   };
 
-  const qlooMode = status?.qloo === 'live' ? 'live' : 'demo';
+  const qlooMode = status?.qloo === 'live' ? 'live' : 'off';
 
   // ---------- loading ----------
   if (book === undefined) {
@@ -186,7 +186,7 @@ export default function BrandBook() {
               <h4 style={{ marginTop: 0 }}>Pick a cover image</h4>
               <p className="muted small">From your Business Profile assets, an upload, or generate a new one.</p>
               <div className="pick-grid">
-                {(profile?.images || []).map((im) => (
+                {(profile?.images || []).filter((im) => im.path).map((im) => (
                   <button key={im.id || im.path}
                     className={`pick-tile${(cover?.id || cover?.path) === (im.id || im.path) ? ' sel' : ''}`}
                     onClick={() => setCover({ id: im.id, path: im.path })}>
@@ -219,7 +219,7 @@ export default function BrandBook() {
               <h4 style={{ marginTop: 0 }}>Pick up to {MAX_IMGS} images</h4>
               <p className="muted small">These fill the imagery pages — product shots, studio results, campaign art.</p>
               <div className="pick-grid">
-                {(profile?.images || []).map((im) => {
+                {(profile?.images || []).filter((im) => im.path).map((im) => {
                   const k = im.id || im.path;
                   const sel = picked.includes(k);
                   return (
@@ -269,8 +269,8 @@ export default function BrandBook() {
       </div>
 
       <div className="toolbar mb16" style={{ maxWidth: 840, margin: '0 auto 16px' }}>
-        <a className="btn ghost sm" href="/api/brandbook/pdf" target="_blank" rel="noreferrer">
-          <Icon name="download" /> Download PDF
+        <a className="btn ghost sm" href="/api/brandbook/pdf" target="_blank" rel="noreferrer" title="Opens the print view — Save as PDF from the browser print dialog">
+          <Icon name="download" /> Print / Save as PDF
         </a>
         <button className="btn ghost sm" onClick={previewNewTab}>
           <Icon name="eye" /> Preview in New Tab
@@ -354,7 +354,7 @@ export default function BrandBook() {
         <div className="book-nav">
           <button className="icon-btn" onClick={() => setPage((p) => Math.max(0, p - 1))}>←</button>
           {pages.map((p, i) => (
-            <button key={p.id} className={`book-dot${i === page ? ' on' : ''}`} title={p.label} onClick={() => setPage(i)} />
+            <button key={p.id} className={`book-dot${i === page ? ' on' : ''}`} title={p.label} aria-current={i === page ? 'page' : undefined} onClick={() => setPage(i)} />
           ))}
           <button className="icon-btn" onClick={() => setPage((p) => Math.min(pages.length - 1, p + 1))}>→</button>
         </div>

@@ -5,6 +5,7 @@ import { useApp } from '../App.jsx';
 import Icon, { Logo } from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
 import { isRaster, MediaFallback } from '../components/Composer.jsx';
+import { chanLabel } from '../labels.js';
 import './dashboard.css';
 
 const CHAN_ICON = {
@@ -67,7 +68,8 @@ export default function Dashboard() {
   // plan cards list strategy titles — summaries don't carry them, so lazy-pull
   // the full board for the first few plans (the active one is already in ctx).
   useEffect(() => {
-    const want = boards.slice(0, 6).filter((b) => b.id && !(board?.id === b.id) && !fullBoards[b.id]);
+    // summaries carry titles/channels now — only fetch a full board when they don't
+    const want = boards.slice(0, 6).filter((b) => b.id && !(board?.id === b.id) && !fullBoards[b.id] && !b.titles?.length);
     if (!want.length) return;
     let dead = false;
     Promise.allSettled(want.map((b) => api.board(b.id))).then((rs) => {
@@ -166,7 +168,9 @@ export default function Dashboard() {
   // top-2 strategy titles for a plan card — ctx board if it's active, else lazy fetch
   const stratTitles = (b) => {
     const full = (board?.id === b.id ? board : null) || fullBoards[b.id];
-    return (full?.strategies || []).map((s) => s.title).filter(Boolean).slice(0, 2);
+    return ((full?.strategies || []).map((s) => s.title).filter(Boolean).slice(0, 2).length
+      ? full.strategies.map((s) => s.title).filter(Boolean).slice(0, 2)
+      : (b.titles || []).slice(0, 2));
   };
 
   return (
@@ -223,7 +227,7 @@ export default function Dashboard() {
                           if (e.key === 'Enter') commitRename(b);
                           if (e.key === 'Escape') setRenaming(null);
                         }}
-                        onBlur={() => commitRename(b)}
+                        onBlur={() => setRenaming(null)}
                       />
                     ) : (
                       <h4>{b.title || 'Strategy board'}{active && <span className="dash-plan-live">active</span>}</h4>
@@ -245,7 +249,7 @@ export default function Dashboard() {
                     {fmtDate(b.createdAt)}{b.createdAt && b.strategyCount != null ? ' · ' : ''}
                     {b.strategyCount != null && `${b.strategyCount} strateg${b.strategyCount === 1 ? 'y' : 'ies'}`}
                   </div>
-                  {!!b.sub?.prompt && <div className="dash-plan-sub">“{b.sub.prompt}”</div>}
+                  {!!b.sub?.prompt && b.sub.prompt !== b.title && <div className="dash-plan-sub">“{b.sub.prompt}”</div>}
                   {!!titles.length && (
                     <ul className="dash-plan-strats">
                       {titles.map((t) => <li key={t}>{t}</li>)}
@@ -256,7 +260,7 @@ export default function Dashboard() {
                     <div className="chip-row">
                       {b.channels.slice(0, 4).map((c) => (
                         <span key={c} className="chan-chip">
-                          <Icon name={chanIcon(c)} size={10} /> {c}
+                          <Icon name={chanIcon(c)} size={10} /> {chanLabel(c)}
                         </span>
                       ))}
                     </div>
@@ -285,7 +289,7 @@ export default function Dashboard() {
                 {work.map((c) => {
                   const showImg = c.img && !badImg[c.id];
                   return (
-                    <Link key={c.id} to="/campaigns" className="card dash-work-card">
+                    <Link key={c.id} to={`/campaigns?open=${c.id}`} className="card dash-work-card">
                       {showImg ? (
                         <span className="dash-work-media">
                           <img src={c.img} alt="" loading="lazy"

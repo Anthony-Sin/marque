@@ -7,9 +7,62 @@ const JSON_SYS = 'You respond with raw JSON only. No markdown, no code fences, n
 
 export function tensorConfigured() { return !!(ENV.tensorBase && ENV.tensorKey); }
 
+// streaming variant — OpenAI-compatible SSE; onToken(delta) per chunk,
+// resolves with the full concatenated text (same post-processing as chat()).
+export async function chatStream(messages, opts = {}) {
+  if (!tensorConfigured()) throw new Error('tensor not configured');
+  const res = await fetch(`${ENV.tensorBase}/chat/completions`, {
+    signal: AbortSignal.timeout(opts.timeoutMs ?? 120000),
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${ENV.tensorKey}` },
+    body: JSON.stringify({
+      model: ENV.tensorModel,
+      messages,
+      temperature: opts.temperature ?? 0.7,
+      max_tokens: opts.maxTokens ?? 3000,
+      stream: true,
+      ...(opts.extra || {}),
+    }),
+  });
+  if (!res.ok || !res.body) {
+    let data = null;
+    try { data = await res.json(); } catch { /* fallthrough */ }
+    throw new Error(`tensor ${res.status}: ${JSON.stringify(data)?.slice(0, 300) || res.statusText}`);
+  }
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  // reasoning models stream delta.reasoning (thinking) + delta.content (answer)
+  // — keep them separate; the answer is what callers want
+  let buf = '', full = '', thinking = '';
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let cut;
+    while ((cut = buf.indexOf('\n\n')) >= 0) {
+      const frame = buf.slice(0, cut); buf = buf.slice(cut + 2);
+      for (const line of frame.split('\n')) {
+        if (!line.startsWith('data:')) continue;
+        const raw = line.slice(5).trim();
+        if (raw === '[DONE]') continue;
+        try {
+          const j = JSON.parse(raw);
+          const d = j?.choices?.[0]?.delta || {};
+          const content = d.content ?? '';
+          const reasoning = d.reasoning ?? d.reasoning_content ?? '';
+          if (reasoning) { thinking += reasoning; opts.onReasoning?.(reasoning, thinking); }
+          if (content) { full += content; opts.onToken?.(content, full); }
+        } catch { /* partial frame */ }
+      }
+    }
+  }
+  return full.trim() ? full : thinking;
+}
+
 export async function chat(messages, opts = {}) {
   if (!tensorConfigured()) throw new Error('tensor not configured');
   const res = await fetch(`${ENV.tensorBase}/chat/completions`, {
+    signal: AbortSignal.timeout(opts.timeoutMs ?? 90000),
     method: 'POST',
     headers: { 'content-type': 'application/json', authorization: `Bearer ${ENV.tensorKey}` },
     body: JSON.stringify({
