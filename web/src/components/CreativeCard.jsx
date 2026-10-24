@@ -39,6 +39,30 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
     return () => window.removeEventListener('keydown', onKey);
   }, [promote]);
 
+  // publish lane — platform connect status + per-platform LLM captions
+  const [pubStatus, setPubStatus] = useState(null);
+  const [pubCaps, setPubCaps] = useState({});
+  useEffect(() => {
+    if (!promote || pubStatus) return;
+    api.publishStatus().then((r) => setPubStatus(r)).catch(() => setPubStatus({ platforms: {} }));
+  }, [promote, pubStatus]);
+  const pubOrder = (campaign?.brief?.channels || [])
+    .map((c) => String(c).toLowerCase())
+    .filter((c) => ['tiktok', 'instagram', 'youtube'].includes(c));
+  const loadPubCap = async (pk) => {
+    setPubCaps((m) => ({ ...m, [pk]: { status: 'loading' } }));
+    try {
+      const r = await api.publishCaption(creative, pk, campaign);
+      setPubCaps((m) => ({ ...m, [pk]: { status: 'done', text: r.caption } }));
+    } catch (e) {
+      setPubCaps((m) => ({ ...m, [pk]: { status: 'error', err: e.message } }));
+    }
+  };
+  const copyText = async (text, okMsg) => {
+    try { await navigator.clipboard.writeText(text); say(okMsg); }
+    catch { say('copy failed — select manually'); }
+  };
+
   const retryImage = async () => {
     if (retrying) return;
     setRetrying(true);
@@ -174,18 +198,49 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
           </div>
         </div>
         {promote && (
-          <div className="promote-panel">
+          <div className="promote-panel" onClick={(e) => e.stopPropagation()}>
             <div className="promote-head">
-              <span className="promote-label">Post-ready caption</span>
+              <span className="promote-label">Publish lane — per platform</span>
               <button type="button" className="x" title="Close kit" onClick={() => setPromote(false)}>✕</button>
             </div>
-            <p className="promote-caption">{caption}</p>
-            {!!chans.length && (
-              <div className="promote-chans">
-                {chans.map((c) => <span key={c} className="chan-chip">{chanLabel(c)}</span>)}
-              </div>
-            )}
-            <button className="btn lime sm" onClick={copyCaption}><Icon name="copy" size={12} /> Copy caption</button>
+            {(pubOrder.length ? pubOrder : ['tiktok', 'instagram', 'youtube']).map((pk) => {
+              const ps = pubStatus?.platforms?.[pk];
+              const pc = pubCaps[pk];
+              return (
+                <div className="pub-row" key={pk}>
+                  <div className="pub-row-head">
+                    <span className="pub-plat">{ps?.label || pk}</span>
+                    <span className="pub-aspect">{ps?.aspect || ''}</span>
+                    {ps ? (
+                      ps.connected
+                        ? <span className="pub-conn on">connected</span>
+                        : <span className="pub-conn" title={ps.needs?.length ? `needs ${ps.needs.join(', ')} in server/.env` : 'not configured'}>not connected</span>
+                    ) : <span className="pub-conn">status…</span>}
+                  </div>
+                  <p className="promote-caption">
+                    {pc?.status === 'loading' ? 'writing a platform-native caption…'
+                      : pc?.status === 'error' ? `caption failed — ${pc.err}`
+                      : pc?.text || caption}
+                  </p>
+                  <div className="pub-acts">
+                    <button className="btn ghost sm" onClick={() => copyText(pc?.text || caption, 'Caption copied')}>
+                      <Icon name="copy" size={12} /> Copy
+                    </button>
+                    <button className="btn ghost sm" disabled={dl} onClick={download}>
+                      <Icon name="download" size={12} /> Asset
+                    </button>
+                    {!pc?.text && (
+                      <button className="btn ghost sm" disabled={pc?.status === 'loading'} onClick={() => loadPubCap(pk)}>
+                        <Icon name="sparkle" size={12} /> {pc?.status === 'loading' ? 'Writing…' : 'LLM caption'}
+                      </button>
+                    )}
+                    <button className="btn ghost sm" disabled title={ps?.connected ? 'posting not wired yet' : `connect ${ps?.label || pk} first — add API keys to server/.env`}>
+                      <Icon name="send" size={12} /> Post
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

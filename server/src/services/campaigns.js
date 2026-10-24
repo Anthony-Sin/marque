@@ -1,6 +1,6 @@
 // campaign briefs + creative generation (copy via TensorMux, image via Gemini, SVG fallback)
 import { chatJSON } from './tensor.js';
-import { genImageResilient } from './media.js';
+import { genImageResilient, genVideoResilient } from './media.js';
 import { find, list, update, uid, saveAssetBuf, registerImage } from './store.js';
 import { fetchSite } from './scraper.js';
 import { tuning } from '../tuning.js';
@@ -263,6 +263,27 @@ async function oneCreative(campaign, profile, product, angle, plan = null) {
     creative.imageError = String(e.message || e).slice(0, 200);
   }
   registerImage(creative.imagePath, { source: 'creative', angle });
+  // video/demo mediums go through the video lane — product demo motion built
+  // from the creative still (+ product refs when the planner gave direction)
+  if (plan?.medium === 'video' && creative.imagePath && !creative.placeholder) {
+    creative.videoState = 'running';
+    try {
+      const v = await genVideoResilient(
+        [
+          `Product demo video for ${product?.name || profile?.name || 'the product'} — ${plan.direction || 'show the product in use'}.`,
+          plan.format ? `Format: ${plan.format}.` : '',
+          `Camera language: smooth product orbit/macro detail pass, real-use motion, premium commercial pacing. Keep any on-image text crisp.`,
+          `Brand: ${profile?.name || ''}. Angle: ${angle}.`,
+        ].filter(Boolean).join(' '),
+        { aspectRatio: campaign.aspectRatio === '16:9' ? '16:9' : '9:16', imagePath: creative.imagePath },
+      );
+      creative.videoPath = v.path; creative.videoState = 'done';
+      creative.videoProvider = v.provider; if (v.note) creative.videoNote = v.note;
+    } catch (e) {
+      creative.videoState = 'error';
+      creative.videoNote = String(e.message || e).slice(0, 200);
+    }
+  }
   return creative;
 }
 

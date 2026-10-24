@@ -444,6 +444,45 @@ function findCreative(id) {
 }
 function saveCampaign(c) { update('campaigns', c.id, c); return find('campaigns', c.id); }
 
+// ---------- publish lane — honest connect status + per-platform captions ----------
+const PUBLISH_PLATFORMS = {
+  tiktok: { label: 'TikTok', aspect: '9:16', env: ['TIKTOK_ACCESS_TOKEN'] },
+  instagram: { label: 'Instagram', aspect: '4:5', env: ['META_ACCESS_TOKEN', 'IG_BUSINESS_ID'] },
+  youtube: { label: 'YouTube', aspect: '16:9', env: ['YOUTUBE_API_KEY'] },
+};
+app.get('/api/publish/status', h(async (_req, res) => {
+  ok(res, {
+    platforms: Object.fromEntries(Object.entries(PUBLISH_PLATFORMS).map(([k, p]) => [k, {
+      label: p.label, aspect: p.aspect,
+      connected: p.env.every((e) => !!process.env[e]),
+      needs: p.env.filter((e) => !process.env[e]),
+    }])),
+  });
+}));
+app.post('/api/publish/caption', h(async (req, res) => {
+  const { creative = {}, platform, campaign = {} } = req.body || {};
+  if (!PUBLISH_PLATFORMS[platform]) return res.status(400).json({ error: 'platform must be tiktok|instagram|youtube' });
+  const profile = brand.currentProfile();
+  let caption = '';
+  try {
+    const j = await chatJSON([
+      { role: 'system', content: 'You write platform-native social captions for ad creatives. Strict JSON {"caption","hashtags":[]} only.' },
+      {
+        role: 'user', content: [
+          `Platform: ${PUBLISH_PLATFORMS[platform].label} (${PUBLISH_PLATFORMS[platform].aspect}).`,
+          `Brand: ${profile?.name || ''} — tone: ${(profile?.tone || []).join(', ')}.`,
+          `Creative headline: ${creative.headline || ''}. Body: ${creative.body || ''}. CTA: ${creative.cta || ''}.`,
+          campaign.brief?.title ? `Campaign: ${campaign.brief.title}.` : '',
+          `Write a caption native to ${PUBLISH_PLATFORMS[platform].label} — tiktok: casual hook + trending-style tags; instagram: punchy line + curated tags; youtube: title + one-line description. Max 8 hashtags, real topical tags only.`,
+        ].filter(Boolean).join('\n'),
+      },
+    ], { maxTokens: 900 });
+    caption = [j?.caption, (j?.hashtags || []).map((t) => String(t).startsWith('#') ? t : `#${t}`).join(' ')].filter(Boolean).join('\n');
+  } catch (e) {
+    return res.status(502).json({ error: `caption model failed — ${String(e.message || e).slice(0, 160)}` });
+  }
+  ok(res, { platform, caption });
+}));
 app.get('/api/campaigns', h(async (_req, res) => {
   const boards = list('boards') || [];
   ok(res, {

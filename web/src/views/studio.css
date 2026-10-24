@@ -538,3 +538,12 @@
   border: 1px solid rgba(255,77,0,.3);
 }
 .affin-pop { font-style: normal; color: var(--ink-4); font-size: 9px; }
+
+/* ---------- publish lane (per-platform rows inside promote panel) ---------- */
+.pub-row { border-top: 1.5px solid var(--line); padding: 10px 0; }
+.pub-row-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.pub-plat { font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.pub-aspect { font-size: 10px; color: var(--ink-3); font-weight: 700; }
+.pub-conn { margin-left: auto; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); }
+.pub-conn.on { color: var(--lime); }
+.pub-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
