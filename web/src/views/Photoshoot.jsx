@@ -221,6 +221,7 @@ export default function Photoshoot() {
   };
 
   const saveToProfile = async (r) => {
+    if (!r?.imagePath) return say('Nothing to save — this shot failed to render');
     try {
       // canonical route: PUT /api/images/:id { target:'profile' }
       const { profile: p } = await putImage(r, { target: 'profile', caption: 'Studio shot' });
@@ -238,6 +239,7 @@ export default function Photoshoot() {
     }
   };
   const saveAsCatalog = async (r) => {
+    if (!r?.imagePath) return say('Nothing to save — this shot failed to render');
     try {
       await putImage(r, { target: 'catalog', name: 'Studio shot' });
       say('Added to catalog');
@@ -265,8 +267,13 @@ export default function Photoshoot() {
       <div key={k} className="card result-card">
         {showVid[k] && vid ? (
           <video src={vid} controls autoPlay loop muted style={{ width: '100%', aspectRatio: 1, objectFit: 'cover' }} />
-        ) : (
+        ) : r.imagePath ? (
           <img src={r.imagePath} alt={r.template || 'result'} loading="lazy" />
+        ) : (
+          <div className="res-fail">
+            <Icon name="x" size={18} />
+            <span>{r.error ? `render failed — ${r.error}` : 'render failed'}</span>
+          </div>
         )}
         {working && <div className="spin-overlay"><div className="spinner" /></div>}
         {vid && (

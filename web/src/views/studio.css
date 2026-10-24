@@ -8,7 +8,7 @@
   border-radius: 50%;
 }
 .composer .pill { cursor: pointer; user-select: none; }
-.composer .pill.has { border-color: rgba(211,227,116,.55); color: var(--lime); }
+.composer .pill.has { border-color: rgba(255,77,0,.55); color: var(--lime); }
 .composer .pill .caret { font-size: 10px; color: var(--ink-4); }
 .pop-wrap { position: relative; display: inline-flex; }
 .menu-backdrop { position: fixed; inset: 0; z-index: 40; }
@@ -135,11 +135,11 @@
   position: absolute; top: 10px; left: 10px; z-index: 2;
   background: rgba(20,20,20,.78); color: var(--lime); font-size: 10.5px; font-weight: 700;
   padding: 3px 9px; border-radius:0; display: inline-flex; gap: 5px; align-items: center;
-  border: 1px solid rgba(211,227,116,.35); cursor: pointer;
+  border: 1px solid rgba(255,77,0,.35); cursor: pointer;
   animation: badgeVPulse 2.2s ease-in-out infinite;
 }
 .creative-card .badge-v:hover { background: var(--lime); color: var(--lime-ink); }
-@keyframes badgeVPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(211,227,116,.0); } 50% { box-shadow: 0 0 0 4px rgba(211,227,116,.18); } }
+@keyframes badgeVPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,77,0,.0); } 50% { box-shadow: 0 0 0 4px rgba(255,77,0,.18); } }
 
 /* lightbox — zoom into the stored image, or play the stored animation */
 .lightbox {
@@ -234,7 +234,7 @@
 .mode-card h4 { margin: 0 0 6px; font-size: 17px; }
 .mode-card p { margin: 0; color: var(--ink-3); font-size: 13.5px; }
 .mode-card .ic {
-  width: 44px; height: 44px; border-radius:0; background: rgba(211,227,116,.12);
+  width: 44px; height: 44px; border-radius:0; background: rgba(255,77,0,.12);
   color: var(--lime); display: flex; align-items: center; justify-content: center; margin-bottom: 14px;
 }
 .step-bar { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 4px 0 24px; }
@@ -295,7 +295,7 @@
 .job-row > div { min-width: 0; }
 .job-row [style*="fontWeight"] { overflow-wrap: anywhere; }
 .job-row:hover { border-color: var(--line); }
-.job-row.on { border-color: rgba(211,227,116,.5); }
+.job-row.on { border-color: rgba(255,77,0,.5); }
 .job-row .thumbs { display: flex; gap: 6px; margin-left: auto; }
 .job-row .thumbs .media-tile { width: 44px; height: 44px; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-4); flex: 0 0 auto; }
@@ -333,7 +333,7 @@
 .camp-src {
   display: inline-flex; align-items: center; gap: 7px; max-width: 100%;
   margin: 0 0 8px 4px; padding: 5px 9px 5px 12px;
-  background: rgba(211, 227, 116, .07); border: 1px solid rgba(211, 227, 116, .3);
+  background: rgba(255, 77, 0, .07); border: 1px solid rgba(255, 77, 0, .3);
   border-radius: var(--radius-pill);
   font-size: 12px; color: var(--ink-3); white-space: nowrap; overflow: hidden;
 }
@@ -372,7 +372,7 @@
 .imp-soc {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 12px; font-weight: 600; padding: 6px 13px; border-radius:0;
-  background: rgba(211, 227, 116, .1); border: 1px solid rgba(211, 227, 116, .4);
+  background: rgba(255, 77, 0, .1); border: 1px solid rgba(255, 77, 0, .4);
   color: var(--lime); text-transform: capitalize;
 }
 .imp-soc:hover { filter: brightness(1.15); }
@@ -395,7 +395,7 @@
   background: var(--card-3); color: var(--ink-3); border: 1px solid var(--line);
 }
 .imp-badge.impact-high {
-  color: var(--lime); border-color: rgba(211, 227, 116, .45); background: rgba(211, 227, 116, .1);
+  color: var(--lime); border-color: rgba(255, 77, 0, .45); background: rgba(255, 77, 0, .1);
 }
 .imp-badge.impact-med {
   color: var(--amber); border-color: rgba(232, 200, 143, .4); background: rgba(232, 200, 143, .08);
@@ -417,7 +417,7 @@
 .gen-hero .big { font-size: 26px; font-weight: 600; margin: 14px 0 6px; }
 .gen-hero .icon-hero {
   width: 60px; height: 60px; margin: 0 auto; border-radius:0; color: var(--lime);
-  background: rgba(211,227,116,.1); border: 1px solid rgba(211,227,116,.3);
+  background: rgba(255,77,0,.1); border: 1px solid rgba(255,77,0,.3);
   display: flex; align-items: center; justify-content: center;
 }
 .ver-tabs {
@@ -526,7 +526,7 @@
   background: rgba(20,20,20,.78); color: var(--ink-3); font-size: 9.5px; font-weight: 700;
   letter-spacing: .03em; padding: 3px 9px; border-radius:0; border: 1px solid var(--line-soft);
 }
-.badge-p.p-local { color: var(--lime); border-color: rgba(211,227,116,.35); }
+.badge-p.p-local { color: var(--lime); border-color: rgba(255,77,0,.35); }
 .badge-p.p-gemini { color: #8ab8ff; border-color: rgba(138,184,255,.35); }
 
 /* generating-state creative tile — visually distinct from stored cards */
@@ -535,6 +535,6 @@
   position: absolute; left: 10px; bottom: 10px; z-index: 2;
   font-size: 10.5px; font-weight: 700; font-family: ui-monospace, Menlo, monospace;
   color: var(--lime); background: rgba(20,20,20,.8); padding: 4px 10px; border-radius:0;
-  border: 1px solid rgba(211,227,116,.3);
+  border: 1px solid rgba(255,77,0,.3);
 }
 .affin-pop { font-style: normal; color: var(--ink-4); font-size: 9px; }

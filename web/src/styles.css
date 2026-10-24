@@ -129,7 +129,7 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-4); }
 .chip.on .dot { background: #7dd977; }
 .chip.demo .dot { background: var(--amber); }
-.chip.qloo { background: rgba(211,227,116,.1); border-color: rgba(211,227,116,.4); color: var(--lime); }
+.chip.qloo { background: rgba(255,77,0,.1); border-color: rgba(255,77,0,.4); color: var(--lime); }
 .chip.qloo.demo { border-style: dashed; color: var(--amber); }
 
 .banner {
@@ -169,7 +169,7 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
   max-width: 720px; margin: 0 auto; background: var(--card);
   border: 1px solid var(--line); border-radius:0; padding: 18px 18px 14px;
 }
-.composer:focus-within { border-color: rgba(211, 227, 116, .5); box-shadow: 0 0 0 3px rgba(211, 227, 116, .12); }
+.composer:focus-within { border-color: rgba(255, 77, 0, .5); box-shadow: 0 0 0 3px rgba(255, 77, 0, .12); }
 .composer textarea {
   width: 100%; background: none; border: none; resize: none; outline: none;
   color: var(--ink); font-size: 15.5px; min-height: 52px; padding: 4px 44px 4px 10px;
@@ -222,7 +222,7 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 /* ---------- qloo surfaces ---------- */
 .qloo-badge {
   display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600;
-  color: var(--lime); background: rgba(211,227,116,.12); border: 1px solid rgba(211,227,116,.35);
+  color: var(--lime); background: rgba(255,77,0,.12); border: 1px solid rgba(255,77,0,.35);
   padding: 3px 9px; border-radius:0; letter-spacing: .02em;
 }
 .qloo-badge.demo { color: var(--amber); background: rgba(232,200,143,.1); border-color: rgba(232,200,143,.35); border-style: dashed; }
@@ -234,7 +234,7 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 .affin-bar { width: 120px; height: 6px; background: #3a3a3a; border-radius: 4px; overflow: hidden; }
 .affin-bar i { display: block; height: 100%; background: var(--lime); border-radius: 4px; }
 .affin-score { width: 44px; text-align: right; font-size: 12px; color: var(--lime); }
-.signal-chip { font-size: 11px; padding: 3px 9px; background: rgba(211,227,116,.1); border: 1px solid rgba(211,227,116,.25); border-radius:0; color: var(--lime); }
+.signal-chip { font-size: 11px; padding: 3px 9px; background: rgba(255,77,0,.1); border: 1px solid rgba(255,77,0,.25); border-radius:0; color: var(--lime); }
 .signal-chip b { font-weight: 700; margin-left: 4px; opacity: .75; font-size: 10px; }
 
 /* ---------- media & creatives ---------- */
@@ -283,7 +283,7 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 .msg.user { align-self: flex-end; background: var(--card-3); border-bottom-right-radius: 4px; }
 .msg.bot { align-self: flex-start; background: #242c17; border: 1px solid #39411f; border-bottom-left-radius: 4px; }
 .msg .tools { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 5px; }
-.tool-chip { font-size: 10.5px; background: rgba(211,227,116,.12); color: var(--lime); padding: 2px 8px; border-radius:0; border: 1px solid rgba(211,227,116,.3); }
+.tool-chip { font-size: 10.5px; background: rgba(255,77,0,.12); color: var(--lime); padding: 2px 8px; border-radius:0; border: 1px solid rgba(255,77,0,.3); }
 .agent-input { padding: 12px; border-top: 1px solid var(--line-soft); display: flex; gap: 8px; }
 .agent-input input { flex: 1; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-pill); padding: 11px 16px; color: var(--ink); font-size: 14px; outline: none; }
 .agent-input input:focus { border-color: var(--lime); }
@@ -425,8 +425,8 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 .pf-thumb { width: 44px; height: 44px; object-fit: cover; border-radius:0; border: 1px solid var(--line); flex: 0 0 44px; }
 
 /* catalog */
-.pf-addcard { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 210px; color: var(--lime); border: 1px dashed var(--line); background: rgba(211, 227, 116, .045); font-size: 14px; font-weight: 600; transition: border-color .15s, background .15s; }
-.pf-addcard:hover { border-color: var(--lime); background: rgba(211, 227, 116, .09); }
+.pf-addcard { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 210px; color: var(--lime); border: 1px dashed var(--line); background: rgba(255, 77, 0, .045); font-size: 14px; font-weight: 600; transition: border-color .15s, background .15s; }
+.pf-addcard:hover { border-color: var(--lime); background: rgba(255, 77, 0, .09); }
 .pf-cat { overflow: hidden; position: relative; }
 .pf-cat-img { aspect-ratio: 16 / 10; background: var(--card-3); display: flex; align-items: center; justify-content: center; color: var(--ink-4); }
 .pf-cat-img img { width: 100%; height: 100%; object-fit: cover; }
@@ -460,7 +460,7 @@ h2.display { font-size: 30px; margin: 0 0 8px; }
 .skel { position: relative; overflow: hidden; background: var(--card-3); border-radius:0; display: block; }
 .skel::after {
   content: ''; position: absolute; inset: 0;
-  background: linear-gradient(100deg, transparent 22%, rgba(255, 255, 255, .075) 50%, transparent 78%);
+  background: linear-gradient(100deg, transparent 22%, rgba(17, 17, 17, .12) 50%, transparent 78%);
   transform: translateX(-100%);
 }
 .skel-line { height: 12px; width: 100%; }
@@ -729,3 +729,49 @@ a { text-underline-offset: 2px; }
 .dash-work-card, .dash-new, .dash-empty, .ovl-styles .ovl-st { border-radius: 0 !important; }
 input:not([type=checkbox]):not([type=radio]), textarea, select { border-radius: 0 !important; }
 .display, h1.display, h2.display { font-style: normal; }
+
+/* ---------- plakat contrast corrections (dark overlays + pale text) ---------- */
+/* media overlays keep dark scrims but text on them must be light, not ink */
+.pf-cap, .pick-tile .cap, .lightbox-cap, .promote-caption, .pf-kebab.corner .pf-kbtn svg,
+.veil-btn, .veil-btn svg, .book-cover .cover-txt h2, .book-cover .cover-txt p,
+.gen-hero h2, .gen-hero p, .taste-panel, .taste-panel * { color: #f5f2ea !important; }
+.msg.bot { background: #f2f0ea; border: 1px solid var(--line); }
+.msg .think-note { color: var(--ink-3); }
+.msg.streaming .caret { background: var(--lime); }
+/* amber/rose text → ink or accent so badges read on white */
+.qloo-badge.demo, .qloo-badge.partial, .chip.qloo.demo, .stg-warn, .cc-err,
+.grade-star.on, .dash-work-grade, .imp-miss, .imp-badge.impact-med,
+.stg-src.concept-art, .stg-src.catalog-art { color: var(--ink) !important; }
+.status-dot.running { background: var(--lime); }
+.stg-watch, .stg-watch *, .stg-err .lead, .ob-error, .imp-err, .stg-hunt-fail,
+.menu button.danger, .pf-danger { color: #c2410c !important; }
+/* invisible-borders pickers + hover surfaces */
+.ovl-st { background: #fff; border: 1.5px solid var(--line); }
+.ovl-st.on, .ovl-st:hover { border-color: var(--ink); }
+.menu button:hover { background: #f0ede6; }
+.menu button.danger:hover { background: #ffe9de; }
+.icon-btn:hover { background: #f0ede6; }
+.pill:hover { background: #f0ede6; }
+.affin-row { border-color: #e5e2da; }
+.affin-kws i { background: #f2f0ea; color: var(--ink-2); }
+.affin-bar { background: #e5e2da; }
+/* scrollbar thumbs were white-on-white */
+::-webkit-scrollbar-thumb { background: #c9c5ba; border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-3); }
+* { scrollbar-color: #c9c5ba transparent; }
+/* skeleton sweep was 7.5% white — invisible on light gray; now a real sweep */
+.skel *, .stg-skel, [class*="skel"] i { --skel-sweep: rgba(17,17,17,.08); }
+.stg-skel::after, .skel i::after, .stg-wx.skel i::after {
+  background: linear-gradient(105deg, transparent 30%, rgba(17,17,17,.07) 48%, rgba(17,17,17,.16) 50%, rgba(17,17,17,.07) 52%, transparent 70%) !important;
+}
+/* disabled send/pull controls read as disabled */
+.agent-input .send:disabled, .stg-pull-btn:disabled { opacity: .45; cursor: default; }
+.stg-pull-hint:disabled { color: var(--ink-3); background: #f2f0ea; }
+
+/* failed photoshoot result — honest error tile instead of a broken <img> */
+.res-fail {
+  aspect-ratio: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 8px; padding: 16px; text-align: center;
+  background: #f2f0ea; color: #c2410c; font-size: 11px; font-weight: 600;
+}
+.res-fail span { color: var(--ink-3); font-weight: 500; }

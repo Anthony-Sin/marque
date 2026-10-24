@@ -485,12 +485,22 @@ app.post('/api/campaigns', h(async (req, res) => {
   };
   push('campaigns', campaign);
   const profile = brand.currentProfile();
+  campaign.genStatus = 'running';
   const job = runJob('campaign', async (j) => {
-    const creatives = await campaigns.generateCreatives(campaign, profile, 4, (p) => { j.progress = p; });
-    const stored = find('campaigns', campaign.id) || campaign;
-    stored.creatives = creatives;
-    saveCampaign(stored);
-    return { campaignId: campaign.id, creatives: creatives.length };
+    try {
+      const creatives = await campaigns.generateCreatives(campaign, profile, 4, (p) => { j.progress = p; });
+      const stored = find('campaigns', campaign.id) || campaign;
+      stored.creatives = creatives;
+      stored.genStatus = 'done';
+      saveCampaign(stored);
+      return { campaignId: campaign.id, creatives: creatives.length };
+    } catch (e) {
+      const stored = find('campaigns', campaign.id) || campaign;
+      stored.genStatus = 'error';
+      stored.genError = String(e.message || e).slice(0, 300);
+      saveCampaign(stored);
+      throw e;
+    }
   });
   ok(res, { campaign, job });
 }));

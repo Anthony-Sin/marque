@@ -452,14 +452,17 @@ export async function generateExamples({ strategy, profile, product = null, audi
   }
   // user steer — one extra literal hunt per channel lane on the hint itself,
   // query shaped with that platform's format word (not a generic suffix)
+  // user steer — one extra literal hunt per channel lane on the hint itself;
+  // reserved BEFORE the 8-slot slice so a verbose planner can't crowd it out
+  const steerHunts = [];
   if (hintQ) {
     for (const c of (strategy?.channels || []).map((x) => x.name || x).slice(0, 3)) {
       const isHandle = /^@?[A-Za-z0-9_.]{2,32}$/.test(hintQ);
-      hunts.push({ platform: c, query: c === 'tiktok' && isHandle ? hintQ : `${hintQ} ${PLATFORM_FORMAT[c] || ''}`.trim(), note: `user-steered pull — "${hintQ}"` });
+      steerHunts.push({ platform: c, query: c === 'tiktok' && isHandle ? hintQ : `${hintQ} ${PLATFORM_FORMAT[c] || ''}`.trim(), note: `user-steered pull — "${hintQ}"` });
     }
   }
 
-  const huntList = hunts.slice(0, 8);
+  const huntList = [...steerHunts, ...hunts].slice(0, 8);
   const jobs = huntList.map(async (h) => {
     const q = String(h.query || '').trim();
     const note = h.note || '';
@@ -487,7 +490,7 @@ export async function generateExamples({ strategy, profile, product = null, audi
         case 'podcast': return await tryAll(
           () => itunesExamples(q, 'podcast', 'podcast', note, 3),
           async () => [await wikiExample(q, 'podcast', note)].filter(Boolean));
-        case 'press': return await wikiExample(q, 'press', note);
+        case 'press': return [await wikiExample(q, 'press', note)].filter(Boolean);
         case 'instagram': {
           // scrape the entity's real IG frontpage — candidate handles are the
           // hunt query plus squashed brand/entity names; all fail = failed hunt

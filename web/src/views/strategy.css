@@ -15,7 +15,7 @@
   max-width: 760px; margin: 6px auto 0; padding: 18px 18px 14px;
   border-radius:0;
 }
-.stg-ask:focus-within { box-shadow: 0 0 0 3px rgba(211, 227, 116, .12); }
+.stg-ask:focus-within { box-shadow: 0 0 0 3px rgba(255, 77, 0, .12); }
 .stg-ask textarea {
   width: 100%; background: none; border: none; resize: none; outline: none;
   color: var(--ink); font-size: 16.5px; line-height: 1.5; min-height: 84px; padding: 6px 8px;
@@ -27,14 +27,14 @@
   font-size: 12.5px; padding: 8px 14px; border-radius: var(--radius-pill);
   transition: color .15s, border-color .15s, transform .15s;
 }
-.stg-ex:hover { color: var(--lime); border-color: rgba(211, 227, 116, .5); transform: translateY(-1px); }
+.stg-ex:hover { color: var(--lime); border-color: rgba(255, 77, 0, .5); transform: translateY(-1px); }
 .stg-hint { font-size: 11.5px; color: var(--ink-4); padding: 9px 10px 0; }
 .stg-urlwrap {
   display: inline-flex; align-items: center; gap: 7px; color: var(--ink-4);
   background: var(--bg-raise); border: 1px solid var(--line); border-radius: var(--radius-pill);
   padding: 0 14px; transition: border-color .15s;
 }
-.stg-urlwrap:focus-within, .stg-urlwrap.has { border-color: rgba(211, 227, 116, .55); }
+.stg-urlwrap:focus-within, .stg-urlwrap.has { border-color: rgba(255, 77, 0, .55); }
 .stg-url { background: none; border: none; outline: none; color: var(--ink); font-size: 13px; padding: 9px 0; width: 200px; }
 
 /* ---------- composer collapse (prompt → board transition: slide up + fade) ---------- */
@@ -68,7 +68,7 @@
 .stg-tag {
   display: inline-flex; align-items: center; gap: 5px; flex: none; max-width: 210px;
   font-size: 11px; font-weight: 600; color: var(--lime);
-  background: rgba(211, 227, 116, .1); border: 1px solid rgba(211, 227, 116, .35);
+  background: rgba(255, 77, 0, .1); border: 1px solid rgba(255, 77, 0, .35);
   border-radius: var(--radius-pill); padding: 3px 10px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
@@ -242,7 +242,7 @@
 .stg-hero-sig {
   display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700;
   padding: 5px 12px; border-radius: var(--radius-pill); color: var(--lime);
-  background: rgba(211, 227, 116, .13); border: 1px solid rgba(211, 227, 116, .55);
+  background: rgba(255, 77, 0, .13); border: 1px solid rgba(255, 77, 0, .55);
 }
 .stg-hero-sig svg { width: 11px; height: 11px; }
 
@@ -304,7 +304,7 @@
 @keyframes stgFill { from { opacity: 0; filter: blur(7px); transform: translateY(7px); } }
 @keyframes stgSelPulse {
   0%, 100% { box-shadow: 0 0 0 1px var(--lime), 0 14px 34px rgba(0, 0, 0, .42); }
-  50% { box-shadow: 0 0 0 4px rgba(211, 227, 116, .35), 0 14px 34px rgba(0, 0, 0, .42); }
+  50% { box-shadow: 0 0 0 4px rgba(255, 77, 0, .35), 0 14px 34px rgba(0, 0, 0, .42); }
 }
 .stg-pick-top { display: flex; align-items: flex-start; justify-content: space-between; min-height: 20px; }
 .stg-pick-check {
@@ -362,7 +362,7 @@
 
 /* ---------- campaign dashboard (selected strategy detail panel) ---------- */
 .stg-detail {
-  grid-column: span 12; border-color: rgba(211, 227, 116, .3);
+  grid-column: span 12; border-color: rgba(255, 77, 0, .3);
   animation: stgPanel .5s cubic-bezier(.22, .9, .24, 1) both;
   scroll-margin-top: 18px;
 }
@@ -387,7 +387,7 @@
 /* expanded in-page preview for non-embed wild cards */
 .stg-wx-big { display: block; border-radius:0; overflow: hidden; }
 .stg-wx-big img { width: 100%; display: block; }
-.stg-wx.open { border-color: rgba(211, 227, 116, .4); }
+.stg-wx.open { border-color: rgba(255, 77, 0, .4); }
 .stg-detail-top { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; }
 .stg-detail-cols { display: grid; grid-template-columns: 1.05fr .95fr; gap: 24px; }
 @media (max-width: 900px) { .stg-detail-cols { grid-template-columns: 1fr; } }
@@ -407,8 +407,8 @@
 .stg-wild-hint { font-size: 11px; color: var(--ink-4); display: inline-flex; align-items: center; }
 .stg-wild-n {
   margin-left: 7px; font-size: 10px; font-weight: 700; letter-spacing: .06em;
-  color: var(--lime); background: rgba(211, 227, 116, .12);
-  border: 1px solid rgba(211, 227, 116, .4); border-radius:0; padding: 2px 9px;
+  color: var(--lime); background: rgba(255, 77, 0, .12);
+  border: 1px solid rgba(255, 77, 0, .4); border-radius:0; padding: 2px 9px;
 }
 /* horizontal scroll strip — browse refs without the page growing forever */
 .stg-wild-grid {
@@ -433,7 +433,7 @@
 /* selectable reference cards — click toggles them into the campaign handoff */
 .stg-wx.pickable { cursor: pointer; }
 .stg-wx.pickable:hover { transform: translateY(-3px); border-color: var(--line); box-shadow: var(--shadow); }
-.stg-wx.pickable:focus-visible { outline: 2px solid rgba(211, 227, 116, .7); outline-offset: 2px; }
+.stg-wx.pickable:focus-visible { outline: 2px solid rgba(255, 77, 0, .7); outline-offset: 2px; }
 /* .pickable.sel must out-specify .pickable:hover or the ring vanishes under the cursor */
 .stg-wx.pickable.sel {
   border-color: var(--lime); transform: translateY(-3px);
@@ -447,7 +447,7 @@
   background: rgba(10, 12, 6, .45); border: 1.5px solid rgba(255, 255, 255, .4);
   color: transparent; transition: border-color .18s, background .18s;
 }
-.stg-wx.pickable:hover .stg-wx-check { border-color: rgba(211, 227, 116, .8); }
+.stg-wx.pickable:hover .stg-wx-check { border-color: rgba(255, 77, 0, .8); }
 .stg-wx-check.on {
   background: var(--lime); border-color: var(--lime); color: var(--lime-ink);
   animation: stgPop .28s cubic-bezier(.2, .7, .2, 1) both;
@@ -468,7 +468,7 @@
 .stg-src {
   margin-left: auto; font-size: 9px; font-weight: 700; letter-spacing: .06em;
   padding: 2px 7px; border-radius:0; text-transform: none;
-  border: 1px solid rgba(211, 227, 116, .35); color: var(--lime); background: rgba(211, 227, 116, .1);
+  border: 1px solid rgba(255, 77, 0, .35); color: var(--lime); background: rgba(255, 77, 0, .1);
 }
 .stg-src.catalog-art { color: var(--sky); border-color: rgba(143, 199, 232, .35); background: rgba(143, 199, 232, .08); }
 .stg-src.concept-art { color: var(--amber); border-color: rgba(232, 200, 143, .4); background: rgba(232, 200, 143, .08); border-style: dashed; }
@@ -491,10 +491,10 @@
 .stg-wx-play {
   display: inline-flex; align-items: center; gap: 5px;
   font-size: 10.5px; font-weight: 700; color: var(--lime);
-  background: rgba(211, 227, 116, .1); border: 1px solid rgba(211, 227, 116, .35);
+  background: rgba(255, 77, 0, .1); border: 1px solid rgba(255, 77, 0, .35);
   border-radius:0; padding: 4px 10px;
 }
-.stg-wx-play:hover { background: rgba(211, 227, 116, .18); }
+.stg-wx-play:hover { background: rgba(255, 77, 0, .18); }
 
 /* skeleton cards while examples scrape */
 .stg-wx.skel { pointer-events: none; }
@@ -567,7 +567,7 @@
   border-radius:0; padding: 12px 14px; font-size: 13px; line-height: 1.5;
   outline: none; font-family: inherit;
 }
-.stg-notes:focus { border-color: rgba(211, 227, 116, .55); }
+.stg-notes:focus { border-color: rgba(255, 77, 0, .55); }
 
 /* ---------- plans row — board switcher above the board ---------- */
 .stg-plans {
@@ -628,15 +628,15 @@
 .stg-plan-chip i { font-style: normal; font-size: 10px; color: var(--ink-4); }
 .stg-plan-chip:hover { color: var(--ink); border-color: var(--ink-4); }
 .stg-plan-chip.on {
-  color: var(--lime); border-color: rgba(211, 227, 116, .55);
-  background: rgba(211, 227, 116, .09); font-weight: 600;
+  color: var(--lime); border-color: rgba(255, 77, 0, .55);
+  background: rgba(255, 77, 0, .09); font-weight: 600;
 }
 .stg-plan-chip.on i { color: var(--lime); opacity: .7; }
 .stg-plan-chip.new {
   border-style: dashed; color: var(--lime); gap: 6px; align-items: center;
-  background: rgba(211, 227, 116, .05);
+  background: rgba(255, 77, 0, .05);
 }
-.stg-plan-chip.new:hover { border-color: var(--lime); background: rgba(211, 227, 116, .1); }
+.stg-plan-chip.new:hover { border-color: var(--lime); background: rgba(255, 77, 0, .1); }
 @media (max-width: 720px) {
   .stg-plans { gap: 9px; }
   .stg-plans-title { max-width: 60vw; font-size: 16px; }
@@ -693,7 +693,7 @@
   border-radius:0; padding: 9px 13px;
   transition: border-color .2s ease;
 }
-.stg-linkrow:focus-within, .stg-linkrow.has { border-color: rgba(211, 227, 116, .55); border-style: solid; }
+.stg-linkrow:focus-within, .stg-linkrow.has { border-color: rgba(255, 77, 0, .55); border-style: solid; }
 .stg-linkrow-lbl {
   display: inline-flex; align-items: center; gap: 6px; flex: none;
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -797,7 +797,7 @@
   background: var(--bg-raise); border: 1px dashed var(--line); border-radius:0;
   padding: 8px 8px 8px 14px; transition: border-color .2s ease;
 }
-.stg-pull:focus-within { border-color: rgba(211, 227, 116, .55); border-style: solid; }
+.stg-pull:focus-within { border-color: rgba(255, 77, 0, .55); border-style: solid; }
 .stg-pull-hint {
   flex: 1; min-width: 0; background: none; border: none; outline: none;
   color: var(--ink); font-family: inherit; font-size: 12.5px;
@@ -834,7 +834,7 @@
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 9.5px; font-weight: 600; color: var(--ink-3);
   border: 1px solid var(--line-soft); border-radius:0; padding: 2px 8px;
-  background: rgba(211,227,116,.04); white-space: nowrap;
+  background: rgba(255,77,0,.04); white-space: nowrap;
   max-width: 100%; overflow: hidden; text-overflow: ellipsis;
 }
 .stg-ent svg { color: var(--lime); flex: none; }
@@ -852,7 +852,7 @@
 .stg-pick-why-lbl {
   font-family: ui-monospace, Menlo, monospace; font-size: 9px; font-weight: 700;
   letter-spacing: .12em; text-transform: uppercase; color: var(--lime);
-  border: 1px solid rgba(211,227,116,.35); border-radius: 4px; padding: 1.5px 5px;
+  border: 1px solid rgba(255,77,0,.35); border-radius: 4px; padding: 1.5px 5px;
   margin-right: 6px; vertical-align: 1px;
 }
 
@@ -894,7 +894,7 @@
 .stg-wx.skel.pull { position: relative; overflow: hidden; }
 .stg-wx.skel.pull .stg-wx-scan {
   position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(105deg, transparent 30%, rgba(211, 227, 116, .14) 48%, rgba(211, 227, 116, .35) 50%, rgba(211, 227, 116, .14) 52%, transparent 70%);
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 77, 0, .14) 48%, rgba(255, 77, 0, .35) 50%, rgba(255, 77, 0, .14) 52%, transparent 70%);
   animation: stgScan 1.15s ease-in-out infinite;
   animation-delay: calc(var(--i, 0) * 120ms);
 }

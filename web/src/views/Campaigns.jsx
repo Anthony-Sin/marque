@@ -298,7 +298,11 @@ export default function Campaigns() {
         </div>
         {!creatives.length && !pendingSkels && (
           <div className="empty">
-            <p>No creatives yet — generation may still be running.</p>
+            {open.genStatus === 'error' ? (
+              <p>Generation failed — {open.genError || 'all providers errored'}. Hit Regenerate to retry.</p>
+            ) : (
+              <p>No creatives yet — generation may still be running.</p>
+            )}
             <button className="btn ghost sm" onClick={reload}>
               <Icon name="refresh" size={13} /> Check again
             </button>

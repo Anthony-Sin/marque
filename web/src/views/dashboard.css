@@ -27,7 +27,7 @@
 }
 .dash-empty-ic {
   width: 62px; height: 62px; border-radius:0; color: var(--lime);
-  background: rgba(211, 227, 116, .1); border: 1px solid rgba(211, 227, 116, .35);
+  background: rgba(255, 77, 0, .1); border: 1px solid rgba(255, 77, 0, .35);
   display: flex; align-items: center; justify-content: center; margin-bottom: 6px;
 }
 .dash-empty h2 { margin: 0; font-size: 32px; }
@@ -41,11 +41,11 @@
 }
 /* hover: lift + a lime border hint */
 .dash-plan:hover {
-  transform: translateY(-3px); border-color: rgba(211, 227, 116, .4);
+  transform: translateY(-3px); border-color: rgba(255, 77, 0, .4);
   box-shadow: 0 8px 22px rgba(0, 0, 0, .3);
 }
 .dash-plan:focus-visible { outline: 1px solid var(--lime); outline-offset: 2px; }
-.dash-plan.on { border-color: rgba(211, 227, 116, .45); }
+.dash-plan.on { border-color: rgba(255, 77, 0, .45); }
 .dash-plan-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
 .dash-plan-top h4 { margin: 0; font-size: 16px; line-height: 1.3; min-width: 0; }
 .dash-plan-live {
@@ -109,10 +109,10 @@
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 9px; min-height: 150px; cursor: pointer;
   color: var(--lime); border: 1px dashed var(--line);
-  background: rgba(211, 227, 116, .045); font-size: 14px; font-weight: 600;
+  background: rgba(255, 77, 0, .045); font-size: 14px; font-weight: 600;
   transition: border-color .15s, background .15s, transform .15s;
 }
-.dash-new:hover { border-color: var(--lime); background: rgba(211, 227, 116, .09); transform: translateY(-3px); }
+.dash-new:hover { border-color: var(--lime); background: rgba(255, 77, 0, .09); transform: translateY(-3px); }
 
 /* ---------- recent work — media-first horizontal strip ---------- */
 .dash-work {
@@ -128,7 +128,7 @@
   transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
 }
 .dash-work-card:hover {
-  transform: translateY(-3px); border-color: rgba(211, 227, 116, .4);
+  transform: translateY(-3px); border-color: rgba(255, 77, 0, .4);
   box-shadow: 0 8px 22px rgba(0, 0, 0, .3);
 }
 .dash-work-media { display: block; aspect-ratio: 4 / 3; background: var(--card-3); overflow: hidden; }

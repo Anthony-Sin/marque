@@ -47,9 +47,9 @@ export default function Icon({ name, size = 24, sw = 1.7 }) {
 export function Logo({ size = 40 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48">
-      <circle cx="24" cy="24" r="22" fill="#d3e374" />
-      <circle cx="24" cy="24" r="15" fill="none" stroke="#1c2208" strokeWidth="2.4" strokeDasharray="4 4" />
-      <text x="24" y="31" textAnchor="middle" fontSize="19" fontWeight="700" fill="#1c2208" fontFamily="Georgia, serif" fontStyle="italic">M</text>
+      <circle cx="24" cy="24" r="22" fill="#ff4d00" />
+      <circle cx="24" cy="24" r="15" fill="none" stroke="#ffffff" strokeWidth="2.4" strokeDasharray="4 4" />
+      <text x="24" y="31" textAnchor="middle" fontSize="19" fontWeight="700" fill="#ffffff" fontFamily="Georgia, serif" fontStyle="italic">M</text>
     </svg>
   );
 }
