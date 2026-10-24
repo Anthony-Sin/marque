@@ -4,11 +4,21 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import './styles.css';
 
-// strip browser-extension overlays (e.g. the Datadog extension's "No session
-// ID found" toast) that inject DOM nodes into the app — not our UI
+// strip injected overlays — browser-extension nodes AND, when the app is
+// framed inside a same-origin preview host, the host's own debug toast
+// ("No Datadog session ID found" is Devin's preview wrapper, not our UI)
+const TOAST_RE = /datadog session id/i;
+const stripDoc = (doc) => {
+  doc.querySelectorAll('[id*="datadog" i], [class*="datadog" i], [id*="dd-rum" i], [data-testid*="datadog" i]').forEach((n) => n.remove());
+  doc.querySelectorAll('*').forEach((n) => {
+    if (n.tagName.toLowerCase().includes('datadog')) return n.remove();
+    // host-page debug toast — a fixed bottom-right overlay naming datadog
+    if (n.children.length === 0 && TOAST_RE.test(n.textContent || '')) n.closest('div')?.remove();
+  });
+};
 const stripExtOverlays = () => {
-  document.querySelectorAll('[id*="datadog" i], [class*="datadog" i], [id*="dd-rum" i], [data-testid*="datadog" i]').forEach((n) => n.remove());
-  document.querySelectorAll('*').forEach((n) => { if (n.tagName.toLowerCase().includes('datadog')) n.remove(); });
+  stripDoc(document);
+  try { for (let w = window; w.parent && w.parent !== w; w = w.parent) stripDoc(w.parent.document); } catch { /* cross-origin host — unreachable */ }
 };
 stripExtOverlays();
 new MutationObserver(stripExtOverlays).observe(document.documentElement, { childList: true, subtree: true });
