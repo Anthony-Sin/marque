@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site MARQUE — Trench Plan</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23F3EBD8'/%3E%3Cpath d='M8 20h48M8 32h48M8 44h48M20 8v48M32 8v48M44 8v48' stroke='%23C9B98F' stroke-width='2'/%3E%3Crect x='20' y='20' width='24' height='24' fill='none' stroke='%23D9531E' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F3EBD8;--paper2:#EBDFC4;--ink:#3E3227;--ink2:#6B5B44;
+  --surv:#D9531E;--mut:#8A7A5E;--line:#C9B98F;--grid:#DDCFAD;
+  --f:'Spectral',Georgia,serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),
+    linear-gradient(rgba(160,140,95,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(160,140,95,.35) 1px,transparent 1px);
+  background-size:20px 20px,20px 20px,100px 100px,100px 100px;
+  color:var(--ink);font-family:var(--f);font-size:15.5px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(217,83,30,.22)}
+a{color:var(--surv);text-decoration:none;border-bottom:1.5px solid var(--surv);word-break:break-all}
+a:hover{color:var(--ink);border-color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--surv);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+.dig{max-width:1060px;margin:0 auto 84px;padding:0 clamp(10px,2.4vw,22px)}
+
+/* title block — like a drawing sheet */
+.tblock{
+  margin-top:26px;border:2.5px solid var(--ink);background:var(--paper);display:grid;
+  grid-template-columns:1fr auto;box-shadow:6px 6px 0 rgba(62,50,39,.14);
+}
+@media(max-width:620px){.tblock{grid-template-columns:1fr}}
+.tblock .l{padding:clamp(14px,3.4vw,22px) clamp(14px,4vw,28px);border-right:2px solid var(--ink)}
+@media(max-width:620px){.tblock .l{border-right:none;border-bottom:2px solid var(--ink)}}
+.tblock h1{font-size:clamp(24px,5.4vw,40px);font-weight:700;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+.tblock h1 span{color:var(--surv)}
+.tblock .r{padding:clamp(14px,3vw,20px);display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:190px}
+.tblock .r div{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+.tblock .r b{font-size:13px;font-weight:600;letter-spacing:.04em;color:var(--ink);font-family:var(--mono)}
+.stamp{display:inline-block;margin-top:8px;border:2.5px solid var(--surv);color:var(--surv);font-weight:700;
+  font-size:11px;letter-spacing:.3em;text-transform:uppercase;padding:4px 12px;transform:rotate(-3deg);width:max-content;opacity:.85}
+
+section{margin-top:28px}
+.sect-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.sect-h .bx{font-size:10px;letter-spacing:.26em;background:var(--ink);color:var(--paper);padding:3px 10px;font-weight:600;text-transform:uppercase;font-family:var(--mono)}
+.sect-h h2{font-size:clamp(19px,3.8vw,27px);font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.sect-h .sub{margin-left:auto;font-size:12.5px;color:var(--mut);font-style:italic}
+.sheet{
+  background:#F8F1DF;border:1.5px solid var(--ink);border-radius:2px;
+  box-shadow:4px 4px 0 rgba(62,50,39,.12);
+  padding:clamp(14px,3.4vw,26px) clamp(14px,3.8vw,30px);position:relative;
+}
+
+/* context 001 = ask */
+.ctx{display:grid;grid-template-columns:150px 1fr;gap:clamp(16px,3.4vw,28px);align-items:start}
+@media(max-width:600px){.ctx{grid-template-columns:1fr}}
+.ctxno{border:2px solid var(--ink);text-align:center;padding:12px 8px;background:var(--paper2)}
+.ctxno .n{font-size:clamp(30px,7vw,44px);font-weight:700;font-family:var(--mono);color:var(--surv);line-height:1}
+.ctxno .t{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--mut);margin-top:5px}
+.ctx .ask{font-size:clamp(23px,4.8vw,37px);font-weight:700;text-transform:uppercase;letter-spacing:.03em;line-height:1.06}
+.ctx .meta{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:12px}
+.ctx .meta div{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+.ctx .meta b{display:block;font-size:14px;font-weight:600;letter-spacing:.02em;text-transform:none;color:var(--ink);margin-top:2px}
+.ctx .desc{margin-top:10px;font-size:13.5px;font-style:italic;color:var(--ink2);border-top:1px dashed var(--line);padding-top:8px}
+
+/* stratigraphy = audience */
+.strat{display:grid;grid-template-columns:170px 1fr;gap:clamp(16px,3vw,28px)}
+@media(max-width:640px){.strat{grid-template-columns:1fr}}
+.depth{position:relative;border-left:2px solid var(--ink);padding-left:10px;font-family:var(--mono);font-size:10px;color:var(--mut)}
+.depth .d{height:38px;position:relative}
+.depth .d::before{content:"";position:absolute;left:-10px;top:0;width:10px;height:1.5px;background:var(--ink)}
+.depth .d span{position:absolute;top:-6px;left:6px}
+.layers .layer{border:1.5px solid var(--ink);border-bottom:none;padding:7px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;
+  height:40px;overflow:hidden}
+.layers .layer:last-child{border-bottom:1.5px solid var(--ink)}
+.layers .l1{background:#EADFC2}.layers .l2{background:#DFCFA8}.layers .l3{background:#D2BC8E}.layers .l4{background:#C4A978}.layers .l5{background:#B2965F}
+.layers .nm{font-weight:600;font-size:14px;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.layers .nt{font-size:12px;color:rgba(62,50,39,.75);font-style:italic;text-align:right}
+.stratkey{margin-top:12px;font-size:13px;color:var(--ink2)}
+.stratkey b{color:var(--surv)}
+.vibes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.vibes span{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid var(--ink);color:var(--ink);padding:1px 10px;background:var(--paper)}
+
+/* trench plan = strategies */
+.plan{display:grid;grid-template-columns:1fr 1fr;gap:0;border:2.5px solid var(--ink);position:relative}
+@media(max-width:700px){.plan{grid-template-columns:1fr}}
+.sq{border:1.5px solid var(--ink);padding:14px 16px;position:relative;background:rgba(248,241,223,.6);min-height:170px;
+  transition:background .15s ease}
+.sq:hover{background:#F1E6C8}
+.sq.open{background:repeating-linear-gradient(45deg,rgba(217,83,30,.08) 0 10px,transparent 10px 20px),#F8F1DF}
+.sq .sqn{position:absolute;top:10px;right:12px;font-family:var(--mono);font-size:11px;color:var(--mut)}
+.sq .ctxl{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--surv);font-weight:700}
+.sq h3{font-size:clamp(19px,3.4vw,24px);font-weight:700;text-transform:uppercase;letter-spacing:.03em;line-height:1.05}
+.sq .ang{font-size:12.5px;color:var(--mut);font-style:italic;margin-top:1px}
+.sq .exc{margin-top:8px;display:flex;align-items:center;gap:10px}
+.sq .exc .bar{flex:1;height:11px;border:1.5px solid var(--ink);background:var(--paper);position:relative}
+.sq .exc .bar i{position:absolute;inset:0;right:auto;background:repeating-linear-gradient(45deg,var(--surv) 0 5px,rgba(217,83,30,.55) 5px 10px)}
+.sq .exc b{font-family:var(--mono);font-size:15px;color:var(--surv);white-space:nowrap}
+.sq .finds{margin-top:8px;font-size:12.5px}
+.sq .finds .f{display:flex;justify-content:space-between;gap:10px;padding:2.5px 0;border-bottom:1px dotted var(--line)}
+.sq .finds .f:last-child{border-bottom:none}
+.sq .finds .nm{text-transform:uppercase;letter-spacing:.07em;font-weight:600;font-size:12.5px}
+.sq .finds .nm i{display:block;font-style:italic;font-weight:400;font-size:10.5px;color:var(--mut);text-transform:none;letter-spacing:0}
+.sq .finds .v{font-family:var(--mono);color:var(--surv);font-size:12px;white-space:nowrap}
+.sq .fmt{margin-top:6px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.sq .yield{margin-top:6px;font-size:12px;color:var(--ink2);font-style:italic}
+.sq .yield b{font-family:var(--mono);font-style:normal;font-size:16px;color:var(--ink)}
+.sq .watch{margin-top:6px;font-size:11.5px;color:#8A5A30;font-style:italic;border-top:1px dotted var(--line);padding-top:5px}
+.sq .watch b{font-style:normal;font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:var(--surv);display:block}
+.plan .pin{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--surv);box-shadow:0 1px 3px rgba(0,0,0,.4);z-index:2}
+.plannotes{margin-top:10px;font-size:12.5px;color:var(--mut);font-style:italic}
+.plannotes b{color:var(--surv);font-family:var(--mono);font-style:normal}
+
+/* sterile = ruled out */
+.sterile{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,2vw,14px)}
+@media(max-width:860px){.sterile{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:430px){.sterile{grid-template-columns:1fr}}
+.ster{border:1.5px solid var(--line);padding:12px 14px;position:relative;
+  background:repeating-linear-gradient(45deg,rgba(107,91,68,.1) 0 8px,transparent 8px 16px)}
+.ster .ch{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--surv);font-weight:700}
+.ster h4{font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.ster h4 s{text-decoration-color:var(--surv);text-decoration-thickness:2px}
+.ster .why{font-size:12px;color:var(--mut);font-style:italic;margin-top:5px;line-height:1.45}
+.ster .tag{display:inline-block;margin-top:8px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;border:1.5px solid var(--ink2);padding:2px 8px;color:var(--ink2)}
+
+/* context sheet = brief + finds photos */
+.rec{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(16px,3.4vw,30px);align-items:start}
+@media(max-width:800px){.rec{grid-template-columns:1fr}}
+.form{border:2px solid var(--ink);background:#FBF5E4;padding:14px 16px;box-shadow:5px 5px 0 rgba(62,50,39,.14)}
+.form .sal{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--surv);font-weight:700}
+.form h3{font-size:clamp(22px,4.4vw,32px);font-weight:700;text-transform:uppercase;letter-spacing:.02em;line-height:1}
+.form .ang{font-size:13.5px;margin-top:6px;color:#4E4433}
+.form table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+.form th{font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);text-align:left;padding:3px 6px;border-bottom:1.5px solid var(--ink)}
+.form td{padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
+.form .km{font-weight:700;font-size:14.5px}
+.finds4{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:430px){.finds4{grid-template-columns:1fr}}
+.find{border:1.5px solid var(--ink);background:#FBF5E4;padding:7px 8px 10px;position:relative;transition:transform .15s ease}
+.find:hover{transform:translateY(-3px) rotate(.4deg)}
+.find .iw{aspect-ratio:4/3;overflow:hidden;border:1px solid var(--line);filter:sepia(.3) contrast(.95);position:relative}
+.find .iw img{width:100%;height:100%;object-fit:cover}
+.find .sf{position:absolute;top:4px;right:6px;font-family:var(--mono);font-size:9px;background:var(--paper);border:1px solid var(--ink);padding:0 5px;z-index:2}
+.find figcaption{padding-top:7px}
+.find .h{font-size:12.5px;font-weight:600;line-height:1.3}
+.find .p{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--surv);margin-top:3px}
+.find .p b{border:1px solid var(--surv);padding:0 6px;border-radius:8px}
+.scalebar{margin-top:8px;height:8px;width:120px;background:repeating-linear-gradient(90deg,var(--ink) 0 20px,var(--paper) 20px 40px);border:1px solid var(--ink)}
+
+/* munsell = palette */
+.munsell{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end}
+.chip2{width:104px}
+.chip2 .c{height:44px;border:1.5px solid var(--ink);box-shadow:inset 0 -7px 0 rgba(0,0,0,.12)}
+.chip2 .code{font-family:var(--mono);font-size:10.5px;margin-top:6px;color:var(--ink);border-bottom:1px dashed var(--line);padding-bottom:2px}
+.chip2 .n{font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-top:3px;font-weight:600}
+.chip2 .hx{font-size:9.5px;font-family:var(--mono);color:var(--mut)}
+
+/* site diary = qloo */
+.diary{display:grid;grid-template-columns:1.12fr .88fr;gap:clamp(14px,3vw,26px)}
+@media(max-width:800px){.diary{grid-template-columns:1fr}}
+.diary table{width:100%;border-collapse:collapse;font-size:12.5px}
+.diary th{font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);text-align:left;padding:4px 7px;border-bottom:2px solid var(--ink)}
+.diary td{padding:7px;border-bottom:1px dashed var(--line);vertical-align:top}
+.diary td.mono{font-family:var(--mono);font-size:11.5px;color:var(--ink2)}
+.diary .win{display:inline-block;font-size:9px;letter-spacing:.16em;border:1.5px solid var(--surv);color:var(--surv);padding:0 6px;text-transform:uppercase;margin-top:2px}
+.diarynote{font-size:12.5px;color:var(--mut);font-style:italic;margin-top:10px}
+.spec{border:1.5px solid var(--ink);background:var(--paper2);padding:12px 16px}
+.spec h4{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--surv);margin-bottom:8px}
+.spec .dv{font-weight:700;text-transform:uppercase;font-size:13px;letter-spacing:.08em;border-bottom:1.5px solid var(--ink);padding:6px 0 2px}
+.spec .rw{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:4px 0;border-bottom:1px dotted var(--line)}
+.spec .rw:last-child{border-bottom:none}
+.spec .rw .v{font-family:var(--mono);font-size:12px;color:var(--ink2)}
+
+/* permits = next */
+.permits{display:flex;flex-wrap:wrap;gap:10px}
+.permits button{border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);padding:9px 18px;
+  font-weight:600;font-size:13.5px;text-transform:uppercase;letter-spacing:.08em;border-radius:2px;
+  transition:background .12s ease,color .12s ease,transform .12s ease}
+.permits button:hover{background:var(--ink);color:var(--paper)}
+.permits button:active{transform:translateY(2px)}
+.permits .sub{width:100%;font-style:italic;color:var(--mut);font-size:13px}
+.alsoc{margin-top:12px;font-size:13px;color:var(--mut)}
+.alsoc b{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--surv);display:block;margin-bottom:4px}
+.alsoc span{display:inline-block;margin-right:14px;font-style:italic;border-bottom:1px dotted var(--mut)}
+.foot{text-align:center;font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--mut);margin-top:32px}
+.empty{background:#F8F1DF;border:1.5px solid var(--ink);border-radius:2px;padding:40px;text-align:center;font-style:italic;color:var(--mut);margin-top:20px}
+</style>
+</head>
+<body>
+<div class="dig">
+  <header class="tblock">
+    <div class="l"><h1>Site MARQUE <span>· Trench Plan</span></h1>
+    <div class="stamp" id="stamp">PERMIT</div></div>
+    <div class="r">
+      <div>Field season<b id="season">—</b></div>
+      <div>Site code<b id="code">—</b></div>
+      <div>Sheet<b>01 / TRENCH A</b></div>
+    </div>
+  </header>
+  <main id="app"></main>
+  <div class="foot" id="foot"></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dshort=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase()}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Topsoil',h:'#6B5636',c:'10YR 3/3'},{n:'Subsoil',h:'#B2965F',c:'10YR 5/4'},
+  {n:'Ash Lens',h:'#8A8578',c:'2.5Y 5/2'},{n:'Colluvium',h:'#D2BC8E',c:'10YR 7/4'},
+  {n:'Find · Terra',h:'#D9531E',c:'5YR 5/8'}
+];
+const CREAT=[4,1,10,12].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dshort(B.createdAt||B.fetchedAt);
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+const prompt=((B.sub&&B.sub.prompt)||B.title||'').trim();
+const SQ=['A1','A2','B1','B2'];
+
+document.getElementById('season').textContent=DATE+' SEASON';
+document.getElementById('code').textContent='MRQ-'+String(B.id||'').slice(0,4).toUpperCase()+'/26';
+document.getElementById('stamp').textContent='PERMIT ISSUED';
+document.getElementById('foot').textContent='SITE MARQUE · EVERY SPOIL HEAP SIEVED · SECTION DRAWN AT 1:20';
+
+const M=document.getElementById('app');
+const sec=(bx,title,sub,inner,cls)=>{if(!inner)return;
+  M.appendChild(el('<section'+(cls?' class="'+cls+'"':'')+'><div class="sect-h"><span class="bx">'+esc(bx)+'</span><h2>'+esc(title)+'</h2><span class="sub">'+esc(sub)+'</span></div><div class="sheet">'+inner+'</div></section>'))};
+
+/* context 001 = ask */
+sec('001','Context Record — Surface','first context of the season, assigned at first light',
+'<div class="ctx"><div class="ctxno"><div class="n">001</div><div class="t">Context no.</div></div>'+
+'<div><div class="ask">'+esc(prompt)+'</div>'+
+'<div class="meta">'+
+'<div>Fieldwalking<b>'+(U?'<a href="'+esc(U)+'">'+esc(U)+'</a>':'—')+'</b></div>'+
+'<div>Place-name<b>'+esc((B.urlContext&&B.urlContext.title)||'—')+'</b></div>'+
+'</div>'+
+'<div class="desc">Director\'s reading — '+esc(((B.urlContext&&B.urlContext.description)||'').slice(0,150))+'</div>'+
+'</div></div>');
+
+/* stratigraphy = audience */
+if(AR&&AR.lean){
+  const layers=[{n:AR.lean.label+' — topsoil',t:'confidence '+Math.round((AR.lean.confidence||0)*100)+'%'}]
+    .concat((AR.lean.signals||[]).map(s=>({n:s.split('—')[0].split('(')[0].trim(),t:s})))
+    .concat((AR.mediaHabits||[]).map(h=>({n:h.channel,t:h.note})));
+  sec('STR','Stratigraphy Column','read the section — the finds are layered',
+  '<div class="strat"><div class="depth">'+layers.map((l,i)=>'<div class="d"><span>'+(i*20)+'cm</span></div>').join('')+'</div>'+
+  '<div><div class="layers">'+layers.slice(0,5).map((l,i)=>'<div class="layer l'+(i+1)+'"><span class="nm">'+esc(l.n)+'</span><span class="nt">'+esc(l.t)+'</span></div>').join('')+'</div>'+
+  '<div class="stratkey">Section reads <b>'+Math.round((AR.lean.confidence||0)*100)+'% legible</b> — the deeper the context, the surer the attribution.</div>'+
+  '<div class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div></div>');
+}
+
+/* trench plan = strategies */
+if(strats.length){
+  sec('TRN','Trench A — Plan at 1:20','four squares opened; string grid north-up',
+  '<div class="plan">'+strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    return '<div class="sq'+(i===sel?' open':'')+'"><span class="pin" style="top:6px;left:6px"></span><span class="pin" style="bottom:6px;right:6px"></span>'+
+    '<div class="sqn">SQ '+SQ[i]+(i===sel?' · OPEN':'')+'</div><div class="ctxl">Context '+String(i+1).padStart(3,'0')+'0'+(i+1)+'</div>'+
+    '<h3>'+esc(s.title)+'</h3><div class="ang">'+esc(s.angle||'')+'</div>'+
+    '<div class="exc"><div class="bar"><i style="width:'+Math.round(fit*100)+'%"></i></div><b>'+Math.round(fit*100)+'%</b></div>'+
+    '<div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);margin-top:2px">Excavated — audience fit '+f2(fit)+'</div>'+
+    '<div class="finds">'+(s.channels||[]).map(c=>'<div class="f"><span class="nm">'+esc(c.name)+'<i>find tag · '+esc(c.why||'')+'</i></span><span class="v">'+f2(c.fit)+'</span></div>').join('')+'</div>'+
+    '<div class="fmt">tools down: '+(s.formats||[]).map(f=>esc(f)).join(' · ')+'</div>'+
+    '<div class="yield">Projected yield — <b>'+views(s.reach&&s.reach.estViews)+'</b> finds<i style="display:block">'+esc(s.reach&&s.reach.basis||'')+'</i></div>'+
+    (s.watchouts&&s.watchouts[0]?'<div class="watch"><b>Supervisor\'s flag</b>'+esc(s.watchouts[0])+'</div>':'')+
+    '</div>';
+  }).join('')+'</div>'+
+  '<div class="plannotes"><b>▲</b> survey nails mark the open square — SQ '+SQ[sel!=null?sel:0]+' is yielding richest and stays open tomorrow.</div>');
+}
+
+/* sterile squares = ruled out */
+if(anti.length){
+  sec('STR','Backfilled &amp; Sterile','probed, found barren, reinstated',
+  '<div class="sterile">'+anti.map(a=>'<div class="ster"><div class="ch">probe sterile · '+esc(a.channel)+'</div>'+
+  '<h4><s>'+esc(a.title)+'</s></h4><div class="why">site notebook — '+esc(a.whyNot)+'</div>'+
+  '<span class="tag">backfilled '+esc(DATE)+'</span></div>').join('')+'</div>');
+}
+
+/* context sheet = brief + finds photos */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('CTX','Context Sheet '+String(101+(sel||0)),'the season\'s signature find, fully recorded',
+  '<div class="rec"><div class="form">'+
+  (br?'<div class="sal">Context record · SQ '+SQ[sel!=null?sel:0]+' · '+esc(selS.title)+'</div><h3>'+esc(br.title)+'</h3>'+
+  '<div class="ang">'+esc(br.angle)+'</div>'+
+  '<table><tr><th>Field</th><th>Record</th></tr>'+
+  '<tr><td>Attribution</td><td>'+esc(br.audience)+'</td></tr>'+
+  '<tr><td>Interpretation</td><td class="km">“'+esc(br.keyMessage)+'”</td></tr>'+
+  '<tr><td>Cross-ref</td><td>star find '+esc(selS.heroSignal||'—')+' · completeness '+f2((selS.audienceFit&&selS.audienceFit.score)||0)+'</td></tr></table>'
+  :'<div class="ang">Sheet blank.</div>')+
+  '<div class="scalebar"></div></div>'+
+  '<div><div style="font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--surv);margin-bottom:8px;font-weight:700">Small finds — photographed in situ, catalogued</div>'+
+  '<div class="finds4">'+CREAT.map((m,i)=>'<figure class="find"><div class="iw"><span class="sf">SF-'+String(200+i)+'</span><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">processed by <b>'+esc(m.provider)+'</b></div></figcaption></figure>').join('')+'</div></div></div>');
+}
+
+/* munsell = palette */
+sec('MUN','Munsell Readings','soil colours called at midday light',
+  '<div class="munsell">'+PALETTE.map(s=>'<div class="chip2"><div class="c" style="background:'+s.h+'"></div><div class="code">'+esc(s.c)+'</div><div class="n">'+esc(s.n)+'</div><div class="hx">'+s.h.toUpperCase()+'</div></div>').join('')+'</div>');
+
+/* site diary = qloo */
+if(calls.length||affs.length){
+  sec('SDY','Site Diary &amp; Register','logged before tools-down — Qloo survey returns, '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live'),
+  '<div class="diary"><div><table><tr><th>Entry / instrument</th><th>Logged</th><th>Duration</th><th>Reads</th><th>Fields</th></tr>'+
+  calls.map((c,i)=>'<tr><td><b>'+String(9+i)+'/'+esc(DATE.slice(0,6))+'</b> · '+esc(c.endpoint)+'<br><span class="win">'+esc(c.mode)+'</span></td>'+
+  '<td class="mono">'+esc((c.at||'').slice(11,19))+'Z</td><td class="mono">'+esc(c.tookMs)+' ms</td><td class="mono">n='+esc(c.n)+'</td><td class="mono">'+esc(Object.keys(c.params||{}).length)+'</td></tr>').join('')+'</table>'+
+  '<p class="diarynote">'+(calls.length||0)+' instrument readings booked — '+(esc((B.qlooBundle&&B.qlooBundle.mode)||'live'))+' survey, countersigned by the finds officer.</p></div>'+
+  '<div class="spec"><h4>Specialist report — retained samples</h4>'+affs.map(g=>'<div class="dv">'+esc(String(g.type).replace('urn:entity:',''))+'</div>'+
+  (g.entities||[]).slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+(e.affinity||0).toFixed(2)+'</span></div>').join('')).join('')+'</div></div>');
+}
+
+/* permits = next */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('NXT','Tomorrow\'s Work Order','weather permitting — pick the spade',
+  '<div class="permits">'+['Cut the ad spot','Deal the landing page','Ship the media plan','Run it back — remix'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  '<div class="sub">Sections drawn, finds bagged — the trench stays open for one more context.</div></div>'+
+  (others.length?'<div class="alsoc"><b>Other trenches on the permit</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':''));
+
+if(!M.children.length)M.appendChild(el('<div class="empty">Season cancelled — data.js never cleared customs.</div>'));
+})();
+</script>
+</body>
+</html>

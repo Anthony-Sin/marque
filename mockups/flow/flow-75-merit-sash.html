@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troop Marque — Merit Sash</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23E6DCC0'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%234B4A33'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23A6341F' stroke-width='3' stroke-dasharray='4 3'/%3E%3Cpath d='M32 22l3.2 6.5 7.1 1-5.1 5 1.2 7.1-6.4-3.4-6.4 3.4 1.2-7.1-5.1-5 7.1-1z' fill='%23E6DCC0'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#E6DCC0;--canvas2:#D9CDAB;--olive:#4B4A33;--olive2:#61603F;
+  --red:#A6341F;--ink:#33321F;--mut:#7A7454;--line:#BFB28C;
+  --f:'Arvo',Georgia,serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--canvas) repeating-linear-gradient(45deg,rgba(75,74,51,.04) 0 2px,transparent 2px 9px);
+  color:var(--ink);font-family:var(--f);font-size:15.5px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(166,52,31,.25)}
+a{color:var(--red);text-decoration:none;border-bottom:1.5px solid var(--red);word-break:break-all}
+a:hover{color:var(--olive);border-color:var(--olive)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+.camp{max-width:1040px;margin:0 auto 84px;padding:0 clamp(10px,2.4vw,22px)}
+
+/* pennant header */
+.crest{margin-top:26px;display:flex;align-items:center;gap:clamp(14px,3.4vw,26px);flex-wrap:wrap}
+.penn{width:0;height:0;border-top:52px solid transparent;border-bottom:52px solid transparent;
+  border-left:clamp(90px,18vw,150px) solid var(--red);position:relative;filter:drop-shadow(4px 5px 6px rgba(50,45,20,.3))}
+.penn::after{content:"";position:absolute;left:calc(-1*clamp(90px,18vw,150px) + 8px);top:-40px;
+  width:0;height:0;border-top:40px solid transparent;border-bottom:40px solid transparent;
+  border-left:calc(clamp(90px,18vw,150px)*.78) solid var(--olive)}
+.crest .txt h1{font-size:clamp(24px,5.4vw,42px);font-weight:700;letter-spacing:.1em;text-transform:uppercase;line-height:1;color:var(--olive)}
+.crest .txt h1 span{color:var(--red)}
+.crest .txt .trp{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--mut);margin-top:6px}
+.crest .txt .trp b{color:var(--olive);font-family:var(--mono);font-weight:400}
+
+section{margin-top:28px}
+.sect-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.sect-h .bx{font-size:10px;letter-spacing:.28em;background:var(--olive);color:var(--canvas);padding:3px 10px;font-weight:700;text-transform:uppercase;border-radius:2px}
+.sect-h h2{font-size:clamp(19px,3.8vw,27px);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--olive)}
+.sect-h .sub{margin-left:auto;font-size:12.5px;color:var(--mut);font-style:italic}
+.sheet{
+  background:#F1E9CF;border:1.5px solid var(--line);border-radius:4px;
+  box-shadow:0 5px 16px rgba(90,80,40,.15), inset 0 0 0 1px rgba(255,255,255,.5);
+  padding:clamp(14px,3.4vw,26px) clamp(14px,3.8vw,30px);
+}
+
+/* enrolment card = ask */
+.enrol{display:grid;grid-template-columns:130px 1fr;gap:clamp(16px,3.4vw,28px);align-items:center}
+@media(max-width:600px){.enrol{grid-template-columns:1fr}}
+.fleur{width:104px;height:104px;margin:auto}
+.enrol .ask{font-size:clamp(22px,4.6vw,36px);font-weight:700;text-transform:uppercase;letter-spacing:.03em;line-height:1.08;color:var(--olive)}
+.enrol .meta{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:12px}
+.enrol .meta div{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+.enrol .meta b{display:block;font-size:14px;font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--ink);margin-top:2px}
+.promise{margin-top:12px;font-size:12.5px;font-style:italic;color:var(--mut);border-top:1px dashed var(--line);padding-top:8px}
+.promise b{color:var(--red);font-style:normal}
+
+/* rank card = audience */
+.rank{display:grid;grid-template-columns:210px 1fr;gap:clamp(16px,3.4vw,30px)}
+@media(max-width:700px){.rank{grid-template-columns:1fr}}
+.patch{background:var(--olive);color:var(--canvas);border-radius:8px;padding:16px 14px;text-align:center;position:relative;
+  box-shadow:inset 0 0 0 3px var(--olive2),0 5px 12px rgba(60,55,25,.3)}
+.patch::after{content:"";position:absolute;inset:5px;border:1.5px dashed var(--canvas2);border-radius:5px;pointer-events:none}
+.patch .pl{font-size:8.5px;letter-spacing:.3em;text-transform:uppercase;color:#C9BE93}
+.patch .who{font-size:clamp(20px,4vw,26px);font-weight:700;text-transform:uppercase;line-height:1.1;margin-top:3px}
+.patch .conf{margin:10px auto 0;width:80%;height:10px;border:1.5px solid var(--canvas2);border-radius:5px;overflow:hidden}
+.patch .conf i{display:block;height:100%;background:var(--red)}
+.patch .cf{font-family:var(--mono);font-size:12px;color:#C9BE93;margin-top:6px}
+.reqs h4{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);margin-bottom:6px}
+.reqs ul{list-style:none;font-size:13.5px}
+.reqs li{padding:5px 0 5px 24px;border-bottom:1px dashed var(--line);position:relative}
+.reqs li:last-child{border-bottom:none}
+.reqs li::before{content:"";position:absolute;left:4px;top:9px;width:11px;height:11px;
+  border:1.5px solid var(--olive);border-radius:2px;background:
+  linear-gradient(45deg,transparent 55%,var(--olive) 55% 70%,transparent 70%),
+  linear-gradient(-45deg,transparent 40%,var(--olive) 40% 55%,transparent 55%)}
+.reqs .chn{display:flex;justify-content:space-between;gap:10px}
+.reqs .chn i{font-style:normal;color:var(--mut);font-size:11.5px;text-align:right}
+.vibes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.vibes span{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;border:1.5px solid var(--olive);color:var(--olive);padding:1px 10px;border-radius:20px}
+
+/* the sash = strategies */
+.sashwrap{position:relative;padding:clamp(10px,3vw,26px) 0}
+.sashband{position:absolute;left:-2%;right:-2%;top:50%;height:76%;transform:translateY(-50%) rotate(-2.5deg);
+  background:linear-gradient(160deg,#8E8870,#7A7458);box-shadow:inset 0 4px 8px rgba(255,255,255,.2),inset 0 -4px 8px rgba(0,0,0,.2),0 6px 14px rgba(70,60,30,.3);
+  border-top:1.5px dashed rgba(255,255,255,.5);border-bottom:1.5px dashed rgba(0,0,0,.25)}
+.sash{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,2.4vw,22px)}
+@media(max-width:800px){.sash{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:420px){.sash{grid-template-columns:1fr}}
+.badge{text-align:center;transition:transform .15s ease}
+.badge:hover{transform:translateY(-4px) rotate(-1deg)}
+.badge svg{width:clamp(88px,11vw,112px);height:auto;display:block;margin:0 auto;filter:drop-shadow(0 5px 8px rgba(40,35,15,.4))}
+.badge .bn{margin-top:6px;font-family:var(--mono);font-size:10px;color:var(--canvas);background:var(--olive);display:inline-block;padding:1px 8px;border-radius:2px}
+.badge h3{font-size:clamp(16px,3vw,19px);font-weight:700;text-transform:uppercase;letter-spacing:.04em;line-height:1.05;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.45);margin-top:5px}
+.badge .ang{font-size:11px;color:#E8E0C4;font-style:italic;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+/* requirement slips under sash */
+.rslips{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,2vw,16px);margin-top:16px}
+@media(max-width:800px){.rslips{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:420px){.rslips{grid-template-columns:1fr}}
+.slip{border:1.5px solid var(--line);background:#F5EEDA;padding:10px 12px;font-size:12.5px;transition:transform .15s ease}
+.slip:hover{transform:translateY(-2px)}
+.slip .sn{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--red);font-weight:700}
+.slip .fit{display:flex;align-items:baseline;gap:8px;border-bottom:1px dashed var(--line);padding:4px 0 5px}
+.slip .fit b{font-family:var(--mono);font-size:19px;color:var(--olive)}
+.slip .fit span{font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+.slip .c{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.slip .c:last-child{border-bottom:none}
+.slip .c .n{text-transform:uppercase;letter-spacing:.06em;font-weight:700;font-size:12px}
+.slip .c .n i{display:block;font-style:italic;font-weight:400;font-size:10.5px;color:var(--mut);text-transform:none;letter-spacing:0}
+.slip .c .v{font-family:var(--mono);color:var(--red);white-space:nowrap;font-size:12px}
+.slip .fmt{margin-top:6px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.slip .reach{margin-top:6px;font-size:11.5px;color:var(--mut);font-style:italic}
+.slip .reach b{font-family:var(--mono);font-style:normal;font-size:15px;color:var(--olive)}
+.slip .eye{margin-top:6px;font-size:11px;color:#8A5A30;font-style:italic;border-top:1px dotted var(--line);padding-top:5px}
+.slip .eye b{font-style:normal;font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:var(--red);display:block}
+
+/* not awarded = ruled out */
+.duds{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,2vw,14px)}
+@media(max-width:860px){.duds{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:420px){.duds{grid-template-columns:1fr}}
+.dud{border:1.5px dashed var(--mut);border-radius:6px;padding:12px 14px;position:relative;opacity:.85}
+.dud .ch{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--red);font-weight:700}
+.dud h4{font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:.03em}
+.dud h4 s{text-decoration-color:var(--red)}
+.dud .why{font-size:12px;color:var(--mut);font-style:italic;margin-top:5px;line-height:1.45}
+.dud .noaw{display:inline-block;margin-top:8px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;border:1.5px solid var(--mut);padding:2px 8px;color:var(--mut)}
+
+/* postcard = brief + prints = creatives */
+.camp2{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(16px,3.4vw,30px);align-items:start}
+@media(max-width:800px){.camp2{grid-template-columns:1fr}}
+.post{background:#F8F2DC;border:1.5px solid var(--line);padding:14px 16px;transform:rotate(-.4deg);
+  box-shadow:0 6px 14px rgba(90,80,40,.2);position:relative}
+.post::after{content:"";position:absolute;top:10px;right:10px;width:44px;height:52px;border:1.5px dashed var(--mut);
+  background:repeating-linear-gradient(45deg,rgba(166,52,31,.12) 0 6px,transparent 6px 12px)}
+.post .sal{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--red);font-weight:700}
+.post h3{font-size:clamp(22px,4.4vw,32px);font-weight:700;text-transform:uppercase;letter-spacing:.02em;line-height:1;color:var(--olive);max-width:80%}
+.post .ang{font-size:13.5px;margin-top:6px;color:#4E4B30}
+.post dl{display:grid;grid-template-columns:96px 1fr;gap:4px 14px;margin-top:12px;font-size:13px;max-width:88%}
+.post dt{font-size:8.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);padding-top:4px}
+.post dd{border-bottom:1px solid var(--line);padding-bottom:6px}
+.post .km{font-weight:700;font-size:15px}
+.prints{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:430px){.prints{grid-template-columns:1fr}}
+.print{background:#FBF6E6;padding:8px 8px 10px;border:1px solid var(--line);box-shadow:0 5px 12px rgba(90,80,40,.22);transition:transform .15s ease}
+.print:hover{transform:translateY(-3px) rotate(.5deg)}
+.print .iw{aspect-ratio:4/3;overflow:hidden;filter:sepia(.22) contrast(.96)}
+.print .iw img{width:100%;height:100%;object-fit:cover}
+.print figcaption{padding-top:7px}
+.print .h{font-size:12.5px;font-weight:700;line-height:1.3;color:var(--olive)}
+.print .p{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-top:3px}
+.print .p b{border:1px solid var(--red);padding:0 6px;border-radius:8px}
+
+/* thread spools = palette */
+.spools{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end}
+.sp{width:84px;text-align:center}
+.sp .cone{height:52px;position:relative;border-radius:3px;
+  box-shadow:inset 0 -7px 0 rgba(0,0,0,.18),0 4px 8px rgba(90,80,40,.25)}
+.sp .cone::before,.sp .cone::after{content:"";position:absolute;left:-4px;right:-4px;height:7px;background:var(--olive);border-radius:2px}
+.sp .cone::before{top:-4px}
+.sp .cone::after{bottom:-4px}
+.sp .n{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;margin-top:7px;font-weight:700;color:var(--olive)}
+.sp .hx{font-size:10px;font-family:var(--mono);color:var(--mut)}
+
+/* handbook = qloo */
+.hand{display:grid;grid-template-columns:1.12fr .88fr;gap:clamp(14px,3vw,26px)}
+@media(max-width:800px){.hand{grid-template-columns:1fr}}
+.hand table{width:100%;border-collapse:collapse;font-size:12.5px}
+.hand th{font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);text-align:left;padding:4px 7px;border-bottom:2px solid var(--olive)}
+.hand td{padding:7px;border-bottom:1px dashed var(--line);vertical-align:top}
+.hand td.mono{font-family:var(--mono);font-size:11.5px;color:var(--olive2)}
+.hand .win{display:inline-block;font-size:9px;letter-spacing:.16em;border:1.5px solid var(--red);color:var(--red);padding:0 6px;text-transform:uppercase;margin-top:2px}
+.handnote{font-size:12.5px;color:var(--mut);font-style:italic;margin-top:10px}
+.tally{border:1.5px solid var(--olive);background:#EFE6C8;padding:12px 16px;border-radius:3px}
+.tally h4{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.tally .dv{font-weight:700;text-transform:uppercase;font-size:13px;letter-spacing:.08em;border-bottom:1.5px solid var(--olive);padding:6px 0 2px;color:var(--olive)}
+.tally .rw{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:4px 0;border-bottom:1px dotted var(--line)}
+.tally .rw:last-child{border-bottom:none}
+.tally .rw .v{font-family:var(--mono);font-size:12px;color:var(--olive2)}
+
+/* board of review = next */
+.board{display:flex;flex-wrap:wrap;gap:10px}
+.board button{border:1.5px solid var(--olive);background:transparent;color:var(--olive);padding:9px 18px;
+  font-weight:700;font-size:13.5px;text-transform:uppercase;letter-spacing:.08em;border-radius:3px;
+  transition:background .12s ease,color .12s ease,transform .12s ease}
+.board button:hover{background:var(--olive);color:var(--canvas)}
+.board button:active{transform:translateY(2px)}
+.board .sub{width:100%;font-style:italic;color:var(--mut);font-size:13px}
+.alsoc{margin-top:12px;font-size:13px;color:var(--mut)}
+.alsoc b{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:4px}
+.alsoc span{display:inline-block;margin-right:14px;font-style:italic;border-bottom:1px dotted var(--mut)}
+.foot{text-align:center;font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--mut);margin-top:32px}
+.empty{background:#F1E9CF;border:1.5px solid var(--line);border-radius:4px;padding:40px;text-align:center;font-style:italic;color:var(--mut);margin-top:20px}
+</style>
+</head>
+<body>
+<div class="camp">
+  <header class="crest">
+    <div class="penn"></div>
+    <div class="txt"><h1>Troop Marque <span>· Merit Sash</span></h1>
+    <div class="trp" id="trp">—</div></div>
+  </header>
+  <main id="app"></main>
+  <div class="foot" id="foot"></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dshort=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase()}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Khaki Drill',h:'#D9CDAB'},{n:'Patrol Olive',h:'#4B4A33'},{n:'Scarf Red',h:'#A6341F'},
+  {n:'Canvas',h:'#F1E9CF'},{n:'Trail Brown',h:'#6B5636'}
+];
+const CREAT=[3,6,14,8].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dshort(B.createdAt||B.fetchedAt);
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+const prompt=((B.sub&&B.sub.prompt)||B.title||'').trim();
+
+document.getElementById('trp').innerHTML='CAMP '+esc(String(B.id||'').slice(0,4).toUpperCase())+' · ENROLLED '+DATE+' · <b>BE PREPARED</b>';
+document.getElementById('foot').textContent='TROOP MARQUE · SASH INSPECTED AT REVILLE · EARNED, NEVER GIVEN';
+
+const M=document.getElementById('app');
+const sec=(bx,title,sub,inner,cls)=>{if(!inner)return;
+  M.appendChild(el('<section'+(cls?' class="'+cls+'"':'')+'><div class="sect-h"><span class="bx">'+esc(bx)+'</span><h2>'+esc(title)+'</h2><span class="sub">'+esc(sub)+'</span></div><div class="sheet">'+inner+'</div></section>'))};
+
+const ICONS=[
+ '<path d="M50 30l6.5 13.2 14.6 2.1-10.6 10.3 2.5 14.5L50 63.1 37 70.1l2.5-14.5-10.6-10.3 14.6-2.1z" fill="none" stroke="#F1E9CF" stroke-width="3" stroke-linejoin="round"/>',
+ '<path d="M50 68C34 57 28 48 28 40.5 28 34 32.5 30 38.5 30c4.8 0 8.9 2.7 11.5 7 2.6-4.3 6.7-7 11.5-7C67.5 30 72 34 72 40.5 72 48 66 57 50 68z" fill="none" stroke="#F1E9CF" stroke-width="3" stroke-linejoin="round"/>',
+ '<path d="M54 26L36 52h11l-3 22 20-27H53z" fill="none" stroke="#F1E9CF" stroke-width="3" stroke-linejoin="round"/>',
+ '<path d="M26 44q8-8 16 0t16 0 16 0" fill="none" stroke="#F1E9CF" stroke-width="3" stroke-linecap="round"/><path d="M26 56q8-8 16 0t16 0 16 0" fill="none" stroke="#F1E9CF" stroke-width="3" stroke-linecap="round"/>'
+];
+const badge=(s,i)=>{
+  const fit=(s.audienceFit&&s.audienceFit.score)||0;
+  const C=2*Math.PI*42, on=C*fit;
+  return '<svg viewBox="0 0 100 100" aria-hidden="true">'+
+  '<circle cx="50" cy="50" r="46" fill="'+(i===sel?'#A6341F':'#4B4A33')+'"/>'+
+  '<circle cx="50" cy="50" r="46" fill="none" stroke="#F1E9CF" stroke-width="1.6" stroke-dasharray="3 3"/>'+
+  '<circle cx="50" cy="50" r="42" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="4"/>'+
+  '<circle cx="50" cy="50" r="42" fill="none" stroke="#F1E9CF" stroke-width="4" stroke-dasharray="'+on+' '+(C-on)+'" transform="rotate(-90 50 50)"/>'+
+  ICONS[i%ICONS.length]+'</svg>';
+};
+
+/* enrolment card = ask */
+sec('ENR','Enrolment Night','the scout signs the book — one name, one trail',
+'<div class="enrol"><svg class="fleur" viewBox="0 0 100 100"><path d="M50 8c8 12 20 14 20 28 0 9-6 15-12 17l6 8h-28l6-8c-6-2-12-8-12-17 0-14 12-16 20-28z" fill="#A6341F"/><path d="M30 44c-9 4-14 12-12 22 7-2 13-2 18 2-2-8-3-16-6-24zM70 44c9 4 14 12 12 22-7-2-13-2-18 2 2-8 3-16 6-24z" fill="#4B4A33"/><rect x="38" y="66" width="24" height="22" rx="3" fill="#4B4A33"/></svg>'+
+'<div><div class="ask">'+esc(prompt)+'</div>'+
+'<div class="meta">'+
+'<div>Home troop<b>'+(U?'<a href="'+esc(U)+'">'+esc(U)+'</a>':'—')+'</b></div>'+
+'<div>Patrol name<b>'+esc((B.urlContext&&B.urlContext.title)||'—')+'</b></div>'+
+'</div>'+
+'<div class="promise"><b>Scout\'s honour —</b> '+esc(((B.urlContext&&B.urlContext.description)||'').slice(0,140))+'</div>'+
+'</div></div>');
+
+/* rank card = audience */
+if(AR&&AR.lean){
+  sec('RNK','Rank Assessment — Tenderfoot to First Class','the patrol leader reads the room',
+  '<div class="rank"><div class="patch"><div class="pl">Rank held</div>'+
+  '<div class="who">'+esc(AR.lean.label)+'</div>'+
+  '<div class="conf"><i style="width:'+Math.round((AR.lean.confidence||0)*100)+'%"></i></div>'+
+  '<div class="cf">'+Math.round((AR.lean.confidence||0)*100)+'% passed</div></div>'+
+  '<div class="reqs"><h4>Requirements signed off</h4><ul>'+
+  (AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+
+  (AR.mediaHabits||[]).map(h=>'<li class="chn"><span>'+esc(h.channel)+'</span><i>'+esc(h.note)+'</i></li>').join('')+
+  '</ul><div class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div></div>');
+}
+
+/* the sash = strategies */
+if(strats.length){
+  sec('SASH','The Merit Sash','four badges sewn on, inspected at parade',
+  '<div class="sashwrap"><div class="sashband"></div><div class="sash">'+
+  strats.map((s,i)=>'<div class="badge">'+badge(s,i)+'<div class="bn">MB-0'+(i+1)+'</div>'+
+  '<h3>'+esc(s.title)+'</h3><div class="ang">'+esc(s.angle||'')+'</div></div>').join('')+'</div></div>'+
+  '<div class="rslips">'+strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    return '<div class="slip"><div class="sn">Requirement card · MB-0'+(i+1)+(i===sel?' — counsellor\'s pick':'' )+'</div>'+
+    '<div class="fit"><b>'+f2(fit)+'</b><span>examiner\'s mark<br>(audience fit)</span></div>'+
+    (s.channels||[]).map(c=>'<div class="c"><span class="n">'+esc(c.name)+'<i>'+esc(c.why||'')+'</i></span><span class="v">'+f2(c.fit)+'</span></div>').join('')+
+    '<div class="fmt">tests: '+(s.formats||[]).map(f=>esc(f)).join(' · ')+'</div>'+
+    '<div class="reach">Troop reach — <b>'+views(s.reach&&s.reach.estViews)+'</b><i style="display:block">'+esc(s.reach&&s.reach.basis||'')+'</i></div>'+
+    (s.watchouts&&s.watchouts[0]?'<div class="eye"><b>Counsellor\'s margin note</b>'+esc(s.watchouts[0])+'</div>':'')+'</div>';
+  }).join('')+'</div>');
+}
+
+/* not awarded = ruled out */
+if(anti.length){
+  sec('N/A','Failed at Board','attempted, examined, not awarded',
+  '<div class="duds">'+anti.map(a=>'<div class="dud"><div class="ch">badge refused · '+esc(a.channel)+'</div>'+
+  '<h4><s>'+esc(a.title)+'</s></h4><div class="why">examiner — '+esc(a.whyNot)+'</div>'+
+  '<span class="noaw">re-apply next camp</span></div>').join('')+'</div>');
+}
+
+/* postcard = brief + prints = creatives */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('PST','Postcard Home','written from campfire, badge '+esc(selS?selS.title:'—'),
+  '<div class="camp2"><div class="post">'+
+  (br?'<div class="sal">Camp post · '+esc(selS.title)+'</div><h3>'+esc(br.title)+'</h3>'+
+  '<div class="ang">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Dear</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>P.S.</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Signed</dt><dd>hero badge '+esc(selS.heroSignal||'—')+' · mark '+f2((selS.audienceFit&&selS.audienceFit.score)||0)+'</dd></dl>'
+  :'<div class="ang">Postcard blank.</div>')+
+  '</div>'+
+  '<div><div style="font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--red);margin-bottom:8px;font-weight:700">Camp album — developed at the trading post</div>'+
+  '<div class="prints">'+CREAT.map(m=>'<figure class="print"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">developed by <b>'+esc(m.provider)+'</b></div></figcaption></figure>').join('')+'</div></div></div>');
+}
+
+/* thread spools = palette */
+sec('THR','Sewing Kit','threads matched to troop colours',
+  '<div class="spools">'+PALETTE.map(s=>'<div class="sp"><div class="cone" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="hx">'+s.h.toUpperCase()+'</div></div>').join('')+'</div>');
+
+/* handbook = qloo */
+if(calls.length||affs.length){
+  sec('LOG','Scoutmaster\'s Handbook','every observation entered — Qloo field notes, '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live'),
+  '<div class="hand"><div><table><tr><th>Entry / instrument</th><th>Time</th><th>Watch</th><th>Heads</th><th>Detail</th></tr>'+
+  calls.map((c,i)=>'<tr><td><b>E'+(i+1)+'</b> · '+esc(c.endpoint)+'<br><span class="win">'+esc(c.mode)+'</span></td>'+
+  '<td class="mono">'+esc((c.at||'').slice(11,19))+'Z</td><td class="mono">'+esc(c.tookMs)+' ms</td><td class="mono">n='+esc(c.n)+'</td><td class="mono">'+esc(Object.keys(c.params||{}).length)+' fields</td></tr>').join('')+'</table>'+
+  '<p class="handnote">'+(calls.length||0)+' field entries, '+(esc((B.qlooBundle&&B.qlooBundle.mode)||'live'))+' tracking — initialled by the scoutmaster before lights-out.</p></div>'+
+  '<div class="tally"><h4>Tally sheet — what the patrol follows</h4>'+affs.map(g=>'<div class="dv">'+esc(String(g.type).replace('urn:entity:',''))+'</div>'+
+  (g.entities||[]).slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+(e.affinity||0).toFixed(2)+'</span></div>').join('')).join('')+'</div></div>');
+}
+
+/* board of review = next */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('BOR','Board of Review','sit the board — pick the next badge',
+  '<div class="board">'+['Cut the ad spot','Deal the landing page','Ship the media plan','Run it back — remix'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  '<div class="sub">Sash weighed, badges counted — the next trail is already blazed.</div></div>'+
+  (others.length?'<div class="alsoc"><b>Other patrols at camp</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':''));
+
+if(!M.children.length)M.appendChild(el('<div class="empty">Camp rained out — data.js never reached the site.</div>'));
+})();
+</script>
+</body>
+</html>

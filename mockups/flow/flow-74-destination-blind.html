@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Route 74 — Destination Blind</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23141310'/%3E%3Crect x='8' y='10' width='48' height='9' rx='4.5' fill='%23D8CBA8'/%3E%3Crect x='8' y='28' width='48' height='9' rx='4.5' fill='%23F2EAD2'/%3E%3Crect x='8' y='46' width='48' height='9' rx='4.5' fill='%23D8CBA8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blind:#141310;--blind2:#1D1B16;--cloth:#EFE7CF;--cloth2:#DCCFA9;
+  --red:#C8402E;--mut:#8E8769;--edge:#3A362A;
+  --f:'Archivo Narrow','Arial Narrow',Arial,sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#2B2820 radial-gradient(ellipse at 50% -10%,rgba(70,63,45,.8),transparent 60%);
+  color:var(--cloth);font-family:var(--f);font-size:16px;line-height:1.42;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(200,64,46,.5)}
+a{color:var(--cloth);text-decoration:none;border-bottom:1.5px solid var(--red);word-break:break-all}
+a:hover{color:#fff;border-color:#fff}
+a:focus-visible,button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+.route{max-width:880px;margin:0 auto 84px;padding:0 clamp(10px,2.6vw,22px)}
+
+/* depot plate */
+.depot{margin-top:26px;display:flex;align-items:stretch;gap:0;border:2px solid var(--edge);
+  background:var(--blind);border-radius:6px;overflow:hidden;box-shadow:0 10px 26px rgba(0,0,0,.45)}
+.depot .num{background:var(--red);color:var(--cloth);display:flex;align-items:center;justify-content:center;
+  font-size:clamp(34px,9vw,58px);font-weight:700;padding:0 clamp(16px,4vw,30px);letter-spacing:.02em}
+.depot .who{flex:1;padding:clamp(12px,3vw,18px) clamp(14px,3.6vw,24px);display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.depot h1{font-size:clamp(19px,4.4vw,30px);font-weight:700;letter-spacing:.14em;text-transform:uppercase;line-height:1.05}
+.depot h1 span{color:var(--mut);font-weight:500}
+.depot .dep{text-align:right;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--mut)}
+.depot .dep b{display:block;font-size:13px;letter-spacing:.1em;color:var(--cloth2);font-family:var(--mono);font-weight:400}
+
+/* the blind itself */
+.blind{
+  margin-top:18px;background:var(--blind);border:2px solid var(--edge);border-radius:6px;
+  box-shadow:inset 0 0 60px rgba(0,0,0,.6),0 12px 30px rgba(0,0,0,.5);overflow:hidden;position:relative;
+}
+.blind::before,.blind::after{content:"";position:absolute;left:0;right:0;height:26px;z-index:3;pointer-events:none}
+.blind::before{top:0;background:linear-gradient(180deg,rgba(0,0,0,.75),transparent)}
+.blind::after{bottom:0;background:linear-gradient(0deg,rgba(0,0,0,.75),transparent)}
+.roller{height:14px;background:repeating-linear-gradient(90deg,#2E2A20 0 26px,#1B1913 26px 52px);border-bottom:2px solid var(--edge)}
+.roller.bot{border-bottom:none;border-top:2px solid var(--edge)}
+.stop{border-bottom:1.5px dashed #35321F;padding:clamp(16px,4vw,28px) clamp(16px,4.6vw,40px);position:relative}
+.stop:last-child{border-bottom:none}
+.stop .via{font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:6px}
+.stop .via::before{content:"— "}
+.stop h2,.stop .dest{font-size:clamp(30px,7.4vw,56px);font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--cloth);line-height:.98;text-wrap:balance}
+.stop .dest.dim{color:var(--cloth2)}
+.stop .sub{margin-top:8px;font-size:clamp(12px,2.6vw,15px);letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.stop .sub b{color:var(--cloth2);font-weight:600}
+.stop .grid{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px 26px}
+.stop .grid .g{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+.stop .grid .g b{display:block;font-size:14.5px;font-weight:600;letter-spacing:.05em;color:var(--cloth);text-transform:none;margin-top:1px}
+.stop .flag{position:absolute;top:clamp(16px,4vw,28px);right:clamp(14px,4vw,26px);
+  font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--blind);background:var(--cloth);
+  padding:3px 10px;font-weight:700;transform:rotate(1.5deg)}
+.stop .flag.red{background:var(--red);color:var(--cloth)}
+
+/* strategy stops */
+.sstop .row{display:grid;grid-template-columns:46px 1fr auto;gap:16px;align-items:baseline}
+@media(max-width:560px){.sstop .row{grid-template-columns:34px 1fr}}
+@media(max-width:560px){.sstop .reachcell{grid-column:2}}
+.sstop .no{font-size:clamp(26px,6vw,44px);font-weight:700;color:var(--red);letter-spacing:.02em}
+.sstop h3{font-size:clamp(26px,5.8vw,44px);font-weight:700;letter-spacing:.045em;text-transform:uppercase;line-height:.95}
+.sstop .ang{font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);margin-top:3px}
+.sstop .reachcell{text-align:right}
+.sstop .reachcell b{font-family:var(--mono);font-size:clamp(18px,4vw,26px);font-weight:600;color:var(--cloth)}
+.sstop .reachcell span{display:block;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+.fitline{margin-top:10px;display:grid;gap:4px;max-width:560px}
+.fitline .f{display:grid;grid-template-columns:110px 1fr 46px;gap:10px;align-items:center;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+@media(max-width:440px){.fitline .f{grid-template-columns:80px 1fr 42px}}
+.fitline .bar{height:9px;background:#2C291F;border:1px solid var(--edge);position:relative}
+.fitline .bar i{position:absolute;inset:0;right:auto;background:var(--cloth2)}
+.fitline .f.hot .bar i{background:var(--red)}
+.fitline .v{font-family:var(--mono);font-size:12px;color:var(--cloth2);text-align:right}
+.fitline .why{font-size:10px;letter-spacing:.1em;color:var(--mut);text-transform:none;font-style:italic}
+.sstop .fmt{margin-top:8px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--cloth2)}
+.sstop .fmt::before{content:"CALLING AT · ";color:var(--mut)}
+.sstop .watch{margin-top:8px;font-size:12px;color:#B8A77C;font-style:italic;max-width:560px}
+.sstop .watch b{font-style:normal;font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);display:block}
+.sstop .basis{margin-top:4px;font-size:11.5px;color:var(--mut);font-style:italic}
+
+/* not in service */
+.nis{opacity:.55}
+.nis .dest s{text-decoration-color:var(--red);text-decoration-thickness:3px}
+.nis .note{margin-top:6px;font-size:12.5px;color:var(--mut);font-style:italic;max-width:520px}
+.nis .chan{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:4px}
+
+/* ad cards strip (above windows) */
+.cards{background:#211E17;border:2px solid var(--edge);border-radius:6px;margin-top:18px;overflow:hidden}
+.cards .rail{height:10px;background:linear-gradient(180deg,#4E4836,#2B2820);border-bottom:2px solid var(--edge)}
+.cards .lbl{padding:10px clamp(16px,4vw,28px) 4px;font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut)}
+.cards .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:8px clamp(14px,3.4vw,26px) 18px}
+@media(max-width:760px){.cards .strip{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:400px){.cards .strip{grid-template-columns:1fr}}
+.adcard{background:#F2EAD2;color:#2A2417;border:1px solid #B9A97F;padding:7px 8px 9px;
+  box-shadow:0 4px 10px rgba(0,0,0,.4);transition:transform .15s ease}
+.adcard:hover{transform:translateY(-3px) rotate(-.4deg)}
+.adcard .iw{aspect-ratio:4/3;overflow:hidden;border:1px solid #C9B98E;filter:saturate(.9)}
+.adcard .iw img{width:100%;height:100%;object-fit:cover}
+.adcard .h{font-size:12.5px;font-weight:600;line-height:1.25;margin-top:6px;letter-spacing:.02em}
+.adcard .p{font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--red);margin-top:3px}
+.adcard .p b{border:1px solid var(--red);padding:0 6px;border-radius:8px}
+
+/* pay-as-you-enter notice = brief */
+.fare{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}
+@media(max-width:560px){.fare{grid-template-columns:1fr}}
+.fare .plate{width:118px;height:118px;border-radius:50%;border:6px solid var(--cloth);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  color:var(--cloth);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:9.5px;line-height:1.5;padding:8px}
+.fare .plate b{font-size:15px;color:var(--red);letter-spacing:.05em}
+.fare .bttl{font-size:clamp(26px,5.6vw,44px);font-weight:700;text-transform:uppercase;letter-spacing:.04em;line-height:.98}
+.fare .bang{margin-top:5px;font-size:13.5px;color:var(--cloth2)}
+.fare dl{display:grid;grid-template-columns:auto 1fr;gap:3px 16px;margin-top:10px;font-size:13px}
+.fare dt{font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);padding-top:3px}
+.fare dd{color:var(--cloth)}
+.fare dd.km{font-weight:700;font-size:15px;color:var(--cloth)}
+
+/* livery band = palette */
+.livery{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;padding:6px 0 4px}
+.swatch{width:104px}
+.swatch .band{height:34px;border:1px solid var(--edge);box-shadow:inset 0 -6px 0 rgba(0,0,0,.25),0 3px 8px rgba(0,0,0,.4)}
+.swatch .n{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;margin-top:6px;color:var(--cloth);font-weight:600}
+.swatch .hx{font-size:10px;font-family:var(--mono);color:var(--mut)}
+
+/* waybill = qloo */
+.way{display:grid;grid-template-columns:1.12fr .88fr;gap:clamp(14px,3vw,26px)}
+@media(max-width:800px){.way{grid-template-columns:1fr}}
+.way table{width:100%;border-collapse:collapse;font-size:12.5px}
+.way th{font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);text-align:left;padding:4px 7px;border-bottom:2px solid var(--cloth2)}
+.way td{padding:7px;border-bottom:1px dashed #35321F;vertical-align:top}
+.way td.mono{font-family:var(--mono);font-size:11.5px;color:var(--cloth2)}
+.way .tk{display:inline-block;font-size:9px;letter-spacing:.16em;border:1.5px solid var(--red);color:#E88;padding:0 6px;text-transform:uppercase;margin-top:2px}
+.waynote{font-size:12.5px;color:var(--mut);font-style:italic;margin-top:10px}
+.ticketroll{border:1.5px solid var(--cloth2);background:rgba(0,0,0,.3);padding:12px 16px;border-radius:3px}
+.ticketroll h4{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.ticketroll .dv{font-weight:700;text-transform:uppercase;font-size:13px;letter-spacing:.1em;border-bottom:1.5px solid var(--cloth2);padding:6px 0 2px;color:var(--cloth)}
+.ticketroll .rw{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:4px 0;border-bottom:1px dotted #35321F}
+.ticketroll .rw:last-child{border-bottom:none}
+.ticketroll .rw .v{font-family:var(--mono);font-size:12px;color:var(--cloth2)}
+
+/* bell pushes = next */
+.pushes{display:flex;flex-wrap:wrap;gap:10px}
+.pushes button{border:1.5px solid var(--cloth);background:transparent;color:var(--cloth);padding:9px 18px;
+  font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.1em;border-radius:3px;
+  transition:background .12s ease,color .12s ease,transform .12s ease}
+.pushes button:hover{background:var(--cloth);color:var(--blind)}
+.pushes button:active{transform:translateY(2px)}
+.pushes .sub{width:100%;font-style:italic;color:var(--mut);font-size:13px}
+.alsoc{margin-top:12px;font-size:13px;color:var(--mut)}
+.alsoc b{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:4px}
+.alsoc span{display:inline-block;margin-right:14px;font-style:italic;border-bottom:1px dotted var(--mut)}
+.foot{text-align:center;font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--mut);margin-top:30px}
+.empty{background:var(--blind2);border:1.5px solid var(--edge);border-radius:6px;padding:40px;text-align:center;font-style:italic;color:var(--mut);margin-top:20px}
+.h3lbl{font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut);padding:clamp(14px,3.6vw,24px) clamp(16px,4.6vw,40px) 0}
+</style>
+</head>
+<body>
+<div class="route">
+  <header class="depot">
+    <div class="num">74</div>
+    <div class="who"><h1>Marque Garage <span>· Destination Blind</span></h1>
+    <div class="dep" id="dep">—</div></div>
+  </header>
+  <main id="app"></main>
+  <div class="foot" id="foot"></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dshort=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase()}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Corporation Red',h:'#C8402E'},{n:'Blind Linen',h:'#EFE7CF'},{n:'Cream Band',h:'#DCCFA9'},
+  {n:'Fleet Green',h:'#3F4A38'},{n:'Cab Black',h:'#141310'}
+];
+const CREAT=[2,4,13,9].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dshort(B.createdAt||B.fetchedAt);
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+const prompt=((B.sub&&B.sub.prompt)||B.title||'').trim();
+
+document.getElementById('dep').innerHTML='BLIND No. '+esc(String(B.id||'').slice(0,4).toUpperCase())+' · LINEN, 42in<br>REWOUND '+DATE;
+document.getElementById('foot').textContent='MARQUE GARAGE · MIND THE GAP BETWEEN BRIEF AND BOARD · ALIGHT HERE FOR GEN Z';
+
+const M=document.getElementById('app');
+let blind='<div class="blind"><div class="roller"></div>';
+
+/* stop 1 = the ask */
+if(prompt){
+  blind+='<div class="stop"><span class="flag">ORIGIN</span><div class="via">Departure</div>'+
+  '<div class="dest">'+esc(prompt)+'</div>'+
+  '<div class="grid">'+
+  '<div class="g">Boarded at<b>'+(U?'<a href="'+esc(U)+'">'+esc(U)+'</a>':'—')+'</b></div>'+
+  '<div class="g">Fleet name<b>'+esc((B.urlContext&&B.urlContext.title)||'—')+'</b></div>'+
+  '<div class="g">Conductors note<b>'+esc(((B.urlContext&&B.urlContext.description)||'').slice(0,108))+'…</b></div>'+
+  '</div></div>';
+}
+
+/* stop 2 = audience read */
+if(AR&&AR.lean){
+  blind+='<div class="stop"><div class="via">First Calling Point — The Passenger</div>'+
+  '<div class="dest dim">'+esc(AR.lean.label)+'</div>'+
+  '<div class="sub">CONFIDENCE <b>'+Math.round((AR.lean.confidence||0)*100)+'%</b> · VIA '+
+  (AR.vibeWords||[]).slice(0,5).map(w=>'<b>'+esc(w)+'</b>').join(' · ')+'</div>'+
+  '<div class="grid">'+((AR.mediaHabits||[]).map(h=>'<div class="g">'+esc(h.channel)+'<b>'+esc(h.note)+'</b></div>').join(''))+
+  ((AR.lean.signals||[]).slice(0,2).map(s=>'<div class="g">Tell<b>'+esc(s)+'</b></div>').join(''))+'</div></div>';
+}
+
+/* stops 3-6 = strategies */
+if(strats.length){
+  strats.forEach((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    blind+='<div class="stop sstop"><div class="via">Calling Point '+(i+1)+(i===sel?' — Alight Here':'')+'</div>'+
+    '<div class="row"><div class="no">'+(i+1)+'</div><div><h3>'+esc(s.title)+'</h3>'+
+    '<div class="ang">via '+esc(s.angle||'')+' · fit '+f2(fit)+'</div></div>'+
+    '<div class="reachcell"><b>'+views(s.reach&&s.reach.estViews)+'</b><span>standees est.</span></div></div>'+
+    '<div class="fitline">'+(s.channels||[]).map(c=>'<div class="f'+(c.fit>=.94?' hot':'')+'"><span>'+esc(c.name)+'<br><span class="why">'+esc(c.why||'')+'</span></span><span class="bar"><i style="width:'+Math.round((c.fit||0)*100)+'%"></i></span><span class="v">'+f2(c.fit)+'</span></div>').join('')+'</div>'+
+    '<div class="fmt">'+(s.formats||[]).map(f=>esc(f)).join(' · ')+'</div>'+
+    (s.reach&&s.reach.basis?'<div class="basis">'+esc(s.reach.basis)+'</div>':'')+
+    (s.watchouts&&s.watchouts[0]?'<div class="watch"><b>Conductor\'s caution</b>'+esc(s.watchouts[0])+'</div>':'')+
+    '</div>';
+  });
+}
+
+/* not in service = ruled outs */
+if(anti.length){
+  blind+='<div class="h3lbl">Section barred — blind skips these</div>';
+  anti.forEach(a=>{
+    blind+='<div class="stop nis"><div class="chan">not in service · '+esc(a.channel)+'</div>'+
+    '<div class="dest" style="font-size:clamp(20px,4.6vw,34px)"><s>'+esc(a.title)+'</s></div>'+
+    '<div class="note">'+esc(a.whyNot)+'</div></div>';
+  });
+}
+
+/* terminus = brief */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS&&selS.brief){
+  const br=selS.brief;
+  blind+='<div class="stop"><span class="flag red">TERMINUS</span><div class="via">Last Stop — All Change</div>'+
+  '<div class="fare"><div class="plate">Pay as<br>you enter<b>EXACT<br>FARE</b></div>'+
+  '<div><div class="bttl">'+esc(br.title)+'</div><div class="bang">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Carries</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Fare stage</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Warrant</dt><dd>season ticket '+esc(selS.heroSignal||'—')+' · fit '+f2((selS.audienceFit&&selS.audienceFit.score)||0)+'</dd></dl></div></div></div>';
+}
+blind+='<div class="roller bot"></div></div>';
+if(blind.indexOf('stop')>-1)M.appendChild(el(blind));
+
+/* interior ad cards = creatives */
+if(CREAT.length){
+  M.appendChild(el('<div class="cards"><div class="rail"></div>'+
+  '<div class="lbl">Above the windows — advertiser\'s cards, billed '+esc(selS?selS.title:'—')+'</div>'+
+  '<div class="strip">'+CREAT.map(m=>'<figure class="adcard"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">printed by <b>'+esc(m.provider)+'</b></div></figcaption></figure>').join('')+'</div></div>'));
+}
+
+/* livery samples = palette */
+M.appendChild(el('<div class="cards"><div class="rail"></div><div class="lbl">Livery samples — enamel, hand-brushed</div>'+
+'<div class="livery" style="padding:8px clamp(14px,3.4vw,26px) 18px">'+PALETTE.map(s=>'<div class="swatch"><div class="band" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="hx">'+s.h.toUpperCase()+'</div></div>').join('')+'</div></div>'));
+
+/* conductor's waybill = qloo */
+if(calls.length||affs.length){
+  M.appendChild(el('<div class="cards"><div class="rail"></div><div class="lbl">Conductor\'s waybill — every ticket clipped, Qloo exchange, '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+'</div>'+
+  '<div class="way" style="padding:8px clamp(14px,3.4vw,26px) 18px"><div><table><tr><th>Ticket / punch</th><th>Clipped</th><th>Delay</th><th>Issued</th><th>Serial</th></tr>'+
+  calls.map((c,i)=>'<tr><td><b>T'+(20+i)+'</b> · '+esc(c.endpoint)+'<br><span class="tk">'+esc(c.mode)+'</span></td>'+
+  '<td class="mono">'+esc((c.at||'').slice(11,19))+'Z</td><td class="mono">'+esc(c.tookMs)+' ms</td><td class="mono">n='+esc(c.n)+'</td><td class="mono">'+esc(Object.keys(c.params||{}).length)+' punches</td></tr>').join('')+'</table>'+
+  '<p class="waynote">'+(calls.length||0)+' tickets clipped on this shift — '+(esc((B.qlooBundle&&B.qlooBundle.mode)||'live'))+' issue, all serials logged before the depot count.</p></div>'+
+  '<div class="ticketroll"><h4>Fare table — who rides this route</h4>'+affs.map(g=>'<div class="dv">'+esc(String(g.type).replace('urn:entity:',''))+'</div>'+
+  (g.entities||[]).slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+(e.affinity||0).toFixed(2)+'</span></div>').join('')).join('')+'</div></div></div>'));
+}
+
+/* request stop = next */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+M.appendChild(el('<div class="cards"><div class="rail"></div><div class="lbl">Press once — bell rings, bus stops</div>'+
+'<div class="pushes" style="padding:8px clamp(14px,3.4vw,26px) 18px">'+['Cut the ad spot','Deal the landing page','Ship the media plan','Run it back — remix'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+'<div class="sub">Terminus reached — change here for the next service.</div></div>'+
+(others.length?'<div class="alsoc" style="padding:0 clamp(14px,3.4vw,26px) 18px"><b>Other routes out of this garage</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':'')+
+'</div>'));
+
+if(!M.children.length)M.appendChild(el('<div class="empty">Blind stuck on DEPOT — data.js never rolled.</div>'));
+})();
+</script>
+</body>
+</html>

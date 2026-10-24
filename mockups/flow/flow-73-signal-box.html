@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque Junction — Signal Box</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23F0E7D0'/%3E%3Crect x='8' y='30' width='48' height='8' rx='4' fill='%232C3B2A'/%3E%3Ccircle cx='20' cy='34' r='9' fill='%23B23A2E' stroke='%23F0E7D0' stroke-width='3'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wall:#EFE7D2;--wall2:#E4D8BC;--beam:#2C3B2A;--beam2:#3B4F37;--ink:#20281C;
+  --red:#B23A2E;--brass:#8F7226;--mut:#6C6A55;--line:#C6BB9C;
+  --f:'Oswald','Arial Narrow',Arial,sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--wall) repeating-linear-gradient(0deg,transparent 0 34px,rgba(60,70,50,.05) 34px 35px);
+  color:var(--ink);font-family:var(--f);font-size:16px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(90deg,rgba(44,59,42,.05) 0 46px,transparent 46px 92px);}
+::selection{background:rgba(178,58,46,.28)}
+a{color:var(--red);text-decoration:none;border-bottom:1.5px solid var(--red);word-break:break-all}
+a:hover{color:var(--beam);border-color:var(--beam)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+.box{max-width:1060px;margin:0 auto 84px;padding:0 clamp(10px,2.4vw,22px);position:relative}
+
+/* enamel nameplate */
+.plate{
+  margin-top:26px;background:var(--beam);border-radius:4px;padding:3px;
+  box-shadow:0 8px 24px rgba(30,40,25,.35),inset 0 0 0 1px #1d2a1b;
+}
+.plate .in{background:linear-gradient(165deg,var(--beam2),var(--beam));border:1.5px solid var(--wall2);
+  border-radius:3px;padding:clamp(14px,3.6vw,24px) clamp(14px,4.4vw,34px);
+  display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.plate h1{font-size:clamp(24px,5.2vw,40px);font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--wall);line-height:1}
+.plate h1 span{color:#D9C47E}
+.plate .duty{text-align:right;font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#A9B49B}
+.plate .duty b{display:block;font-size:13px;color:#D9C47E;letter-spacing:.1em;font-family:var(--mono);font-weight:400}
+
+section{margin-top:26px}
+.sect-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.sect-h .bx{font-size:10px;letter-spacing:.28em;background:var(--red);color:var(--wall);padding:3px 10px;font-weight:600;text-transform:uppercase}
+.sect-h h2{font-size:clamp(19px,3.8vw,28px);font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.sect-h .sub{margin-left:auto;font-size:12.5px;color:var(--mut);font-style:italic}
+.panel{
+  background:#F6EFDC;border:1.5px solid var(--line);border-radius:4px;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.5),0 5px 16px rgba(60,50,30,.14);
+  padding:clamp(14px,3.4vw,26px) clamp(14px,3.8vw,30px);
+}
+
+/* telegraph slip = ask */
+.tele{display:grid;grid-template-columns:170px 1fr;gap:clamp(16px,3.4vw,30px);align-items:start}
+@media(max-width:640px){.tele{grid-template-columns:1fr}}
+.ticker{
+  border:2px solid var(--beam);padding:12px;text-align:center;background:var(--wall2);position:relative;
+}
+.ticker::before,.ticker::after{content:"";position:absolute;left:0;right:0;height:9px;
+  background:radial-gradient(circle at 9px 0,transparent 6.5px,var(--wall2) 7px);background-size:18px 9px}
+.ticker::before{top:-9px;transform:scaleY(-1)}
+.ticker::after{bottom:-9px}
+.ticker .th{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut)}
+.ticker .bell{font-size:34px;font-weight:700;color:var(--red);letter-spacing:.06em;margin:6px 0;font-family:var(--mono)}
+.ticker .tc{font-size:10px;letter-spacing:.18em;text-transform:uppercase;line-height:1.6}
+.tele .ask{font-size:clamp(24px,4.8vw,38px);font-weight:600;text-transform:uppercase;letter-spacing:.04em;line-height:1.06}
+.tele .meta{display:flex;flex-wrap:wrap;gap:8px 26px;margin-top:12px}
+.tele .meta div{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
+.tele .meta b{display:block;font-size:14px;font-weight:500;letter-spacing:.03em;text-transform:none;color:var(--ink);margin-top:2px}
+
+/* block shelf = audience */
+.shelf{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,2.4vw,18px)}
+@media(max-width:700px){.shelf{grid-template-columns:1fr}}
+.inst{border:2px solid var(--beam);background:linear-gradient(170deg,#F8F2E0,#EDE3C6);border-radius:6px;
+  padding:10px 12px 12px;text-align:center;box-shadow:0 4px 10px rgba(50,40,20,.15);position:relative}
+.inst .nm{font-size:9px;letter-spacing:.26em;text-transform:uppercase;background:var(--beam);color:var(--wall);
+  display:inline-block;padding:2px 12px;border-radius:10px;margin-bottom:8px}
+.dial{position:relative;height:56px;margin:4px auto 0;max-width:190px;
+  border-bottom:2.5px solid var(--beam);}
+.dial .arc{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;padding:0 4px}
+.dial .arc i{font-style:normal;font-size:7.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.needle{position:absolute;left:50%;bottom:0;width:3px;height:48px;background:var(--red);transform-origin:bottom center;
+  border-radius:2px 2px 0 0;transition:transform .5s ease}
+.needle::after{content:"";position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:9px;height:9px;border-radius:50%;background:var(--red)}
+.inst .note{font-size:12px;color:var(--mut);font-style:italic;margin-top:8px;min-height:2.6em}
+.inst .pos{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--beam);font-weight:600;margin-top:4px}
+.tokens{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.tokens span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;border:1.5px solid var(--brass);color:var(--brass);padding:1px 10px;border-radius:20px;font-weight:500}
+.leanline{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.leanline .lamp{width:14px;height:14px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px rgba(178,58,46,.2),0 0 12px rgba(178,58,46,.55)}
+.leanline .lab{font-size:clamp(20px,4vw,30px);font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.leanline .conf{font-family:var(--mono);font-size:13px;color:var(--mut)}
+.leanline .conf b{color:var(--red);font-weight:600}
+.sigs{margin:0 0 14px;list-style:none;font-size:13.5px}
+.sigs li{padding:4px 0 4px 18px;border-bottom:1px dashed var(--line);position:relative}
+.sigs li:last-child{border-bottom:none}
+.sigs li::before{content:"";position:absolute;left:2px;top:11px;width:7px;height:7px;background:var(--beam)}
+
+/* lever frame = strategies */
+.trackline{position:relative;height:26px;margin-bottom:16px;border-bottom:3px solid var(--beam)}
+.trackline::before{content:"";position:absolute;left:0;right:0;bottom:8px;border-bottom:1.5px dashed var(--line)}
+.trackline .sig{position:absolute;bottom:-4px;width:3px;height:20px;background:var(--beam)}
+.trackline .sig::before{content:"";position:absolute;top:-7px;left:50%;transform:translateX(-50%);width:9px;height:9px;border-radius:50%;background:var(--red);border:2px solid var(--beam)}
+.frame{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,2vw,16px)}
+@media(max-width:860px){.frame{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:440px){.frame{grid-template-columns:1fr}}
+.lev{border:2px solid var(--beam);border-radius:6px;background:linear-gradient(180deg,#F6EFDC,#E9DFC2);
+  overflow:hidden;transition:transform .15s ease,box-shadow .15s ease;display:flex;flex-direction:column}
+.lev:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(50,40,20,.22)}
+.lev .shaft{position:relative;height:64px;background:repeating-linear-gradient(90deg,#DDD1AF 0 8px,#D2C49E 8px 16px);border-bottom:2px solid var(--beam)}
+.lev .arm{position:absolute;left:50%;bottom:6px;width:7px;height:52px;background:linear-gradient(90deg,#3A3A34,#66665C,#3A3A34);
+  transform-origin:bottom center;border-radius:3px;transition:transform .3s ease}
+.lev.out .arm{transform:rotate(-24deg)}
+.lev .grip{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:26px;height:15px;border-radius:7px;border:2px solid rgba(0,0,0,.35)}
+.lev .nplate{position:absolute;top:5px;left:50%;transform:translateX(-50%);background:var(--beam);color:var(--wall);
+  font-family:var(--mono);font-size:11px;padding:1px 9px;border-radius:2px}
+.lev .body{padding:10px 13px 12px;flex:1;display:flex;flex-direction:column}
+.lev h3{font-size:clamp(19px,3vw,23px);font-weight:600;text-transform:uppercase;letter-spacing:.04em;line-height:1.02}
+.lev .ang{font-size:12px;color:var(--mut);font-style:italic;margin-top:1px}
+.lev .fit{display:flex;align-items:baseline;gap:8px;margin-top:7px;border-top:1.5px solid var(--beam);border-bottom:1px dashed var(--line);padding:5px 0}
+.lev .fit b{font-family:var(--mono);font-size:20px;color:var(--red)}
+.lev .fit span{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+.lev .chn{margin-top:6px;font-size:13px}
+.lev .chn .c{display:flex;justify-content:space-between;gap:8px;padding:2.5px 0;border-bottom:1px dotted var(--line)}
+.lev .chn .c:last-child{border-bottom:none}
+.lev .chn .n{text-transform:uppercase;letter-spacing:.07em;font-weight:500}
+.lev .chn .n i{display:block;font-style:italic;font-size:10.5px;color:var(--mut);text-transform:none;letter-spacing:0}
+.lev .chn .v{font-family:var(--mono);color:var(--red);font-weight:600;white-space:nowrap}
+.lev .fmt{margin-top:6px;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.lev .reach{margin-top:auto;padding-top:7px;font-size:12px;color:var(--mut);font-style:italic}
+.lev .reach b{font-family:var(--mono);font-size:17px;color:var(--ink);font-style:normal}
+.lev .eye{margin-top:7px;font-size:11.5px;color:#7A5A24;font-style:italic;border-top:1px dotted var(--line);padding-top:6px}
+.lev .eye b{font-style:normal;font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--red);display:block}
+.lev.out .nplate{background:var(--red)}
+
+/* collared = ruled out */
+.collars{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,2vw,14px)}
+@media(max-width:860px){.collars{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:440px){.collars{grid-template-columns:1fr}}
+.dead{border:1.5px solid var(--line);background:#E6DCBF;border-radius:6px;padding:12px 14px;position:relative;overflow:hidden}
+.dead::before{content:"";position:absolute;left:0;right:0;top:0;height:7px;
+  background:repeating-linear-gradient(45deg,var(--red) 0 9px,var(--wall) 9px 18px)}
+.dead .ch{margin-top:6px;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--red);font-weight:600}
+.dead h4{font-size:18px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.dead h4 s{text-decoration-color:var(--red);text-decoration-thickness:2px}
+.dead .why{font-size:12.5px;color:var(--mut);font-style:italic;margin-top:5px;line-height:1.4}
+.dead .collartag{display:inline-block;margin-top:8px;font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+  border:1.5px solid var(--beam);padding:2px 8px;background:var(--wall)}
+
+/* working timetable = brief + notices = creatives */
+.wtt{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(16px,3.4vw,30px);align-items:start}
+@media(max-width:800px){.wtt{grid-template-columns:1fr}}
+.tcard{border:2px solid var(--beam);background:#FBF6E6;padding:14px 16px;position:relative;transform:rotate(-.3deg);box-shadow:0 6px 14px rgba(50,40,20,.2)}
+.tcard .sal{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--brass);font-weight:600}
+.tcard h3{font-size:clamp(23px,4.4vw,33px);font-weight:600;text-transform:uppercase;letter-spacing:.03em;line-height:1}
+.tcard .ang{font-size:14px;margin-top:6px;color:#3E4634}
+.tcard table{width:100%;border-collapse:collapse;margin-top:12px;font-size:13.5px}
+.tcard th{font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--brass);text-align:left;padding:3px 6px;border-bottom:1.5px solid var(--beam)}
+.tcard td{padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
+.tcard .km{font-weight:600;font-size:15px}
+.notice{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:430px){.notice{grid-template-columns:1fr}}
+.pin{border:1.5px solid var(--line);background:#FBF6E6;overflow:hidden;transition:transform .15s ease;position:relative}
+.pin::before{content:"";position:absolute;top:7px;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#C9AE55,#8F7226);box-shadow:0 2px 3px rgba(0,0,0,.4);z-index:2}
+.pin:hover{transform:translateY(-3px)}
+.pin .iw{aspect-ratio:4/3;overflow:hidden;border-bottom:1.5px solid var(--line);filter:sepia(.18)}
+.pin .iw img{width:100%;height:100%;object-fit:cover}
+.pin figcaption{padding:8px 12px 10px}
+.pin .h{font-size:13.5px;font-weight:500;letter-spacing:.03em;line-height:1.3}
+.pin .p{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-top:3px}
+.pin .p b{border:1px solid var(--red);padding:0 7px;border-radius:9px;font-weight:600}
+
+/* paint locker = palette */
+.locker{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end}
+.tin{width:92px;text-align:center}
+.tin .can{height:60px;border-radius:4px 4px 6px 6px;border:2px solid rgba(0,0,0,.3);position:relative;
+  box-shadow:inset 0 -8px 0 rgba(0,0,0,.15),0 4px 8px rgba(50,40,20,.2);display:flex;align-items:center;justify-content:center}
+.tin .can::before{content:"";position:absolute;top:5px;left:10%;right:10%;height:3px;border-radius:2px;background:rgba(255,255,255,.5)}
+.tin .can i{font-style:normal;font-size:7.5px;font-weight:600;letter-spacing:.04em;font-family:var(--mono)}
+.tin .n{font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-top:7px;font-weight:600}
+.tin .hx{font-size:10px;font-family:var(--mono);color:var(--mut)}
+
+/* train register = qloo */
+.reg{display:grid;grid-template-columns:1.12fr .88fr;gap:clamp(14px,3vw,26px)}
+@media(max-width:800px){.reg{grid-template-columns:1fr}}
+.reg table{width:100%;border-collapse:collapse;font-size:12.5px}
+.reg th{font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);text-align:left;padding:4px 7px;border-bottom:2px solid var(--beam)}
+.reg td{padding:7px;border-bottom:1px dashed var(--line);vertical-align:top}
+.reg td.mono{font-family:var(--mono);font-size:11.5px;color:var(--brass)}
+.reg .win{display:inline-block;font-size:9px;letter-spacing:.16em;border:1.5px solid var(--red);color:var(--red);padding:0 6px;text-transform:uppercase;margin-top:2px}
+.regnote{font-size:12.5px;color:var(--mut);font-style:italic;margin-top:10px}
+.fills{border:1.5px solid var(--beam);background:#EDE4C8;padding:12px 16px;border-radius:3px}
+.fills h4{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.fills .dv{font-weight:600;text-transform:uppercase;font-size:13px;letter-spacing:.1em;border-bottom:1.5px solid var(--beam);padding:6px 0 2px}
+.fills .rw{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:4px 0;border-bottom:1px dotted var(--line)}
+.fills .rw:last-child{border-bottom:none}
+.fills .rw .v{font-family:var(--mono);font-size:12px;color:var(--brass)}
+
+/* bell codes = next */
+.bells{display:flex;flex-wrap:wrap;gap:10px}
+.bells button{border:1.5px solid var(--beam);background:var(--wall);color:var(--beam);padding:9px 18px;
+  font-weight:500;font-size:14px;text-transform:uppercase;letter-spacing:.1em;border-radius:3px;
+  transition:background .12s ease,color .12s ease,transform .12s ease}
+.bells button:hover{background:var(--beam);color:var(--wall)}
+.bells button:active{transform:translateY(2px)}
+.bells .sub{width:100%;font-style:italic;color:var(--mut);font-size:13px}
+.alsoc{margin-top:12px;font-size:13px;color:var(--mut)}
+.alsoc b{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:4px}
+.alsoc span{display:inline-block;margin-right:14px;font-style:italic;border-bottom:1px dotted var(--mut)}
+.foot{text-align:center;font-size:10px;letter-spacing:.32em;text-transform:uppercase;color:var(--mut);margin-top:32px}
+.empty{background:#F6EFDC;border:1.5px solid var(--line);border-radius:4px;padding:40px;text-align:center;font-style:italic;color:var(--mut);margin-top:20px}
+</style>
+</head>
+<body>
+<div class="box">
+  <header class="plate"><div class="in">
+    <h1>Marque Jct <span>Signal Box</span></h1>
+    <div class="duty" id="duty">—</div>
+  </div></header>
+  <main id="app"></main>
+  <div class="foot" id="foot"></div>
+</div>
+<script src="../data.js"></script>
+<script src="../media-data.js"></script>
+<script src="../dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'../'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dshort=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase()}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Signal Red',h:'#B23A2E'},{n:'Box Cream',h:'#F2EAD2'},{n:'Frame Green',h:'#2C3B2A'},
+  {n:'Brass Polish',h:'#9C7C2E'},{n:'Rail Slate',h:'#4E5650'}
+];
+const CREAT=[1,5,12,7].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dshort(B.createdAt||B.fetchedAt);
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+const prompt=((B.sub&&B.sub.prompt)||B.title||'').trim();
+const gripCols=['#B23A2E','#3B4F37','#20281C','#8F7226'];
+const posLabels=['LINE BLOCKED','TRAIN ON LINE','LINE CLEAR'];
+
+document.getElementById('duty').innerHTML='BLOCK SHELF IN CHARGE<br>'+DATE+' · BOX No. '+esc(String(B.id||'').slice(0,4).toUpperCase());
+document.getElementById('foot').textContent='MARQUE JCT · ABSOLUTE BLOCK WORKING · THE REGISTER NEVER LIES';
+
+const M=document.getElementById('app');
+const sec=(bx,title,sub,inner,cls)=>{if(!inner)return;
+  M.appendChild(el('<section'+(cls?' class="'+cls+'"':'')+'><div class="sect-h"><span class="bx">'+esc(bx)+'</span><h2>'+esc(title)+'</h2><span class="sub">'+esc(sub)+'</span></div><div class="panel">'+inner+'</div></section>'))};
+
+/* telegraph slip = ask */
+sec('TGM','Train Described','is-it-line-clear received, repeated back',
+'<div class="tele"><div class="ticker"><div class="th">Bell code repeated</div><div class="bell">4-1</div>'+
+'<div class="tc">Express passenger<br>·<br>not stopping</div></div>'+
+'<div><div class="ask">'+esc(prompt)+'</div>'+
+'<div class="meta">'+
+'<div>Booked from<b>'+(U?'<a href="'+esc(U)+'">'+esc(U)+'</a>':'—')+'</b></div>'+
+'<div>Headcode reads<b>'+esc((B.urlContext&&B.urlContext.title)||'—')+'</b></div>'+
+'<div>Guard\'s note<b>'+esc(((B.urlContext&&B.urlContext.description)||'').slice(0,110))+'…</b></div>'+
+'</div></div></div>');
+
+/* block shelf = audience */
+if(AR&&AR.lean){
+  const habits=AR.mediaHabits||[];
+  sec('BLK','The Block Shelf','three instruments read the road — needles don\'t flatter',
+  '<div class="leanline"><span class="lamp"></span><span class="lab">'+esc(AR.lean.label)+'</span>'+
+  '<span class="conf">needle steady at <b>'+Math.round((AR.lean.confidence||0)*100)+'%</b> confidence</span></div>'+
+  '<ul class="sigs">'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>'+
+  '<div class="shelf">'+habits.map((h,i)=>{
+    const pos=1+ (i%2===0?1:0); /* LINE CLEAR / TRAIN ON LINE */
+    return '<div class="inst"><span class="nm">'+esc(h.channel)+' → box '+esc(String((h.type||'').replace('urn:entity:','')).toUpperCase())+'</span>'+
+    '<div class="dial"><div class="arc"><i>'+posLabels[0]+'</i><i>'+posLabels[1]+'</i><i>'+posLabels[2]+'</i></div>'+
+    '<div class="needle" style="transform:rotate('+(pos===2?38:0)+'deg)"></div></div>'+
+    '<div class="pos">'+posLabels[pos]+'</div><div class="note">'+esc(h.note)+'</div></div>';
+  }).join('')+'</div>'+
+  '<div class="tokens">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div>');
+}
+
+/* lever frame = strategies */
+if(strats.length){
+  sec('LVR','The Lever Frame','four levers interlocked — pull order matters',
+  '<div class="trackline">'+strats.map((s,i)=>'<span class="sig" style="left:'+(8+i*(84/Math.max(strats.length-1,1)))+'%"></span>').join('')+'</div>'+
+  '<div class="frame">'+strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    const out=i===sel;
+    return '<div class="lev'+(out?' out':'')+'"><div class="shaft">'+
+    '<span class="nplate">'+(out?'PULLED ':'LEVER ')+(i+1)+'</span>'+
+    '<div class="arm"><div class="grip" style="background:'+gripCols[i%4]+'"></div></div></div>'+
+    '<div class="body"><h3>'+esc(s.title)+'</h3><div class="ang">works: '+esc(s.angle||'')+'</div>'+
+    '<div class="fit"><b>'+f2(fit)+'</b><span>interlock fit<br>(audience)</span></div>'+
+    '<div class="chn">'+(s.channels||[]).map(c=>'<div class="c"><span class="n">'+esc(c.name)+'<i>'+esc(c.why||'')+'</i></span><span class="v">'+f2(c.fit)+'</span></div>').join('')+'</div>'+
+    '<div class="fmt">rodded to: '+(s.formats||[]).map(f=>esc(f)).join(' · ')+'</div>'+
+    '<div class="reach">Sight line — <b>'+views(s.reach&&s.reach.estViews)+'</b> viewers<i style="display:block">'+esc(s.reach&&s.reach.basis||'')+'</i></div>'+
+    (s.watchouts&&s.watchouts[0]?'<div class="eye"><b>Signalman\'s caution</b>'+esc(s.watchouts[0])+'</div>':'')+
+    '</div></div>';
+  }).join('')+'</div>');
+}
+
+/* collared = ruled out */
+if(anti.length){
+  sec('CLD','Collared &amp; Out of Use','levers spiked by the district inspector',
+  '<div class="collars">'+anti.map(a=>'<div class="dead"><div class="ch">spared route: '+esc(a.channel)+'</div>'+
+  '<h4><s>'+esc(a.title)+'</s></h4><div class="why">inspector\'s mark — '+esc(a.whyNot)+'</div>'+
+  '<span class="collartag">collar fitted · do not pull</span></div>').join('')+'</div>');
+}
+
+/* working timetable = brief + pinned notices = creatives */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('WTT','Working Timetable &amp; Notices','the train the box was built for',
+  '<div class="wtt"><div class="tcard">'+
+  (br?'<div class="sal">WTT entry · booked path '+esc(selS.title)+'</div><h3>'+esc(br.title)+'</h3>'+
+  '<div class="ang">'+esc(br.angle)+'</div>'+
+  '<table><tr><th>Field</th><th>As booked</th></tr>'+
+  '<tr><td>Consist</td><td>'+esc(br.audience)+'</td></tr>'+
+  '<tr><td>Headboard</td><td class="km">“'+esc(br.keyMessage)+'”</td></tr>'+
+  '<tr><td>Authority</td><td>key token '+esc(selS.heroSignal||'—')+' · interlock '+f2((selS.audienceFit&&selS.audienceFit.score)||0)+'</td></tr></table>'
+  :'<div class="ang">No path booked.</div>')+
+  '</div>'+
+  '<div><div style="font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--brass);margin-bottom:8px">Pinned to the notice board — works photographs</div>'+
+  '<div class="notice">'+CREAT.map(m=>'<figure class="pin"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">developed by <b>'+esc(m.provider)+'</b></div></figcaption></figure>').join('')+'</div></div></div>');
+}
+
+/* paint locker = palette */
+sec('PNT','Paint Locker','tins racked by British Railways spec',
+  '<div class="locker">'+PALETTE.map(s=>'<div class="tin"><div class="can" style="background:'+s.h+'"><i style="color:'+(s.h==='#F2EAD2'?'rgba(0,0,0,.5)':'rgba(255,255,255,.9)')+'">'+s.h.toUpperCase()+'</i></div><div class="n">'+esc(s.n)+'</div><div class="hx">'+s.h.toUpperCase()+'</div></div>').join('')+'</div>');
+
+/* train register = qloo */
+if(calls.length||affs.length){
+  sec('REG','Train Register','every movement entered in ink — Qloo block, '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live'),
+  '<div class="reg"><div><table><tr><th>Bell / instrument</th><th>Time</th><th>On line</th><th>Count</th><th>Remarks</th></tr>'+
+  calls.map((c,i)=>'<tr><td><b>B'+(i+1)+'</b> · '+esc(c.endpoint)+'<br><span class="win">'+esc(c.mode)+'</span></td>'+
+  '<td class="mono">'+esc((c.at||'').slice(11,19))+'Z</td><td class="mono">'+esc(c.tookMs)+' ms</td><td class="mono">n='+esc(c.n)+'</td><td class="mono">'+esc(Object.keys(c.params||{}).length)+' fields</td></tr>').join('')+'</table>'+
+  '<p class="regnote">'+(calls.length||0)+' movements registered — '+(esc((B.qlooBundle&&B.qlooBundle.mode)||'live'))+' block working, each bell repeated before acceptance. Register countersigned at '+DATE+'.</p></div>'+
+  '<div class="fills"><h4>Token instruments — what the far box offered</h4>'+affs.map(g=>'<div class="dv">'+esc(String(g.type).replace('urn:entity:',''))+'</div>'+
+  (g.entities||[]).slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+(e.affinity||0).toFixed(2)+'</span></div>').join('')).join('')+'</div></div>');
+}
+
+/* bell codes = next */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('BEL','Offer the Next Train','tap the bell — the far box answers',
+  '<div class="bells">'+['3-1 · cut the ad spot','2-1 · deal the landing page','4-2 · ship the media plan','1-5-5 · run it back, remixed'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  '<div class="sub">Line clear behind the last train — the frame is free for the next working.</div></div>'+
+  (others.length?'<div class="alsoc"><b>Other workings on the diagram</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':''));
+
+if(!M.children.length)M.appendChild(el('<div class="empty">Box closed — data.js never reached the instrument shelf.</div>'));
+})();
+</script>
+</body>
+</html>

@@ -68,6 +68,6 @@ export async function renderSiteVideo({ html, url }, { aspectRatio = '16:9', sec
 
 // does this plan call for a site/product demo rather than generated footage?
 export function planWantsSiteDemo(plan = {}, campaign = {}) {
-  const text = [plan.format, plan.direction, plan.angle, campaign?.brief?.angle, campaign?.brief?.notes, campaign?.brief?.keyMessage].filter(Boolean).join(' ').toLowerCase();
+  const text = [plan.format, plan.direction, plan.angle, campaign?.brief?.angle, campaign?.notes || campaign?.brief?.notes, campaign?.brief?.keyMessage].filter(Boolean).join(' ').toLowerCase();
   return /\b(web ?site|web ?app|app\b|ui|ux|dashboard|landing|demo|software|platform|interface|store|shop|checkout|onboard)/.test(text);
 }

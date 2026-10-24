@@ -539,7 +539,7 @@ export default function Strategy() {
           new Promise((_, rej) => setTimeout(() => rej(new Error('generation timed out — the model took too long. Retry?')), 150000)),
         ]);
       } catch (e) {
-        if (/timed out/.test(e.message || '')) throw e;   // don't mask timeouts with a silent re-wait
+        if (/timed out/.test(e.message || '')) { setRes(null); throw e; }   // drop the stuck skeleton — don't mask timeouts
         const out = await api.strategy(p, undefined, url || undefined);   // SSE unsupported → one-shot
         gotBoard = out;
         setRes(out);
@@ -720,7 +720,7 @@ export default function Strategy() {
     const p = String(h.platform || '').toLowerCase();
     if (!p || NONMEDIA_HUNTS.has(p)) continue;
     const cur2 = huntChips.find((c) => c.p === p);
-    if (cur2) { cur2.queries.push(h.query); cur2.failed = cur2.failed && !!h.failed; }
+    if (cur2) { if (h.query) cur2.queries.push(h.query); cur2.failed = cur2.failed && !!h.failed; }
     else huntChips.push({ p, queries: [h.query].filter(Boolean), failed: !!h.failed });
   }
   const toggleWild = (e) => {

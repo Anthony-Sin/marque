@@ -88,10 +88,13 @@ export default function Websites() {
   };
 
   const previewNewTab = () => {
-    const blob = new Blob([active?.html || ''], { type: 'text/html' });
-    const u = URL.createObjectURL(blob);
+    // open the generated doc inside a sandboxed iframe wrapper — its scripts
+    // run in an opaque origin and can't reach app storage
+    const inner = URL.createObjectURL(new Blob([active?.html || ''], { type: 'text/html' }));
+    const shell = `<!doctype html><title>Preview</title><style>html,body{margin:0;height:100%}iframe{width:100%;height:100%;border:0;display:block}</style><iframe sandbox="allow-scripts" src="${inner}"></iframe>`;
+    const u = URL.createObjectURL(new Blob([shell], { type: 'text/html' }));
     window.open(u, '_blank', 'noopener');
-    setTimeout(() => URL.revokeObjectURL(u), 60_000);
+    setTimeout(() => { URL.revokeObjectURL(u); URL.revokeObjectURL(inner); }, 60_000);
   };
 
   const delVersion = async () => {

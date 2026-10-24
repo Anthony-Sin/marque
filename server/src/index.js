@@ -879,6 +879,7 @@ app.post('/api/websites', h(async (req, res) => {
         || (srcBoard?.urlContext ? { name: srcBoard.urlContext.title || srcBoard.urlContext.url, description: srcBoard.urlContext.description || '', site: srcBoard.urlContext.url } : null);
     ctx = {
       campaign: campaign ? {
+        id: campaign.id,
         title: campaign.brief?.title, angle: campaign.brief?.angle,
         audience: campaign.brief?.audience, keyMessage: campaign.brief?.keyMessage,
         channels: campaign.brief?.channels || [],

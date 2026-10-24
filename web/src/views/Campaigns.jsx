@@ -72,11 +72,13 @@ export default function Campaigns() {
   // "Use this strategy" button. Consume once → composer chip + auto-start brief.
   // Optional `exampleRefs: [{platform,title,author,url,note}]` fold into the
   // brief text as a "Reference examples:" section.
+  const freshHandoffRef = useRef(false);
   useEffect(() => {
     try {
       const raw = sessionStorage.getItem('strategyHandoff');
       if (!raw) return;
       sessionStorage.removeItem('strategyHandoff');
+      freshHandoffRef.current = true;   // a fresh produce beat a stale draft restore
       const data = JSON.parse(raw);
       const s = data?.strategy;
       if (!s) return;
@@ -125,7 +127,7 @@ export default function Campaigns() {
   // and restore on return (a pending handoff always drafts fresh instead)
   useEffect(() => {
     try {
-      if (sessionStorage.getItem('strategyHandoff')) return;
+      if (freshHandoffRef.current) return;   // fresh produce handoff already consumed
       const raw = sessionStorage.getItem('marque.briefDraft');
       if (raw) {
         const d = JSON.parse(raw);
@@ -163,7 +165,7 @@ export default function Campaigns() {
     const c = deleting;
     setDeleting(null);
     if (!c?.id) return;
-    await api.deleteCampaign(c.id).catch(() => {});
+    try { await api.deleteCampaign(c.id); } catch (e) { say(e.message || 'Delete failed'); return; }
     setCampaigns((cs) => (cs || []).filter((x) => x.id !== c.id));
     if (openId === c.id) show(null);
   };
