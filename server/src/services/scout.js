@@ -501,7 +501,35 @@ export async function generateExamples({ strategy, profile, product = null, audi
           if (!candidates.length) return null;
           return await tryAll(...candidates.map((v) => () => instagramExamples(v, note)));
         }
-        case 'guerrilla': case 'ooh': case 'email': case 'maps': {
+        case 'maps': {
+          // local-presence medium — Devin finds the real listing (it can browse
+          // maps/search); commons+wiki stay as secondary artifacts
+          const anchor = ctx.entityNames.find((n) => q.toLowerCase().includes(n.toLowerCase()));
+          const items = (await collect(
+            async () => {
+              try {
+                const { devinCliAvailable, devinCliChat } = await import('./devinCli.js');
+                if (!devinCliAvailable()) return [];
+                const raw = await devinCliChat([
+                  { role: 'system', content: 'You find real local business listings. Use the web if available. Return JSON only.' },
+                  { role: 'user', content: `Find the real Google Maps / local listing most relevant to: "${q}" (context: ${ctx.product?.name || ''} ${ctx.product?.description || ''}). Return {"name","rating","mapsUrl","address","note"} — a real place only, never invent one. If you cannot verify a real listing, return {"none":true}.` },
+                ]);
+                const m = raw.match(/\{[\s\S]*\}/);
+                const j = m ? JSON.parse(m[0]) : null;
+                if (!j || j.none || !j.name) return [];
+                return [{
+                  platform: 'maps', kind: 'listing', title: `${j.name}${j.rating ? ` · ${j.rating}★` : ''}`,
+                  url: j.mapsUrl || `https://www.google.com/maps/search/${encodeURIComponent(j.name)}`,
+                  note: j.note || note || 'real local listing — via devin agent lookup',
+                  meta: { address: j.address, source: 'devin' },
+                }];
+              } catch { return []; }
+            },
+            () => commonsExamples(q, h.platform, note),
+            async () => [await wikiExample(anchor || q, h.platform, note)].filter(Boolean))).flat();
+          return items.length ? items : null;
+        }
+        case 'guerrilla': case 'ooh': case 'email': {
           // pull Commons AND a wiki card for the entity the query anchors on —
           // the relevance scorer drops whichever one is junk. Both empty? The
           // lane returns nothing — no generated stand-in.

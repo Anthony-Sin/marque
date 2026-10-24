@@ -1,6 +1,8 @@
 // campaign briefs + creative generation (copy via TensorMux, image via Gemini, SVG fallback)
 import { chatJSON } from './tensor.js';
 import { genImageResilient, genVideoResilient } from './media.js';
+import { renderSiteVideo, planWantsSiteDemo, siteVideoAvailable } from './sitevideo.js';
+import { siteVersion } from './sites.js';
 import { find, list, update, uid, saveAssetBuf, registerImage } from './store.js';
 import { fetchSite } from './scraper.js';
 import { tuning } from '../tuning.js';
@@ -274,12 +276,19 @@ async function oneCreative(campaign, profile, product, angle, plan = null) {
     creative.imageError = String(e.message || e).slice(0, 200);
   }
   registerImage(creative.imagePath, { source: 'creative', angle });
-  // video/demo mediums go through the video lane — product demo motion built
-  // from the creative still (+ product refs when the planner gave direction)
+  // video/demo mediums go through the video lane — for tech/product demos the
+  // honest medium is the real site in motion (local capture), not AI footage
   if (plan?.medium === 'video' && creative.imagePath && !creative.placeholder) {
     creative.videoState = 'running';
     try {
-      const v = await genVideoResilient(
+      const site = list('websites')?.at(-1);
+      const version = site ? siteVersion(site) : null;
+      let v = null;
+      if (version?.html && planWantsSiteDemo(plan, campaign) && siteVideoAvailable()) {
+        v = await renderSiteVideo({ html: version.html }, { aspectRatio: campaign.aspectRatio, seconds: 8 });
+        creative.videoDirection = 'site-demo';
+      }
+      if (!v) v = await genVideoResilient(
         [
           `Product demo video for ${product?.name || profile?.name || 'the product'} — ${plan.direction || 'show the product in use'}.`,
           plan.format ? `Format: ${plan.format}.` : '',

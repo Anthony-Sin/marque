@@ -8,6 +8,7 @@ import { PORT, ASSETS_DIR, WEB_DIST, ENV, DATA_DIR } from './config.js';
 import { tuning } from './tuning.js';
 import * as store from './services/store.js';
 import { chat, chatJSON, tensorConfigured } from './services/tensor.js';
+import { devinCliAvailable, devinCliChat, devinCliInspect } from './services/devinCli.js';
 import { geminiConfigured } from './services/gemini.js';
 import { genImageResilient, genVideoResilient, localgenHealth } from './services/media.js';
 import * as qloo from './services/qloo.js';
@@ -18,6 +19,7 @@ import { agentChat } from './services/agent.js';
 import { generateStrategies } from './services/strategy.js';
 import { generateExamples } from './services/scout.js';
 import { generateWebsite, editWebsite, siteVersion } from './services/sites.js';
+import { renderSiteVideo, siteVideoAvailable } from './services/sitevideo.js';
 import { buildBook, htmlBook } from './services/brandbook.js';
 
 const { get, set, list, push, find, update, remove, uid, now } = store;
@@ -72,7 +74,7 @@ app.get('/api/status', h(async (_req, res) => {
   const q = qloo.status();
   const lg = await localgenHealth().catch(() => ({ ok: false }));
   ok(res, {
-    tensor: tensorConfigured(), gemini: geminiConfigured(), qloo: q.mode, qlooNote: q.note,
+    tensor: tensorConfigured(), devin: devinCliAvailable(), gemini: geminiConfigured(), qloo: q.mode, qlooNote: q.note,
     localgen: { configured: !!ENV.localgenUrl, mode: ENV.localgenProvider || 'off', ok: !!lg.ok, model: lg.model },
   });
 }));
@@ -552,7 +554,38 @@ app.get('/api/campaigns/:id', h(async (req, res) => {
 app.post('/api/creatives/:id/edit', h(async (req, res) => {
   const hit = findCreative(req.params.id);
   if (!hit) return res.status(404).json({ error: 'not found' });
-  const { headline, body, cta, layout, grade, overlayStyle } = req.body || {};
+  const { headline, body, cta, layout, grade, overlayStyle, agent } = req.body || {};
+  // agentic edit — Devin looks at the actual creative and decides the change
+  if (agent) {
+    if (!devinCliAvailable()) return res.status(503).json({ error: 'devin cli not available' });
+    const profile = brand.currentProfile();
+    const brief = hit.campaign.brief || {};
+    try {
+      const raw = await devinCliInspect(hit.creative.imagePath, [
+        `You are editing a ${hit.campaign.aspectRatio || '1:1'} ad creative for "${profile?.name || 'the brand'}" (campaign: ${brief.title || 'untitled'}).`,
+        `Current copy — headline: "${hit.creative.headline || ''}", body: "${hit.creative.body || ''}", cta: "${hit.creative.cta || ''}".`,
+        `User instruction: ${agent}`,
+        `Return ONLY JSON: {"headline","body","cta","layout":{"vpos":"top|middle|bottom","hpos":"left|center|right"},"imagePrompt":null-or-string} — set imagePrompt only if the image itself needs regenerating to satisfy the instruction.`,
+      ].join('\n'));
+      const m = raw.match(/\{[\s\S]*\}/);
+      const plan = m ? JSON.parse(m[0]) : {};
+      if (plan.headline) hit.creative.headline = String(plan.headline).slice(0, 120);
+      if (plan.body) hit.creative.body = String(plan.body).slice(0, 200);
+      if (plan.cta) hit.creative.cta = String(plan.cta).slice(0, 40);
+      if (plan.layout && typeof plan.layout === 'object') hit.creative.layout = { ...hit.creative.layout, ...plan.layout };
+      hit.creative.editedBy = 'devin';
+      if (plan.imagePrompt) {
+        const g = await genImageResilient(plan.imagePrompt, { aspectRatio: hit.campaign.aspectRatio, refs: hit.creative.imagePath ? [{ path: hit.creative.imagePath }] : [] });
+        hit.creative.imagePath = g.path;
+        hit.creative.imageProvider = g.provider;
+        store.registerImage(g.path, { source: 'agent-edit', provider: g.provider });
+      }
+    } catch (e) {
+      return res.status(502).json({ error: `agent edit failed: ${String(e.message || e).slice(0, 200)}` });
+    }
+    saveCampaign(hit.campaign);
+    return ok(res, { creative: hit.creative });
+  }
   if (headline != null) hit.creative.headline = headline;
   if (body != null) hit.creative.body = body;
   if (cta != null) hit.creative.cta = cta;
@@ -624,13 +657,24 @@ app.post('/api/creatives/:id/animate', h(async (req, res) => {
   saveCampaign(hit.campaign);
   const job = runJob('video', async () => {
     try {
-      const v = await genVideoResilient(
-        `Animate this brand ad creative with subtle, premium motion: gentle camera push, product detail movement, ambient light shifts. Keep all on-image text crisp and readable. Brand: ${hit.campaign.brief?.title || 'ad'}.`,
-        { aspectRatio: hit.campaign.aspectRatio === '16:9' ? '16:9' : '9:16', imagePath: hit.creative.imagePath },
-      );
+      // agentic direction — Devin watches the creative and writes the motion
+      // plan; the video renderer (Gemini/Veo) executes it
+      let motion = `Animate this brand ad creative with subtle, premium motion: gentle camera push, product detail movement, ambient light shifts. Keep all on-image text crisp and readable. Brand: ${hit.campaign.brief?.title || 'ad'}.`;
+      let directed = 'static';
+      if (devinCliAvailable()) {
+        try {
+          const raw = await devinCliInspect(hit.creative.imagePath, [
+            `You are the motion director for a ${hit.campaign.aspectRatio === '16:9' ? '16:9' : '9:16'} product ad video (campaign: ${hit.campaign.brief?.title || 'untitled'}, angle: ${hit.campaign.brief?.angle || 'brand'}).`,
+            `Look at the ad creative and write a one-paragraph motion direction for the video generator — camera move, what moves in-frame, pacing, mood, where the eye should land. Keep any on-image text crisp. Max 80 words, plain text only.`,
+          ].join('\n'));
+          const cleaned = raw.replace(/\s+/g, ' ').trim().slice(0, 600);
+          if (cleaned.length > 40) { motion = cleaned; directed = 'devin'; }
+        } catch { /* devin down — static direction still renders */ }
+      }
+      const v = await genVideoResilient(motion, { aspectRatio: hit.campaign.aspectRatio === '16:9' ? '16:9' : '9:16', imagePath: hit.creative.imagePath });
       const stored = find('campaigns', hit.campaign.id);
       const cr = stored?.creatives?.find((x) => x.id === hit.creative.id);
-      if (cr) { cr.videoPath = v.path; cr.videoState = 'done'; cr.videoProvider = v.provider; if (v.note) cr.videoNote = v.note; saveCampaign(stored); }
+      if (cr) { cr.videoPath = v.path; cr.videoState = 'done'; cr.videoProvider = v.provider; cr.videoDirection = directed; if (v.note) cr.videoNote = v.note; saveCampaign(stored); }
       return { creativeId: hit.creative.id, videoPath: v.path, provider: v.provider };
     } catch (e) {
       const stored = find('campaigns', hit.campaign.id);
@@ -682,10 +726,24 @@ app.post('/api/photoshoot/:id/edit', h(async (req, res) => {
   const { prompt, imagePath } = req.body || {};
   if (!prompt || !imagePath) return res.status(400).json({ error: 'prompt and imagePath required' });
   const job = runJob('image', async () => {
-    const g = await genImageResilient(`Edit this image: ${prompt}. Keep everything else identical.`, { refs: [{ path: imagePath }], aspectRatio: '4:5' });
+    // Devin looks at the source image and turns the loose instruction into a
+    // precise edit spec; the image backend executes the pixels
+    let spec = `Edit this image: ${prompt}. Keep everything else identical.`;
+    let directed = 'static';
+    if (devinCliAvailable()) {
+      try {
+        const raw = await devinCliInspect(imagePath, [
+          `Look at this image. A user wants to edit it with the instruction: "${prompt}".`,
+          `Rewrite as a precise image-edit instruction for a generator that takes the original image as reference — describe exactly what changes and what must stay pixel-identical (subject, lighting, palette, composition). Max 60 words, plain text only.`,
+        ].join('\n'));
+        const cleaned = raw.replace(/\s+/g, ' ').trim().slice(0, 400);
+        if (cleaned.length > 30) { spec = cleaned; directed = 'devin'; }
+      } catch { /* devin down — loose instruction still runs */ }
+    }
+    const g = await genImageResilient(spec, { refs: [{ path: imagePath }], aspectRatio: '4:5' });
     store.registerImage(g.path, { source: 'photoshoot-edit', provider: g.provider });
     const stored = find('photoshoots', shot.id);
-    stored.edits = [...(stored.edits || []), { prompt, imagePath: g.path, provider: g.provider }];
+    stored.edits = [...(stored.edits || []), { prompt, spec: directed === 'devin' ? spec : undefined, imagePath: g.path, provider: g.provider, directed }];
     update('photoshoots', shot.id, stored);
     return { shootId: shot.id, imagePath: g.path, provider: g.provider };
   });
@@ -751,6 +809,21 @@ app.post('/api/websites/:id/publish', h(async (req, res) => {
   update('websites', w.id, { publishedSlug: slug });
   ok(res, { publishedSlug: slug });
 }));
+// product-demo medium: render the site locally and capture real screen video
+app.post('/api/websites/:id/video', h(async (req, res) => {
+  const w = find('websites', req.params.id);
+  if (!w) return res.status(404).json({ error: 'not found' });
+  const version = siteVersion(w);
+  if (!version?.html) return res.status(400).json({ error: 'website has no active version' });
+  if (!siteVideoAvailable()) return res.status(503).json({ error: 'local capture unavailable (chromium/playwright missing)' });
+  const aspect = ['16:9', '9:16', '1:1'].includes(req.body?.aspect) ? req.body.aspect : '16:9';
+  const job = runJob('video', async () => {
+    const v = await renderSiteVideo({ html: version.html }, { aspectRatio: aspect, seconds: Math.min(15, Math.max(4, +req.body?.seconds || 8)) });
+    update('websites', w.id, { demoVideo: { path: v.path, provider: v.provider, at: now() } });
+    return { websiteId: w.id, videoPath: v.path, provider: v.provider };
+  });
+  ok(res, { job });
+}));
 app.delete('/api/websites/:id', h(async (req, res) => {
   if (!find('websites', req.params.id)) return res.status(404).json({ error: 'not found' });
   remove('websites', req.params.id);
@@ -777,16 +850,36 @@ app.post('/api/websites/improve', h(async (req, res) => {
   try { site = await fetchSite(target); } catch { /* continue w/o scrape */ }
   const brandAffs = (profile.qloo?.affinities || []).find((a) => a.type === 'urn:entity:brand')?.entities || [];
   const competitors = brandAffs.slice(0, 4).map((e) => e.name);
-  const j = await chatJSON([
-    { role: 'system', content: 'You are a conversion-focused web strategist. Strict JSON only.' },
-    { role: 'user', content: [
-      `Brand: ${profile.name} — ${profile.tagline || ''}. Site: ${target || 'unknown'}.`,
-      site ? `Site title: ${site.title}. Description: ${site.description}. Socials found: ${Object.keys(site.socials || {}).join(', ') || 'none'}. Missing socials: ${(site.missingSocials || []).join(', ') || 'none'}.` : '',
-      `Audience-adjacent brands (taste graph): ${competitors.join(', ') || 'unknown'}.`,
-      `Return {"suggestions":[{"area","fix","why","effort":"low|med|high","impact":"low|med|high"}],"competitorNotes":[{"brand","steal"}]} — 5-8 concrete fixes ranked by impact, each tied to the audience data or a competitor pattern. competitorNotes = what to steal from each adjacent brand.`,
-    ].filter(Boolean).join('\n') },
-  ], { maxTokens: 2600 });
-  const audit = { url: target, scraped: !!site, socials: site?.socials || {}, missingSocials: site?.missingSocials || [], suggestions: j.suggestions || [], competitorNotes: j.competitorNotes || [], competitors, at: now() };
+  let j = null, auditBy = 'tensor';
+  const auditShape = `Return {"suggestions":[{"area","fix","why","effort":"low|med|high","impact":"low|med|high"}],"competitorNotes":[{"brand","steal"}]} — 5-8 concrete fixes ranked by impact, each tied to the audience data or a competitor pattern. competitorNotes = what to steal from each adjacent brand.`;
+  if (devinCliAvailable()) {
+    try {
+      // agentic audit — Devin can fetch the live site itself, not just a scrape
+      const raw = await devinCliChat([
+        { role: 'system', content: 'You are a conversion-focused web strategist auditing a real site. Fetch and inspect the site yourself if you can. Strict JSON only.' },
+        { role: 'user', content: [
+          `Brand: ${profile.name} — ${profile.tagline || ''}. Site: ${target}.`,
+          site ? `Our scrape — title: ${site.title}. Description: ${site.description}. Socials: ${Object.keys(site.socials || {}).join(', ') || 'none'}.` : '',
+          `Audience-adjacent brands: ${competitors.join(', ') || 'unknown'}.`,
+          auditShape,
+        ].filter(Boolean).join('\n') },
+      ]);
+      const m = raw.match(/\{[\s\S]*\}/);
+      if (m) { j = JSON.parse(m[0]); auditBy = 'devin'; }
+    } catch { /* fall back to fast text */ }
+  }
+  if (!j) {
+    j = await chatJSON([
+      { role: 'system', content: 'You are a conversion-focused web strategist. Strict JSON only.' },
+      { role: 'user', content: [
+        `Brand: ${profile.name} — ${profile.tagline || ''}. Site: ${target || 'unknown'}.`,
+        site ? `Site title: ${site.title}. Description: ${site.description}. Socials found: ${Object.keys(site.socials || {}).join(', ') || 'none'}. Missing socials: ${(site.missingSocials || []).join(', ') || 'none'}.` : '',
+        `Audience-adjacent brands (taste graph): ${competitors.join(', ') || 'unknown'}.`,
+        auditShape,
+      ].filter(Boolean).join('\n') },
+    ], { maxTokens: 2600 });
+  }
+  const audit = { url: target, by: auditBy, scraped: !!site, socials: site?.socials || {}, missingSocials: site?.missingSocials || [], suggestions: j.suggestions || [], competitorNotes: j.competitorNotes || [], competitors, at: now() };
   set('lastSiteAudit', audit);   // a 20s+ analysis shouldn't vanish on navigation
   ok(res, audit);
 }));
