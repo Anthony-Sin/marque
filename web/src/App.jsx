@@ -5,10 +5,8 @@ import Icon, { Logo } from './components/Icon.jsx';
 import Wayfind from './components/Wayfind.jsx';
 import Onboarding from './views/Onboarding.jsx';
 import DashboardPage from './views/Dashboard.jsx';
-import ProfilePage from './views/Profile.jsx';
 import StrategyPage from './views/Strategy.jsx';
 import CampaignsPage from './views/Campaigns.jsx';
-import PhotoshootPage from './views/Photoshoot.jsx';
 import WebsitesPage from './views/Websites.jsx';
 import BrandBookPage from './views/BrandBook.jsx';
 
@@ -135,9 +133,11 @@ export default function App() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/strategy/*" element={<StrategyPage />} />
-            <Route path="/profile/*" element={<ProfilePage />} />
+            {/* retired surfaces — the pipeline runs board → output now; old
+                links land on the hub instead of a dead route */}
+            <Route path="/profile/*" element={<Navigate to="/dashboard" replace />} />
             <Route path="/campaigns/*" element={<Gate board={board} onRetry={loadBoard}><CampaignsPage /></Gate>} />
-            <Route path="/photoshoot" element={<Gate board={board} onRetry={loadBoard}><PhotoshootPage /></Gate>} />
+            <Route path="/photoshoot" element={<Navigate to="/dashboard" replace />} />
             <Route path="/websites" element={<Gate board={board} onRetry={loadBoard}><WebsitesPage /></Gate>} />
             <Route path="/brandbook" element={<Gate board={board} onRetry={loadBoard}><BrandBookPage /></Gate>} />
             <Route path="/brand-book" element={<Navigate to="/brandbook" replace />} />

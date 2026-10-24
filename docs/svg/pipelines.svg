@@ -13,7 +13,7 @@
   <text x="40" y="64" fill="#8f8d84" font-size="11.5">two request flows · dashed orange = escalation / fallback path · every artifact keeps a provider badge</text>
 
   <!-- ================= LANE A: STRATEGY ================= -->
-  <text x="52" y="98" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">① STRATEGY BOARD — POST /api/strategy/stream (SSE)</text>
+  <text x="52" y="98" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">STRATEGY BOARD → PRODUCE — POST /api/strategy/stream (SSE), then one click to output</text>
   <rect x="40" y="108" width="1160" height="360" rx="8" fill="#161615" stroke="#3a3a36"/>
 
   <!-- row of 5 steps -->
@@ -95,7 +95,7 @@
   <line x1="938" y1="352" x2="826" y2="352" stroke="#ff4d00" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#a2)"/>
 
   <!-- ================= LANE B: CAMPAIGNS ================= -->
-  <text x="52" y="508" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">② CAMPAIGN CREATIVES — POST /api/campaigns → runJob (4 creatives)</text>
+  <text x="52" y="508" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">└─ RENDER STAGE — inside the same produce run → POST /api/campaigns → runJob</text>
   <rect x="40" y="518" width="1160" height="400" rx="8" fill="#161615" stroke="#3a3a36"/>
 
   <rect x="58" y="540" width="180" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>

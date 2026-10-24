@@ -9,7 +9,7 @@ Requirements:
 - Use the brand's real image paths (/assets/...) where provided — never invent URLs; unsplash/placeholder URLs are forbidden.
 - Tone of voice must match the brand's tone keywords. Mobile-responsive, generous whitespace, rounded cards.`;
 
-function siteContext(profile, extraPrompt = '') {
+function siteContext(profile, extraPrompt = '', ctx = null) {
   return JSON.stringify({
     brand: {
       name: profile?.name, tagline: profile?.tagline, description: profile?.description,
@@ -19,6 +19,10 @@ function siteContext(profile, extraPrompt = '') {
       catalog: (profile?.catalog || []).map((c) => ({ name: c.name, description: c.description, image: c.image, price: c.price })),
       affinities: (profile?.qloo?.affinities || []).flatMap((a) => (a.entities || []).slice(0, 3).map((e) => e.name)),
     },
+    // when the site is produced off the board/campaign, this is the work it
+    // must look like — palette, hero product, headline language, and the
+    // creatives already rendered for it (their /assets paths are usable img src)
+    producedFrom: ctx || undefined,
     request: extraPrompt || 'Generate the marketing site.',
   });
 }
@@ -50,14 +54,22 @@ async function siteHTML(messages) {
   return extractHTML(raw);
 }
 
-export async function generateWebsite(profile, prompt = '') {
+export async function generateWebsite(profile, prompt = '', ctx = null) {
+  const sys = ctx
+    ? `${SITE_SYS}\n\nThis site is being produced from a specific campaign/strategy (see producedFrom). It MUST extend that work visually and verbally: use the brand colors exactly (colors.* are the brand's real palette — build --vars from them), feature producedFrom.product as the hero product when given, reuse the campaign's headline language (keyMessage/angle) for hero copy, and prefer producedFrom.campaign.creatives[].image paths as imagery.`
+    : SITE_SYS;
   const html = await siteHTML([
-    { role: 'system', content: SITE_SYS },
-    { role: 'user', content: siteContext(profile, prompt) },
+    { role: 'system', content: sys },
+    { role: 'user', content: siteContext(profile, prompt, ctx) },
   ]);
   if (!html) throw new Error('site generation returned no html');
   const version = { id: uid(), html, prompt, createdAt: now() };
   const website = { id: uid(), createdAt: now(), versions: [version], activeVersion: version.id, publishedSlug: null };
+  if (ctx) website.producedFrom = {
+    campaignId: ctx.campaign ? true : null,
+    campaignTitle: ctx.campaign?.title || null,
+    strategyTitle: ctx.strategy?.title || null,
+  };
   push('websites', website);
   return website;
 }

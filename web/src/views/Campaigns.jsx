@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
@@ -46,7 +46,8 @@ export default function Campaigns() {
   const [editing, setEditing] = useState(null);      // creative in the editor modal
   const [animating, setAnimating] = useState('');    // creative id currently animating
   const [evi, setEvi] = useState(false);
-  const [handoff, setHandoff] = useState(null);      // {strategy, notes, prompt, productId, exampleRefs?}
+  const [handoff, setHandoff] = useState(null);      // {strategy, notes, prompt, productId, exampleRefs?, auto?, output?, strategyIdx?}
+  const autoRan = useRef(false);                     // produce-flow auto-confirm fires once
   const [liveAspect, setLiveAspect] = useState('4:5'); // composer's real pill state
   const [engine, setEngine] = useState('auto');        // campaign-level image engine override
 
@@ -97,10 +98,20 @@ export default function Campaigns() {
       const merged = lines.filter(Boolean).join('\n');
       setSeed({ text: merged, productId: data.productId || null });
       genBrief({ prompt: merged, productId: data.productId || undefined });
-      say('Strategy loaded — drafting your brief');
+      say(data.auto ? `Strategy loaded — producing ${({ ads: 'ad set', motion: 'motion ad', video: 'AI video' })[data.output] || 'output'}` : 'Strategy loaded — drafting your brief');
     } catch { /* malformed stash — ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // produce flow: a handoff with auto:true doesn't wait for the confirm click —
+  // the moment the drafted brief lands it goes straight into generation and the
+  // user is deposited on the result
+  useEffect(() => {
+    if (!handoff?.auto || !brief?.brief || autoRan.current || busy) return;
+    autoRan.current = true;
+    confirmBrief();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [brief, handoff]);
 
   // a drafted-but-unconfirmed brief shouldn't vanish on navigation — stash it
   // and restore on return (a pending handoff always drafts fresh instead)
@@ -222,8 +233,10 @@ export default function Campaigns() {
         notes: handoff?.notes || '',      // keep board notes for creative generation
         strategyId: handoff?.strategyId || handoff?.strategy?.id || undefined,
         strategyTitle: handoff?.strategyTitle || handoff?.strategy?.title || undefined,
+        strategyIdx: Number.isInteger(handoff?.strategyIdx) ? handoff.strategyIdx : undefined,
         boardId: handoff?.boardId || undefined,
         provider: engine !== 'auto' ? engine : undefined,
+        medium: handoff?.output === 'video' ? 'video' : undefined,
       });
       if (campaign?.id) {
         setMaking(campaign.id);
@@ -234,6 +247,23 @@ export default function Campaigns() {
           setJobProg(null);
         }
         await reload();                  // creatives land → staggered fill-in
+        // motion output — animate the strongest creative once the set lands
+        if (handoff?.output === 'motion') {
+          const { campaigns: fresh } = await api.listCampaigns().catch(() => ({ campaigns: [] }));
+          const freshCamp = (fresh || []).find((x) => x.id === campaign.id);
+          const hero = (freshCamp?.creatives || [])
+            .filter((x) => !x.failed && x.imagePath)
+            .sort((a, b) => (+b.score || +b.grade || 0) - (+a.score || +a.grade || 0))[0];
+          if (hero) {
+            setAnimating(hero.id);
+            try {
+              const { job: aj } = await api.animateCreative(hero.id);
+              if (aj?.id) await pollJob(aj.id);
+              await reload();
+            } catch (e) { say(e.message); }
+            setAnimating('');
+          }
+        }
       } else if (job?.id) {
         await pollJob(job.id, { onTick: (j) => setJobProg(j.progress || null) }).catch((e) => say(e.message));
         setJobProg(null);
@@ -241,7 +271,7 @@ export default function Campaigns() {
       }
       setBrief(null);
       setHandoff(null);
-      say('Campaign ready');
+      say(handoff?.output === 'motion' ? 'Motion ad ready' : handoff?.output === 'video' ? 'AI video units ready' : 'Campaign ready');
     } catch (e) { say(e.message); }
     setMaking('');
     setBusy(false); setPhase('idle');
@@ -260,6 +290,34 @@ export default function Campaigns() {
     setAnimating('');
   };
 
+  // produce-chain continuations — a result feeds the next artifact: the site
+  // inherits this campaign's palette/product/creatives, the book compiles the brand
+  const [producingNext, setProducingNext] = useState('');  // 'site' | 'book'
+  const makeWebsite = async () => {
+    if (!open || producingNext) return;
+    setProducingNext('site');
+    try {
+      await api.createWebsite({
+        prompt: `Site extending the "${open.brief?.title || 'campaign'}" campaign — same brand palette, same product, same message.`,
+        campaignId: open.id,
+      });
+      say('Site drafted from this campaign');
+      nav('/websites');
+    } catch (e) { say(e.message); }
+    setProducingNext('');
+  };
+  const makeBook = async () => {
+    if (producingNext) return;
+    setProducingNext('book');
+    try {
+      await api.createBrandBook({});
+      say('Brand book compiled');
+      nav('/brandbook');
+    } catch (e) { say(e.message); }
+    setProducingNext('');
+  };
+  const fmtV = (n) => { const v = +n || 0; return v >= 1e6 ? `${(v / 1e6).toFixed(1).replace(/\.0$/, '')}M` : v >= 1e3 ? `${Math.round(v / 1e3)}K` : `${v}`; };
+
   // Card-level animate shortcut (9:16 only — CreativeCard hides it otherwise).
   const animateOne = async (creative) => {
     setAnimating(creative.id);
@@ -272,10 +330,12 @@ export default function Campaigns() {
     setAnimating('');
   };
 
-  // ---------- detail: creative grid ----------
+  // ---------- detail: the final result ----------
   if (open) {
     const creatives = open.creatives || [];
     const pendingSkels = making === open.id ? Math.max(0, EXPECTED_CREATIVES - creatives.length) : 0;
+    const snap = open.strategySnapshot || null;
+    const palKeys = Object.entries(profile?.colors || {}).filter(([, v]) => /^#|rgb/.test(String(v))).slice(0, 6);
     return (
       <div className="section" style={{ paddingBottom: 80 }}>
         <Wayfind />
@@ -285,15 +345,58 @@ export default function Campaigns() {
           </button>
           <h2 className="display" style={{ fontSize: 34 }}>{open.brief?.title || 'Campaign'}</h2>
           {open.brief?.angle && <p className="sub" style={{ margin: 0, maxWidth: 640 }}>{open.brief.angle}</p>}
+          {open.brief?.keyMessage && (
+            <p className="res-km">“{open.brief.keyMessage}”{open.brief.audience ? <span className="res-km-aud"> — aimed at {open.brief.audience}</span> : ''}</p>
+          )}
           <div className="row wrap mt8">
             {(open.brief?.channels || []).map((c) => <span key={c} className="chan-chip">{chanLabel(c)}</span>)}
             <span className="chan-chip">{open.aspectRatio || '1:1'}</span>
+            {open.medium === 'video' && <span className="chan-chip"><Icon name="play" size={10} /> video-first</span>}
             <SignalChips signals={open.qlooSignals || []} />
             <button className="btn ghost sm" onClick={() => setEvi(true)}>
               <Icon name="qloo" size={14} /> Evidence
             </button>
-            <button className="btn ghost sm" disabled={animating === 'demo'} onClick={demoVideo} title="Render the generated website locally and capture a real scroll video as a campaign creative">
-              {animating === 'demo' ? <span className="spinner" /> : <Icon name="film" size={14} />} Site demo video
+          </div>
+          {/* provenance band — which strategy produced this, what the board
+              measured, and the palette every downstream artifact inherits */}
+          {(snap || open.strategyTitle || palKeys.length > 0) && (
+            <div className="res-band">
+              <div className="res-src">
+                {(snap?.title || open.strategyTitle) && (
+                  <span className="res-from"><Icon name="sparkle" size={11} /> from strategy <b>{snap?.title || open.strategyTitle}</b></span>
+                )}
+                {typeof snap?.fit === 'number' && (
+                  <span className="res-fit" title="audience-fit score from the strategy board">{Math.round(snap.fit * 100)} fit</span>
+                )}
+                {!!snap?.estViews && (
+                  <span className="res-reach" title="board-estimated reach for this strategy"><Icon name="eye" size={11} />{fmtV(snap.estViews)} est.</span>
+                )}
+                {!!snap?.lean && <span className="chan-chip" title="audience lean from the taste read">{snap.lean}</span>}
+                {(snap?.vibes || []).slice(0, 4).map((v) => <span key={v} className="chan-chip res-vibe">{v}</span>)}
+                <QlooBadge mode={open.qlooBundle?.mode === 'live' ? 'live' : 'off'} label="Qloo" />
+              </div>
+              {!!palKeys.length && (
+                <div className="res-pal" title="Brand palette — the site and brand book inherit these">
+                  {palKeys.map(([k, v]) => (
+                    <span key={k} className="res-sw" style={{ background: v }} title={`${k} · ${v}`} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          <div className="res-next">
+            <span className="res-next-lbl">Next output</span>
+            <button className="btn ghost sm" disabled={!!producingNext} onClick={makeWebsite}
+              title="Generate a marketing site that reuses this campaign's palette, product and creative imagery">
+              {producingNext === 'site' ? <span className="spinner" /> : <Icon name="site" size={13} />} Website
+            </button>
+            <button className="btn ghost sm" disabled={animating === 'demo' || !!producingNext} onClick={demoVideo}
+              title="Render the generated website locally and capture a real scroll video into this campaign">
+              {animating === 'demo' ? <span className="spinner" /> : <Icon name="film" size={13} />} Site film
+            </button>
+            <button className="btn ghost sm" disabled={!!producingNext} onClick={makeBook}
+              title="Compile the printable brand book">
+              {producingNext === 'book' ? <span className="spinner" /> : <Icon name="book" size={13} />} Brand book
             </button>
           </div>
         </div>

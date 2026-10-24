@@ -1,4 +1,23 @@
-# Marque sprint triage — deadline 2:00pm EDT (Fri Oct 23 2026, extended)
+# Marque sprint triage — deadline 10:00am EDT (Sat Oct 24 2026)
+
+**Sprint goal:** one continuous workflow — brand identity → strategy board → one-click produce → final results. Merged pipeline (no separate "campaign step" UX), output-type picker on the strategy card, final-results surface carrying strategy+palette+Qloo provenance, websites generated from campaign/brand context. Removed test-only surfaces (/profile, /photoshoot). Then: full-flow demo video (cloned voice) + ~50 ranked creative mockup variants w/ per-mockup videos + gallery. Local commits only.
+
+## Active workstream status
+- [~] merged produce flow (strategy → results)
+- [ ] results-view enrichment (strategy snapshot, palette, next outputs)
+- [ ] website gen from campaign/brand context
+- [ ] /profile + /photoshoot surface removal
+- [ ] docs single-pipeline (SYSTEM.md, pipelines.svg)
+- [ ] mockup batch (~60 raw → top 50), gallery, per-mockup videos
+- [ ] main demo video w/ voice clone
+- [ ] QA rounds till clean
+
+## Findings board (this sprint)
+_(reviewers append here)_
+
+---
+
+# Previous sprint — deadline 2:00pm EDT (Fri Oct 23 2026, extended)
 
 **State (13:55 · deadline 2pm): 7 rounds done, competitor teardown applied.**
 Shipped from teardown: starter template chips under campaign composer (Creatify/Zeely chat-first pattern — verified live, click prefills) + **campaign-level engine picker** (auto/local/gemini chips → provider→campaign.imageProvider→genImageResilient; verified: gemini-forced campaign = 4/4 gemini creatives).

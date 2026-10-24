@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import '../views/studio.css';
@@ -188,7 +188,6 @@ export default function Composer({
   onAspect,             // (ar) => {} — live pill state, so parents never go stale
 }) {
   const { profile, say } = useApp();
-  const nav = useNavigate();
   const [searchParams] = useSearchParams();
   const [prompt, setPrompt] = useState('');
   const [productId, setProductId] = useState(() => searchParams.get('product') || '');
@@ -249,9 +248,7 @@ export default function Composer({
               </button>
             ))}
             {!catalog.length && (
-              <button onClick={() => { setMenu(null); nav('/profile/catalog'); }}>
-                No catalog items yet — add one →
-              </button>
+              <div className="menu-empty">No catalog items yet — they’re pulled in from your site during onboarding.</div>
             )}
           </PillMenu>
 
@@ -269,9 +266,7 @@ export default function Composer({
                 ))}
               </div>
             ) : (
-              <button onClick={() => { setMenu(null); nav('/profile/assets'); }}>
-                No images yet — add some in Assets →
-              </button>
+              <div className="menu-empty">No images yet — scraped assets land here after onboarding.</div>
             )}
             {!!images.length && <button onClick={() => setImages([])}>Clear selection</button>}
           </PillMenu>

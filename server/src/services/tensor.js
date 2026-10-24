@@ -19,24 +19,33 @@ function keyPool() {
 async function postCompletions(payload, timeoutMs) {
   const keys = keyPool();
   let lastErr = null;
-  for (let i = 0; i < Math.max(1, keys.length); i++) {
-    const key = keys[(tKeyIdx + i) % keys.length];
-    try {
-      const res = await fetch(`${ENV.tensorBase}/chat/completions`, {
-        signal: AbortSignal.timeout(timeoutMs),
-        method: 'POST',
-        headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
-        body: JSON.stringify(payload),
-      });
-      if (res.status === 429 || res.status === 403) {
-        lastErr = new Error(`tensor ${res.status}: quota/auth on key #${(tKeyIdx + i) % keys.length + 1}`);
-        continue; // next key
+  // two passes: transient upstream 5xx ("model high demand") gets one delayed
+  // retry after every key has been tried — a capacity blip shouldn't kill a run
+  for (let pass = 0; pass < 2; pass++) {
+    for (let i = 0; i < Math.max(1, keys.length); i++) {
+      const key = keys[(tKeyIdx + i) % keys.length];
+      try {
+        const res = await fetch(`${ENV.tensorBase}/chat/completions`, {
+          signal: AbortSignal.timeout(timeoutMs),
+          method: 'POST',
+          headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
+          body: JSON.stringify(payload),
+        });
+        if (res.status === 429 || res.status === 403) {
+          lastErr = new Error(`tensor ${res.status}: quota/auth on key #${(tKeyIdx + i) % keys.length + 1}`);
+          continue; // next key
+        }
+        if (res.status >= 500) {
+          lastErr = new Error(`tensor ${res.status}: upstream transient`);
+          continue; // next key — then the delayed second pass
+        }
+        tKeyIdx = (tKeyIdx + i) % Math.max(1, keys.length);
+        return res;
+      } catch (e) {
+        lastErr = e; // timeout/network — still worth trying the next key
       }
-      tKeyIdx = (tKeyIdx + i) % Math.max(1, keys.length);
-      return res;
-    } catch (e) {
-      lastErr = e; // timeout/network — still worth trying the next key
     }
+    if (pass === 0) await new Promise((r) => setTimeout(r, 3500));
   }
   throw lastErr || new Error('tensor: no API keys configured');
 }

@@ -192,7 +192,7 @@ export default function Dashboard() {
           <h2 className="display">Create your first strategy board</h2>
           <p>
             One prompt becomes a board of audience-grounded strategies —
-            then campaigns, photoshoots and sites flow from it.
+            then ads, films, sites and the brand book flow from it.
           </p>
           <Link className="btn lime" to="/strategy">
             <Icon name="sparkle" size={16} /> Create your first strategy board

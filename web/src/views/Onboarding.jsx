@@ -94,7 +94,7 @@ export default function Onboarding() {
         <h1 className="display">Let&apos;s build your brand</h1>
         <p className="sub">
           Point Marque at your website and we&apos;ll draft your brand DNA — voice, palette,
-          and your audience&apos;s taste — ready for campaigns, photoshoots and sites.
+          and your audience&apos;s taste — ready for campaigns, films and sites.
         </p>
       </div>
 

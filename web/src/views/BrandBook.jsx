@@ -349,10 +349,7 @@ export default function BrandBook() {
                 {bookImgs.map((p, i) => <span key={i} className="media-tile"><img src={p} alt="" /></span>)}
                 {!bookImgs.length && (
                   <div className="empty" style={{ padding: '30px 10px', gridColumn: '1 / -1' }}>
-                    <p>No imagery recorded on this book.</p>
-                    <button type="button" className="btn ghost sm" onClick={() => nav('/profile/assets')}>
-                      <Icon name="image" size={13} /> Add images in Assets
-                    </button>
+                    <p>No imagery recorded on this book — images land here after onboarding scrapes your site.</p>
                   </div>
                 )}
               </div>

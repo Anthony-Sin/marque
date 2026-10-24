@@ -552,12 +552,21 @@ app.post('/api/campaigns/brief', h(async (req, res) => {
   ok(res, await campaigns.generateBrief(req.body || {}, brand.currentProfile()));
 }));
 app.post('/api/campaigns', h(async (req, res) => {
-  const { brief, productId, ingredients, aspectRatio, qlooSignals, notes, strategyId, strategyTitle, boardId, provider } = req.body || {};
+  const { brief, productId, ingredients, aspectRatio, qlooSignals, notes, strategyId, strategyTitle, strategyIdx, boardId, provider, medium } = req.body || {};
   if (!brief?.title) return res.status(400).json({ error: 'brief required' });
   // Snapshot the source board's bundle only when the caller names it — the
   // board drives product context (resolveProductContext), so guessing it from
   // "signals were passed" contaminates the creative copy with the wrong brand.
   const srcBoard = (boardId && find('boards', boardId)) || null;
+  // produce-flow provenance: pin the strategy that spawned this campaign so the
+  // results surface can show where the work came from (fit, reach, lean) even
+  // after the board is edited or deleted
+  const srcStrategy = srcBoard
+    ? ((srcBoard.strategies || [])[Number.isInteger(strategyIdx) ? strategyIdx : -1]
+      || (srcBoard.strategies || []).find((s) => s.id && s.id === strategyId)
+      || (srcBoard.strategies || []).find((s) => s.title && s.title === strategyTitle)
+      || null)
+    : null;
   const campaign = {
     id: uid(), createdAt: now(), brief,
     productId: productId || null,
@@ -566,9 +575,18 @@ app.post('/api/campaigns', h(async (req, res) => {
     creatives: [],
     qlooSignals: qlooSignals || [],
     notes: notes || '',
-    strategyId: strategyId || null,
-    strategyTitle: strategyTitle || '',
+    strategyId: strategyId || srcStrategy?.id || null,
+    strategyTitle: strategyTitle || srcStrategy?.title || '',
     boardId: boardId || null,
+    strategySnapshot: srcStrategy ? {
+      title: srcStrategy.title || '',
+      angle: srcStrategy.angle || '',
+      fit: srcStrategy.audienceFit?.score ?? null,
+      estViews: srcStrategy.reach?.estViews ?? null,
+      lean: srcBoard?.audienceRead?.lean?.label || '',
+      vibes: (srcBoard?.audienceRead?.vibeWords || []).slice(0, 5),
+    } : null,
+    medium: ['video', 'image', 'mixed'].includes(medium) ? medium : undefined,
     qlooBundle: srcBoard?.qlooBundle || null,
     evidence: srcBoard?.evidence || null,
     imageProvider: ['local', 'gemini', 'pollinations'].includes(provider) ? provider : undefined,
@@ -840,7 +858,42 @@ app.post('/api/websites', h(async (req, res) => {
   const profile = brand.currentProfile();
   if (!profile) return res.status(400).json({ error: 'build a profile first' });
   const prompt = typeof req.body?.prompt === 'string' ? req.body.prompt.trim() : '';
-  ok(res, { website: await generateWebsite(profile, prompt) });
+  // produce-flow context: the site should look like it came out of the work —
+  // campaign brief + creatives, or the strategy/board it was produced from.
+  // Colors/product resolve through the same chain the creatives used.
+  const { campaignId, boardId, strategyIdx, strategyId } = req.body || {};
+  const campaign = (campaignId && find('campaigns', campaignId)) || null;
+  const srcBoard = (boardId && find('boards', boardId)) || (campaign?.boardId && find('boards', campaign.boardId)) || null;
+  const strategy = srcBoard
+    ? ((srcBoard.strategies || [])[Number.isInteger(strategyIdx) ? strategyIdx : -1]
+      || (srcBoard.strategies || []).find((s) => s.id && (s.id === strategyId || s.id === campaign?.strategyId))
+      || (srcBoard.strategies || []).find((s) => s.title && (s.title === campaign?.strategyTitle))
+      || null)
+    : null;
+  let ctx = null;
+  if (campaign || strategy || srcBoard) {
+    const product = campaign
+      ? await campaigns.resolveProductContext(campaign).catch(() => null)
+      : (srcBoard?.sub?.productId ? find('catalog', srcBoard.sub.productId) : null)
+        || (srcBoard?.urlContext ? { name: srcBoard.urlContext.title || srcBoard.urlContext.url, description: srcBoard.urlContext.description || '', site: srcBoard.urlContext.url } : null);
+    ctx = {
+      campaign: campaign ? {
+        title: campaign.brief?.title, angle: campaign.brief?.angle,
+        audience: campaign.brief?.audience, keyMessage: campaign.brief?.keyMessage,
+        channels: campaign.brief?.channels || [],
+        creatives: (campaign.creatives || []).filter((c) => c.imagePath && !c.failed).slice(0, 6)
+          .map((c) => ({ image: c.imagePath, headline: c.headline, provider: c.imageProvider })),
+      } : null,
+      strategy: strategy ? {
+        title: strategy.title, angle: strategy.angle,
+        brief: strategy.brief || null, audienceFit: strategy.audienceFit?.score ?? null,
+        formats: strategy.formats || [],
+      } : null,
+      boardAsk: srcBoard?.sub?.prompt || null,
+      product: product ? { name: product.name, description: product.description || '', site: product.site || product.url || '' } : null,
+    };
+  }
+  ok(res, { website: await generateWebsite(profile, prompt, ctx) });
 }));
 app.post('/api/websites/:id/edit', h(async (req, res) => {
   const w = find('websites', req.params.id);

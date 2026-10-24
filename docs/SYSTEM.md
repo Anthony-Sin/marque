@@ -3,10 +3,10 @@
 Marque is a **local-first, on-brand marketing studio**. You give it a brand —
 paste a site URL, chat your way through onboarding, or pick a template — and it
 extracts a *brand DNA* (voice, palette, fonts, audience) enriched with **Qloo
-taste-graph affinities** for that brand's audience. From there the whole
-pipeline runs: **strategies** (audience-grounded campaign plans) → **campaigns**
-(briefs → ad creatives) → **photoshoots** (product/lifestyle renders) →
-**websites** (generated marketing sites you can publish and even film) →
+taste-graph affinities** for that brand's audience. From there it's **one
+pipeline**: the **strategy board** (audience-grounded campaign plans) → pick an
+output on the card → the result lands — **ad sets, motion ads, AI video,
+websites** (generated marketing sites you can publish and even film), or the
 **brand book** (a printable style guide). Images come from a local sd-turbo
 service with Gemini as escalation, video from Veo with an honest ffmpeg
 fallback, and every artifact carries a **provenance badge** — `local ·
@@ -91,7 +91,7 @@ framework — `server/test/smoke.js` hits the real APIs and reports PASS/FAIL.
     <text x="644" y="243" fill="#8f8d84">print-friendly HTML/PDF</text>
   </g>
   <rect x="356" y="268" width="262" height="330" rx="6" fill="#1a1a19" stroke="#3a3a36"/>
-  <text x="368" y="290" fill="#8f8d84" fontpretends-size="10" letter-spacing="1.5">PIPELINE SERVICES</text>
+  <text x="368" y="290" fill="#8f8d84" font-size="10" letter-spacing="1.5">PIPELINE SERVICES</text>
   <g font-size="10.5">
     <text x="368" y="314" fill="#e8e6df">brand.js</text>
     <text x="368" y="331" fill="#8f8d84" font-size="9.5">profile build: scrape→DNA→Qloo</text>
@@ -134,7 +134,7 @@ framework — `server/test/smoke.js` hits the real APIs and reports PASS/FAIL.
   <text x="56" y="450" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">LOCALGEN :8807</text>
   <text x="56" y="482" fill="#e8e6df" font-size="11">scripts/localgen.py — python</text>
   <text x="56" y="502" fill="#8f8d84" font-size="10.5">sd-turbo fp16 · steps ≤ 8 · GPU</text>
-  <text x="56" y="522" fill="#8f8d84" font-pretendssize="10.5">POST /generate → PNG · /health</text>
+  <text x="56" y="522" fill="#8f8d84" font-size="10.5">POST /generate → PNG · /health</text>
   <text x="56" y="542" fill="#8f8d84" font-size="10.5">noise gate: rejects static,</text>
   <text x="56" y="559" fill="#8f8d84" font-size="10.5">reseed once → 500 escalates</text>
   <g>
@@ -151,7 +151,7 @@ framework — `server/test/smoke.js` hits the real APIs and reports PASS/FAIL.
     <text x="976" y="328" fill="#8f8d84" font-size="9.5">/search · /v2/tags · /v2/insights</text>
     <text x="976" y="345" fill="#8f8d84" font-size="9.5">audience affinities — qloo.js</text>
     <rect x="960" y="374" width="240" height="76" rx="6" fill="#1a1a19" stroke="#454540"/>
-    <text x="976" y="398" fill="#e8e6df" fpretendsont-size="11" font-weight="700">Devin CLI</text>
+    <text x="976" y="398" fill="#e8e6df" font-size="11" font-weight="700">Devin CLI</text>
     <text x="976" y="416" fill="#8f8d84" font-size="9.5">`devin acp` agent over stdio</text>
     <text x="976" y="433" fill="#8f8d84" font-size="9.5">vision inspect + audits — devinCli.js</text>
     <rect x="960" y="462" width="240" height="76" rx="6" fill="#1a1a19" stroke="#454540"/>
@@ -223,7 +223,7 @@ ever sees `/api/*` JSON and `/assets/*` files.
 
 ---
 
-## The two pipelines
+## The one pipeline — board → produced output
 
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 950" font-family="ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace">
   <defs>
@@ -237,7 +237,7 @@ ever sees `/api/*` JSON and `/assets/*` files.
   <rect width="1240" height="950" fill="#121212"/>
   <text x="40" y="42" fill="#e8e6df" font-size="17" font-weight="700" letter-spacing="3">MARQUE — GENERATION PIPELINES</text>
   <text x="40" y="64" fill="#8f8d84" font-size="11.5">two request flows · dashed orange = escalation / fallback path · every artifact keeps a provider badge</text>
-  <text x="52" y="98" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">① STRATEGY BOARD — POST /api/strategy/stream (SSE)</text>
+  <text x="52" y="98" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">STRATEGY BOARD → PRODUCE — POST /api/strategy/stream (SSE), then one click to output</text>
   <rect x="40" y="108" width="1160" height="360" rx="8" fill="#161615" stroke="#3a3a36"/>
   <g>
     <rect x="58" y="130" width="180" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>
@@ -305,7 +305,7 @@ ever sees `/api/*` JSON and `/assets/*` files.
     <text x="84" y="390" fill="#8f8d84" font-size="9.5">board sections fill live as each frame lands · a failed frame = 'error' — partial results still shown honestly</text>
   </g>
   <line x1="938" y1="352" x2="826" y2="352" stroke="#ff4d00" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#a2)"/>
-  <text x="52" y="508" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">② CAMPAIGN CREATIVES — POST /api/campaigns → runJob (4 creatives)</text>
+  <text x="52" y="508" fill="#ff4d00" font-size="12" font-weight="700" letter-spacing="2">└─ RENDER STAGE — inside the same produce run → POST /api/campaigns → runJob</text>
   <rect x="40" y="518" width="1160" height="400" rx="8" fill="#161615" stroke="#3a3a36"/>
   <rect x="58" y="540" width="180" height="130" rx="5" fill="#1f1f1e" stroke="#454540"/>
   <text x="72" y="562" fill="#ff4d00" font-size="11" font-weight="700">1 · BRIEF</text>
@@ -374,36 +374,52 @@ ever sees `/api/*` JSON and `/assets/*` files.
   <line x1="923" y1="827" x2="941" y2="827" stroke="#e8e6df" stroke-width="1.5" marker-end="url(#a1)"/>
 </svg>
 
-### ① Strategy board — `POST /api/strategy` or `/api/strategy/stream`
+### Strategy board → produce — `POST /api/strategy/stream` (SSE), then one click to output
 
-The heart of the product. Key detail: the taste pull is **per-ask** — the
-bundle is enriched for *this* prompt/product/URL, not recycled from the
-profile, so every board hunts its own audience. An entity is only trusted as
-an insights anchor when its name genuinely starts with the query token
-(`relevantHit` — "Sint-Genesius-Rode" is rejected for "Rhode"); otherwise live
-tag ids anchor the calls. `audienceRead` and `channelFit` are computed
-deterministically from the bundle — the LLM ideates, but the numbers come
-from data, and `normalizeStrategy` overwrites the model's fit scores, re-matches
-its cited signals to real entities, and gates the "ruled out" list so a channel
-can only be rejected when it's strictly weaker than every recommendation.
-SSE emits each stage as it completes; the non-streaming route returns the same
-shape in one shot.
+The heart of the product — and the whole pipeline. The board runs the ask →
+audience read → strategy cards → ruled-out list, then each strategy's **Produce**
+row picks the output: `Ad set` (4 stills), `Motion ad` (set + animated hero),
+`AI video` (video-first units), `Website`, or `Brand book`. Media outputs hand
+the strategy to `/campaigns` which auto-drafts the brief, auto-confirms, and
+lands on the **final result** — the campaign detail carrying a provenance band
+(strategy snapshot: fit, est. reach, audience lean, vibe words) and the brand
+palette strip. Site/book outputs generate inline and land on their surfaces.
 
-### ② Campaign creatives — `POST /api/campaigns` → background job
+Key detail: the taste pull is **per-ask** — the bundle is enriched for *this*
+prompt/product/URL, not recycled from the profile, so every board hunts its own
+audience. An entity is only trusted as an insights anchor when its name
+genuinely starts with the query token (`relevantHit` — "Sint-Genesius-Rode" is
+rejected for "Rhode"); otherwise live tag ids anchor the calls. `audienceRead`
+and `channelFit` are computed deterministically from the bundle — the LLM
+ideates, but the numbers come from data, and `normalizeStrategy` overwrites the
+model's fit scores, re-matches its cited signals to real entities, and gates the
+"ruled out" list so a channel can only be rejected when it's strictly weaker
+than every recommendation. SSE emits each stage as it completes; the
+non-streaming route returns the same shape in one shot.
 
-`generateBrief` first (or a strategy-board handoff via `sessionStorage`), then
-`POST /api/campaigns` snapshots the source board's `qlooBundle`+`evidence`
+**Render stage (inside the same produce run)** — `POST /api/campaigns` →
+background job: `generateBrief` first (or the strategy handoff via
+`sessionStorage` + `auto`), then the create call snapshots the source board's
+`qlooBundle`+`evidence` and a `strategySnapshot` (title/fit/reach/lean/vibes)
 **only when `boardId` is explicitly passed** — that rule exists because a wrong
 board guess once contaminated creative copy with a different brand's context.
 `planCreatives` lets the LLM pick each slot's medium (image/video/copy), angle,
-overlay preset and estimated score. Per creative: copy is capped by
-`copyBudgets`, the image prompt demands a **text-free photo with reserved
-negative space** (copy is composited as a DOM overlay by `CreativeOverlay.jsx`
-and mirrored into the rasterized PNG by `creativeExport.js` — glyphs are never
-baked into pixels), and video slots either film the generated site
-(`renderSiteVideo`, when the plan smells like a product demo and capture is
-available) or go through `genVideoResilient`. The UI polls the job and the
-creative grid fills staggered as `job.progress {stage,done,total}` advances.
+overlay preset and estimated score — a `medium` pin on the campaign forces a
+video- or image-only run for the AI-video/ad-set produce paths. Per creative:
+copy is capped by `copyBudgets`, the image prompt demands a **text-free photo
+with reserved negative space** (copy is composited as a DOM overlay by
+`CreativeOverlay.jsx` and mirrored into the rasterized PNG by
+`creativeExport.js` — glyphs are never baked into pixels), and video slots
+either film the generated site (`renderSiteVideo`, when the plan smells like a
+product demo and capture is available) or go through `genVideoResilient`. The
+UI polls the job and the creative grid fills staggered as `job.progress
+{stage,done,total}` advances.
+
+**Outputs inherit the work.** `POST /api/websites` accepts
+`{campaignId|boardId,strategyIdx}` — a `producedFrom` context carries the
+campaign brief, the resolved product, and the rendered creative image paths
+into the site prompt, so the generated site uses the brand palette and the
+actual campaign imagery rather than inventing a look.
 
 ### The escalation chains (the interesting part)
 
@@ -613,10 +629,10 @@ hasStrategy}`.
 |-------|------|--------------|
 | `/onboarding` | `Onboarding.jsx` | Three doors: paste URL → scrape+DNA+Qloo (staged loader), chat scratch (LLM decides `ready`), template pick |
 | `/`, `/dashboard` | `Dashboard.jsx` | The hub — plan cards (rename/delete/activate, per-plan work strips), "Other work" campaigns, empty state → Strategy |
-| `/strategy/*` | `Strategy.jsx` (78K, the biggest view) | The board: ask composer → SSE stream fills audience read → strategy cards → anti-strategies. Card detail lazy-fetches `/api/boards/:id/strategies/:idx`; "examples" pulls real media via scout |
-| `/profile/*` | `Profile.jsx` | Overview / Catalog / Assets tabs + `AgentPane` (streaming agent chat right rail that can patch the profile) |
-| `/campaigns/*` | `Campaigns.jsx` | Gated on a board existing. Composer (starter chips + engine chips) → brief card → campaign grid → detail (`?open=<id>`) → `CreativeEditor` modal |
-| `/photoshoot` | `Photoshoot.jsx` | Product mode (upload/ref + templates) or free mode → job → result grid; per-image edit, resize, save-to-profile/catalog |
+| `/strategy/*` | `Strategy.jsx` (78K, the biggest view) | The board: ask composer → SSE stream fills audience read → strategy cards → anti-strategies. Card detail lazy-fetches `/api/boards/:id/strategies/:idx`; "examples" pulls real media via scout; **Produce row** picks the output (ad set / motion / AI video / website / brand book) and runs straight to the result |
+| `/profile/*` | — | *retired* — redirects to `/dashboard`; the profile data layer still feeds every pipeline (scrape → catalog → palette) |
+| `/campaigns/*` | `Campaigns.jsx` | The results surface. Manual composer (starter + engine chips) for ad-hoc runs; handoffs with `auto:true` draft + confirm + generate with no clicks. Detail = the final result: provenance band (strategy snapshot, palette, Qloo live badge) → creative grid → `CreativeEditor` modal → next-output CTAs (website / site film / brand book) |
+| `/photoshoot` | — | *retired* — redirects to `/dashboard`; the `/api/photoshoot` backend still powers the brand-book cover generator |
 | `/websites` | `Websites.jsx` | Generate (LLM full-HTML), version tabs, agentic edits, publish → `/s/:slug`, "Improve" audit (Qloo competitors + Devin/tensor), scroll-capture demo video |
 | `/brandbook` (alias `/brand-book`) | `BrandBook.jsx` | Pick cover + ≤7 images → printable book → publish `/b/:slug` → "PDF" = print view |
 | `*` | — | Redirects to `/dashboard` (or `/onboarding` when no profile) |
@@ -641,9 +657,10 @@ Key state flows:
 - **Deep links**: `/campaigns?open=<id>` — opening a campaign *pushes* history
   so browser-Back closes the detail; `?new=1`, `?product=<id>` prefill.
 - **Handoff**: Strategy → Campaigns rides `sessionStorage.strategyHandoff`
-  (`{strategy, notes, productId, boardId}`), consumed once on mount; a pending
-  handoff always drafts a fresh brief.
-- **Gate**: `/campaigns`, `/photoshoot`, `/websites`, `/brandbook` render
+  (`{strategy, notes, productId, boardId, strategyIdx, auto, output}`),
+  consumed once on mount; a pending handoff always drafts a fresh brief.
+  `auto:true` (the Produce flow) skips the confirm click entirely.
+- **Gate**: `/campaigns`, `/websites`, `/brandbook` render
   `LockedScreen` until a board exists — with a real retry state when the
   fetch itself failed.
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
@@ -22,7 +23,8 @@ const impOrd = (v) => IMPACT_ORD[String(v || '').toLowerCase()] ?? 3;
 
 export default function Websites() {
   const { say, status, profile } = useApp();
-  const [tab, setTab] = useState('improve');       // 'improve' (primary) | 'site' (generate/manage)
+  const [sp] = useSearchParams();
+  const [tab, setTab] = useState(() => (sp.get('tab') === 'site' ? 'site' : 'improve')); // 'improve' | 'site'
   const [sites, setSites] = useState(null);
   const [vid, setVid] = useState(null);
   const [prompt, setPrompt] = useState('');
@@ -34,7 +36,7 @@ export default function Websites() {
   const [impBusy, setImpBusy] = useState(false);
   const stageNote = useStages(busy === 'edit' ? EDIT_STAGES : CREATE_STAGES, busy === 'create' || busy === 'edit');
   const impStage = useStages(IMPROVE_STAGES, impBusy, 2000);
-  const site = sites?.[0] || null;
+  const site = sites?.[sites.length - 1] || null;
 
   const reload = async () => {
     try {

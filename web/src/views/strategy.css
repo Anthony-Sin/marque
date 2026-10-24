@@ -598,6 +598,32 @@
 }
 .stg-notes:focus { border-color: rgba(255, 77, 0, .55); }
 
+/* ---------- produce row — pick the output, one click runs the pipeline ---------- */
+.stg-produce { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.stg-produce-lbl {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .13em;
+  text-transform: uppercase; color: var(--ink-4); flex: none;
+}
+.stg-out { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+.stg-out-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 6px 12px;
+  background: var(--card-3); border: 1px solid var(--line); color: var(--ink-2);
+  border-radius: 0; cursor: pointer; font-family: inherit;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.stg-out-chip:hover { border-color: var(--ink-4); color: var(--ink); }
+.stg-out-chip:focus-visible { outline: 2px solid var(--lime); outline-offset: 1px; }
+.stg-out-chip.on {
+  background: var(--ink); border-color: var(--ink); color: var(--bg);
+}
+.stg-out-chip.on svg { color: var(--lime); }
+.stg-produce .btn.lime { flex: none; }
+@media (max-width: 640px) {
+  .stg-produce { align-items: stretch; }
+  .stg-produce .btn.lime { width: 100%; justify-content: center; }
+}
+
 /* ---------- plans row — board switcher above the board ---------- */
 .stg-plans {
   display: flex; align-items: center; gap: 14px; flex-wrap: wrap;

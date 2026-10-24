@@ -439,6 +439,8 @@ export default function Strategy() {
   const [resL, setResL] = useState(undefined); // local override; undefined → follow ctx board
   const [err, setErr] = useState('');
   const [notes, setNotes] = useState('');      // "add notes for the campaign"
+  const [output, setOutput] = useState('ads'); // produce target — ads|motion|video|site|book
+  const [producing, setProducing] = useState(''); // output id currently producing (site/book run sync)
   const [ex, setEx] = useState(() => {         // "boardId:strategyId" -> {status, data, err, hint}
     try { return JSON.parse(sessionStorage.getItem('marque.wildEx') || '{}') || {}; }
     catch { return {}; }
@@ -603,26 +605,64 @@ export default function Strategy() {
     }
   };
 
-  // hand the strategy to Campaigns: stash the handoff (+ any wild-example
-  // references the user selected), then open /campaigns
-  const useStrategy = (s) => {
+  // one click runs the whole pipeline: pick an output → the board hands the
+  // strategy over → land on the final result (campaign detail, generated site,
+  // or brand book). Media outputs go through /campaigns auto-flow; site/book
+  // are produced here and navigated straight to their result surface.
+  const PRODUCE_OUTPUTS = [
+    { id: 'ads', icon: 'image', label: 'Ad set', hint: '4 feed-ready still creatives' },
+    { id: 'motion', icon: 'film', label: 'Motion ad', hint: 'ad set + the hero creative animated' },
+    { id: 'video', icon: 'play', label: 'AI video', hint: 'video-first units — demos, spots, motion' },
+    { id: 'site', icon: 'site', label: 'Website', hint: 'marketing site in the brand palette, from this strategy' },
+    { id: 'book', icon: 'book', label: 'Brand book', hint: 'printable brand book' },
+  ];
+  const produce = async (s) => {
+    if (!s || producing) return;
     const keys = new Set(selEx[wildScope(s)] || []);
     const exampleRefs = ((ex[wildScope(s)]?.data?.examples) || [])
       .filter((e) => keys.has(exKey(e)))
       .map((e) => ({ platform: e.platform || '', title: e.title || '', author: e.author || '', url: e.url || '', note: e.note || '' }));
+    const handoff = {
+      strategy: s,
+      strategyId: s.id || '',
+      strategyTitle: s.title || '',
+      boardId: board?.id || '',
+      strategyIdx: sel,
+      notes,
+      prompt: sub?.prompt || '',
+      productId: sub?.productId || '',
+      exampleRefs,
+      auto: true,
+      output,
+    };
+    if (output === 'site' || output === 'book') {
+      setProducing(output);
+      try {
+        if (output === 'site') {
+          await api.createWebsite({
+            prompt: [
+              `Site for the "${s.title}" strategy${s.brief?.keyMessage ? ` — lead with "${s.brief.keyMessage}"` : ''}.`,
+              notes ? `Notes: ${notes}` : '',
+            ].filter(Boolean).join(' '),
+            boardId: board?.id || undefined,
+            strategyIdx: sel ?? undefined,
+            strategyId: s.id || undefined,
+          });
+          say?.(`Site drafted from "${s.title}"`);
+          nav('/websites?tab=site');
+        } else {
+          await api.createBrandBook({});
+          say?.('Brand book compiled');
+          nav('/brandbook');
+        }
+      } catch (e) { say?.(e.message); }
+      setProducing('');
+      return;
+    }
     try {
-      sessionStorage.setItem('strategyHandoff', JSON.stringify({
-        strategy: s,
-        strategyId: s.id || '',
-        strategyTitle: s.title || '',
-        boardId: board?.id || '',
-        notes,
-        prompt: sub?.prompt || '',
-        productId: sub?.productId || '',
-        exampleRefs,
-      }));
+      sessionStorage.setItem('strategyHandoff', JSON.stringify(handoff));
     } catch { /* storage unavailable — Campaigns just won't prefill */ }
-    say?.(`"${s.title}" handed to Campaigns`);
+    say?.(`"${s.title}" → producing ${PRODUCE_OUTPUTS.find((o) => o.id === output)?.label.toLowerCase() || 'output'}`);
     nav('/campaigns');
   };
 
@@ -954,10 +994,8 @@ export default function Strategy() {
                   sense once a board exists, so they live on the board */}
               <span className="stg-flow">
                 <Link className="stg-flow-link" to="/campaigns"><Icon name="campaign" size={11} />Campaigns</Link>
-                <Link className="stg-flow-link" to="/photoshoot"><Icon name="photo" size={11} />Photoshoot</Link>
                 <Link className="stg-flow-link" to="/websites"><Icon name="site" size={11} />Websites</Link>
                 <Link className="stg-flow-link" to="/brandbook"><Icon name="book" size={11} />Brand book</Link>
-                <Link className="stg-flow-link" to="/profile"><Icon name="dna" size={11} />Profile</Link>
               </span>
             </div>
           )}
@@ -1594,21 +1632,35 @@ export default function Strategy() {
                   )}
                 </div>
 
-                {/* ---- final step: notes → handoff (references picked above
-                        ride into the campaign) ---- */}
+                {/* ---- final step: notes → pick an output → produce. The board
+                        runs the whole pipeline and lands on the result ---- */}
                 <div className="stg-handoff">
                   <textarea
                     className="stg-notes"
                     rows={3}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Add notes for the campaign — tone, must-haves, things to avoid…"
+                    placeholder="Notes for this run — tone, must-haves, things to avoid…"
                   />
-                  <div className="stg-strat-foot">
-                    <span className="hint">Hands its brief to the Campaigns composer{selExamples.length ? ` · ${selExamples.length} reference${selExamples.length === 1 ? '' : 's'} selected` : ''}</span>
-                    <button className="btn lime" onClick={() => useStrategy(full)}>
-                      Use this strategy <Icon name="send" size={15} />
+                  <div className="stg-produce">
+                    <span className="stg-produce-lbl">Produce</span>
+                    <div className="stg-out" role="radiogroup" aria-label="What to produce">
+                      {PRODUCE_OUTPUTS.map((o) => (
+                        <button key={o.id} type="button" role="radio" aria-checked={output === o.id}
+                          className={`stg-out-chip${output === o.id ? ' on' : ''}`}
+                          title={o.hint}
+                          onClick={() => setOutput(o.id)}>
+                          <Icon name={o.icon} size={12} />{o.label}
+                        </button>
+                      ))}
+                    </div>
+                    <button className="btn lime" disabled={!full || !!producing} onClick={() => produce(full)}>
+                      {producing ? <span className="spinner" /> : <Icon name="send" size={15} />}
+                      {producing ? 'Producing…' : `Produce ${(PRODUCE_OUTPUTS.find((o) => o.id === output)?.label || '').toLowerCase()}`}
                     </button>
+                  </div>
+                  <div className="stg-strat-foot">
+                    <span className="hint">Runs the full pipeline — brief → render → final result{selExamples.length ? ` · ${selExamples.length} reference${selExamples.length === 1 ? '' : 's'} ride along` : ''}</span>
                   </div>
                 </div>
               </section>

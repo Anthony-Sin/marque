@@ -200,7 +200,11 @@ async function planCreatives(campaign, profile, product, n) {
           `Return {"items":[{"angle","medium","format","direction","badge","overlayStyle","score"}]} — exactly ${n} items.`,
           `angle = the creative angle (short). medium = "video" | "image" | "copy" — pick video when the brief/notes ask for demos, motion, how-it-works, before/after or the product benefits from movement; image for stills; copy for text-led cards. format = platform shape ("reel","spot","carousel","billboard"). direction = one line of shot/art direction.`,
           `badge = short offer/claim sticker ("NEW","4.9★","LIMITED") or "" when none fits. overlayStyle = one of performance|ugc|editorial|marker|brutalist|glass — pick the treatment that fits the angle (ugc for creator-style, editorial for luxury, performance for direct-response). score = your predicted thumbstop strength 40-98 (honest estimate, not random).`,
-          `Vary mediums across the set — a real campaign mixes formats. If notes ask for product demos, at least half should be video.`,
+          campaign.medium === 'video'
+            ? `Every item MUST be medium "video" — this is a video-first production run (demos, spots, motion). Directions should read like shot lists.`
+            : campaign.medium === 'image'
+              ? `Every item MUST be medium "image" — stills only, no video units.`
+              : `Vary mediums across the set — a real campaign mixes formats. If notes ask for product demos, at least half should be video.`,
         ].filter(Boolean).join('\n'),
       },
     ], { maxTokens: 1600 });
@@ -311,9 +315,13 @@ export async function generateCreatives(campaign, profile, n = 4, onProgress = n
   const product = await resolveProductContext(campaign);
   onProgress?.({ stage: 'planning mediums', done: 0, total: n });
   const plan = await planCreatives(campaign, profile, product, n);
+  // produce-mode medium pin — 'video'/'image' forces every unit's lane even
+  // when the LLM plan comes back null or mixed
+  const forceMedium = ['video', 'image'].includes(campaign.medium) ? campaign.medium : null;
   const creatives = [];
   for (let i = 0; i < n; i++) {
-    const p = plan?.[i] || null;
+    let p = plan?.[i] || null;
+    if (forceMedium) p = { ...(p || {}), medium: forceMedium };
     onProgress?.({ stage: `writing + rendering${p ? ` · ${p.medium}` : ''}`, done: i, total: n });
     try {
       creatives.push(await oneCreative(campaign, profile, product, p?.angle || ANGLES[i % ANGLES.length], p));

@@ -135,7 +135,7 @@ export const api = {
   editPhotoshoot: (id, payload) => req('POST', `/api/photoshoot/${id}/edit`, payload),
   // websites
   listWebsites: () => req('GET', '/api/websites'),
-  createWebsite: (prompt) => req('POST', '/api/websites', { prompt }),
+  createWebsite: (promptOrOpts) => req('POST', '/api/websites', typeof promptOrOpts === 'string' ? { prompt: promptOrOpts } : (promptOrOpts || {})),
   improveWebsite: (url) => req('POST', '/api/websites/improve', { url }),
   editWebsite: (id, prompt) => req('POST', `/api/websites/${id}/edit`, { prompt }),
   publishWebsite: (id, slug) => req('POST', `/api/websites/${id}/publish`, { slug }),

@@ -554,3 +554,34 @@
 .pub-conn { margin-left: auto; font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); }
 .pub-conn.on { color: var(--lime); }
 .pub-acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+
+/* ---------- result provenance + next outputs (campaign detail) ---------- */
+.res-band {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  flex-wrap: wrap; margin-top: 14px; padding: 10px 12px;
+  border: 1px solid var(--line-soft); background: var(--card-2); border-radius: 0;
+}
+.res-src { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.res-from { font-size: 12px; color: var(--ink-3); display: inline-flex; align-items: center; gap: 6px; }
+.res-from svg { color: var(--lime); flex: none; }
+.res-from b { color: var(--ink); font-weight: 600; }
+.res-fit {
+  font-size: 11px; font-weight: 800; letter-spacing: .04em;
+  color: var(--lime-text); border: 1px solid rgba(224,69,0,.4); padding: 2px 8px;
+}
+.res-reach { font-size: 11.5px; color: var(--ink-3); display: inline-flex; align-items: center; gap: 4px; }
+.res-vibe { font-style: italic; }
+.res-pal { display: flex; gap: 5px; flex: none; }
+.res-sw {
+  width: 18px; height: 18px; border: 1px solid var(--line); border-radius: 0;
+  display: inline-block;
+}
+.res-km { font-size: 14px; color: var(--ink-2); margin: 10px 0 0; max-width: 640px; }
+.res-km-aud { color: var(--ink-4); }
+.res-next { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.res-next-lbl {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .13em;
+  text-transform: uppercase; color: var(--ink-4);
+}
+.res-next .btn .spinner { width: 12px; height: 12px; }
+.menu-empty { font-size: 12px; color: var(--ink-4); padding: 8px 10px; }
