@@ -128,3 +128,10 @@ LOW (noted, later):
 - [x] Restored briefDraft handoff could re-fire auto-produce — FIXED (auto flag stripped on restore)
 - [x] producedFrom.campaignId stored `true` not id — FIXED
 - [x] WildCard platform chip casing → chanLabel — FIXED
+
+## Final state — 10:00 sprint closeout
+- Merged pipeline verified e2e: ads (4 sd-turbo creatives), motion (mixed set, 2 real mp4s), site (brand-context HTML) — all produce paths land on results
+- 3 adversarial rounds: ~28 fixes, final round clean (7/7 holds)
+- 78 mockups produced → 50 displayed + 28 vaulted; top-10 got print/a11y craft pass
+- Demo: marque-walkthrough.mp4 (174s) + v2 with title/end cards (180.6s), cloned voice
+- Residuals noted for later: none blocking; see round-12 review list above
