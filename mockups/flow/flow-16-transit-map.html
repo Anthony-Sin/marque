@@ -31,6 +31,7 @@ body{
 }
 ::selection{background:var(--teal);color:#fff}
 a{color:var(--teal)}
+a:focus-visible{outline:2.5px solid var(--teal);outline-offset:3px;border-radius:2px}
 .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
 
 .top{display:flex;align-items:center;gap:16px;padding:22px 0 14px;border-bottom:3px solid var(--ink);flex-wrap:wrap}
@@ -63,7 +64,7 @@ a{color:var(--teal)}
   background:var(--paper2);border:2.5px solid var(--ink);padding:6px 16px;border-radius:3px;box-shadow:4px 4px 0 rgba(30,36,48,.14)}
 .sec-h .rule{flex:1;min-width:30px;border-bottom:3px solid var(--ink);opacity:.15}
 .sec-h .tag{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--ink2)}
-.sec-sub{color:var(--ink2);font-size:13.5px;margin:-12px 0 24px;max-width:640px}
+.sec-sub{color:var(--ink2);font-size:13.5px;margin:-12px 0 24px;max-width:640px;text-wrap:pretty}
 
 .panel{background:var(--paper2);border:2px solid var(--ink);border-radius:5px;padding:20px 22px;position:relative;min-width:0;
   box-shadow:5px 5px 0 rgba(30,36,48,.1);transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
@@ -75,7 +76,7 @@ a{color:var(--teal)}
 .aud>*,.out>*,.prov>*{min-width:0}
 .lean-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .lean{font-weight:800;font-size:24px;color:var(--pink);letter-spacing:-.01em}
-.conf{font-family:var(--mono);font-size:10.5px;border:1.5px solid var(--teal);color:var(--teal);padding:3px 10px;border-radius:3px;letter-spacing:.12em}
+.conf{font-family:var(--mono);font-size:10.5px;font-variant-numeric:tabular-nums;border:1.5px solid var(--teal);color:var(--teal);padding:3px 10px;border-radius:3px;letter-spacing:.12em}
 .confbar{height:10px;border:2px solid var(--ink);border-radius:6px;margin:14px 0 16px;overflow:hidden;background:var(--paper)}
 .confbar i{display:block;height:100%;background:var(--pink)}
 .signals{list-style:none}
@@ -100,7 +101,7 @@ a{color:var(--teal)}
 .s-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin:8px 0 12px}
 .s-name{font-weight:800;font-size:19px;line-height:1.15}
 .s-angle{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--pink);text-transform:uppercase;margin-top:4px}
-.s-fitb{flex:none;border:2px solid var(--ink);background:var(--paper);padding:5px 11px;font-weight:800;font-size:16px;border-radius:4px;text-align:center}
+.s-fitb{flex:none;border:2px solid var(--ink);background:var(--paper);padding:5px 11px;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums;border-radius:4px;text-align:center}
 .s-fitb small{display:block;font-size:7.5px;letter-spacing:.2em;color:var(--ink2);font-weight:600}
 .s-chans{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
 .s-chan{display:grid;grid-template-columns:84px 1fr auto;gap:10px;align-items:center;font-size:11.5px}
@@ -115,7 +116,7 @@ a{color:var(--teal)}
 .s-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;border-top:1.5px dashed var(--line);padding-top:11px}
 .s-reach b{font-weight:800;font-size:19px;color:var(--teal)}
 .s-reach span{display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;color:var(--ink2)}
-.s-watch{font-size:10.5px;color:var(--ink2);max-width:56%;text-align:right;line-height:1.5}
+.s-watch{font-size:10.5px;color:var(--ink2);max-width:56%;text-align:right;line-height:1.5;text-wrap:pretty}
 
 /* anti — suspended service */
 .anti{border:2px dashed var(--grey);border-radius:5px;background:repeating-linear-gradient(-45deg,transparent 0 14px,rgba(143,151,163,.08) 14px 28px),var(--paper2)}
@@ -154,7 +155,7 @@ a{color:var(--teal)}
 
 /* provenance */
 .prov{display:grid;grid-template-columns:1.12fr .88fr;gap:22px;align-items:start}
-.calls{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10.5px}
+.calls{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:10.5px;font-variant-numeric:tabular-nums}
 .calls th{font-size:8.5px;letter-spacing:.24em;color:var(--ink2);text-align:left;padding:8px 9px;border-bottom:2px solid var(--ink);text-transform:uppercase;font-weight:600}
 .calls td{padding:9px;border-bottom:1px dashed var(--line);vertical-align:top}
 .calls tr:hover td{background:rgba(15,123,124,.06)}
@@ -168,7 +169,7 @@ a{color:var(--teal)}
 .aff-r{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;font-size:12.5px;padding:3px 0}
 .aff-r .bar{grid-column:1/-1;height:6px;border:1.5px solid var(--ink);border-radius:4px;overflow:hidden;background:var(--paper)}
 .aff-r .bar i{display:block;height:100%;background:var(--teal)}
-.aff-r .v{font-family:var(--mono);font-size:10px;color:var(--ink2)}
+.aff-r .v{font-family:var(--mono);font-size:10px;font-variant-numeric:tabular-nums;color:var(--ink2)}
 
 .next{display:flex;gap:14px;flex-wrap:wrap}
 .nchip{flex:1;min-width:170px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border:2.5px solid var(--ink);border-radius:999px;background:var(--paper2);color:var(--ink);text-decoration:none;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;transition:all .2s var(--ease);cursor:pointer}
@@ -191,6 +192,13 @@ a{color:var(--teal)}
   .mapbox{border-width:2px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{
+  body{background:#fff}
+  *{box-shadow:none!important;text-shadow:none!important;transition:none!important}
+  .mapbox{break-inside:avoid}
+  .strat,.panel,.cre,.anti,.brief{break-inside:avoid}
+  .nchip{border-color:#999}
+}
 </style>
 </head>
 <body>
@@ -311,7 +319,7 @@ m+='<path d="M540 52 H1150" stroke="'+G+'" stroke-width="5" stroke-dasharray="10
 const antiNames=["TV","PODCAST","EMAIL","PRINT"];
 const antiX=[640,780,920,1060];
 anti.forEach((a,i)=>{ if(antiX[i]) m+=flag(antiX[i],52,antiNames[i]||a.channel.toUpperCase()); });
-m+='<text x="1148" y="42" text-anchor="end" font-size="9" font-weight="700" fill="'+G+'" letter-spacing="2" font-family="ui-monospace">SERVICE SUSPENDED · FIT &lt; 0.2</text>';
+m+='<text x="1150" y="74" text-anchor="end" font-size="9" font-weight="700" fill="'+G+'" letter-spacing="2" font-family="ui-monospace">SERVICE SUSPENDED · FIT &lt; 0.2</text>';
 
 /* --- signal line (pink) --- */
 m+='<path d="M56 140 H782" stroke="'+P+'" stroke-width="7" fill="none" stroke-linecap="round"/>';

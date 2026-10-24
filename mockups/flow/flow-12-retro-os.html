@@ -107,7 +107,7 @@ button{font-family:var(--os-font);cursor:pointer}
 
 /* audience win */
 .conf{display:flex;align-items:baseline;gap:8px}
-.conf b{font-size:34px;font-weight:700;color:var(--acc);line-height:1}
+.conf b{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--acc);line-height:1}
 .conf span{font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.12em}
 .pbar{height:10px;border:1px solid #3B3B38;background:#fff;margin:8px 0 10px;box-shadow:1px 1px 0 #fff inset}
 .pbar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--acc) 0 6px,transparent 6px 8px)}
@@ -121,7 +121,7 @@ button{font-family:var(--os-font);cursor:pointer}
 .srow input{accent-color:var(--acc)}
 .srow .st{font-weight:700;font-size:12px}
 .srow .sa{color:var(--ink-2);font-size:10px;text-transform:uppercase;letter-spacing:.08em}
-.srow .sf{margin-left:auto;font-weight:700;font-size:13px;color:var(--acc);white-space:nowrap}
+.srow .sf{margin-left:auto;font-weight:700;font-size:13px;font-variant-numeric:tabular-nums;color:var(--acc);white-space:nowrap}
 .srow.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
 .srow.on .rh{background:#EDF1F9}
 .srow .det{padding:0 9px 8px 25px;font-size:10.5px;color:var(--ink-2)}
@@ -159,7 +159,7 @@ button{font-family:var(--os-font);cursor:pointer}
 .psw .h{font-size:8.5px;color:var(--ink-2)}
 
 /* log win */
-.log{background:#101408;border:1px solid #000;color:#9FE86A;font-family:ui-monospace,'Courier New',monospace;font-size:10.5px;padding:10px;margin:0}
+.log{background:#101408;border:1px solid #000;color:#9FE86A;font-family:ui-monospace,'Courier New',monospace;font-size:10.5px;font-variant-numeric:tabular-nums;padding:10px;margin:0}
 .log .r{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:10px;padding:3px 0;border-bottom:1px dotted rgba(159,232,106,.16)}
 .log .r:last-child{border:none}
 .log .ep{color:#D9FFB0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -225,6 +225,16 @@ button{font-family:var(--os-font);cursor:pointer}
   .taskbar .grow{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{
+  body{background:#fff;background-image:none}
+  .taskbar{display:none}
+  .menubar{position:static}
+  *{box-shadow:none!important;text-shadow:none!important;transition:none!important}
+  .desk{display:block;padding-bottom:20px}
+  .win{margin-bottom:16px;break-inside:avoid;transform:none!important}
+  .welcome h1{color:var(--ink);text-shadow:none}
+  .welcome .sub{color:var(--ink-2)}
+}
 </style>
 </head>
 <body>
@@ -326,7 +336,7 @@ if(strats.length){
       '<span><span class="st">'+esc(s.title)+'</span> <span class="sa">'+esc(s.angle)+'</span></span>'+
       '<span class="sf">'+pct(s.audienceFit&&s.audienceFit.score)+'%</span></label>'+
       '<div class="det"><div class="ln">'+
-      (s.channels||[]).map(c=>'<span><b>'+esc(c.name)+'</b> '+pct(c.fit)+'%'+(c.why?' <i style="font-style:normal;color:var(--ink-3)">('+esc(c.why)+')</i>':'')+'</span>').join('')+
+      (s.channels||[]).map(c=>'<span><b>'+esc(c.name)+'</b> '+pct(c.fit)+'%'+(c.why?' <i style="font-style:normal;color:var(--ink-3)">— '+esc(c.why)+'</i>':'')+'</span>').join('')+
       '<span><b>reach</b> '+views(s.reach&&s.reach.estViews)+' est.</span>'+
       '<span><b>hero</b> '+esc(s.heroSignal||'—')+'</span></div>'+
       '<div class="ln" style="margin-top:2px;color:var(--ink-3)">'+esc((s.formats||[]).join(' · '))+(s.reach?' — '+esc(s.reach.basis):'')+'</div>'+
@@ -390,6 +400,7 @@ let z=10;
 document.querySelectorAll('.win').forEach(w=>{
   const raise=()=>{document.querySelectorAll('.win.raised').forEach(x=>x.classList.remove('raised'));w.classList.add('raised');w.style.zIndex=++z};
   w.addEventListener('pointerdown',raise);
+  w.addEventListener('focusin',raise);
   const tb=w.querySelector('.titlebar');
   let sx,sy,dx=0,dy=0,drag=false;
   tb.addEventListener('pointerdown',e=>{

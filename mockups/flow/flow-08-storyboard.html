@@ -133,13 +133,13 @@ main{max-width:1240px;margin:0 auto;padding:8px 28px 60px}
   transition:all .14s;
 }
 .chip:hover{background:var(--ink);color:var(--paper);transform:rotate(-1.5deg)}
-.logline{font-size:clamp(18px,2.6vw,26px);font-weight:600;line-height:1.35;max-width:56ch}
+.logline{font-size:clamp(18px,2.6vw,26px);font-weight:600;line-height:1.35;max-width:56ch;text-wrap:pretty}
 .logline em{font-style:normal;color:var(--acc)}
 
 /* SC2 audience */
 .aud-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:18px}
 .conf-meter{margin:12px 0}
-.conf-meter .t{display:flex;justify-content:space-between;font-family:var(--type);font-size:10px;letter-spacing:.16em;color:var(--ink-2)}
+.conf-meter .t{display:flex;justify-content:space-between;font-family:var(--type);font-size:10px;font-variant-numeric:tabular-nums;letter-spacing:.16em;color:var(--ink-2)}
 .conf-meter .bar{height:14px;border:1.5px solid var(--ink);background:repeating-linear-gradient(90deg,transparent 0 10%,var(--line) 10% calc(10% + 1px));position:relative;margin-top:5px}
 .conf-meter .fill{position:absolute;inset:2px auto 2px 2px;background:var(--acc)}
 .habit{padding:9px 0;border-bottom:1px dashed var(--line);font-size:12.5px}
@@ -163,7 +163,7 @@ main{max-width:1240px;margin:0 auto;padding:8px 28px 60px}
 .score .n{font-family:var(--hand);font-size:34px;font-weight:700;color:var(--acc);line-height:.9}
 .score .c{font-family:var(--type);font-size:9px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase}
 .chanline{font-size:11.5px;border-top:1px dashed var(--line);padding-top:8px;margin-top:8px}
-.chanline .ch{display:flex;justify-content:space-between;font-family:var(--type);font-size:10.5px;margin:3px 0}
+.chanline .ch{display:flex;justify-content:space-between;font-family:var(--type);font-size:10.5px;font-variant-numeric:tabular-nums;margin:3px 0}
 .chanline .why{font-size:10.5px;color:var(--ink-2)}
 .fmts{font-family:var(--type);font-size:9.5px;color:var(--ink-2);margin-top:8px}
 .est{margin-top:8px;font-family:var(--type);font-size:10.5px}
@@ -177,7 +177,7 @@ main{max-width:1240px;margin:0 auto;padding:8px 28px 60px}
 .cut .fbody{padding:14px 16px}
 .cut h4{font-size:14px;text-decoration:line-through;text-decoration-color:var(--acc);text-decoration-thickness:2px}
 .cut .ch{font-family:var(--type);font-size:9.5px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase}
-.cut p{font-size:11px;color:var(--ink-2);margin-top:8px}
+.cut p{font-size:11px;color:var(--ink-2);margin-top:8px;text-wrap:pretty}
 .cut .stamp{
   position:absolute;top:26px;left:50%;transform:translateX(-50%) rotate(-9deg);z-index:4;
   font-family:var(--hand);font-size:26px;font-weight:700;color:var(--acc);
@@ -188,7 +188,7 @@ main{max-width:1240px;margin:0 auto;padding:8px 28px 60px}
 .out-grid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.5fr);gap:18px;align-items:start}
 .script .fbody{font-family:var(--type);font-size:12px}
 .script .st{font-size:15px;text-transform:uppercase;letter-spacing:.1em;border-bottom:1.5px solid var(--ink);padding-bottom:8px;margin-bottom:10px}
-.script p{margin-bottom:9px}
+.script p{margin-bottom:9px;text-wrap:pretty}
 .script .lbl{font-size:9px;letter-spacing:.2em;color:var(--ink-3);display:block}
 .script .km{color:var(--acc);font-weight:700}
 .stills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
@@ -210,7 +210,7 @@ main{max-width:1240px;margin:0 auto;padding:8px 28px 60px}
 
 /* SC7 continuity log */
 .prov-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:18px}
-table.plog{width:100%;border-collapse:collapse;font-family:var(--type);font-size:11px}
+table.plog{width:100%;border-collapse:collapse;font-family:var(--type);font-size:11px;font-variant-numeric:tabular-nums}
 table.plog th{text-align:left;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);font-weight:400;border-bottom:1.5px solid var(--ink);padding:0 10px 6px 0}
 table.plog td{border-bottom:1px dashed var(--line);padding:7px 10px 7px 0;vertical-align:top}
 table.plog .pr{display:block;color:var(--ink-3);font-size:9px;max-width:min(330px,50vw);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -219,7 +219,7 @@ table.plog .pr{display:block;color:var(--ink-3);font-size:9px;max-width:min(330p
 .affg{margin-bottom:13px}
 .affg .t{font-family:var(--type);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--acc);margin-bottom:5px}
 .affr{display:flex;align-items:baseline;gap:8px;font-size:12px;padding:2.5px 0}
-.affr .v{margin-left:auto;font-family:var(--type);font-size:10px;color:var(--ink-2)}
+.affr .v{margin-left:auto;font-family:var(--type);font-size:10px;font-variant-numeric:tabular-nums;color:var(--ink-2)}
 .affr .dots{flex:1;border-bottom:1px dotted var(--ink-3);transform:translateY(-3px)}
 
 /* SC8 deliverables */
@@ -254,6 +254,13 @@ footer{
   .rtick{padding:10px 4px 4px;align-items:center;justify-content:center}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{
+  body{background:#fff;background-image:none}
+  .rail-wrap{display:none}
+  *{box-shadow:none!important;text-shadow:none!important;transition:none!important}
+  .scene{break-inside:auto}
+  .frame,.sframe,.cut,.still,.pchip{break-inside:avoid}
+}
 </style>
 </head>
 <body>

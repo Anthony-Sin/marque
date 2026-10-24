@@ -45,6 +45,7 @@
   .brandtag .dot{width:9px;height:9px;background:var(--amber);box-shadow:0 0 8px rgba(255,181,71,.7)}
   .mast .mid{color:var(--dim);font-size:10px;letter-spacing:.14em;text-transform:uppercase}
   .clock{margin-left:auto;color:var(--amber-hi);font-size:18px;letter-spacing:.2em;white-space:nowrap;
+    font-variant-numeric:tabular-nums;
     text-shadow:0 0 10px rgba(255,181,71,.35)}
   .clock small{font-size:9px;color:var(--mut);letter-spacing:.12em;display:block;text-align:right}
 
@@ -152,6 +153,21 @@
     .gates{grid-template-columns:1fr 1fr}
     .swrow{grid-template-columns:1fr 1fr 1fr}
     .clock{font-size:14px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important}
+    .st.blink{opacity:1}
+  }
+  @media print{
+    body{background:#fff;color:#141414}
+    *{box-shadow:none!important;text-shadow:none!important;animation:none!important}
+    .board,.mast,.bhead,.cell,.hdr .cell,.gate,.sw,.briefrow .k,.conn a{
+      background:#fff!important;color:#141414!important;border-color:#bbb!important}
+    .cell+.cell{box-shadow:none!important}
+    .cell .lab,.bhead .no,.bhead .tag,.mast .mid,.gate .meta,.sw .hx,.foot,.cell.mut{color:#444!important}
+    .st{border-color:#999!important;color:#141414!important}
+    .gate .scr .prov{background:rgba(255,255,255,.85);color:#141414;border-color:#999}
+    .row:hover{background:transparent}
   }
 </style>
 </head>
@@ -271,8 +287,9 @@ function tick(){const d=new Date();
 tick();setInterval(tick,1000);
 
 /* flap scramble on load */
+const RM=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
 const GLY="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789·-";
-function flap(el,final,ms){ms=ms||650;const t0=performance.now();
+function flap(el,final,ms){if(RM){el.textContent=final;return;}ms=ms||650;const t0=performance.now();
   (function step(t){const p=Math.min(1,(t-t0)/ms);
     el.textContent=final.split("").map((c,i)=>(i/final.length<p||p===1)?c:(c===" "?" ":GLY[Math.random()*36|0])).join("");
     if(p<1)requestAnimationFrame(step);})(t0);}

@@ -120,7 +120,7 @@ button{font-family:var(--mono);cursor:pointer}
 .gauge{margin:14px 0 6px}
 .gauge .track{position:relative;height:10px;border:1px solid var(--acc)}
 .gauge .fill{position:absolute;inset:1px auto 1px 1px;background:repeating-linear-gradient(90deg,var(--acc) 0 6px,transparent 6px 8px)}
-.gauge .lbl{display:flex;justify-content:space-between;font-size:10px;color:var(--ink-dim);margin-top:5px;letter-spacing:.1em}
+.gauge .lbl{display:flex;justify-content:space-between;font-size:10px;font-variant-numeric:tabular-nums;color:var(--ink-dim);margin-top:5px;letter-spacing:.1em}
 .chiprow{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
 .chip{
   border:1px solid var(--line);color:var(--acc-solid);padding:4px 9px;font-size:10.5px;
@@ -150,7 +150,7 @@ button{font-family:var(--mono);cursor:pointer}
 .strat h3{font-size:15px;color:#fff;letter-spacing:.05em;margin:4px 0 2px}
 .strat .angle{font-size:10px;color:var(--acc);letter-spacing:.16em;text-transform:uppercase}
 .fit-dial{display:flex;align-items:baseline;gap:6px;margin:12px 0 2px}
-.fit-dial .big{font-size:30px;font-weight:700;color:var(--acc-solid);line-height:1}
+.fit-dial .big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--acc-solid);line-height:1}
 .fit-dial .cap{font-size:9px;color:var(--ink-dim);letter-spacing:.18em;text-transform:uppercase}
 .chan{padding:6px 0;border-bottom:1px dashed var(--line-faint);font-size:11px}
 .chan:last-of-type{border-bottom:none}
@@ -181,13 +181,13 @@ button{font-family:var(--mono);cursor:pointer}
 }
 .reject h4{font-size:13px;color:var(--ink);letter-spacing:.06em}
 .reject .chan-tag{font-size:9.5px;color:var(--ink-dim);letter-spacing:.16em;text-transform:uppercase;margin:2px 0 8px}
-.reject p{font-size:10.5px;color:var(--ink-dim)}
+.reject p{font-size:10.5px;color:var(--ink-dim);text-wrap:pretty}
 
 /* ---- FIG5 output ---- */
 .out-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr)}
 .brief-cell{padding:20px;border-right:1px dashed var(--line-soft)}
 .brief-title{font-size:clamp(20px,2.6vw,30px);color:#fff;letter-spacing:.03em}
-.brief-angle{font-size:11px;color:var(--acc);margin:8px 0 16px;line-height:1.6}
+.brief-angle{font-size:11px;color:var(--acc);margin:8px 0 16px;line-height:1.6;text-wrap:pretty}
 .cre-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:20px}
 .plate{
   border:1px solid var(--line);background:var(--bp-deep);
@@ -225,7 +225,7 @@ button{font-family:var(--mono);cursor:pointer}
 .prov-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
 .prov-cell{padding:20px;border-right:1px dashed var(--line-soft)}
 .prov-cell:last-child{border-right:none}
-table.log{width:100%;border-collapse:collapse;font-size:10.5px;table-layout:fixed}
+table.log{width:100%;border-collapse:collapse;font-size:10.5px;font-variant-numeric:tabular-nums;table-layout:fixed}
 table.log th{
   text-align:left;font-weight:400;color:var(--ink-dim);letter-spacing:.16em;text-transform:uppercase;
   font-size:8.5px;border-bottom:1px solid var(--line);padding:0 8px 7px 0;
@@ -245,7 +245,7 @@ td .pm{display:block;color:var(--ink-dim);font-size:9px;max-width:min(300px,46vw
 .aff{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;font-size:11px;padding:3px 0}
 .aff .bar{grid-column:1/-1;height:4px;border:1px solid var(--line-faint);position:relative}
 .aff .bar i{position:absolute;inset:1px auto 1px 1px;background:var(--acc);display:block}
-.aff .v{color:var(--acc-solid);font-size:10px}
+.aff .v{color:var(--acc-solid);font-size:10px;font-variant-numeric:tabular-nums}
 
 /* ---- FIG8 next ---- */
 .next-row{display:flex;flex-wrap:wrap;gap:12px;padding:20px}
@@ -286,7 +286,27 @@ td .pm{display:block;color:var(--ink-dim);font-size:9px;max-width:min(300px,46vw
   .strat,.reject,.sw{border-right:none}
   .fig-pad{padding:14px}
 }
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{animation:none!important;transition:none!important}
+}
+@media print{
+  body{background:#fff;color:#23456b}
+  html{scroll-behavior:auto}
+  *{box-shadow:none!important;text-shadow:none!important;animation:none!important}
+  .sheet{background:#fff;border-color:#3366aa;outline-color:#99bbdd;margin:0}
+  .fig-body,.plate,.plate .imgwrap{background:#fff}
+  .plate img{filter:none;mix-blend-mode:normal;opacity:1}
+  .sheet-head h1,.fig-tag h2,.ask-prompt,.strat h3,.brief-title{color:#0B3B73!important}
+  .kv dd,.sig-list li,.reject h4,.sw .nm,.plate .cap .h,table.log td,.tb td,.habit span,.reject p,.chan,.aff,.fit-dial .big{color:#23456b!important}
+  .dwg-id,.sheet-meta,.fig-tag .note,.kv dt,.chan .why,.gauge .lbl,.fit-dial .cap,.reach-line small,td .pm,.small,.watch,.sw .hex{color:#4a6b8f!important}
+  .dim span{background:#fff;color:#1d5a94}
+  a,.strat .angle,.brief-angle,.live,.nchip,.aff .v,.fig-tag .n,.plate .cap .p,td .ep,.aff-group .t,.watch b,.callout,.habit b,.reach-line,.sheet-meta b,.sheet-head h1 .thin{color:#1d5a94!important}
+  .nchip,.chip,.live,.fig-tag .n{border-color:#3366aa!important;background:#fff!important}
+  .strat.selected{box-shadow:inset 0 0 0 1px #3366aa;background:#f4f8fc}
+  .strat.selected::before{background:#1d5a94;color:#fff}
+  .fig{break-inside:avoid}
+}
 </style>
 </head>
 <body>

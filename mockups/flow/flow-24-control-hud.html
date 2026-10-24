@@ -46,6 +46,7 @@
   @keyframes lamp{0%,90%{opacity:1}95%{opacity:.3}100%{opacity:1}}
   .hhead .sub{color:var(--mut);font-size:10px;letter-spacing:.16em;text-transform:uppercase}
   .hhead .rr{margin-left:auto;display:flex;gap:18px;font-size:10px;color:var(--dim);letter-spacing:.12em;white-space:nowrap}
+  #h-clock{font-variant-numeric:tabular-nums}
   .hhead .rr b{color:var(--amber);font-weight:400}
 
   /* ===== bracketed panel ===== */
@@ -104,13 +105,13 @@
   .dial .gv{position:relative;width:110px;height:110px;margin:0 auto 8px}
   .dial svg{transform:rotate(-90deg)}
   .dial .gv .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .dial .gv .ctr b{font-size:22px;color:var(--amber-hi);font-weight:400}
+  .dial .gv .ctr b{font-size:22px;font-variant-numeric:tabular-nums;color:var(--amber-hi);font-weight:400}
   .dial .gv .ctr span{font-size:7.5px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
   .dial h4{color:var(--amber-hi);font-size:11.5px;letter-spacing:.06em;font-weight:700}
   .dial .ang{color:var(--mut);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;margin:2px 0 8px}
   .dial .chs{font-size:9.5px;color:var(--mut);border-top:1px dashed var(--line);padding-top:6px}
   .dial .chs b{color:var(--teal);font-weight:400}
-  .dial .rch{margin-top:6px;font-size:10px;color:var(--amber)}
+  .dial .rch{margin-top:6px;font-size:10px;font-variant-numeric:tabular-nums;color:var(--amber)}
   .dial .rch span{color:var(--dim)}
 
   /* anti */
@@ -119,12 +120,12 @@
   .rej .r:first-of-type{border-top:none}
   .rej .t{color:var(--dim);text-decoration:line-through;text-decoration-color:rgba(255,176,58,.5)}
   .rej .c{color:var(--teal);font-size:9px;letter-spacing:.16em;text-transform:uppercase}
-  .rej .w{color:var(--mut)}
+  .rej .w{color:var(--mut);text-wrap:pretty}
 
   /* output */
   .briefline{display:grid;grid-template-columns:110px 1fr;gap:4px 12px;font-size:12px;margin-bottom:12px}
   .briefline .k{color:var(--dim);font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding-top:2px}
-  .briefline .v{color:var(--amber)}
+  .briefline .v{color:var(--amber);text-wrap:pretty}
   .briefline .v.hi{color:var(--amber-hi)}
   .thumbs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
   .th{border:1px solid var(--line);background:#0a0e0d;transition:border-color .15s}
@@ -172,6 +173,25 @@
     .radarwrap{justify-content:center}
     .rej .r{grid-template-columns:1fr;gap:2px}
     .palrow{grid-template-columns:1fr 1fr 1fr}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .radar .sweep{opacity:.5}
+  }
+  @media print{
+    body{background:#fff;color:#241c0c}
+    body::before{display:none}
+    *{box-shadow:none!important;text-shadow:none!important;animation:none!important}
+    .hhead,.panel{background:#fff!important;border-color:#999!important}
+    .panel{break-inside:avoid}
+    .mission,.ph,.kv dd,.kv dd.hi,.lean-big,.dial h4,.briefline .v,.briefline .v.hi,.tel .e,.foot,.hhead .tt,.hhead .rr b,.palrow .n,.th .cap{color:#241c0c!important}
+    .kv dt,.ph .id,.ph .tag,.hhead .sub,.hhead .rr,.dial .ang,.dial .chs,.rej .w,.rej .t,.tel .p,.tel .n,.aff .en,.palrow .h,#aud-habits,.foot{color:#555!important}
+    .radar{background:#f4f4f0;border-color:#999;box-shadow:none}
+    .radar .sweep{display:none}
+    .blip i{background:#666;box-shadow:none}
+    .blip span{color:#241c0c;text-shadow:none}
+    .next a{border-color:#999!important;color:#241c0c!important;background:#fff!important}
+    .dial,.th{border-color:#bbb}
   }
 </style>
 </head>

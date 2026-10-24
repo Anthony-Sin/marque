@@ -63,7 +63,7 @@
   .led.on i{background:var(--acc);box-shadow:0 0 7px var(--acc),0 0 2px var(--acc);animation:blink 2.4s infinite}
   @keyframes blink{0%,92%{opacity:1}96%{opacity:.35}100%{opacity:1}}
   .topright{margin-left:auto;display:flex;gap:16px;align-items:center;color:var(--mut);font-size:10px;letter-spacing:.08em;white-space:nowrap}
-  #clock{color:var(--bright)}
+  #clock{color:var(--bright);font-variant-numeric:tabular-nums}
 
   /* ============ grid ============ */
   .wrap{max-width:1440px;margin:0 auto;padding:16px}
@@ -100,14 +100,14 @@
   .bar{flex:1;height:8px;border:1px solid var(--line2);background:#0a0f0b;position:relative;min-width:40px}
   .bar i{position:absolute;inset:1px auto 1px 1px;background:repeating-linear-gradient(90deg,var(--acc) 0 4px,transparent 4px 6px);box-shadow:0 0 6px var(--acc-line)}
   .bar.flat i{background:var(--acc);box-shadow:none}
-  .num{color:var(--bright);font-size:11px;min-width:36px;text-align:right}
+  .num{color:var(--bright);font-size:11px;font-variant-numeric:tabular-nums;min-width:36px;text-align:right}
   .conf{display:flex;align-items:center;gap:10px;margin:4px 0 10px}
-  .conf .big{font-size:26px;color:var(--acc);text-shadow:0 0 12px var(--acc-line)}
+  .conf .big{font-size:26px;font-variant-numeric:tabular-nums;color:var(--acc);text-shadow:0 0 12px var(--acc-line)}
   .badge{display:inline-block;border:1px solid var(--acc-line);color:var(--acc);
     padding:1px 7px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;background:var(--acc-dim)}
   .habit{display:flex;gap:8px;padding:5px 0;border-top:1px dotted var(--line);font-size:11px}
   .habit .ch{color:var(--acc);min-width:72px}
-  .habit .nt{color:var(--mut)}
+  .habit .nt{color:var(--mut);text-wrap:pretty}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .chip{border:1px solid var(--line2);color:var(--txt);padding:2px 8px;font-size:10px;letter-spacing:.06em;cursor:default;
     transition:border-color .15s,color .15s,background .15s}
@@ -121,7 +121,7 @@
   .sidx{color:var(--dim);font-size:10px}
   .sname{color:var(--bright);font-size:13px;letter-spacing:.04em}
   .sname small{color:var(--mut);font-size:10px;letter-spacing:.08em;margin-left:8px;text-transform:uppercase}
-  .sreach{color:var(--acc);font-size:11px;text-align:right}
+  .sreach{color:var(--acc);font-size:11px;font-variant-numeric:tabular-nums;text-align:right}
   .sreach small{color:var(--mut);display:block;font-size:9px;letter-spacing:.12em}
   .sbody{padding:0 10px 9px 36px;display:grid;gap:5px}
   .cline{display:grid;grid-template-columns:86px 1fr 150px;gap:10px;align-items:center;font-size:10px}
@@ -146,7 +146,7 @@
   .call{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:6px 0;border-top:1px dotted var(--line);font-size:10px}
   .call .ep{color:var(--bright);letter-spacing:.04em}
   .call .pp{color:var(--dim);grid-column:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .call .ms{color:var(--acc);text-align:right;grid-row:1/3;align-self:center}
+  .call .ms{color:var(--acc);font-variant-numeric:tabular-nums;text-align:right;grid-row:1/3;align-self:center}
   .call .ms small{display:block;color:var(--dim);font-size:9px}
   .aff{display:flex;justify-content:space-between;gap:10px;font-size:10px;padding:4px 0;border-top:1px dotted var(--line)}
   .aff .t{color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
@@ -159,7 +159,7 @@
   .btitle{color:var(--bright);font-size:17px;letter-spacing:.04em;margin:2px 0 6px}
   .bfield{margin:7px 0;font-size:11px}
   .bfield .k{color:var(--dim);font-size:9px;letter-spacing:.18em;text-transform:uppercase;display:block;margin-bottom:1px}
-  .bfield .v{color:var(--txt)}
+  .bfield .v{color:var(--txt);text-wrap:pretty}
   .bfield .v.msg{color:var(--acc);border-left:2px solid var(--acc-line);padding-left:8px}
 
   /* media */
@@ -204,6 +204,22 @@
     .cline .cwhy{display:none}
     .ledrow .hideS{display:none}
     .topright .hideS{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+  }
+  @media print{
+    body{background:#fff;color:#1e2b21}
+    .scan,.vig,.prompt .cur{display:none}
+    *{box-shadow:none!important;text-shadow:none!important;animation:none!important;backdrop-filter:none!important}
+    .topbar{position:static;background:#fff;border-color:#999}
+    .panel{background:#fff!important;border-color:#bbb!important;break-inside:avoid}
+    .prompt,.ptitle,.sname,.kv dd,.kv dd.hi,.btitle,.bfield .v,.conf .big,.num,.call .ep,.brand,.led.on,.topright,#clock,.sreach,.aff .e,.sw .nm,.mcard .cap em{color:#1e2b21!important}
+    .kv dt,.ptitle .tag,.habit .nt,.cline .cwhy,.watch,.smeta,.call .pp,.sw .hx,.mcard .cap,.aff .t,.arow span,.arow b,.palnote,footer,.src-strip{color:#555!important}
+    .bar,.mcard{background:#fff}
+    .bar i,.led.on i{background:#666!important;box-shadow:none!important}
+    .nchip,.chip,.pill,.badge,.prov,.midx{border-color:#999!important;color:#1e2b21!important;background:#fff!important}
+    a{color:#1e6b3c!important}
   }
 </style>
 </head>
