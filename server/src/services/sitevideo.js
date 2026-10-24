@@ -59,7 +59,7 @@ export async function renderSiteVideo({ html, url }, { aspectRatio = '16:9', sec
     if (!webm) throw new Error('no video recorded');
     const out = path.join(ASSETS_DIR, `${uid()}.mp4`);
     await run('ffmpeg', ['-y', '-i', path.join(dir, webm), '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out], { timeout: 60000 });
-    return { path: out, provider: 'site-capture', note: `real site rendered + captured locally (${seconds}s scroll)` };
+    return { path: `/assets/${path.basename(out)}`, fsPath: out, provider: 'site-capture', note: `real site rendered + captured locally (${seconds}s scroll)` };
   } finally {
     await browser.close().catch(() => {});
     fs.rmSync(dir, { recursive: true, force: true });

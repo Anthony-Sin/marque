@@ -247,6 +247,19 @@ export default function Campaigns() {
     setBusy(false); setPhase('idle');
   };
 
+  // site-demo video — films the generated website into a campaign creative
+  const demoVideo = async () => {
+    if (!open) return;
+    setAnimating('demo');
+    try {
+      const { job } = await api.campaignDemoVideo(open.id);
+      await pollJob(job.id);
+      await reload();
+      say('Site demo video added to the campaign');
+    } catch (e) { say(e.message); }
+    setAnimating('');
+  };
+
   // Card-level animate shortcut (9:16 only — CreativeCard hides it otherwise).
   const animateOne = async (creative) => {
     setAnimating(creative.id);
@@ -278,6 +291,9 @@ export default function Campaigns() {
             <SignalChips signals={open.qlooSignals || []} />
             <button className="btn ghost sm" onClick={() => setEvi(true)}>
               <Icon name="qloo" size={14} /> Evidence
+            </button>
+            <button className="btn ghost sm" disabled={animating === 'demo'} onClick={demoVideo} title="Render the generated website locally and capture a real scroll video as a campaign creative">
+              {animating === 'demo' ? <span className="spinner" /> : <Icon name="film" size={14} />} Site demo video
             </button>
           </div>
         </div>

@@ -4,6 +4,9 @@ import multer from 'multer';
 import compression from 'compression';
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+const execFileP = promisify(execFile);
 import { PORT, ASSETS_DIR, WEB_DIST, ENV, DATA_DIR } from './config.js';
 import { tuning } from './tuning.js';
 import * as store from './services/store.js';
@@ -493,6 +496,40 @@ app.get('/api/campaigns', h(async (_req, res) => {
       return { ...c, qlooBundle: b?.qlooBundle || c.qlooBundle || null, evidence: b?.evidence || c.evidence || null };
     }),
   });
+}));
+// site-demo video as a campaign creative — films the generated site locally
+app.post('/api/campaigns/:id/demo-video', h(async (req, res) => {
+  const c = find('campaigns', req.params.id);
+  if (!c) return res.status(404).json({ error: 'campaign not found' });
+  const site = list('websites')?.at(-1);
+  const version = site ? siteVersion(site) : null;
+  if (!version?.html) return res.status(400).json({ error: 'no website version to film — generate a site first' });
+  if (!siteVideoAvailable()) return res.status(503).json({ error: 'local capture unavailable' });
+  const creative = { id: uid(), medium: 'video', videoState: 'running', createdAt: now(), headline: 'Site demo', body: '', cta: '', angle: 'product demo', overlayStyle: 'editorial' };
+  c.creatives = [...(c.creatives || []), creative];
+  saveCampaign(c);
+  const job = runJob('video', async () => {
+    try {
+      const v = await renderSiteVideo({ html: version.html }, { aspectRatio: c.aspectRatio, seconds: Math.min(15, Math.max(4, +req.body?.seconds || 8)) });
+      const stored = find('campaigns', c.id);
+      const cr = stored?.creatives?.find((x) => x.id === creative.id);
+      if (cr) {
+        cr.videoPath = v.path; cr.videoState = 'done'; cr.videoProvider = v.provider; cr.videoDirection = 'site-demo'; if (v.note) cr.videoNote = v.note;
+        // poster frame so the card shows the real site, not a branded fallback
+        const poster = v.fsPath.replace(/\.mp4$/, '-poster.png');
+        try { await execFileP('ffmpeg', ['-y', '-v', 'error', '-ss', '0.5', '-i', v.fsPath, '-frames:v', '1', poster]); } catch { /* keep video-only */ }
+        if (fs.existsSync(poster)) { cr.imagePath = `/assets/${path.basename(poster)}`; store.registerImage(cr.imagePath, { source: 'site-capture-poster' }); }
+        saveCampaign(stored);
+      }
+      return { creativeId: creative.id, videoPath: v.path, provider: v.provider };
+    } catch (e) {
+      const stored = find('campaigns', c.id);
+      const cr = stored?.creatives?.find((x) => x.id === creative.id);
+      if (cr) { cr.videoState = 'error'; cr.videoNote = String(e.message || e).slice(0, 200); saveCampaign(stored); }
+      throw e;
+    }
+  });
+  ok(res, { job, creative });
 }));
 app.delete('/api/campaigns/:id', h(async (req, res) => {
   if (!find('campaigns', req.params.id)) return res.status(404).json({ error: 'not found' });

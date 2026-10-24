@@ -127,6 +127,7 @@ export const api = {
   regenCreativeImage: (id, prompt, provider) => req('POST', `/api/creatives/${id}/regenerate-image`, { prompt, provider }),
   fixCreativeLayout: (id) => req('POST', `/api/creatives/${id}/fix-layout`),
   animateCreative: (id) => req('POST', `/api/creatives/${id}/animate`),
+  campaignDemoVideo: (id, seconds) => req('POST', `/api/campaigns/${id}/demo-video`, { seconds }),
   deleteCreative: (id) => req('DELETE', `/api/creatives/${id}`),
   // photoshoot
   listPhotoshoot: () => req('GET', '/api/photoshoot'),
