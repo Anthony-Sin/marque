@@ -4,6 +4,15 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App.jsx';
 import './styles.css';
 
+// strip browser-extension overlays (e.g. the Datadog extension's "No session
+// ID found" toast) that inject DOM nodes into the app — not our UI
+const stripExtOverlays = () => {
+  document.querySelectorAll('[id*="datadog" i], [class*="datadog" i], [id*="dd-rum" i], [data-testid*="datadog" i]').forEach((n) => n.remove());
+  document.querySelectorAll('*').forEach((n) => { if (n.tagName.toLowerCase().includes('datadog')) n.remove(); });
+};
+stripExtOverlays();
+new MutationObserver(stripExtOverlays).observe(document.documentElement, { childList: true, subtree: true });
+
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
