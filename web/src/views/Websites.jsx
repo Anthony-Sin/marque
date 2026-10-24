@@ -36,7 +36,8 @@ export default function Websites() {
   const [impBusy, setImpBusy] = useState(false);
   const stageNote = useStages(busy === 'edit' ? EDIT_STAGES : CREATE_STAGES, busy === 'create' || busy === 'edit');
   const impStage = useStages(IMPROVE_STAGES, impBusy, 2000);
-  const site = sites?.[sites.length - 1] || null;
+  const [siteId, setSiteId] = useState(null);      // which generated site is shown (default: newest)
+  const site = sites?.find((s) => s.id === siteId) || sites?.[sites.length - 1] || null;
 
   const reload = async () => {
     try {
@@ -309,7 +310,22 @@ export default function Websites() {
 
     return (
       <>
-        <div className="row wrap" style={{ justifyContent: 'flex-end', marginBottom: 4 }}>
+        <div className="row wrap" style={{ justifyContent: 'flex-end', marginBottom: 4, alignItems: 'center' }}>
+          {sites.length > 1 && (
+            <select
+              className="slug-in"
+              style={{ marginRight: 'auto', maxWidth: 320 }}
+              value={site.id}
+              aria-label="Switch generated site"
+              onChange={(e) => { setSiteId(e.target.value); setVid(null); }}
+            >
+              {[...sites].reverse().map((s, i) => (
+                <option key={s.id} value={s.id}>
+                  {`Site ${sites.length - i} — ${fmtDate(s.createdAt)}${s.producedFrom?.campaignTitle ? ` · from “${s.producedFrom.campaignTitle}”` : ''}`}
+                </option>
+              ))}
+            </select>
+          )}
           <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Qloo API" />
         </div>
 

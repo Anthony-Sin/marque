@@ -47,7 +47,7 @@ export function htmlBook(book, profile, { printHint = false } = {}) {
   }).join('');
   const fontSample = `<div class="fontrow"><div><div class="fname">${esc(f.heading || 'Heading')}</div><div class="fhead" style="font-family:'${esc(f.heading || 'Georgia')}',serif">Aa — The quick brown fox jumps over the lazy dog</div></div><div><div class="fname">${esc(f.body || 'Body')}</div><div class="fbody" style="font-family:'${esc(f.body || 'Helvetica')}',sans-serif">Aa — Pack my box with five dozen liquor jugs. 0123456789</div></div></div>`;
 
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(profile?.name || 'Brand')} — Brand Book</title>
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(profile?.name || 'Brand')} — Brand Book</title>
 <style>
   :root{--p:${esc(c.primary || '#333')};--s:${esc(c.secondary || '#999')};--a:${esc(c.accent || '#e07a5f')};--bg:${esc(c.background || '#fff')};--sf:${esc(c.surface || '#f5f3ee')};--tx:${esc(c.text || '#1f1f1f')}}
   *{box-sizing:border-box;margin:0}
@@ -80,11 +80,11 @@ export function htmlBook(book, profile, { printHint = false } = {}) {
 </style></head><body>
 ${printHint ? '<button class="noprint" onclick="window.print()">Print / Save as PDF</button>' : ''}
 ${page(`<div class="kicker">Brand Book</div>${cover ? `<img src="${esc(cover.path)}" alt="">` : ''}<h1>${esc(profile?.name || 'Brand')}</h1><div class="tag">${esc(profile?.tagline || '')}</div>`, 'class="page cover"')}
-${page(`<div class="kicker">01 — Our Story</div><div class="story"><p>${esc(profile?.description || '')}</p><h3>What we value</h3><ul>${values}</ul><h3 style="margin-top:20px">Who we serve</h3><p>${esc(profile?.audience || '')}</p></div>`)}
+${page(`<div class="kicker">01 — Our Story</div><div class="story">${profile?.description ? `<p>${esc(profile.description)}</p>` : ''}${values ? `<h3>What we value</h3><ul>${values}</ul>` : ''}${profile?.audience ? `<h3 style="margin-top:20px">Who we serve</h3><p>${esc(profile.audience)}</p>` : ''}</div>`)}
 ${page(`<div class="kicker">02 — Voice</div><h2>How we sound</h2><div style="margin-top:16px">${tone}</div><p class="story" style="margin-top:20px">Every word, caption and headline should feel unmistakably ${esc(profile?.name || 'us')}.</p>`)}
 ${page(`<div class="kicker">03 — Palette</div><div class="swatches">${swatches}</div><div class="note">${esc(book?.paletteNote || '')}</div>`)}
 ${page(`<div class="kicker">04 — Typography</div>${fontSample}`)}
 ${page(`<div class="kicker">05 — Imagery</div><div class="grid">${imgGrid || '<p>No imagery yet.</p>'}</div>`)}
-${page(`<div class="kicker">06 — Taste Signature</div><p class="story">Where our audience's culture overlaps — measured affinities that inform partnerships, playlists, placements and creative direction.</p><div style="margin-top:16px">${affRows || '<p>No taste data yet.</p>'}</div><div class="powered">Powered by Qloo${profile?.qloo?.mode === 'partial' ? ' — some taste calls failed' : profile?.qloo?.mode === 'error' ? ' — taste calls failed' : profile?.qloo?.mode === 'off' ? ' — not configured' : ''}</div>`)}
+${page(`<div class="kicker">06 — Taste Signature</div><p class="story">Where our audience's culture overlaps — measured affinities that inform partnerships, playlists, placements and creative direction.</p><div style="margin-top:16px">${affRows || '<p>Taste signature pending — this section fills in when live taste data is captured for the brand.</p>'}</div><div class="powered">Powered by Qloo</div>`)}
 </body></html>`;
 }

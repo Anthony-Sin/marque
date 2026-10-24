@@ -21,7 +21,7 @@ import * as campaigns from './services/campaigns.js';
 import { agentChat } from './services/agent.js';
 import { generateStrategies } from './services/strategy.js';
 import { generateExamples } from './services/scout.js';
-import { generateWebsite, editWebsite, siteVersion } from './services/sites.js';
+import { generateWebsite, editWebsite, siteVersion, normalizeHTML } from './services/sites.js';
 import { renderSiteVideo, siteVideoAvailable } from './services/sitevideo.js';
 import { buildBook, htmlBook } from './services/brandbook.js';
 
@@ -997,11 +997,13 @@ app.delete('/api/websites/:id/versions/:vid', h(async (req, res) => {
   update('websites', w.id, { versions, activeVersion });
   ok(res, { ok: true });
 }));
+const notPublished = () => `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Not published</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#111;color:#eee;font:14px/1.5 ui-monospace,monospace}.c{text-align:center}.c b{display:block;font-size:22px;letter-spacing:.12em;margin-bottom:6px}.c span{color:#888}</style><div class="c"><b>404</b><span>This page isn't published — it may have been unpublished or the link is wrong.</span></div>`;
+
 app.get('/s/:slug', h(async (req, res) => {
   const w = list('websites').find((x) => x.publishedSlug === req.params.slug);
   const v = siteVersion(w);
-  if (!v) return res.status(404).send('Not published');
-  res.type('html').send(v.html);
+  if (!v) return res.status(404).type('html').send(notPublished());
+  res.type('html').send(normalizeHTML(v.html)); // normalize covers docs stored before the fix
 }));
 
 // ---------- brand book ----------
@@ -1037,7 +1039,7 @@ app.get('/api/brandbook/pdf', h(async (_req, res) => {
 app.get('/b/:slug', h(async (req, res) => {
   const book = get('brandbook');
   const profile = brand.currentProfile();
-  if (!book || book.publishedSlug !== req.params.slug || !profile) return res.status(404).send('Not published');
+  if (!book || book.publishedSlug !== req.params.slug || !profile) return res.status(404).type('html').send(notPublished());
   res.type('html').send(htmlBook(book, profile));
 }));
 

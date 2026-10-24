@@ -39,19 +39,32 @@ function extractHTML(t) {
   return html.length > 200 && html.includes('<') ? html : null;
 }
 
+// repair common LLM defects in generated docs before they ship: a malformed
+// viewport meta (`name="viewport="content=…"`) is ignored by browsers so mobile
+// renders at the 980px fallback — strip broken metas and guarantee a good one.
+export function normalizeHTML(html) {
+  if (!html || typeof html !== 'string') return html;
+  let out = html.replace(/<meta\s+name\s*=\s*["']?viewport=[^>]*>/gi, '');
+  if (!/<meta\s+name\s*=\s*["']viewport["']/i.test(out)) {
+    const tag = '<meta name="viewport" content="width=device-width, initial-scale=1">';
+    out = /<head[^>]*>/i.test(out) ? out.replace(/<head[^>]*>/i, (m) => `${m}\n${tag}`) : `${tag}\n${out}`;
+  }
+  return out;
+}
+
 // primary path: chatJSON -> {html}; fallback: raw HTML completion (models are
 // far more reliable emitting markup than JSON-escaped markup)
 async function siteHTML(messages) {
   try {
     const out = await chatJSON(messages, { maxTokens: 8000 });
     const html = extractHTML(out?.html) || (typeof out?.html === 'string' && out.html.includes('<') ? out.html : null);
-    if (html) return html;
+    if (html) return normalizeHTML(html);
   } catch { /* fall back to raw html */ }
   const raw = await chat([
     { role: 'system', content: `${SITE_SYS}\n\nIMPORTANT: ignore the JSON instruction — output the complete HTML document only, starting with <!DOCTYPE html>. No commentary, no code fences.` },
     ...messages.slice(1),
   ], { maxTokens: 8000 });
-  return extractHTML(raw);
+  return normalizeHTML(extractHTML(raw));
 }
 
 export async function generateWebsite(profile, prompt = '', ctx = null) {
