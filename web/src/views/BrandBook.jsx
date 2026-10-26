@@ -278,7 +278,7 @@ export default function BrandBook() {
         <div className="view-head">
           <div className="vh-main">
             <span className="vh-kicker">MARQUE / BOOK</span>
-            <h1 className="display">Your Brand Book</h1>
+            <h1 className="display">{profile?.name && profile.name !== 'Your Brand' ? `${profile.name} Brand Book` : 'Your Brand Book'}</h1>
             <p className="sub">A Brand Book generated from your Business Profile.</p>
           </div>
         </div>
@@ -304,7 +304,7 @@ export default function BrandBook() {
         <div className="view-head">
           <div className="vh-main">
             <span className="vh-kicker">MARQUE / BOOK</span>
-            <h1 className="display">Your Brand Book</h1>
+            <h1 className="display">{profile?.name && profile.name !== 'Your Brand' ? `${profile.name} Brand Book` : 'Your Brand Book'}</h1>
             <p className="sub">A Brand Book generated from your Business Profile.</p>
           </div>
         </div>
@@ -419,7 +419,7 @@ export default function BrandBook() {
       <div className="view-head">
         <div className="vh-main">
           <span className="vh-kicker">MARQUE / BOOK</span>
-            <h1 className="display">Your Brand Book</h1>
+            <h1 className="display">{profile?.name && profile.name !== 'Your Brand' ? `${profile.name} Brand Book` : 'Your Brand Book'}</h1>
           <p className="sub">A Brand Book generated from your Business Profile.</p>
         </div>
         <div className="vh-side">

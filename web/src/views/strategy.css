@@ -659,7 +659,7 @@
 }
 .stg-out-chip.on svg { color: var(--lime); }
 .stg-produce .btn.lime { flex: none; }
-@media (max-width: 640px) {
+@media (max-width: 640.98px) {
   .stg-produce { align-items: stretch; }
   .stg-produce .btn.lime { width: 100%; justify-content: center; }
 
@@ -1526,7 +1526,7 @@
 
 /* phone: a 3x3 stacks three tall — the snap rail keeps the panel pocket-size
    (same scroll-strip idiom as the wild-card grid) */
-@media (max-width: 640px) {
+@media (max-width: 640.98px) {
   .stg-mood-grid {
     display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden;
     scroll-snap-type: x proximity; overscroll-behavior-x: contain;
