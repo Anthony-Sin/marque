@@ -157,13 +157,48 @@
 .dash-plan-strats li.more::before { display: none; }
 .dash-plan-strats li.more > span { margin-left: 27px; } /* aligns under the numbered titles */
 .dash-plan .chip-row { margin-top: 2px; }
+/* zero-output middle — the board's own moodboard tiles grow into the space a
+   work strip would take; capped so square sources stay sane crops. A card
+   with no strategy ledger lets the strip take the whole middle. */
+.dash-plan-mood {
+  flex: 1 1 auto; min-height: 100px; max-height: 230px;
+  display: flex; gap: 8px; margin-top: 2px;
+  animation: fade-in .35s ease;
+}
+.dash-plan:not(:has(.dash-plan-strats)) .dash-plan-mood { max-height: none; }
+.dash-mood {
+  position: relative; flex: 1 1 0; min-width: 0; overflow: hidden;
+  background: var(--card-3); border: 1px solid var(--line-soft);
+}
+.dash-mood img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dash-mood-kind {
+  position: absolute; left: 5px; top: 5px; pointer-events: none;
+  font-family: var(--font-mono); font-style: normal; font-size: 8px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--lime-2);
+  background: rgba(7, 10, 9, .78); border: 1px solid rgba(255,176,58,.28); padding: 1.5px 6px;
+}
+/* no moodboard either — an honest dashed ghost holds the middle, styled like
+   an empty instrument slot rather than a pretend render */
+.dash-plan-ghost {
+  flex: 1 1 auto; min-height: 88px; margin-top: 2px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  border: 1px dashed var(--line); background: rgba(255,176,58,.025);
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--ink-4);
+  transition: border-color .18s ease, color .18s ease;
+  animation: fade-in .35s ease;
+}
+.dash-plan:hover .dash-plan-ghost,
+.dash-plan:focus-visible .dash-plan-ghost,
+.dash-plan:focus-within .dash-plan-ghost { border-color: rgba(255,176,58,.45); color: var(--ink-3); }
 /* base cluster anchors to the card floor — work strip + stats + foot */
 .dash-plan-base { margin-top: auto; display: flex; flex-direction: column; }
-/* campaigns this plan produced — plain dark thumbs, no tape */
-.dash-plan-work { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; padding-top: 9px; }
+/* campaigns this plan produced — plain dark thumbs, no tape. Tight top gap
+   keeps the strip glued to the channel chips so the card rhythm stays even */
+.dash-plan-work { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; padding-top: 7px; }
 /* telemetry band — real per-plan counts between hairlines */
 .dash-plan-stats {
-  display: flex; margin-top: 10px;
+  display: flex; margin-top: 8px;
   border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
 }
 .dp-stat {
@@ -244,6 +279,8 @@
   transform: translateY(-3px); border-color: rgba(255, 176, 58, .45);
   box-shadow: 0 8px 22px rgba(0, 0, 0, .42);
 }
+/* work cards are plain <a> tiles — give them the deck's lime focus hairline */
+.dash-work-card:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
 .dash-work-media { display: block; aspect-ratio: 16 / 9; background: var(--card-3); overflow: hidden; }
 .dash-work-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .dash-work-media.none { display: flex; align-items: center; justify-content: center; color: var(--ink-4); }
@@ -300,6 +337,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .dash-plan:hover, .dash-new:hover, .dash-work-card:hover { transform: none; }
+  .dash-plan-mood, .dash-plan-ghost { animation: none; }
 }
 
 /* distributed interior + a quieter add-tile caption */

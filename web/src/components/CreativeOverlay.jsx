@@ -15,28 +15,41 @@ export const OVERLAY_STYLES = [
 ];
 
 export default function CreativeOverlay({ creative, profile, chrome = false }) {
+  // SVG placeholders already carry baked-in copy — compositing live type on top
+  // would double-render it (the card grid skips these via the raster check, but
+  // the editor preview gates on cleanImage alone, which placeholders keep)
+  if (creative?.placeholder || /\.svg(?:[?#]|$)/i.test(String(creative?.imagePath || ''))) return null;
   const vpos = creative?.layout?.vpos || 'bottom';
   const hpos = creative?.layout?.hpos || 'left';
   const st = creative?.overlayStyle || 'performance';
   const accent = profile?.colors?.accent || '#e7e0c9';
   const inkOnPill = pickInk(accent);
+  // every rendered string is real creative data — sanitize defensively so a
+  // junk token ('undefined', 'null', lorem, 'Untitled campaign') degrades to
+  // an omitted line instead of shipping placeholder-looking copy
+  const brand = cleanCopy(creative?.brand) || cleanCopy(profile?.name !== 'Your Brand' ? profile?.name : '');
+  const headline = cleanCopy(creative?.headline);
+  const body = cleanCopy(creative?.body);
+  const cta = cleanCopy(creative?.cta);
+  const badge = cleanCopy(creative?.badge);
+  const angle = cleanCopy(creative?.angle);
   return (
-    <div className={`co-stack st-${st}`} style={{ '--accent': accent, '--ink-on-accent': inkOnPill }}>
-      {/* brand lockup — every ad unit carries the brand mark, like real paid social */}
+    <div className={`co-stack st-${st}${chrome ? ' chrome-on' : ''}`} style={{ '--accent': accent, '--ink-on-accent': inkOnPill }}>
+      {/* brand lockup — parks on the edge OPPOSITE the copy (v-classes), like real paid social */}
       <div className={`co-lockup v-${vpos}`}>
         <span className="co-lockup-bar" style={{ background: accent }} />
-        <span className="co-lockup-name">{creative?.brand || (profile?.name !== 'Your Brand' ? profile?.name : null) || 'Brand'}</span>
+        {!!brand && <span className="co-lockup-name">{brand}</span>}
       </div>
-      {!!creative?.badge && <div className="co-badge" style={{ background: accent, color: inkOnPill }}>{creative.badge}</div>}
+      {!!badge && <div className={`co-badge v-${vpos}`} style={{ background: accent, color: inkOnPill }}>{badge}</div>}
       <div className={`co-scrim v-${vpos}`} />
       <div className={`co-card`}>
         <div className={`co-grid v-${vpos} h-${hpos}`}>
-          {!!creative?.angle && <div className="co-kicker">{kickerFor(creative.angle)}</div>}
-          {!!creative?.headline && <div className="co-headline">{styleHeadline(st, creative.headline)}</div>}
-          {!!creative?.body && <div className="co-body">{creative.body}</div>}
-          {!!creative?.cta && (
+          {!!angle && <div className="co-kicker">{kickerFor(angle)}</div>}
+          {!!headline && <div className="co-headline">{styleHeadline(st, headline)}</div>}
+          {!!body && <div className="co-body">{body}</div>}
+          {!!cta && (
             <div className="co-cta" style={{ background: accent, color: inkOnPill }}>
-              {creative.cta}
+              {cta}
             </div>
           )}
         </div>
@@ -75,6 +88,12 @@ export function styleHeadline(style, text) {
 
 function handle(profile) {
   return String(profile?.name || 'brand').toLowerCase().replace(/[^a-z0-9]+/g, '').slice(0, 20) || 'brand';
+}
+// normalize a copy field to a renderable string or '' — collapses whitespace
+// and rejects model/user/serialization junk that would read as placeholder text
+function cleanCopy(v) {
+  const s = String(v ?? '').replace(/\s+/g, ' ').trim();
+  return /^(undefined|null|nan|none|n\/?a|tbd|lorem( ipsum.*)?|untitled( campaign)?|your brand)$/i.test(s) ? '' : s;
 }
 function pickInk(hex) {
   const c = String(hex || '').replace('#', '');

@@ -10,6 +10,12 @@
 _(reviewers append; builders consume)_
 
 - `/api/strategy/examples` vite-proxy "socket hang up" — ROOT-CAUSED benign: POST-only route runs a ≤90s reference pull; hang-ups occur when `--watch` reloads (agent edits) or client aborts kill the in-flight socket. UI already degrades to "Couldn't pull live examples" + Retry. No fix needed; noise from concurrent edits.
+- **Palette-in-window fix (HIGH)**: enriched prompts ran 270 tokens vs CLIP's 77 — the palette-anchor clause appended last never conditioned pixels. Now leads the `Shot detail:` clause. Verified via rebuild+tokenizer. Regen prompts also regained `Mood:`/`Cultural vibe:` parity with composeImagePrompt.
+- **profile.images[0] swapped** → skull-can-on-ice sdxl render (`/assets/6fdef27a-…`); it had been a generic studio-gear grid polluting every img2img ref.
+- **Stale creatives**: all 17 already sdxl/gemini; 3 stale photoshoots + 1 edit re-rendered via sdxl (agent 2c48ef72).
+- **New surfaces**: /shoots photoshoot view; strategy moodboard 9-tile grid (local sdxl); brandbook cover compose; campaign REROLL ×n batch; palette ACTION commands.
+- **A11y wave**: overlay focus trap/restore (5 surfaces), child-keydown guards, 40px tap targets, reduced-motion gates, 18-control focus rings.
+- **QA r4 fixes landed**: chipbar @390 bleed, websites imp-card expand toggle, qname overflow, leans/habits dedupe, telemetry humanized, moodboard-404 noise gone.
 - Data hygiene agent (9be154c8): freed 176 orphan assets / 64.5MB via new `POST /api/maintenance/prune-assets` (dry-default); dead `jobId`/`moodboardJob` markers swept at boot; `strategyStale` reconciliation; `lastStrategy` fully deprecated → live projection. smoke 15/15.
 - site-tpl published-site template polish verified live on `/s/site-51b4ce2d` (hero TOC, product splits, contrast tuning).
 

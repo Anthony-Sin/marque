@@ -152,6 +152,75 @@ input.pfv-in.pfv-name { font-size: 17px; font-weight: 600; }
 .pfv-trow .qloo-badge { align-self: flex-start; }
 .pfv-view .zone-head .qloo-badge { margin-left: auto; }
 
+/* ---------- brand library strip — profile.images, slot 1 = key ref ---------- */
+.pfv-kit { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(118px, 100%), 1fr)); gap: 10px; }
+.pfv-kit-item {
+  margin: 0; display: flex; flex-direction: column; min-width: 0; overflow: hidden;
+  border: 1px solid var(--line-soft); background: var(--bg-raise);
+}
+.pfv-kit-item.key { border-color: rgba(255, 176, 58, .5); }
+.pfv-kit-frame { position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: var(--card-3); }
+.pfv-kit-frame img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pfv-kit-key {
+  position: absolute; top: 6px; left: 6px; z-index: 2; cursor: help;
+  padding: 2px 7px 3px; background: var(--lime); color: var(--lime-ink);
+  font-family: var(--font-mono); font-size: 7.5px; font-weight: 700; letter-spacing: .2em;
+}
+/* hover-reveal ops — always on for touch, same pattern as .pfv-sw-x */
+.pfv-kit-ops {
+  position: absolute; top: 4px; right: 4px; z-index: 3;
+  display: flex; gap: 4px; opacity: 0; transition: opacity .15s;
+}
+.pfv-kit-item:hover .pfv-kit-ops, .pfv-kit-ops:focus-within { opacity: 1; }
+@media (hover: none) { .pfv-kit-ops { opacity: 1; } }
+.pfv-kit-op {
+  height: 22px; min-width: 22px; padding: 0 6px; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(6, 10, 8, .62); color: var(--ink);
+  font-family: var(--font-mono); font-size: 7.5px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+}
+.pfv-kit-op:hover { background: var(--lime); color: var(--lime-ink); }
+.pfv-kit-op.danger:hover { background: var(--rose); color: #2a1218; }
+.pfv-kit-op:disabled { opacity: .38; cursor: default; }
+.pfv-kit-op:disabled:hover { background: rgba(6, 10, 8, .62); color: var(--ink); }
+/* second tap of the remove confirm — a veil over the thumb, honest about scope */
+.pfv-kit-confirm {
+  position: absolute; inset: 0; z-index: 4;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 9px; padding: 9px; text-align: center;
+  background: rgba(8, 12, 10, .88); backdrop-filter: blur(2px);
+}
+.pfv-kit-confirm p { margin: 0; font-size: 10px; line-height: 1.45; color: var(--ink-2); }
+.pfv-kit-confirm-ops { display: flex; gap: 6px; }
+.pfv-kit-confirm-ops button {
+  border: 1px solid var(--line); background: var(--card-3); color: var(--ink-2);
+  font-family: var(--font-mono); font-size: 8px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase; padding: 5px 10px; cursor: pointer;
+}
+.pfv-kit-confirm-ops button:hover { border-color: var(--lime); color: var(--ink); }
+.pfv-kit-confirm-ops button.go { background: var(--rose); border-color: var(--rose); color: #2a1218; }
+.pfv-kit-confirm-ops button:disabled { opacity: .45; cursor: default; }
+.pfv-kit-cap {
+  padding: 6px 9px 7px;
+  font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.pfv-kit-item.key .pfv-kit-cap { color: var(--lime-2); }
+/* trailing dashed tile — same affordance language as .pfv-addsw */
+.pfv-kit-add {
+  position: relative; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 7px;
+  min-height: 118px; cursor: pointer;
+  border: 1px dashed var(--line); color: var(--ink-4);
+  font-family: var(--font-mono); font-size: 8.5px; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase;
+}
+.pfv-kit-add:hover { border-color: var(--lime); color: var(--lime-2); }
+.pfv-kit-add:focus-within { outline: 2px solid var(--lime); outline-offset: 1px; }
+.pfv-kit-add input[type="file"] { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+.pfv-kit-add.busy { pointer-events: none; opacity: .6; }
+
 /* ---------- stacking ---------- */
 @media (max-width: 1100px) {
   /* single scroll column — the view scrolls, zones stop clipping */

@@ -25,6 +25,13 @@ const fmtDate = (v) => {
 };
 // creatives store their render under imagePath / image.path / path — grab whichever exists
 const creativeImg = (cr) => cr?.image?.path || cr?.imagePath || cr?.path || '';
+// moodboard tile paths should be flat /assets/<file>; legacy rows can carry a
+// nested virtual path (/assets/sets/x.png) that both the static mount and the
+// thumb route 404 — normalize to the basename that's actually served.
+const moodSrc = (p) => {
+  const base = String(p || '').split('/').pop() || '';
+  return /^[\w][\w.-]*\.(?:png|jpe?g|webp|gif)$/i.test(base) ? `/assets/${base}` : '';
+};
 // a ctx board (no summary endpoints yet) → the summary shape the cards render
 const asSummary = (b) => b && ({
   id: b.id, title: b.title || 'Strategy board', createdAt: b.createdAt,
@@ -36,8 +43,9 @@ export default function Dashboard() {
   const nav = useNavigate();
   const [dash, setDash] = useState(undefined);   // undefined = loading
   const [work, setWork] = useState([]);          // recent campaigns enriched w/ thumbnails + grade
-  const [badImg, setBadImg] = useState({});      // creative thumbnails that failed to load → collapse
+  const [badImg, setBadImg] = useState({});      // creative/mood thumbnails that failed to load → collapse
   const [fullBoards, setFullBoards] = useState({}); // boardId → full board (strategy titles)
+  const [moods, setMoods] = useState({});        // boardId → moodboard tiles | null (fetched, none)
   const [renaming, setRenaming] = useState(null); // board id being renamed
   const [renameVal, setRenameVal] = useState('');
   const [deleting, setDeleting] = useState(null); // board summary pending confirm
@@ -85,6 +93,34 @@ export default function Dashboard() {
     return () => { dead = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boards, board?.id]);
+
+  // a plan with zero campaigns gets a real preview instead of dead space:
+  // the board's own moodboard tiles. The GET 404s until a board has run its
+  // ~1min gen job — that means "ghost", not an error, so it stays silent.
+  useEffect(() => {
+    if (dash === undefined) return;
+    const hasWork = new Set(campaigns.map((c) => c.boardId).filter(Boolean));
+    const want = boards.slice(0, 6).filter((b) => b.id && moods[b.id] === undefined && !hasWork.has(b.id));
+    if (!want.length) return;
+    let dead = false;
+    Promise.allSettled(want.map((b) => api.moodboard(b.id))).then((rs) => {
+      if (dead) return;
+      setMoods((m) => {
+        const n = { ...m };
+        rs.forEach((r, i) => {
+          const tiles = r.status === 'fulfilled'
+            ? (r.value?.moodboard?.tiles || [])
+              .map((t) => ({ src: moodSrc(t?.path), kind: t?.kind || '' }))
+              .filter((t) => t.src)
+            : [];
+          n[want[i].id] = tiles.length ? tiles : null;
+        });
+        return n;
+      });
+    });
+    return () => { dead = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [boards, dash]);
 
   // campaign thumbs: /api/dashboard campaigns carry no images — pull full
   // campaigns and grab the first creative thumbnail + best grade per campaign.
@@ -216,8 +252,8 @@ export default function Dashboard() {
             One prompt becomes a board of audience-grounded strategies —
             then ads, films, sites and the brand book flow from it.
           </p>
-          <Link className="btn lime" to="/strategy">
-            <Icon name="sparkle" size={16} /> Create your first strategy board
+          <Link className="btn lime" to="/strategy?new=1">
+            <Icon name="sparkle" size={16} /> Draft a strategy board →
           </Link>
         </div>
       ) : (
@@ -232,6 +268,12 @@ export default function Dashboard() {
               const titles = stratTitles(b);
               const extra = (b.strategyCount ?? 0) - titles.length;
               const planWork = work.filter((c) => c.boardId === b.id);
+              // zero-output middle fill — real moodboard tiles when the board
+              // has them; tiles whose thumb 404'd are dropped rather than
+              // rendered broken (all-gone falls back to the ghost)
+              const moodTiles = planWork.length ? [] : (moods[b.id] || [])
+                .filter((t) => !badImg[`mood:${b.id}:${t.src}`]).slice(0, 3);
+              const showGhost = !planWork.length && !moodTiles.length && moods[b.id] !== undefined;
               return (
                 <div key={b.id || b.title} className={`card dash-plan${active ? ' on' : ''}`}
                   role="button" tabIndex={0}
@@ -289,6 +331,26 @@ export default function Dashboard() {
                           <Icon name={chanIcon(c)} size={10} /> {chanLabel(c)}
                         </span>
                       ))}
+                    </div>
+                  )}
+                  {/* zero-campaign middle — a 3-tile slice of the board's
+                      moodboard when it exists; otherwise a dashed ghost that
+                      says so honestly. Never a fake or broken image. */}
+                  {!!moodTiles.length && (
+                    <div className="dash-plan-mood" aria-hidden="true">
+                      {moodTiles.map((t) => (
+                        <span key={t.src} className="dash-mood" title={t.kind ? `moodboard — ${t.kind}` : 'moodboard tile'}>
+                          <img src={thumb(t.src, 200)} alt="" loading="lazy"
+                            onError={() => setBadImg((m) => ({ ...m, [`mood:${b.id}:${t.src}`]: true }))} />
+                          {!!t.kind && <i className="dash-mood-kind">{t.kind}</i>}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {showGhost && (
+                    <div className="dash-plan-ghost">
+                      <Icon name="sparkle" size={12} />
+                      <span>no output yet — pick a strategy →</span>
                     </div>
                   )}
                   {/* base cluster — work strip + instrument stats + foot all

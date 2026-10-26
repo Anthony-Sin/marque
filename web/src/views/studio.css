@@ -897,14 +897,41 @@
 
 /* audit rail — sites on record */
 .ws-sites { display: flex; flex-direction: column; gap: 7px; border-top: 1px dashed var(--line-soft); padding-top: 12px; }
+.imp-lab {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: .17em; text-transform: uppercase; color: var(--ink-4);
+}
+/* row = bordered shell; the generator jump is the inner button so the live
+   chip + unpublish affordance can sit beside it without nesting interactives */
 .ws-site-row {
-  display: flex; flex-direction: column; gap: 2px; text-align: left;
-  padding: 7px 10px; background: var(--card); border: 1px solid var(--line-soft);
-  cursor: pointer; transition: border-color .16s;
+  display: flex; align-items: center; gap: 6px; padding-right: 8px;
+  background: var(--card); border: 1px solid var(--line-soft); transition: border-color .16s;
 }
 .ws-site-row:hover { border-color: rgba(255,176,58,.45); }
-.ws-site-name { font-size: 11.5px; font-weight: 600; color: var(--ink); }
-.ws-site-meta { font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3); letter-spacing: .04em; }
+.ws-site-main {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; text-align: left;
+  padding: 7px 10px; background: none; border: none; color: inherit;
+}
+.ws-site-main:focus-visible { outline: 2px solid var(--lime); outline-offset: -2px; }
+.ws-site-name { font-size: 11.5px; font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ws-site-meta { display: inline-flex; align-items: center; font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3); letter-spacing: .04em; }
+.ws-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ink-4); margin-right: 6px; flex: none; }
+.ws-dot.live { background: var(--lime); box-shadow: 0 0 6px rgba(255,176,58,.85); }
+.ws-site-acts { display: inline-flex; align-items: center; gap: 5px; flex: none; }
+.ws-live {
+  display: inline-flex; align-items: center; gap: 4px; max-width: 120px;
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .03em; color: var(--lime);
+  border: 1px solid rgba(255,176,58,.4); padding: 3px 7px;
+}
+.ws-live:hover { background: rgba(255,176,58,.12); }
+.ws-live-slug { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ws-unpub {
+  width: 19px; height: 19px; flex: none; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: 1px solid var(--line-soft); color: var(--ink-4);
+}
+.ws-unpub:hover:not(:disabled) { color: var(--rose); border-color: rgba(240,138,120,.55); }
+.ws-unpub .spinner { width: 9px; height: 9px; border-width: 1.5px; }
 
 /* console floor status line — hugs the panel bottom, fills the void honestly */
 .cp-console-foot {
@@ -1027,3 +1054,50 @@
 .ed-micro .grow { flex: 1; }
 .ed-micro-src { color: var(--ink-3); }
 .ed-micro-warn { color: var(--amber); }
+
+/* ══ audit re-run — the last audit stays mounted, dimmed under a progress veil,
+   and the fresh result swaps straight into it (no collapse, no layout jump) ══ */
+.imp-result { position: relative; }
+.imp-result .imp-dim { display: flex; flex-direction: column; gap: 12px; }
+.imp-dim { transition: filter .25s ease, opacity .25s ease; }
+.imp-result.busy .imp-dim, .imp-dim.off {
+  filter: grayscale(.92); opacity: .38; pointer-events: none; user-select: none;
+}
+/* transparent overlay that only hosts the card — the grayscale lives on
+   .imp-dim, so scrolled content dims too. pointer-events off: the veil never
+   eats wheel/clicks, the inert dim underneath handles input-blocking. */
+.imp-veil {
+  position: absolute; inset: 0; z-index: 5;
+  display: flex; flex-direction: column; align-items: center;
+  pointer-events: none;
+}
+.imp-veil-card {
+  position: sticky; top: 12px; margin-top: 12px;
+  display: flex; align-items: flex-start; gap: 12px;
+  width: min(360px, calc(100% - 24px)); padding: 12px 15px;
+  background: rgba(19,19,17,.95); border: 1px solid rgba(255,176,58,.42);
+  box-shadow: 0 12px 34px rgba(0,0,0,.5); backdrop-filter: blur(5px);
+}
+.imp-veil-card .spinner { width: 20px; height: 20px; border-width: 2px; flex: none; margin-top: 1px; }
+.imp-veil-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.imp-veil-txt > b { font-size: 13px; font-weight: 600; color: var(--ink); }
+.imp-veil-stage { font-size: 12px; color: var(--lime); }
+.imp-veil-note { font-size: 11px; color: var(--ink-4); line-height: 1.45; }
+/* first-run rail panel — same card in-flow (nothing exists to veil yet) */
+.imp-running .imp-veil-card { position: static; margin-top: 0; width: 100%; }
+/* the fix-bay veil sits on the section — start it below the zone-head */
+.ws-fix .imp-veil { top: 42px; }
+
+/* proper 'no audit yet' state for the fix bay — replaces the bare .empty line */
+.imp-empty {
+  flex: 1; min-height: 230px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 9px;
+  text-align: center; padding: 34px 26px; color: var(--ink-3);
+}
+.imp-empty-ic {
+  width: 46px; height: 46px; display: grid; place-items: center; color: var(--lime);
+  background: rgba(255,176,58,.08); border: 1px solid rgba(255,176,58,.3);
+}
+.imp-empty > b { font-size: 15px; font-weight: 600; color: var(--ink); }
+.imp-empty > p { margin: 0; max-width: 46ch; font-size: 12.5px; line-height: 1.5; }
+.imp-empty .spinner { width: 26px; height: 26px; border-width: 2.5px; }

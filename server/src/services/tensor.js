@@ -7,6 +7,34 @@ const JSON_SYS = 'You respond with raw JSON only. No markdown, no code fences, n
 
 export function tensorConfigured() { return !!(ENV.tensorBase && ENV.tensorKey); }
 
+// runtime health — tensorConfigured() only proves env vars exist. The last
+// real call's outcome is stamped by postCompletions, and a cached GET /models
+// probe verifies base+auth without burning chat tokens, so /api/status can
+// say whether the chat brain is actually reachable.
+let lastCall = null; // {ok:bool, at:epoch, error?:string}
+let probeCache = { at: 0, result: null };
+
+export function tensorLastCall() { return lastCall; }
+
+export async function tensorHealth({ probeTtlMs = 30000 } = {}) {
+  if (!tensorConfigured()) return { configured: false, ok: false };
+  if (probeCache.result && Date.now() - probeCache.at < probeTtlMs) return probeCache.result;
+  let result;
+  try {
+    const res = await fetch(`${ENV.tensorBase}/models`, {
+      signal: AbortSignal.timeout(6000),
+      headers: { authorization: `Bearer ${keyPool()[0] || ENV.tensorKey}` },
+    });
+    result = { configured: true, ok: res.ok, error: res.ok ? null : `tensor ${res.status}` };
+  } catch (e) {
+    result = { configured: true, ok: false, error: String(e?.message || e).slice(0, 160) };
+  }
+  result.lastCallOk = lastCall?.ok ?? null;
+  if (!result.ok || lastCall?.ok === false) result.lastError = result.error || lastCall?.error || null;
+  probeCache = { at: Date.now(), result };
+  return result;
+}
+
 // key pool — TENSOR_API_KEY first, then the GEMINI_API_KEYS pool. When the
 // endpoint is Google's OpenAI-compat shim every key works on it; a 429 free-
 // tier burn on one key rolls the request onto the next instead of failing.
@@ -40,6 +68,7 @@ async function postCompletions(payload, timeoutMs) {
           continue; // next key — then the delayed second pass
         }
         tKeyIdx = (tKeyIdx + i) % Math.max(1, keys.length);
+        lastCall = { ok: true, at: Date.now() }; // endpoint answered — reachable + authed
         return res;
       } catch (e) {
         lastErr = e; // timeout/network — still worth trying the next key
@@ -47,7 +76,9 @@ async function postCompletions(payload, timeoutMs) {
     }
     if (pass === 0) await new Promise((r) => setTimeout(r, 3500));
   }
-  throw lastErr || new Error('tensor: no API keys configured');
+  const err = lastErr || new Error('tensor: no API keys configured');
+  lastCall = { ok: false, at: Date.now(), error: String(err?.message || err).slice(0, 160) };
+  throw err;
 }
 
 // streaming variant — OpenAI-compatible SSE; onToken(delta) per chunk,

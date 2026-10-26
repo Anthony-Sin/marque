@@ -466,7 +466,7 @@ function assess(item, ctx) {
 // then each item is relevance-scored against the strategy's own material.
 // `hint` — free text the user types to steer the pull (creator names, formats,
 // vibes). Hint terms join the match context AND force one extra hunt per lane.
-export async function generateExamples({ strategy, profile, product = null, audienceRead, hint = '', qlooBundle }) {
+export async function generateExamples({ strategy, profile, product = null, audienceRead, hint = '', qlooBundle, partial = null }) {
   const brief = strategy?.brief || {};
   const ctx = buildContext({ strategy, profile, product, qlooBundle });
   const hintQ = String(hint || '').trim().slice(0, 120);
@@ -612,40 +612,52 @@ export async function generateExamples({ strategy, profile, product = null, audi
   // its own timeout) instead of holding the whole pull open
   const HUNT_DEADLINE = 55000;
   const perHunt = new Array(jobs.length).fill(null);
+  // pack() folds whatever has landed SO FAR into the response payload — the
+  // final return reads through it, and the caller's `partial` sink gets a
+  // fresh snapshot on every landed lane, so a route-level timeout can answer
+  // with the cards that made it in instead of throwing the work away.
+  const pack = () => {
+    const resolved = perHunt.flat().filter(Boolean);
+    // a hunt that resolved zero real artifacts (or is still mid-scrape at
+    // snapshot time) is marked failed — the UI lists it as "pull failed"
+    // instead of silently skipping
+    huntList.forEach((h, i) => { h.failed = !(perHunt[i] || []).length; });
+
+    // dedupe identical artifacts, score relevance, drop 0-scorers when better
+    // items exist — but never return an empty hand (honest fallback).
+    const seenUrl = new Set();
+    const deduped = resolved.filter((e) => {
+      // dedupe on artifact identity AND on normalized title — the same wiki page
+      // surfaces once per resolver with different urls
+      const tk = squash(e.title).replace(/\d+/g, '');   // "Chanel Alafaci 02/03/04" → one card
+      const k = e.url || e.embed || `${e.platform}:${e.title}`;
+      if (seenUrl.has(k) || (tk && seenUrl.has(`t:${tk}`))) return false;
+      seenUrl.add(k); if (tk) seenUrl.add(`t:${tk}`);
+      return true;
+    });
+    const scored = deduped.map((e) => ({ e, ...assess(e, ctx) }));
+    const positive = scored.filter((s) => s.score > 0).sort((a, b) => b.score - a.score);
+    // real artifacts only. zero-score scraped junk is dropped entirely — an
+    // empty hand with the hunts listed is honest; padded concept art was not.
+    let picked = positive.map((s) => s.e);
+    // fill out the board to ~15 cards with real (if looser) artifacts — a thin
+    // pull reads as broken; label honesty comes from the per-card match tag
+    if (picked.length < 15) {
+      const zeros = scored.filter((s) => s.score === 0).map((s) => s.e);
+      picked = picked.concat(zeros.slice(0, 15 - picked.length));
+    }
+    const matchOf = new Map(scored.map((s) => [s.e, s.match]));
+    const examples = picked.slice(0, 16).map((e) => ({ ...e, match: matchOf.get(e) || `matches channel: ${e.platform}` }));
+    return { examples, hunts: huntList, fetchedAt: new Date().toISOString() };
+  };
   await Promise.race([
-    Promise.all(jobs.map(async (j, i) => { perHunt[i] = await j; })),
+    Promise.all(jobs.map(async (j, i) => {
+      perHunt[i] = await j;
+      if (partial) partial.result = pack();   // live best-so-far for the route's timeout catch
+    })),
     new Promise((s) => setTimeout(s, HUNT_DEADLINE)),
   ]);
-  const resolved = perHunt.flat().filter(Boolean);
-  // a hunt that resolved zero real artifacts (or blew the deadline) is marked
-  // failed — the UI lists it as "pull failed" instead of silently skipping
-  huntList.forEach((h, i) => { if (!(perHunt[i] || []).length) h.failed = true; });
-  if (process.env.SCOUT_DEBUG) console.error('[scout] hunts:', hunts.map((h) => `${h.platform}:${h.query}`), '→ resolved:', resolved.length, resolved.map((e) => `${e.platform}:${String(e.title).slice(0, 40)}`));
-
-  // dedupe identical artifacts, score relevance, drop 0-scorers when better
-  // items exist — but never return an empty hand (honest fallback).
-  const seenUrl = new Set();
-  const deduped = resolved.filter((e) => {
-    // dedupe on artifact identity AND on normalized title — the same wiki page
-    // surfaces once per resolver with different urls
-    const tk = squash(e.title).replace(/\d+/g, '');   // "Chanel Alafaci 02/03/04" → one card
-    const k = e.url || e.embed || `${e.platform}:${e.title}`;
-    if (seenUrl.has(k) || (tk && seenUrl.has(`t:${tk}`))) return false;
-    seenUrl.add(k); if (tk) seenUrl.add(`t:${tk}`);
-    return true;
-  });
-  const scored = deduped.map((e) => ({ e, ...assess(e, ctx) }));
-  const positive = scored.filter((s) => s.score > 0).sort((a, b) => b.score - a.score);
-  // real artifacts only. zero-score scraped junk is dropped entirely — an
-  // empty hand with the hunts listed is honest; padded concept art was not.
-  let picked = positive.map((s) => s.e);
-  // fill out the board to ~15 cards with real (if looser) artifacts — a thin
-  // pull reads as broken; label honesty comes from the per-card match tag
-  if (picked.length < 15) {
-    const zeros = scored.filter((s) => s.score === 0).map((s) => s.e);
-    picked = picked.concat(zeros.slice(0, 15 - picked.length));
-  }
-  const matchOf = new Map(scored.map((s) => [s.e, s.match]));
-  const examples = picked.slice(0, 16).map((e) => ({ ...e, match: matchOf.get(e) || `matches channel: ${e.platform}` }));
-  return { examples, hunts: huntList, fetchedAt: new Date().toISOString() };
+  const out = pack();
+  if (process.env.SCOUT_DEBUG) console.error('[scout] hunts:', huntList.map((h) => `${h.platform}:${h.query}`), '→ resolved:', out.examples.length, out.examples.map((e) => `${e.platform}:${String(e.title).slice(0, 40)}`));
+  return out;
 }

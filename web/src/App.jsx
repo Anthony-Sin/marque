@@ -1,16 +1,23 @@
-import React, { useEffect, useState, useRef, createContext, useContext } from 'react';
+import React, { Suspense, lazy, useEffect, useState, useRef, createContext, useContext } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate, NavLink } from 'react-router-dom';
 import api from './api.js';
 import Icon, { Logo } from './components/Icon.jsx';
 import CommandPalette from './components/CommandPalette.jsx';
-import Onboarding from './views/Onboarding.jsx';
-import DashboardPage from './views/Dashboard.jsx';
-import StrategyPage from './views/Strategy.jsx';
-import CampaignsPage from './views/Campaigns.jsx';
-import WebsitesPage from './views/Websites.jsx';
-import PhotoshootPage from './views/Photoshoot.jsx';
-import BrandBookPage from './views/BrandBook.jsx';
-import ProfilePage from './views/Profile.jsx';
+import ModuleLoader from './loading.jsx';
+
+/* Route-level code splitting — every view is a lazy chunk fetched on first
+   navigation, so the boot bundle only carries the shell (rail, palette, ctx).
+   The rail/chrome stay eager for an instant shell; while a view chunk is in
+   flight the Suspense boundary shows the HUD "module boot" skeleton. Every
+   view exports a default component, so bare lazy(() => import()) suffices. */
+const Onboarding = lazy(() => import('./views/Onboarding.jsx'));
+const DashboardPage = lazy(() => import('./views/Dashboard.jsx'));
+const StrategyPage = lazy(() => import('./views/Strategy.jsx'));
+const CampaignsPage = lazy(() => import('./views/Campaigns.jsx'));
+const WebsitesPage = lazy(() => import('./views/Websites.jsx'));
+const PhotoshootPage = lazy(() => import('./views/Photoshoot.jsx'));
+const BrandBookPage = lazy(() => import('./views/BrandBook.jsx'));
+const ProfilePage = lazy(() => import('./views/Profile.jsx'));
 
 export const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
@@ -201,6 +208,10 @@ export default function App() {
           {profile === undefined ? (
             <div className="loading-wrap"><div className="spinner" /></div>
           ) : (
+          /* one boundary for every lazy view — the boot skeleton replaces only
+             the viewport, never the rail; a fresh mount per route is the
+             intended behavior (views already remount on navigation) */
+          <Suspense fallback={<ModuleLoader />}>
           <Routes>
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/" element={<DashboardPage />} />
@@ -217,6 +228,7 @@ export default function App() {
             <Route path="/brand-book" element={<Navigate to="/brandbook" replace />} />
             <Route path="*" element={<Navigate to={inApp ? '/dashboard' : '/onboarding'} replace />} />
           </Routes>
+          </Suspense>
           )}
         </div>
       </div>

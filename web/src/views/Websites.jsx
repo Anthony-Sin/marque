@@ -14,6 +14,8 @@ const EDIT_STAGES = ['Reworking the layout…', 'Rewriting the copy…', 'Polish
 const IMPROVE_STAGES = ['Scraping your site…', 'Checking linked socials…', 'Reading audience-adjacent brands…', 'Ranking fixes by impact…'];
 
 const absUrl = (u) => (!u ? '' : /^https?:\/\//i.test(u) ? u : `https://${u}`);
+// bare host for run-copy titles ('huel.com'), '' when the input isn't a url yet
+const host = (u) => { try { return new URL(absUrl(u)).hostname.replace(/^www\./, ''); } catch { return ''; } };
 const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : '');
 const SOC_ICON = { instagram: 'image', tiktok: 'film', youtube: 'play', x: 'share', twitter: 'share', facebook: 'share', linkedin: 'book', pinterest: 'image' };
 const socIcon = (p) => SOC_ICON[String(p || '').toLowerCase()] || 'link';
@@ -78,6 +80,23 @@ function ImpSug({ s }) {
   );
 }
 
+// audit progress card — shared by the rail veil (re-run over the dimmed audit),
+// the first-run inline panel and the fix-bay veil. /api/websites/improve is one
+// synchronous call — there's no job object — so stage copy rotates client-side
+// over an honest duration note instead of pretending to know live progress.
+function AuditRun({ title, stage }) {
+  return (
+    <div className="imp-veil-card">
+      <span className="spinner" />
+      <span className="imp-veil-txt">
+        <b>{title}</b>
+        <span className="imp-veil-stage">{stage}</span>
+        <span className="imp-veil-note">About a minute — pulls from your live site + the taste graph.</span>
+      </span>
+    </div>
+  );
+}
+
 // "what to steal" row — same clamp→tap-to-expand contract as the fix cards
 function ImpSteal({ n, i }) {
   const { ref, open, expandable, expandProps } = useClampToggle('.imp-steal-txt', [n.steal]);
@@ -105,6 +124,7 @@ export default function Websites() {
   const [imp, setImp] = useState(null);            // improveWebsite result
   const [impErr, setImpErr] = useState('');
   const [impBusy, setImpBusy] = useState(false);
+  const [unpubId, setUnpubId] = useState(null);    // site row mid-unpublish
   const stageNote = useStages(busy === 'edit' ? EDIT_STAGES : CREATE_STAGES, busy === 'create' || busy === 'edit');
   const impStage = useStages(IMPROVE_STAGES, impBusy, 2000);
   const [siteId, setSiteId] = useState(null);      // which generated site is shown (default: newest)
@@ -200,9 +220,23 @@ export default function Websites() {
     setBusy('');
   };
 
+  // per-row unpublish on the audit rail — same helper the PublishBar uses
+  const unpubSite = async (id) => {
+    if (unpubId) return;
+    setUnpubId(id);
+    try {
+      await api.unpublishWebsite(id);
+      setSites((ss) => ss.map((s) => (s.id === id ? { ...s, publishedSlug: null } : s)));
+      say('Unpublished');
+    } catch (e) { say(e.message); }
+    setUnpubId(null);
+  };
+
   // ---------- improve my site ----------
   const analyze = async () => {
-    if (impBusy) return;
+    // empty input has no fallback — the server 422s when profile.source is
+    // unset, so guard here and mirror it on the button's disabled state
+    if (impBusy || !impUrl.trim()) return;
     setImpBusy(true); setImpErr('');
     try {
       setImp(await api.improveWebsite(impUrl.trim() || undefined));
@@ -240,7 +274,7 @@ export default function Websites() {
                   onKeyDown={(e) => { if (e.key === 'Enter') analyze(); }}
                 />
               </span>
-              <button className="btn lime" disabled={impBusy} onClick={analyze}>
+              <button className="btn lime" disabled={impBusy || !impUrl.trim()} onClick={analyze}>
                 {impBusy ? <span className="spinner" /> : <Icon name="sparkle" />}
                 {impBusy ? 'Analyzing…' : 'Analyze vs competitors'}
               </button>
@@ -254,8 +288,12 @@ export default function Websites() {
             )}
           </div>
 
-          {impBusy && (
-            <div className="gen-note"><span className="spinner" />{impStage}</div>
+          {/* first run — no audit on record to keep on screen, so the progress
+              card takes the rail in-flow instead of veiling empty space */}
+          {impBusy && !imp && (
+            <div className="imp-running">
+              <AuditRun title={`Auditing ${host(impUrl) || 'your site'}`} stage={impStage} />
+            </div>
           )}
 
           {impErr && !impBusy && (
@@ -265,43 +303,52 @@ export default function Websites() {
             </div>
           )}
 
-          {imp && !impBusy && (
-            <>
-              <div className="muted small">
-                Audit of {imp.url || 'your site'}{imp.at ? ` · from ${fmtDate(imp.at)}` : ''}
-              </div>
-              {(!!impSocials.length || !!impMissing.length) && (
-                <div className="card pad imp-soc-card">
-                  <div className="section-label" style={{ margin: '0 0 12px' }}>Socials</div>
-                  <div className="chip-row">
-                    {impSocials.map(([plat, href]) => (
-                      <a key={plat} className="imp-soc" href={absUrl(href)} target="_blank" rel="noopener noreferrer">
-                        <Icon name={socIcon(plat)} size={13} /> {plat}
-                      </a>
-                    ))}
-                    {impMissing.map((p) => (
-                      <span key={p} className="imp-miss" title={`Link ${cap(p)} on your site so we can plan for it`}>
-                        <Icon name="x" size={11} /> No {cap(p)} linked on your site
-                      </span>
-                    ))}
+          {/* re-run — the last audit stays mounted under a grayscale veil; the
+              new result swaps straight into it, so nothing collapses or jumps */}
+          {imp && (
+            <div className={`imp-result${impBusy ? ' busy' : ''}`} aria-busy={impBusy || undefined}>
+              <div className="imp-dim">
+                <div className="muted small">
+                  Audit of {imp.url || 'your site'}{imp.at ? ` · from ${fmtDate(imp.at)}` : ''}
+                </div>
+                {(!!impSocials.length || !!impMissing.length) && (
+                  <div className="card pad imp-soc-card">
+                    <div className="section-label" style={{ margin: '0 0 12px' }}>Socials</div>
+                    <div className="chip-row">
+                      {impSocials.map(([plat, href]) => (
+                        <a key={plat} className="imp-soc" href={absUrl(href)} target="_blank" rel="noopener noreferrer">
+                          <Icon name={socIcon(plat)} size={13} /> {plat}
+                        </a>
+                      ))}
+                      {impMissing.map((p) => (
+                        <span key={p} className="imp-miss" title={`Link ${cap(p)} on your site so we can plan for it`}>
+                          <Icon name="x" size={11} /> No {cap(p)} linked on your site
+                        </span>
+                      ))}
+                    </div>
                   </div>
+                )}
+
+                {!!impSteals.length && (
+                  <div className="card pad imp-steal-card">
+                    <div className="section-label" style={{ margin: '0 0 6px' }}>What to steal</div>
+                    {impSteals.map((n, i) => <ImpSteal key={i} n={n} i={i} />)}
+                    {!!impComps.length && (
+                      <div className="imp-note" style={{ textAlign: 'left' }}>Benchmarked against: {impComps.join(', ')}</div>
+                    )}
+                  </div>
+                )}
+
+                {!impSteals.length && !!impComps.length && (
+                  <div className="imp-note">Benchmarked against: {impComps.join(', ')}</div>
+                )}
+              </div>
+              {impBusy && (
+                <div className="imp-veil">
+                  <AuditRun title={`Re-auditing ${host(impUrl) || 'your site'} — last audit stays put`} stage={impStage} />
                 </div>
               )}
-
-              {!!impSteals.length && (
-                <div className="card pad imp-steal-card">
-                  <div className="section-label" style={{ margin: '0 0 6px' }}>What to steal</div>
-                  {impSteals.map((n, i) => <ImpSteal key={i} n={n} i={i} />)}
-                  {!!impComps.length && (
-                    <div className="imp-note" style={{ textAlign: 'left' }}>Benchmarked against: {impComps.join(', ')}</div>
-                  )}
-                </div>
-              )}
-
-              {!impSteals.length && !!impComps.length && (
-                <div className="imp-note">Benchmarked against: {impComps.join(', ')}</div>
-              )}
-            </>
+            </div>
           )}
 
           {/* what's already on record — real sites, real publish state */}
@@ -309,34 +356,61 @@ export default function Websites() {
             <div className="ws-sites">
               <div className="imp-lab">Sites on record</div>
               {[...sites].reverse().slice(0, 4).map((s, i) => (
-                <button key={s.id} type="button" className="ws-site-row"
-                  title="Open this site in the generator"
-                  onClick={() => { setTab('site'); setSiteId(s.id); setVid(null); }}>
-                  <span className="ws-site-name">
-                    Site {sites.length - i}{s.producedFrom?.campaignTitle ? ` — ${s.producedFrom.campaignTitle}` : ''}
-                  </span>
-                  <span className="ws-site-meta">
-                    {fmtDate(s.createdAt)}{s.publishedSlug ? ` · live /s/${s.publishedSlug}` : ' · not published'}
-                  </span>
-                </button>
+                <div key={s.id} className="ws-site-row">
+                  <button type="button" className="ws-site-main"
+                    title="Open this site in the generator"
+                    onClick={() => { setTab('site'); setSiteId(s.id); setVid(null); }}>
+                    <span className="ws-site-name">
+                      Site {sites.length - i}{s.producedFrom?.campaignTitle ? ` — ${s.producedFrom.campaignTitle}` : ''}
+                    </span>
+                    <span className="ws-site-meta">
+                      <i className={`ws-dot${s.publishedSlug ? ' live' : ''}`} aria-hidden="true" />
+                      {fmtDate(s.createdAt)} · {s.publishedSlug ? 'live' : 'draft'}
+                    </span>
+                  </button>
+                  {!!s.publishedSlug && (
+                    <span className="ws-site-acts">
+                      <a className="ws-live" href={`/s/${s.publishedSlug}`} target="_blank" rel="noopener noreferrer"
+                        title={`Open the live page — /s/${s.publishedSlug}`}>
+                        <Icon name="link" size={11} /><span className="ws-live-slug">/s/{s.publishedSlug}</span>
+                      </a>
+                      <button type="button" className="ws-unpub" title="Unpublish this site"
+                        disabled={unpubId === s.id} onClick={() => unpubSite(s.id)}>
+                        {unpubId === s.id ? <span className="spinner" /> : <Icon name="x" size={11} />}
+                      </button>
+                    </span>
+                  )}
+                </div>
               ))}
             </div>
           )}
         </div>
       </section>
-      <section className="card hud cp-panel ws-fix">
+      <section className="card hud cp-panel ws-fix" aria-busy={impBusy || undefined}>
         <div className="zone-head"><span className="z-id">FIX</span>Fix list — ranked by impact{!!impSugs.length && <span className="z-tag">{impSugs.length}</span>}</div>
         <div className="cp-panel-body">
           {!!impSugs.length ? (
-            <div className="grid c2">
+            <div className={`grid c2 imp-dim${impBusy ? ' off' : ''}`}>
               {impSugs.map((s, i) => <ImpSug key={i} s={s} />)}
             </div>
           ) : (
-            <div className="empty">
-              <p>{impBusy ? 'Audit running — fixes will land here ranked by impact.' : 'Run an audit to populate a ranked fix list.'}</p>
+            <div className="imp-empty">
+              {impBusy ? <span className="spinner" /> : <span className="imp-empty-ic"><Icon name="site" size={22} /></span>}
+              <b>{impBusy ? 'Audit running' : 'No audit yet'}</b>
+              {impBusy && <span className="imp-veil-stage">{impStage}</span>}
+              <p>{impBusy
+                ? 'The fix list lands here ranked by impact × effort.'
+                : 'Run the analysis and your fixes land here — each card ranked by impact × effort, benchmarked against the brands your audience already loves.'}</p>
             </div>
           )}
         </div>
+        {/* fix cards stay mounted mid re-run — the veil sits on the panel, not
+            the scroller, so it covers exactly what's on screen at any scroll */}
+        {impBusy && !!impSugs.length && (
+          <div className="imp-veil">
+            <AuditRun title="Re-ranking fixes against the new audit" stage={impStage} />
+          </div>
+        )}
       </section>
     </div>
   );

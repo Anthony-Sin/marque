@@ -9,7 +9,7 @@ import { tuning } from '../tuning.js';
 
 const BRIEF_SYS = `You are a senior marketing strategist. Given a brand profile and a campaign prompt, return JSON:
 {"title":"campaign name","angle":"one line positioning angle","audience":"who this targets","keyMessage":"the single message","channels":[2-4 of "instagram","tiktok","facebook","email","print","web"],"suggestions":[{...2 more alternative briefs as {"title","angle","keyMessage"}}]}.
-Ground everything in the brand's tone, audience and taste signals.`;
+Ground everything in the brand's tone, audience and taste signals. angle and keyMessage must be concrete — name the product, offer or audience moment — never generic slogans that could sit on any brand's ad.`;
 
 export function flattenAffinities(profile) {
   const out = [];
@@ -97,8 +97,13 @@ export async function generateBrief({ prompt, productId, ingredients, boardId, s
   return { brief: out, suggestions, qlooSignals: pickQlooSignals(profile, `${prompt || ''} ${out.title} ${out.angle}`, 5, srcBoard) };
 }
 
-const COPY_SYS = `You are a social-media copywriter writing ad creative for feeds (Instagram/TikTok/YouTube). Return JSON {"headline","body","cta","layout":{"vpos","hpos"}}.
-Rules: headline <= 7 words and MUST be a scroll-stopping hook written for the target audience — specific, punchy, native to social (never generic slogans like "records reality" or "the neutral standard"); body <= 15 words, conversational, drives the key message; cta <= 4 words and action-first ("See it in action", "Grab yours"). layout.vpos: "top"|"middle"|"bottom"; layout.hpos: "left"|"center"|"right" — where text should sit on the image.`;
+const COPY_SYS = `You are a direct-response copywriter writing overlay copy for social ads (Instagram/TikTok/YouTube). Return JSON {"headline","body","cta","layout":{"vpos","hpos"}}.
+Every line must be concrete and tied to THIS brief — the product, the offer, a number, an ingredient, a real feature. If a line could run unchanged on a competitor's ad, rewrite it.
+headline <= 7 words: a scroll-stopping hook for the target audience, driven by the brief's angle (offer → name the offer; proof → name the proof; product → name what it does). Never a generic slogan ("records reality", "the neutral standard", "elevate your routine").
+body <= 15 words: conversational, carries the key message with one concrete detail — never restates the headline.
+cta <= 3 words: verb-first and names what the viewer gets or does ("Watch it work", "Try the sampler", "Claim 20% off").
+BANNED — never output these clichés in any field: "learn more", "shop now", "click here", "buy now", "discover", "elevate your", "unlock", "unleash", "level up", "game-changer", "don't miss out". No invented urgency — urgency only when the brief has a real offer.
+layout.vpos: "top"|"middle"|"bottom"; layout.hpos: "left"|"center"|"right" — where text should sit on the image.`;
 
 const ANGLES = tuning('creativeAngles');
 const CAPS = tuning('copyBudgets');
@@ -165,7 +170,7 @@ function composeImagePrompt(campaign, profile, copy, product, angle) {
     campaign.brief?.angle ? `Campaign angle: ${campaign.brief.angle}.` : '',
     product ? `Featuring: "${product.name}"${product.description ? ` — ${product.description}` : ''}.` : '',
     `CRITICAL: absolutely NO text, words, letters, typography, logos, captions, labels or watermarks anywhere in the image — that means NO newspapers, magazines, books, posters, packaging, signage, screens or any printed materials; plain unmarked objects and surfaces only.`,
-    `Compose with clean, uncluttered negative space in the ${space} (a headline will be overlaid there later) — keep the subject away from that zone.`,
+    `Compose so the ${space} stays visually calm — an uncluttered photographic backdrop with the subject kept clear of that zone (a headline will be overlaid there later).`,
     `Art direction palette: primary ${c.primary}, secondary ${c.secondary}, accent ${c.accent}.`,
     profile?.tone?.length ? `Mood: ${profile.tone.join(', ')}.` : '',
     affNames ? `Cultural vibe for art direction: ${affNames}.` : '',
@@ -191,7 +196,7 @@ export function placeholderCreative(profile, copy) {
 // agentic plan — the model picks each creative's medium + angle from the
 // brief/product/notes so output isn't one fixed medium: product demos, video
 // spots, stills, copy-led cards all on the table depending on the ask.
-async function planCreatives(campaign, profile, product, n) {
+export async function planCreatives(campaign, profile, product, n) {
   try {
     const j = await chatJSON([
       { role: 'system', content: 'You plan ad creatives for a campaign. Strict JSON only.' },
@@ -202,8 +207,8 @@ async function planCreatives(campaign, profile, product, n) {
           product?.name ? `Product: ${product.name}${product.description ? ` — ${String(product.description).slice(0, 200)}` : ''}.` : '',
           campaign.notes ? `Notes: ${campaign.notes}` : '',
           `Return {"items":[{"angle","medium","format","direction","badge","overlayStyle","score"}]} — exactly ${n} items.`,
-          `angle = the creative angle (short). medium = "video" | "image" | "copy" — pick video when the brief/notes ask for demos, motion, how-it-works, before/after or the product benefits from movement; image for stills; copy for text-led cards. format = platform shape ("reel","spot","carousel","billboard"). direction = one line of shot/art direction.`,
-          `badge = short offer/claim sticker ("NEW","4.9★","LIMITED") or "" when none fits. overlayStyle = one of performance|ugc|editorial|marker|brutalist|glass — pick the treatment that fits the angle (ugc for creator-style, editorial for luxury, performance for direct-response). score = your predicted thumbstop strength 40-98 (honest estimate, not random).`,
+          `angle = the creative angle (short, specific to this brief — name the product/offer/audience moment, not a generic label like "lifestyle"). medium = "video" | "image" | "copy" — pick video when the brief/notes ask for demos, motion, how-it-works, before/after or the product benefits from movement; image for stills; copy for text-led cards. format = platform shape ("reel","spot","carousel","billboard"). direction = one line of shot/art direction naming the real subject in a real moment, not "product on gradient".`,
+          `badge = a real claim/label sticker the brief supports — a rating, category tag, certification or true offer ("NEW DROP","4.9★","VEGAN","SPF 50","LIMITED","2-FOR-1") — never filler ("PROMO","WOW","HOT","BEST") and "" when nothing factual fits. overlayStyle = one of performance|ugc|editorial|marker|brutalist|glass — pick the treatment that fits the angle (ugc for creator-style, editorial for luxury, performance for direct-response). score = your predicted thumbstop strength 40-98 (honest estimate, not random).`,
           campaign.medium === 'video'
             ? `Every item MUST be medium "video" — this is a video-first production run (demos, spots, motion). Directions should read like shot lists.`
             : campaign.medium === 'image'
@@ -227,7 +232,28 @@ async function planCreatives(campaign, profile, product, n) {
   } catch { return null; }
 }
 
-async function oneCreative(campaign, profile, product, angle, plan = null) {
+// cliché screen — COPY_SYS bans these phrases; a model that parrots one anyway
+// loses the line to an honest fallback instead of shipping filler on the overlay
+const CLICHE = /\b(learn more|shop now|click here|buy now|discover|elevate your|unlock|unleash|level up|game.?changer|don'?t miss out)\b/i;
+
+// honest CTA when the model omits one or echoes a cliché — the channel's own
+// verb pointed at what the creative actually is; "" drops the pill entirely
+// (print has no tap target, an invented CTA there reads faker than none)
+function fallbackCta(campaign, product, plan) {
+  const ch = (campaign.brief?.channels || [])[0] || 'instagram';
+  if (ch === 'print') return '';
+  const angle = `${plan?.angle || ''} ${campaign.brief?.angle || ''} ${campaign.brief?.title || ''}`;
+  if (/offer|deal|sale|discount|launch|drop|limited/i.test(angle)) return 'Get the offer';
+  const name = String(product?.name || '').trim();
+  const named = name && name.length <= 24 && name.split(/\s+/).length <= 2 ? `Try ${name}` : null;
+  if (ch === 'email' || ch === 'web') return product?.site ? 'Visit the site' : named || 'See it live';
+  if (plan?.medium === 'video' || ch === 'tiktok') return 'Watch it work';
+  return named || 'See it live';
+}
+
+// the copy pass alone — exported so tests/harnesses can exercise real model
+// output without paying for image gen
+export async function writeCopy(campaign, profile, product, angle, plan = null) {
   const copy = await chatJSON([
     { role: 'system', content: COPY_SYS },
     {
@@ -240,15 +266,22 @@ async function oneCreative(campaign, profile, product, angle, plan = null) {
       }),
     },
   ], { maxTokens: 3000 });
-  const safe = {
-    headline: String(copy?.headline || campaign.brief?.title || profile?.name || 'New').split(' ').slice(0, CAPS.headlineMaxWords).join(' '),
-    body: String(copy?.body || campaign.brief?.keyMessage || '').split(' ').slice(0, CAPS.bodyMaxWords).join(' '),
-    cta: String(copy?.cta || 'Learn more').split(' ').slice(0, CAPS.ctaMaxWords).join(' '),
+  const ctaIn = String(copy?.cta || '').trim();
+  const headIn = String(copy?.headline || '');
+  const bodyIn = String(copy?.body || '');
+  return {
+    headline: String((headIn && !CLICHE.test(headIn) && headIn) || campaign.brief?.title || profile?.name || 'New').split(' ').slice(0, CAPS.headlineMaxWords).join(' '),
+    body: String((bodyIn && !CLICHE.test(bodyIn) && bodyIn) || campaign.brief?.keyMessage || '').split(' ').slice(0, CAPS.bodyMaxWords).join(' '),
+    cta: (ctaIn && !CLICHE.test(ctaIn) ? ctaIn : fallbackCta(campaign, product, plan)).split(' ').slice(0, CAPS.ctaMaxWords).join(' '),
     layout: {
       vpos: ['top', 'middle', 'bottom'].includes(copy?.layout?.vpos) ? copy.layout.vpos : 'bottom',
       hpos: ['left', 'center', 'right'].includes(copy?.layout?.hpos) ? copy.layout.hpos : 'left',
     },
   };
+}
+
+async function oneCreative(campaign, profile, product, angle, plan = null) {
+  const safe = await writeCopy(campaign, profile, product, angle, plan);
   const creative = { id: uid(), headline: safe.headline, body: safe.body, cta: safe.cta, layout: safe.layout, angle, cleanImage: true };
   // resolve the real brand for the lockup — product name first, then the
   // product half of a "Campaign — Product" brief title, never a template name

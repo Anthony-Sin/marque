@@ -10,7 +10,7 @@ const execFileP = promisify(execFile);
 import { PORT, ASSETS_DIR, WEB_DIST, ENV, DATA_DIR, MOCKUPS_DIR, ROOT } from './config.js';
 import { tuning } from './tuning.js';
 import * as store from './services/store.js';
-import { chat, chatJSON, tensorConfigured } from './services/tensor.js';
+import { chat, chatJSON, tensorConfigured, tensorHealth } from './services/tensor.js';
 import { devinCliAvailable, devinCliChat, devinCliInspect } from './services/devinCli.js';
 import { geminiConfigured } from './services/gemini.js';
 import { genImageResilient, genVideoResilient, localgenHealth } from './services/media.js';
@@ -127,9 +127,21 @@ app.get('/api/jobs/:id', (req, res) => {
 app.get('/api/status', h(async (_req, res) => {
   const q = qloo.status();
   const lg = await localgenHealth().catch(() => ({ ok: false }));
+  const th = await tensorHealth().catch(() => ({ configured: tensorConfigured(), ok: false }));
   ok(res, {
     tensor: tensorConfigured(), devin: devinCliAvailable(), gemini: geminiConfigured(), qloo: q.mode, qlooNote: q.note,
     localgen: { configured: !!ENV.localgenUrl, mode: ENV.localgenProvider || 'off', ok: !!lg.ok, model: lg.model },
+    // the chat/copy brain — /api/agent and every chatJSON consumer answer
+    // through tensor only (devin-cli is agentic tooling, never a chat
+    // fallback; gemini service is pixels), so report the real provider and
+    // live reachability, not just "env vars exist"
+    agent: {
+      provider: th.configured === false ? null : 'tensor',
+      model: th.configured === false ? null : ENV.tensorModel,
+      ok: !!th.ok,
+      ...(th.lastCallOk != null ? { lastCallOk: th.lastCallOk } : {}),
+      ...(th.lastError ? { error: th.lastError } : {}),
+    },
   });
 }));
 
@@ -431,13 +443,24 @@ app.post('/api/strategy/examples', h(async (req, res) => {
   const exBoard = (boardId && find('boards', boardId)) || resolveActiveBoard();
   const product = exBoard?.sub?.productId ? find('catalog', exBoard.sub.productId) : null;
   // hard cap — the pull itself deadline-collects its hunts, but a stuck
-  // planner must never hold the request open
-  const data = await Promise.race([
-    generateExamples({ strategy, profile: brand.currentProfile(), audienceRead, product, hint, qlooBundle: exBoard?.qlooBundle }),
-    new Promise((_, rej) => setTimeout(() => rej(new Error('reference pull timed out — sources were slow. Hit Retry')), 90000)),
-  ]);
+  // planner must never hold the request open. `partial` collects the pull's
+  // live best-so-far payload as hunts land: if the race times out (or the
+  // pull dies mid-flight) with cards already in hand, answer 200 with them
+  // instead of throwing the work away. Literally zero landed → keep the error.
+  const partial = {};
+  let data;
+  try {
+    data = await Promise.race([
+      generateExamples({ strategy, profile: brand.currentProfile(), audienceRead, product, hint, qlooBundle: exBoard?.qlooBundle, partial }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('reference pull timed out — sources were slow. Hit Retry')), tuning('examplePullTimeoutMs', 90000))),
+    ]);
+  } catch (e) {
+    if (!partial.result?.examples?.length) throw e;
+    data = { ...partial.result, partial: true, note: 'partial pull — some sources timed out' };
+  }
   if (exCache.size > tuning('exampleCacheSize')) exCache.clear();
-  exCache.set(key, data);
+  // a partial hand is never cached — "Re-pull" must re-scrape, not re-serve it
+  if (!data.partial) exCache.set(key, data);
   ok(res, data);
 }));
 
@@ -852,7 +875,7 @@ app.post('/api/creatives/:id/regenerate-image', h(async (req, res) => {
     `Editorial ad photograph for "${brandName}", ${hit.campaign.aspectRatio || '1:1'} composition native to ${(hit.campaign.brief?.channels || [])[0] || 'instagram'} — strong focal subject, real platform content feel, not a generic stock gradient.`,
     hit.campaign.brief?.angle ? `Campaign angle: ${hit.campaign.brief.angle}.` : '',
     prod ? `Featuring: "${prod.name}"${prod.description ? ` — ${prod.description}` : ''}.` : '',
-    `CRITICAL: absolutely NO text, words, letters, typography, logos, captions or watermarks — NO newspapers, magazines, books, posters, packaging, signage, screens or printed materials; plain unmarked objects only. Clean negative space in the ${space} for a headline overlay.`,
+    `CRITICAL: absolutely NO text, words, letters, typography, logos, captions or watermarks — NO newspapers, magazines, books, posters, packaging, signage, screens or printed materials; plain unmarked objects only. Keep the ${space} visually calm — uncluttered photographic backdrop there for a headline overlay.`,
     `Art direction palette: ${c.primary}, ${c.secondary}, accent ${c.accent}.`,
     profile?.tone?.length ? `Mood: ${profile.tone.join(', ')}.` : '',
     affNames ? `Cultural vibe for art direction: ${affNames}.` : '',

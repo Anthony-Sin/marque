@@ -155,5 +155,6 @@
   },
   "agentMaxSteps": 6,
   "videoPollTimeoutMs": 360000,
-  "exampleCacheSize": 30
+  "exampleCacheSize": 30,
+  "examplePullTimeoutMs": 90000
 }

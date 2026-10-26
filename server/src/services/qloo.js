@@ -1,6 +1,7 @@
 // Qloo Taste AI client (GET-only). Every call carries an evidence-trail record.
 // NO fallbacks: a call is 'live' or 'error' — failures surface as failures.
 import { ENV } from '../config.js';
+import { readBodyCapped } from './scraper.js';
 
 const normId = (e) => e.id || e.entity_id || e.entityId;
 const normEntity = (e) => {
@@ -31,11 +32,14 @@ async function qget(path, params) {
     headers: { 'X-Api-Key': ENV.qlooKey },
     signal: AbortSignal.timeout(20000),
   });
+  // the 20s signal bounds TIME, not bytes — res.json() would buffer a
+  // runaway body whole. Cap it: a truncated payload fails JSON.parse below
+  // and lands in the error record, never a silently-cut result.
+  const body = (await readBodyCapped(res, { max: 8_000_000, timeoutMs: 20000 })).text;
   if (!res.ok) {
-    const body = await res.text().catch(() => '');
     throw new Error(`qloo ${res.status} ${path}${body ? ` — ${body.slice(0, 160)}` : ''}`);
   }
-  return res.json();
+  return JSON.parse(body);
 }
 
 // one call: live, or an error record with the real reason — never synthesized

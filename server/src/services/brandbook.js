@@ -71,14 +71,14 @@ export function htmlBook(book, profile, { printHint = false } = {}) {
   const dark = (lum(bg) ?? 1) < 0.45;
   const ink = rgb(c.text) && contrast(c.text, bg) >= 3 ? c.text : bestInk(bg);
   const mut = mix(ink, bg, 0.58) || (dark ? '#9a958c' : '#6f6a60');
-  const line = mix(ink, bg, 0.16) || (dark ? '#333026' : '#ddd8cc');
-  const sf = rgb(c.surface) && contrast(c.surface, bg) > 1.04 ? c.surface : (mix(ink, bg, 0.05) || bg);
+  const line = mix(bg, ink, 0.14) || (dark ? '#333026' : '#ddd8cc');
+  const sf = rgb(c.surface) && contrast(c.surface, bg) > 1.04 ? c.surface : (mix(bg, ink, 0.05) || bg);
   const acc = rgb(c.accent) ? c.accent : (rgb(c.primary) ? c.primary : ink);
   const accInk = bestInk(acc);
   const band = rgb(c.primary) && contrast(c.primary, bg) >= 2.2 ? c.primary : (acc !== ink ? acc : (dark ? '#f6f2ea' : '#181410'));
   const bandInk = bestInk(band);
   const bandMut = mix(bandInk, band, 0.62) || mut;
-  const bandLine = mix(bandInk, band, 0.3) || line;
+  const bandLine = mix(band, bandInk, 0.3) || line;
 
   // ---- fonts: the book loads the faces it specifies ----
   const gf = [...new Set([f.heading, f.body].map(googleFont).filter(Boolean))];

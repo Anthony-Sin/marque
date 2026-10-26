@@ -1,0 +1,73 @@
+/* EvidenceDrawer — forensic call-trail panel. Component-scoped (ev-* only),
+   layered on the shared .drawer / .affin-* primitives. HUD grammar: mono
+   micro-labels, hairline borders, amber = the accent, teal = live/ok,
+   rose = failure. Every number shown here derives from the call records —
+   nothing is dressed up. */
+
+/* ---------- summary strip ---------- */
+.ev-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+  border: 1px solid var(--line-soft); margin: 14px 0 0;
+}
+.ev-stat { padding: 8px 9px 7px; border-right: 1px solid var(--line-soft); min-width: 0; }
+.ev-stat:last-child { border-right: 0; }
+.ev-stat b {
+  display: block; font: 600 14px/1.2 var(--font-mono); color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ev-stat span {
+  display: block; margin-top: 3px; font: 500 8px/1.3 var(--font-mono);
+  letter-spacing: .12em; text-transform: uppercase; color: var(--ink-4); white-space: nowrap;
+}
+.ev-stat.good b { color: var(--teal); }
+.ev-stat.bad b { color: var(--rose); }
+.ev-window { font: 10px var(--font-mono); color: var(--ink-4); margin: 7px 1px 0; line-height: 1.6; }
+
+/* ---------- forensic call rows ---------- */
+.ev-call {
+  border: 1px solid var(--line-soft); padding: 9px 10px 8px; margin: 0 0 8px;
+  background: rgba(255, 255, 255, .014);
+}
+.ev-call.err { border-color: rgba(240, 138, 120, .4); }
+.ev-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ev-idx { font: 9px var(--font-mono); color: var(--ink-4); flex: none; }
+.ev-led {
+  width: 6px; height: 6px; border-radius: 50%; flex: none;
+  background: var(--teal); box-shadow: 0 0 6px rgba(79, 184, 168, .65);
+}
+.ev-call.err .ev-led { background: var(--rose); box-shadow: 0 0 6px rgba(240, 138, 120, .65); }
+.ev-ep { font: 600 12px var(--font-mono); color: var(--lime); letter-spacing: .02em; white-space: nowrap; }
+.ev-chip {
+  font: 8.5px var(--font-mono); letter-spacing: .12em; text-transform: uppercase;
+  color: var(--teal); border: 1px solid rgba(79, 184, 168, .35); padding: 1px 6px; white-space: nowrap;
+}
+.ev-path { font: 9px var(--font-mono); color: var(--ink-4); margin-left: auto; white-space: nowrap; }
+.ev-when { font: 9px var(--font-mono); color: var(--ink-4); white-space: nowrap; }
+.ev-args { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+.ev-arg {
+  font: 10px var(--font-mono); color: var(--ink-3); background: rgba(255, 255, 255, .045);
+  padding: 1px 7px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ev-meta {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px;
+  margin-top: 7px; font: 10px var(--font-mono); color: var(--ink-3);
+}
+.ev-n { color: var(--ink-2); }
+.ev-ms { padding: 0 5px; border: 1px solid var(--line-soft); color: var(--ink-3); }
+.ev-ms.ok { color: var(--teal); border-color: rgba(79, 184, 168, .4); }
+.ev-ms.slow { color: var(--amber); border-color: rgba(232, 200, 143, .45); }
+.ev-fail { color: var(--rose); overflow: hidden; text-overflow: ellipsis; }
+.ev-match { color: var(--teal); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev-ret {
+  margin-left: auto; background: none; border: none; padding: 0; cursor: pointer;
+  font: 9px var(--font-mono); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--teal); display: inline-flex; align-items: center; gap: 4px;
+}
+.ev-ret svg { transition: transform .15s; }
+.ev-ret[aria-expanded="true"] svg { transform: rotate(180deg); }
+.ev-ret:hover { color: var(--ink); }
+.ev-ret:focus-visible { outline: 1px solid var(--lime); outline-offset: 2px; }
+.ev-ret-list { margin-top: 6px; padding-top: 3px; border-top: 1px dashed var(--line-soft); }
+.ev-ret-list .affin-row { padding: 5px 0; }
+.ev-ret-list .affin-bar { width: 72px; height: 4px; }
+.ev-ret-more { font: 9.5px var(--font-mono); color: var(--ink-4); padding: 5px 0 2px; }

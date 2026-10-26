@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { init, assetAbs } from '../src/services/store.js';
 import { chat } from '../src/services/tensor.js';
 import { genImage } from '../src/services/gemini.js';
-import { genImageResilient } from '../src/services/media.js';
+import { genImageResilient, localgenHealth } from '../src/services/media.js';
 import * as qloo from '../src/services/qloo.js';
 import { fetchSite } from '../src/services/scraper.js';
 import { enrichPrompt, inferKind, extractPalette } from '../src/services/promptStyle.js';
@@ -18,6 +18,10 @@ async function check(name, fn, { skipOnQuota = false } = {}) {
     const detail = await fn();
     console.log(`PASS ${name} — ${detail} (${((Date.now() - t0) / 1000).toFixed(1)}s)`);
   } catch (e) {
+    if (e.skip) {
+      console.log(`SKIP ${name} — ${e.message}`);
+      return;
+    }
     if (skipOnQuota && e.quota) {
       console.log(`SKIP ${name} — API path exercised; Google quota exhausted on all image models (re-run after quota reset)`);
       return;
@@ -87,15 +91,68 @@ await check('scraper fetchSite example.com', async () => {
 
 // --- HTTP surface checks — lock in tonight's server fixes against live :PORT ---
 const API = `http://127.0.0.1:${PORT}`;
+const sleep = (ms) => new Promise((s) => setTimeout(s, ms));
+// a local-dependent check marks itself SKIP rather than FAIL when the GPU
+// service is down — same idea as skipOnQuota
+const skip = (msg) => { const e = new Error(msg); e.skip = true; throw e; };
+// a --watch reload (other agents editing server/src) drops the listener for a
+// few seconds — ECONNREFUSED/ECONNRESET is transport, never a route failure.
+// Retry ONCE, but only after the port actually answers again.
+const connDrop = (e) => /ECONNREFUSED|ECONNRESET|EPIPE|ETIMEDOUT|fetch failed/i.test(String(e?.cause?.code || e?.message || e));
+async function waitForApi(timeoutMs = 15000) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < timeoutMs) {
+    try { await fetch(`${API}/api/status`, { signal: AbortSignal.timeout(1500) }); return true; }
+    catch { await sleep(700); }
+  }
+  return false;
+}
 async function api(method, path, body) {
-  const res = await fetch(API + path, {
-    method,
-    headers: body !== undefined ? { 'content-type': 'application/json' } : undefined,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-  let data = null;
-  try { data = await res.json(); } catch { /* non-JSON body */ }
-  return { status: res.status, body: data };
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch(API + path, {
+        method,
+        headers: body !== undefined ? { 'content-type': 'application/json' } : undefined,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+      });
+      let data = null;
+      try { data = await res.json(); } catch { /* non-JSON body */ }
+      return { status: res.status, body: data };
+    } catch (e) {
+      if (attempt === 0 && connDrop(e)) { await waitForApi(); continue; }
+      throw e;
+    }
+  }
+}
+// binary endpoint (thumbs) — same retry, raw response back
+async function raw(path) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetch(API + path);
+      return { status: res.status, headers: res.headers, buf: await res.arrayBuffer() };
+    } catch (e) {
+      if (attempt === 0 && connDrop(e)) { await waitForApi(); continue; }
+      throw e;
+    }
+  }
+}
+async function localgenUp() {
+  if (!ENV.localgenUrl) return false;
+  const h = await localgenHealth().catch(() => ({ ok: false }));
+  return !!h.ok;
+}
+// poll the in-memory job runner to a terminal state — every long-poll in this
+// suite must stay bounded or a hung job would hang the run
+async function pollJob(id, deadlineMs = 60000) {
+  const t0 = Date.now();
+  while (Date.now() - t0 < deadlineMs) {
+    const r = await api('GET', `/api/jobs/${id}`);
+    if (r.status === 404) return { status: 'gone' }; // jobs map is in-memory — a reload loses it
+    const j = r.body?.job;
+    if (j && j.status !== 'running') return j;
+    await sleep(4000);
+  }
+  return null; // still running at deadline — caller decides if that matters
 }
 
 await check('http api reachable', async () => {
@@ -202,6 +259,160 @@ await check('refs requests reach the local img2img engine', async () => {
     globalThis.fetch = realFetch;
     ENV.localgenUrl = oldUrl;
     ENV.localgenProvider = oldMode;
+  }
+});
+
+// --- tonight's surfaces — moodboard job, photoshoot lifecycle, profile patch,
+// caller-pinned regen refs, thumbnail route. Fixtures resolve live from the API
+// (boards/campaigns/profile), nothing hardcoded.
+let moodboardJobId = null; // shared so later local checks can drain the GPU queue first
+
+await check('moodboard POST dedupes an in-flight job', async () => {
+  if (!(await localgenUp())) skip('localgen down — moodboard tiles are local-only');
+  const boards = (await api('GET', '/api/boards')).body?.boards || [];
+  const board = boards.find((b) => (b.strategyCount || 0) > 0) || boards[0];
+  if (!board) skip('no boards on record to moodboard');
+  const r1 = await api('POST', `/api/boards/${board.id}/moodboard`);
+  const jobId = r1.body?.job?.id;
+  if (![200, 202].includes(r1.status) || !jobId)
+    throw new Error(`POST → ${r1.status} ${JSON.stringify(r1.body)?.slice(0, 160)}`);
+  moodboardJobId = jobId;
+  const r2 = await api('POST', `/api/boards/${board.id}/moodboard`);
+  if (r2.body?.deduplicated !== true || r2.body?.job?.id !== jobId)
+    throw new Error(`re-POST not deduped onto the live job → ${JSON.stringify(r2.body)?.slice(0, 200)}`);
+  // mid-run GET is honest either way: {moodboard[,job]} once tiles exist, or
+  // 404 {error, job} while a board-less first run is still going
+  const g = await api('GET', `/api/boards/${board.id}/moodboard`);
+  const tiles = g.body?.moodboard?.tiles;
+  if (g.status === 200) {
+    if (!Array.isArray(tiles) || !tiles.length) throw new Error('200 but no moodboard.tiles');
+    const bad = tiles.find((t) => !/^\/assets\/[\w.-]+$/.test(t?.path || ''));
+    if (bad) throw new Error(`tile path malformed → ${JSON.stringify(bad).slice(0, 120)}`);
+  } else if (!(g.status === 404 && g.body?.job?.id === jobId)) {
+    throw new Error(`GET mid-run → ${g.status} ${JSON.stringify(g.body)?.slice(0, 160)}`);
+  }
+  // the gen is ~9 sequential sdxl-turbo calls (~50s) — poll is cheap, bound it;
+  // a terminal 'error' is a real break, 'still running' just frees the GPU later
+  const done = await pollJob(jobId, 70000);
+  if (done?.status === 'error') throw new Error(`moodboard job errored — ${String(done.error).slice(0, 160)}`);
+  const tail = done?.status === 'done'
+    ? `done tiles=${done.result?.tiles} via ${done.result?.provider}`
+    : done?.status === 'gone' ? 'job gone (server reloaded mid-run)' : 'still running at 70s deadline';
+  return `board=${board.id.slice(0, 8)} job=${jobId.slice(0, 8)} deduplicated:true; GET tiles=${tiles?.length || 0}; ${tail}`;
+});
+
+await check('moodboard routes 404 on unknown board', async () => {
+  for (const m of ['POST', 'GET']) {
+    const r = await api(m, '/api/boards/smoke-no-such-board/moodboard');
+    if (r.status !== 404 || !r.body?.error)
+      throw new Error(`${m} → ${r.status} ${JSON.stringify(r.body)?.slice(0, 120)}, want 404 {error}`);
+  }
+  return 'POST + GET unknown board → 404 {error}';
+});
+
+await check('profile PUT patch round-trips tone', async () => {
+  const pre = await api('GET', '/api/profile');
+  if (pre.status !== 200) throw new Error(`GET /api/profile → ${pre.status}`);
+  if (!pre.body?.profile) skip('no profile on record to patch');
+  const before = Array.isArray(pre.body.profile.tone) ? pre.body.profile.tone : [];
+  const probe = ['smoke-tone'];
+  try {
+    const put = await api('PUT', '/api/profile', { patch: { tone: probe } });
+    if (put.status !== 200 || !Array.isArray(put.body?.profile?.tone))
+      throw new Error(`PUT {patch:{tone}} → ${put.status} ${JSON.stringify(put.body)?.slice(0, 140)}`);
+    const mid = await api('GET', '/api/profile');
+    if (JSON.stringify(mid.body?.profile?.tone || []) !== JSON.stringify(probe))
+      throw new Error(`GET after patch → tone=${JSON.stringify(mid.body?.profile?.tone).slice(0, 120)}`);
+    const back = await api('PUT', '/api/profile', { patch: { tone: before } });
+    const post = await api('GET', '/api/profile');
+    if (back.status !== 200 || JSON.stringify(post.body?.profile?.tone || []) !== JSON.stringify(before))
+      throw new Error('restore did not round-trip the original tone');
+    return `patch → reflected → restored (${JSON.stringify(before).slice(0, 80)})`;
+  } finally {
+    // belt-and-suspenders: a mid-assert throw must not leave the probe behind
+    const cur = await api('GET', '/api/profile').catch(() => null);
+    if (cur && JSON.stringify(cur.body?.profile?.tone || []) !== JSON.stringify(before))
+      await api('PUT', '/api/profile', { patch: { tone: before } }).catch(() => {});
+  }
+});
+
+await check('thumbnail route renders + clamps w', async () => {
+  // a real raster asset — profile library first, then any creative image
+  const prof = (await api('GET', '/api/profile')).body?.profile;
+  let asset = (prof?.images || []).map((i) => i?.path).find((p) => /\.(png|jpe?g|webp|gif)$/i.test(p || ''));
+  if (!asset) {
+    const cs = (await api('GET', '/api/campaigns')).body?.campaigns || [];
+    outer: for (const c of cs) for (const cr of c.creatives || []) {
+      if (/\.(png|jpe?g|webp|gif)$/i.test(cr?.imagePath || '')) { asset = cr.imagePath; break outer; }
+    }
+  }
+  if (!asset) skip('no raster asset on record to thumb');
+  const base = asset.split('/').pop();
+  const t1 = await raw(`/assets/thumb/${base}?w=160`);
+  const mime = t1.headers.get('content-type') || '';
+  const len = Number(t1.headers.get('content-length')) || t1.buf.byteLength;
+  if (t1.status !== 200) throw new Error(`w=160 → ${t1.status}`);
+  if (!/^image\/(jpeg|png)/.test(mime)) throw new Error(`content-type "${mime}"`);
+  if (!(len > 0 && len < 50 * 1024)) throw new Error(`thumb ${len}B — expected <50KB`);
+  const t2 = await raw(`/assets/thumb/${base}?w=99999`);
+  if (t2.status !== 200) throw new Error(`w=99999 → ${t2.status} (clamp to 2048 must never 5xx)`);
+  return `${base.slice(0, 8)}… w=160 ${mime} ${len}B; w=99999 clamped → 200`;
+});
+
+await check('regenerate-image honors caller-pinned refs', async () => {
+  if (moodboardJobId) await pollJob(moodboardJobId, 60000); // drain tiles so local isn't queued behind the grid
+  if (!(await localgenUp())) skip('localgen down — provider pinned to local');
+  const cs = (await api('GET', '/api/campaigns')).body?.campaigns || [];
+  const target = cs.flatMap((c) => c.creatives || []).find((cr) => cr?.imagePath);
+  if (!target) skip('no creative on record to regenerate');
+  const ref = target.imagePath; // the creative's own art — exactly what the UI pins
+  const r = await api('POST', `/api/creatives/${target.id}/regenerate-image`, { refs: [{ path: ref }], provider: 'local' });
+  const cr = r.body?.creative;
+  if (r.status !== 200 || !cr) throw new Error(`POST → ${r.status} ${JSON.stringify(r.body)?.slice(0, 160)}`);
+  if (cr.imageError) throw new Error(`regen errored with a pinned ref — ${cr.imageError}`);
+  if (!/^local/.test(String(cr.imageProvider || '')))
+    throw new Error(`imageProvider="${cr.imageProvider}" — provider:'local' pin ignored`);
+  // a traversal-shaped ref must be dropped server-side — it can never reach
+  // localgen (which would surface it in creative.imageError)
+  const evil = await api('POST', `/api/creatives/${target.id}/regenerate-image`, { refs: [{ path: '/assets/../../etc/passwd' }], provider: 'local' });
+  if (evil.status === 200) {
+    if (/passwd|not readable/i.test(JSON.stringify(evil.body || {})))
+      throw new Error(`malformed ref reached the provider → ${JSON.stringify(evil.body?.creative?.imageError).slice(0, 160)}`);
+  } else if (evil.status !== 400) {
+    throw new Error(`malformed ref → ${evil.status}, want 400 or a clean drop`);
+  }
+  return `creative=${target.id.slice(0, 8)} → ${cr.imageProvider} w/ pinned ref; /assets/../../etc/passwd ${evil.status === 400 ? '400s' : 'dropped'}`;
+});
+
+await check('photoshoot job lifecycle + delete frees assets', async () => {
+  if (!(await localgenUp())) skip('localgen down — shoot gen would crawl the paid fallback chain');
+  const marker = `smoke probe ${Date.now()}`; // unique — retry/concurrent strays share it
+  const r = await api('POST', '/api/photoshoot', { mode: 'free', prompt: `${marker} — matte black water can on raw concrete, single hard light`, templates: ['studio'] });
+  const jobId = r.body?.job?.id, shotId = r.body?.shoot?.id;
+  if (r.status !== 200 || !jobId || !shotId)
+    throw new Error(`POST → ${r.status} ${JSON.stringify(r.body)?.slice(0, 160)}`);
+  let deleted = false;
+  try {
+    const job = await pollJob(jobId, 60000);
+    if (job?.status === 'error') throw new Error(`shoot job errored — ${String(job.error).slice(0, 160)}`);
+    const listed = await api('GET', '/api/photoshoot');
+    const rec = (listed.body?.jobs || []).find((s) => s.id === shotId);
+    if (!rec) throw new Error('shoot missing from GET /api/photoshoot');
+    if (job?.status === 'done' && rec.status !== 'done')
+      throw new Error(`job done but shoot.status="${rec.status}"`);
+    const del = await api('DELETE', `/api/photoshoot/${shotId}`);
+    deleted = true;
+    if (del.status !== 200 || typeof del.body?.freedAssets !== 'number')
+      throw new Error(`DELETE → ${del.status} ${JSON.stringify(del.body)?.slice(0, 140)} — freedAssets must be a number`);
+    const tail = job ? `job ${job.status}${job.result ? ` n=${job.result.n}` : ''}` : 'still running at 60s deadline (accepted)';
+    return `shot=${shotId.slice(0, 8)} listed status=${rec.status}; ${tail}; freedAssets=${del.body.freedAssets}`;
+  } finally {
+    // sweep by marker too — a connDrop-retried POST can mint a second shot the
+    // tracked id doesn't cover
+    if (!deleted) await api('DELETE', `/api/photoshoot/${shotId}`).catch(() => {});
+    const lst = await api('GET', '/api/photoshoot').catch(() => null);
+    for (const s of (lst?.body?.jobs || []).filter((x) => String(x.prompt || '').startsWith(marker)))
+      await api('DELETE', `/api/photoshoot/${s.id}`).catch(() => {});
   }
 });
 

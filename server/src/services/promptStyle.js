@@ -107,7 +107,7 @@ const CUES = {
 const COMP_WIDE = { t: 'wide cinematic composition with lateral breathing room', skip: /negative space|rule.of.thirds|composition|framing/i };
 const COMP_TALL = { t: 'strong vertical composition, subject carried low-center', skip: /negative space|rule.of.thirds|composition|framing/i };
 const COMP_RULE = { t: 'rule-of-thirds composition', skip: /negative space|rule.of.thirds|composition|framing/i };
-const AD_SPACE = { t: 'clean uncluttered negative space held for a headline overlay', skip: /negative space|headline|overlay/i };
+const AD_SPACE = { t: 'one side of the frame kept visually quiet for a headline overlay', skip: /negative space|headline|overlay|quiet for|kept calm/i };
 // measured on this box: "unmarked/unlabeled" phrasing kills pseudo-text on
 // product surfaces where 'no text' alone failed (guidance=0 → negatives no-op)
 const UNMARKED = { t: 'all surfaces plain and unmarked — unlabeled packaging, blank label areas, no visible printing', skip: /unmarked|unlabeled|blank label/i };

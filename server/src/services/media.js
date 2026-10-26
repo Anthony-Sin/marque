@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import { saveAssetBuf, assetAbs, readAsset } from './store.js';
 import { genImage, genVideo } from './gemini.js';
 import { enrichPrompt, LOCALGEN_NEGATIVE } from './promptStyle.js';
-import { ENV } from '../config.js';
+import { ENV, ROOT } from '../config.js';
 import { tuning } from '../tuning.js';
 
 const run = promisify(execFile);
@@ -67,6 +67,117 @@ export async function localgenHealth() {
     const r = await fetch(`${ENV.localgenUrl}/health`, { signal: AbortSignal.timeout(3000) });
     return r.ok ? await r.json() : { ok: false };
   } catch { return { ok: false }; }
+}
+
+// --- generated-image postflight -------------------------------------------
+// Cloud image models sometimes ship artifacts the prompt can't prevent: the
+// known case is a hard-edged flat gray/white slab painted where the prompt
+// asked for "clean negative space" (observed: top ~33% of a 928x1152 jpeg,
+// row std < 3). No sharp/jimp in deps, so the pixel work runs in the same
+// python+PIL setup thumb.py uses. Fail-open: any problem → keep the original.
+//   1. trim contiguous near-flat, near-neutral edge bands (>=12% of a side)
+//   2. center-crop to the requested aspect if the result is >10% off
+const FIX_PY = process.env.MARQUE_PYTHON
+  || (fs.existsSync(path.join(ROOT, '.venv-gen/bin/python3')) ? path.join(ROOT, '.venv-gen/bin/python3') : 'python3');
+const IMGFIX_SRC = String.raw`
+import sys, json
+import numpy as np
+from PIL import Image
+
+src = sys.argv[1]
+target = None
+try:
+    a, b = sys.argv[2].split(':')
+    target = float(a) / float(b)
+except Exception:
+    pass
+
+im = Image.open(src)
+im.load()
+w, h = im.size
+rgb = np.asarray(im.convert('RGB'), dtype=np.float32)
+
+STD_T = 3.0      # near-zero texture = painted slab (real slabs measured 0.7-2.8; photo content >10)
+MIN_FRAC = 0.12  # ignore slivers (JPEG edge noise, borders)
+NEUTRAL = 40.0   # band mean must be near-neutral (gray/white/black) — saturated flats may be design
+CAP = 0.45       # never trim more than 45% of an axis
+
+rs = rgb.std(axis=(1, 2))          # per-row texture
+cs = rgb.std(axis=(0, 2))          # per-column texture
+
+def run(stds, rev=False):
+    n = 0
+    it = range(len(stds) - 1, -1, -1) if rev else range(len(stds))
+    for i in it:
+        if stds[i] < STD_T:
+            n += 1
+        else:
+            break
+    return n
+
+def neutral(a):
+    if a.size == 0:
+        return False
+    m = a.reshape(-1, 3).mean(axis=0)
+    return (m.max() - m.min()) < NEUTRAL
+
+top = run(rs)
+bot = run(rs, rev=True)
+left = run(cs)
+right = run(cs, rev=True)
+if top + bot > int(h * CAP):
+    top = min(top, int(h * CAP))
+    bot = min(bot, int(h * CAP) - top)
+if left + right > int(w * CAP):
+    left = min(left, int(w * CAP))
+    right = min(right, int(w * CAP) - left)
+if top < h * MIN_FRAC or not neutral(rgb[:top]): top = 0
+if bot < h * MIN_FRAC or not neutral(rgb[h - bot:]): bot = 0
+if left < w * MIN_FRAC or not neutral(rgb[:, :left]): left = 0
+if right < w * MIN_FRAC or not neutral(rgb[:, w - right:]): right = 0
+
+reasons = []
+x0, y0, x1, y1 = left, top, w - right, h - bot
+if top or bot or left or right:
+    reasons.append('trimmed flat edge band%s' % ('s' if sum(1 for v in (top, bot, left, right) if v) > 1 else ''))
+
+nw, nh = x1 - x0, y1 - y0
+if target and nw > 0 and nh > 0:
+    ar = nw / nh
+    if abs(ar - target) / target > 0.10:
+        if ar > target:
+            cw = max(1, round(nh * target))
+            x0 += (nw - cw) // 2
+            x1 = x0 + cw
+        else:
+            ch = max(1, round(nw / target))
+            y0 += (nh - ch) // 2
+            y1 = y0 + ch
+        reasons.append('center-cropped to %s' % sys.argv[2])
+        nw, nh = x1 - x0, y1 - y0
+
+changed = (x0, y0, x1, y1) != (0, 0, w, h) and nw >= 100 and nh >= 100
+if changed:
+    out = im.crop((x0, y0, x1, y1))
+    ext = src.rsplit('.', 1)[-1].lower()
+    if ext in ('jpg', 'jpeg'):
+        out.convert('RGB').save(src, 'JPEG', quality=92)
+    elif ext == 'webp':
+        out.save(src, 'WEBP', quality=92)
+    else:
+        out.save(src, 'PNG')
+print(json.dumps({'changed': changed, 'reasons': reasons, 'from': [w, h], 'to': [nw, nh] if changed else [w, h]}))
+`;
+
+// returns a verdict {reasons, from, to} when the asset was repaired, else null.
+async function postfixImage(webPath, aspectRatio) {
+  const abs = assetAbs(webPath);
+  if (!abs || !/\.(png|jpe?g|webp)$/i.test(abs)) return null;
+  try {
+    const { stdout } = await run(FIX_PY, ['-c', IMGFIX_SRC, abs, String(aspectRatio || '')], { timeout: 30000 });
+    const r = JSON.parse(String(stdout).trim().split('\n').pop());
+    return r?.changed ? r : null;
+  } catch { return null; } // fail-open: a broken guard must never sink a generation
 }
 
 // Honest provider badge — resolved from the live /health `model` field
@@ -191,7 +302,14 @@ export async function genImageResilient(prompt, opts = {}) {
       // local does img2img and gemini takes refs — the ref is only ignored when
       // the chain lands on pollinations (txt2img GET, can't accept images),
       // which requires the local call to have errored first.
-      return { path, provider: p === 'local' ? await localProviderTag() : p, note: [hasRefs && p === 'pollinations' ? 'reference image ignored — pollinations is text-to-image only' : null, errs.length ? `after: ${errs.join(' | ')}` : null].filter(Boolean).join(' · ') || undefined };
+      const notes = [hasRefs && p === 'pollinations' ? 'reference image ignored — pollinations is text-to-image only' : null];
+      const fix = await postfixImage(path, opts.aspectRatio);
+      if (fix) {
+        notes.push(`postflight: ${fix.reasons.join(' + ')} (${fix.from.join('x')} → ${fix.to.join('x')})`);
+        console.warn(`[media] image postflight repaired ${path}: ${fix.reasons.join(' + ')} ${fix.from.join('x')} → ${fix.to.join('x')} [${p}]`);
+      }
+      if (errs.length) notes.push(`after: ${errs.join(' | ')}`);
+      return { path, provider: p === 'local' ? await localProviderTag() : p, note: notes.filter(Boolean).join(' · ') || undefined };
     } catch (e) {
       errs.push(`${p}(${String(e.message || e).slice(0, 110)})`);
     }

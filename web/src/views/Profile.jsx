@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import api from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
+import { thumb } from '../components/Composer.jsx';
 import EvidenceDrawer from '../components/EvidenceDrawer.jsx';
 import { QlooBadge, SignalChips } from '../components/Qloo.jsx';
 import './studio.css';
@@ -27,6 +28,9 @@ const fmtDay = (d) => {
   const t = new Date(d);
   return isNaN(t) ? '' : t.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 };
+const baseName = (p) => String(p || '').split('/').pop();
+// upload route caps bodies at 25MB — check client-side so failures read plainly
+const UPLOAD_MAX = 25 * 1024 * 1024;
 
 // profile.colors is canonically {primary,…} but older profiles may carry a
 // bare [hex…] array — display either as ordered {key,hex} cards, always PATCH
@@ -76,6 +80,11 @@ export default function ProfilePage() {
   const [evi, setEvi] = useState(false); // taste-evidence drawer
   const [newSw, setNewSw] = useState({ name: '', hex: '#' });
   const [chipIn, setChipIn] = useState({ tone: '', values: '' });
+  // brand kit strip — writes go straight to the API (no draft), so it tracks
+  // its own busy flag + a per-thumb two-tap remove confirm
+  const [kitBusy, setKitBusy] = useState('');      // 'key:<k>' | 'rm:<k>' | 'up'
+  const [confirmRm, setConfirmRm] = useState(null); // image id/path awaiting tap 2
+  const confirmRmT = useRef(null);
 
   // the server-truth snapshot the draft diffs against
   const base = useMemo(() => (p ? snap(init(p)) : null), [p]);
@@ -112,6 +121,9 @@ export default function ProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p]);
 
+  // cancel a pending remove-confirm timer on unmount
+  useEffect(() => () => clearTimeout(confirmRmT.current), []);
+
   const set = (k) => (e) => setD((x) => ({ ...x, [k]: e.target ? e.target.value : e }));
   const setColor = (i, hex) => setD((x) => ({ ...x, colors: x.colors.map((c, j) => (j === i ? { ...c, hex } : c)) }));
   const rmColor = (i) => setD((x) => ({ ...x, colors: x.colors.filter((_, j) => j !== i) }));
@@ -147,6 +159,62 @@ export default function ProfilePage() {
     setBusy(false);
   };
   const discard = () => setD(init(p));
+
+  /* ---------- brand kit — profile.images writes (immediate, not drafted) ----------
+     PUT /api/profile {patch:{images:[…]}} replaces the whole array (applyPatch
+     treats arrays as replace) — reorder and remove both ride that route. There
+     is no file-deleting image route, so removal only unpins from the kit. */
+  const writeImages = async (next, tag) => {
+    setKitBusy(tag);
+    try {
+      const { profile: np } = await api.updateProfile({ images: next });
+      if (np) setProfile(np);
+      await refresh();
+      return true;
+    } catch (e) {
+      say(e.message);
+      return false;
+    } finally {
+      setKitBusy('');
+    }
+  };
+  const imgKey = (img) => img.id || img.path;
+  const makeKey = (img) => {
+    const images = p.images || [];
+    const next = [img, ...images.filter((x) => imgKey(x) !== imgKey(img))];
+    writeImages(next, `key:${imgKey(img)}`).then((done) => done && say('Key image set — it drives image-to-image renders'));
+  };
+  const askRm = (key) => {
+    // two-tap confirm: first tap opens the veil on that thumb, auto-cancels
+    setConfirmRm(key);
+    clearTimeout(confirmRmT.current);
+    confirmRmT.current = setTimeout(() => setConfirmRm(null), 4200);
+  };
+  const doRm = (img) => {
+    setConfirmRm(null); clearTimeout(confirmRmT.current);
+    const next = (p.images || []).filter((x) => imgKey(x) !== imgKey(img));
+    writeImages(next, `rm:${imgKey(img)}`).then((done) => done && say('Removed from brand kit — the file stays in assets'));
+  };
+  const onFile = async (e) => {
+    const f = e.target.files?.[0];
+    e.target.value = ''; // same file twice must re-fire
+    if (!f || kitBusy) return;
+    if (!/^image\//.test(f.type || '')) { say('Images only — pick a png, jpg, webp or gif'); return; }
+    if (f.size > UPLOAD_MAX) { say('File is over the 25MB upload limit'); return; }
+    setKitBusy('up');
+    try {
+      // POST /api/upload saves the asset + registers it; the promote route then
+      // pins it into profile.images (what pickers + this strip read)
+      const { path: up } = await api.upload(f);
+      const { profile: np } = await api.promoteImage(baseName(up), { target: 'profile', caption: f.name });
+      if (np) setProfile(np);
+      await refresh();
+      say('Added to brand kit');
+    } catch (e2) {
+      say(`Upload failed — ${e2.message}`);
+    }
+    setKitBusy('');
+  };
 
   if (p === undefined || d === null) {
     return <div className="loading-wrap"><div className="spinner" /></div>;
@@ -301,6 +369,83 @@ export default function ProfilePage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </section>
+
+          {/* ---------- brand library — profile.images, slot 1 = img2img key ref ---------- */}
+          <section className="card hud cp-panel">
+            <div className="zone-head">
+              <span className="z-id">IMG</span>Brand library
+              <span className="z-tag">{(p.images || []).length} image{(p.images || []).length === 1 ? '' : 's'} · slot 1 = key</span>
+            </div>
+            <div className="cp-panel-body">
+              {!(p.images || []).length && (
+                <p className="muted small" style={{ margin: 0 }}>
+                  Nothing kept yet — pin a shoot render from Photoshoots or add a file here.
+                </p>
+              )}
+              <div className="pfv-kit">
+                {(p.images || []).map((img, i) => {
+                  const k = imgKey(img);
+                  return (
+                    <figure className={`pfv-kit-item${i === 0 ? ' key' : ''}`} key={k}>
+                      <div className="pfv-kit-frame">
+                        <img src={thumb(img.path, 200)} alt={img.caption || `brand image ${i + 1}`} loading="lazy" />
+                        {i === 0 && (
+                          <span className="pfv-kit-key" title="Key image — drives image-to-image renders">KEY</span>
+                        )}
+                        <div className="pfv-kit-ops">
+                          {i !== 0 && (
+                            <button
+                              type="button" className="pfv-kit-op"
+                              aria-label={`Make ${img.caption || `image ${i + 1}`} the key image`}
+                              title="Make key image — moves to slot 1, the reference image-to-image renders start from"
+                              disabled={!!kitBusy} onClick={() => makeKey(img)}
+                            >key</button>
+                          )}
+                          <button
+                            type="button" className="pfv-kit-op ic danger"
+                            aria-label={`Remove ${img.caption || `image ${i + 1}`} from the brand kit`}
+                            title="Remove from brand kit — the file stays in assets"
+                            disabled={!!kitBusy} onClick={() => askRm(k)}
+                          ><Icon name="trash" size={11} sw={2.2} /></button>
+                        </div>
+                        {confirmRm === k && (
+                          <div className="pfv-kit-confirm" role="alert">
+                            <p>
+                              Remove from the brand kit? The file stays in assets.
+                              {i === 0 && ' Next image becomes key.'}
+                            </p>
+                            <span className="pfv-kit-confirm-ops">
+                              <button type="button" className="go" disabled={!!kitBusy} onClick={() => doRm(img)}>
+                                {kitBusy === `rm:${k}` ? '…' : 'Remove'}
+                              </button>
+                              <button type="button" onClick={() => setConfirmRm(null)}>Keep</button>
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      {!!img.caption && (
+                        <figcaption className="pfv-kit-cap" title={img.caption}>{img.caption}</figcaption>
+                      )}
+                    </figure>
+                  );
+                })}
+                <label
+                  className={`pfv-kit-add${kitBusy === 'up' ? ' busy' : ''}`}
+                  title="Add an image file to the brand kit — png · jpg · webp · gif, up to 25MB"
+                >
+                  <input type="file" accept="image/*" aria-label="Add image to the brand kit" disabled={!!kitBusy} onChange={onFile} />
+                  {kitBusy === 'up' ? <span className="spinner" /> : <Icon name="upload" size={14} />}
+                  <span>{kitBusy === 'up' ? 'adding' : 'add image'}</span>
+                </label>
+              </div>
+              {!!(p.images || []).length && (
+                <p className="muted small" style={{ margin: 0 }}>
+                  Slot 1 is the key reference photoshoots and regens image-to-image from.
+                  Removing drops an image from the kit — the file stays in assets.
+                </p>
+              )}
             </div>
           </section>
 

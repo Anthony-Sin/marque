@@ -1,7 +1,46 @@
-// fetchSite(url): HTML -> {title,description,text,colors,fonts,images,links,htmlLen}
+// fetchSite(url): HTML -> {title,description,text,colors,fonts,images,links,htmlLen,truncated}
 import { downloadToAsset, fetchPublic } from './store.js';
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
+const MAX_HTML = 2_000_000;
+
+// read res.body with a byte cap + its own deadline. fetchPublic's timer ends
+// at response headers — nothing bounded the body, so a server that trickles
+// forever (or a 50MB page — res.text() buffers it ALL before .slice()) could
+// hang or OOM the scan. Cap counts DECODED bytes (undici already gunzipped).
+// Returns truncated:true when the cap cut the stream — the head of a giant
+// page still holds the title/meta/colors the scan actually uses.
+export async function readBodyCapped(res, { max = MAX_HTML, timeoutMs = 15000 } = {}) {
+  const reader = res.body?.getReader?.();
+  if (!reader) return { text: (await res.text()).slice(0, max), truncated: false };
+  let timedOut = false;
+  const timer = setTimeout(() => { timedOut = true; reader.cancel().catch(() => {}); }, timeoutMs);
+  const chunks = [];
+  let total = 0, truncated = false;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done || timedOut) break;
+      total += value.byteLength;
+      if (total > max) {
+        chunks.push(value.subarray(0, value.byteLength - (total - max)));
+        truncated = true;
+        try { await reader.cancel(); } catch { /* socket freed either way */ }
+        break;
+      }
+      chunks.push(value);
+    }
+    if (timedOut) throw new Error(`response body timed out after ${timeoutMs}ms`);
+  } catch (e) {
+    if (timedOut) throw new Error(`response body timed out after ${timeoutMs}ms`);
+    throw e;
+  } finally { clearTimeout(timer); }
+  return { text: new TextDecoder().decode(Buffer.concat(chunks)), truncated };
+}
+
+// caller-pasted URL turned out not to be a scannable page — a 422 the route
+// layer can hand back instead of a bare 500
+const unscanable = (msg) => { const e = new Error(msg); e.status = 422; return e; };
 
 async function fetchText(url, timeoutMs = 15000) {
   // users paste bare domains ("liquiddeath.com") — assume https, keep the
@@ -11,8 +50,19 @@ async function fetchText(url, timeoutMs = 15000) {
   // hop — a public name that resolves to a private range never gets a socket
   const res = await fetchPublic(url, { timeoutMs, headers: { 'user-agent': UA, accept: 'text/html,*/*' } });
   if (!res.ok) throw new Error(`fetch ${res.status} ${url}`);
-  const html = (await res.text()).slice(0, 2_000_000);
-  return { html, finalUrl: res.url || url };
+  // honesty gate: a zip/json/image/binary endpoint isn't a site — refuse it
+  // instead of parsing noise into an empty-looking success. A MISSING type
+  // still passes (misconfigured-but-real pages exist); the markup check below
+  // is the backstop for those.
+  const ctype = (res.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+  if (ctype && ctype !== 'text/html' && ctype !== 'application/xhtml+xml') {
+    try { await res.body?.cancel(); } catch { /* free the socket */ }
+    throw unscanable(`non-HTML response (content-type: ${ctype}) — ${res.url || url} is not a web page`);
+  }
+  const { text: html, truncated } = await readBodyCapped(res, { max: MAX_HTML, timeoutMs });
+  if (!html.trim()) throw unscanable(`empty response from ${res.url || url}`);
+  if (!/<[a-zA-Z!/]/.test(html)) throw unscanable(`no HTML markup at ${res.url || url} — not a scannable page`);
+  return { html, finalUrl: res.url || url, truncated };
 }
 
 const attr = (tag, name) => {
@@ -127,7 +177,7 @@ function siteLinks(html, base) {
 }
 
 export async function fetchSite(url) {
-  const { html, finalUrl } = await fetchText(url);
+  const { html, finalUrl, truncated } = await fetchText(url);
   const base = new URL(finalUrl);
   const meta = extractMeta(html);
   let text = stripToText(html);
@@ -190,5 +240,8 @@ export async function fetchSite(url) {
     socials,
     missingSocials,
     htmlLen: html.length,
+    // page ran past the 2MB cap — the scan is real but partial; report it
+    // rather than let a truncated read pose as the whole site
+    truncated,
   };
 }
