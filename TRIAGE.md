@@ -332,3 +332,10 @@ Counts: HIGH 3 · MED 7 · LOW 4
 - creative edit route accepts `badge`; stored 'MURDER YOUR THIR' → 'MURDER YOUR THIRST'.
 - 168 orphans / 124MB pruned; orphanAssets() now grace-gates 20min like the boot sweep (in-flight writes can't be pruned).
 - Watchdog restarted on prod cadence (deep every ~10min; was test 2min).
+
+### Endgame wave (~05:00–05:45)
+- `.stg-qname` 2-line clamp → nowrap+ellipsis (last mid-word wrap class killed; 'POORSTACY' truncates instead of 'POORSTAC Y').
+- A11y P1/P2 batch (743fa73): moodboard lightbox + shoots detail real useOverlayFocus traps (aria-modal honest now); ⌘K combobox semantics (aria-activedescendant, option ids, Home/End); campaigns view-swap focus restore + layered Esc; produce chips real APG radio, grade stars honest aria-pressed; sub-24px targets bumped (ws-unpub 19→24); lime focus rings on lightbox-x/rr-btn/ws-unpub.
+- Onboarding hardening (7a624b7): normalizedUrl() gates build — garbage can't POST /profile/build (verified 0 requests on 'not a url at all' + Enter); type=url + aria-invalid + disabled-on-empty; AGENT_KIND gained 'devin-cli'.
+- Published-surface polish: LD site republished at /s/liquid-death (was site-51b4ce2d); sentinel 'Your Brand skincare' draft site deleted; hero image regenerated via free-mode photoshoot (barbell+chains+venue-bus, on-brand vs old studio-gear flat-lay) and swapped in via /edit route.
+- Smoke 27/27 green on merged tree (incl. raw gemini image — quota recovered); devin-cli fallback still carrying text layer honestly (agent.provider=devin-cli).
