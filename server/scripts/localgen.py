@@ -348,4 +348,50 @@ class H(BaseHTTPRequestHandler):
             self._json(500, {"error": str(e)[:300]})
 
 
-ThreadingHTTPServer((HOST, PORT), H).serve_forever()
+def unload_models():
+    """Drop every pipeline ref and release cached VRAM so the next process
+    starts on a clean card. Sequential-offload hooks forbid .to(), so drop
+    references and let gc + empty_cache do the teardown."""
+    global pipe, i2i_pipe
+    print("[localgen] unloading models ...", flush=True)
+    i2i_pipe = None
+    pipe = None
+    gc.collect()
+    if torch.cuda.is_available():
+        try:
+            torch.cuda.synchronize()
+        except Exception:
+            pass
+        torch.cuda.empty_cache()
+
+
+if ARGS.selftest:
+    d = deep_check()
+    print(f"[localgen] selftest {json.dumps(d)}", flush=True)
+    unload_models()
+    sys.exit(0 if d["ok"] else 1)
+
+server = ThreadingHTTPServer((HOST, PORT), H)
+
+
+def _shutdown(sig, frame):
+    # server.shutdown() deadlocks on the serve_forever thread — signal
+    # handlers run there, so hand the call to a daemon thread.
+    print(f"[localgen] signal {sig} — draining ...", flush=True)
+    threading.Thread(target=server.shutdown, daemon=True).start()
+
+
+signal.signal(signal.SIGTERM, _shutdown)
+signal.signal(signal.SIGINT, _shutdown)
+
+try:
+    server.serve_forever()
+finally:
+    # Let an in-flight gen finish (handler threads are daemon anyway), then
+    # free VRAM before exit — clean handoff to whoever restarts us.
+    GEN_LOCK.acquire(timeout=30)
+    try:
+        unload_models()
+    except Exception:
+        pass
+    server.server_close()

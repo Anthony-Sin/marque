@@ -80,8 +80,8 @@ function Rail({ onPalette }) {
             <i />GEN&nbsp;{gen ? 'OK' : 'STBY'}
           </span>
           {!!profile?.name && profile.name !== 'Your Brand' && (
-            <span className="rail-led rail-led-brand" title="Active brand profile">
-              <i />{profile.name.toUpperCase().slice(0, 10)}
+            <span className="rail-led rail-led-brand" title={`Active brand profile — ${profile.name}`}>
+              <i /><b className="rail-led-name">{profile.name.toUpperCase()}</b>
             </span>
           )}
         </div>

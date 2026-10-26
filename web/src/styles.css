@@ -160,8 +160,9 @@ h2.display { font-size: 26px; margin: 0 0 6px; }
 }
 .rail-led.on { color: var(--ink-2); }
 .rail-led.on i { background: var(--teal); box-shadow: 0 0 7px rgba(79, 184, 168, .7); animation: railLedBlink 2.6s infinite; }
-.rail-led-brand { color: var(--lime); }
+.rail-led-brand { color: var(--lime); max-width: 60px; }
 .rail-led-brand i { background: var(--lime); box-shadow: 0 0 7px rgba(255, 176, 58, .55); }
+.rail-led-name { font: inherit; font-weight: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @keyframes railLedBlink { 0%, 92% { opacity: 1; } 96% { opacity: .3; } 100% { opacity: 1; } }
 .rail-clock {
   margin-top: 3px; font-family: var(--font-mono); font-size: 8px; font-weight: 700;

@@ -60,6 +60,12 @@ The GPU renderer is a separate service — start it with the torch venv
 LOCALGEN_MODEL=stabilityai/sdxl-turbo .venv-gen/bin/python3 server/scripts/localgen.py   # :8807
 ```
 
+Watchdog: `nohup scripts/localgen-watchdog.sh &` polls `:8807/health` every 30s
+(`?deep=1` — a real 256px gen — every ~10min) and restarts a dead/unhealthy
+service, guarded so it never kills a process it didn't spawn. Logs:
+`logs/localgen-watchdog.log` + `logs/localgen.log`; `localgen.py --selftest`
+runs the deep check once and exits.
+
 Env vars (names only — `.env` is gitignored): `TENSOR_BASE_URL`
 `TENSOR_API_KEY` `TENSOR_MODEL` — chat brain, all text features ·
 `GEMINI_API_KEY` (+ optional `GEMINI_API_KEYS` pool) `GEMINI_IMAGE_MODEL`

@@ -228,6 +228,42 @@ function BoardSkeleton() {
   );
 }
 
+// interim real-content card — the 'site-scrape' SSE event lands seconds after
+// the URL read finishes, long before the audience read. It fills the skeleton
+// window with what the scrape actually pulled (host, swatches, image/text
+// counts), or the honest failure reason when the site couldn't be read.
+function IntakeCard({ scrape }) {
+  const ok = scrape?.ok !== false;
+  return (
+    <section className={`card stg-intake stg-fill${ok ? '' : ' bad'}`} role="status">
+      <span className="stg-intake-head">
+        <Icon name={ok ? 'globe' : 'info'} size={13} />
+        {ok ? <>read <b>{host(scrape.url)}</b></> : <>couldn't read <b>{host(scrape.url)}</b></>}
+      </span>
+      {ok ? (
+        <>
+          {!!scrape.title && <span className="stg-intake-title">{scrape.title}</span>}
+          <span className="stg-intake-meta">
+            {!!scrape.colors?.length && (
+              <span className="stg-site-colors" title="Brand colors scraped from the site">
+                {scrape.colors.slice(0, 4).map((c) => <i key={c} style={{ background: c }} title={c} />)}
+              </span>
+            )}
+            <span className="stg-intake-stat">{scrape.imagesFound || 0} images found</span>
+            {!!scrape.textLen && (
+              <span className="stg-intake-stat">{Number(scrape.textLen).toLocaleString()} chars of copy read</span>
+            )}
+          </span>
+        </>
+      ) : (
+        <span className="stg-intake-note">
+          {scrape.reason || 'the page could not be scraped'} — leaning on taste signals only
+        </span>
+      )}
+    </section>
+  );
+}
+
 // detail-route skeleton — same geometry as the real .stg-detail card, with a
 // GhostWriter drafting "what the fetch is doing" into the title slot. The
 // click→fetch gap IS the product: this stays up until /boards/:id/strategies/:idx
@@ -690,16 +726,29 @@ export default function Strategy() {
   const { profile, say, board, setBoard, boards, setBoards, openBoard } = useApp();
   const nav = useNavigate();
   const loc = useLocation();
-  // /strategy → the board list; /strategy/:idx → one strategy's full page.
+  // /strategy → the active board; /strategy/<idx> → one strategy's full page on
+  // it; /strategy/<boardId> → any board by id (shared links stay true when the
+  // server-side active board moves); /strategy/<boardId>/<idx> → its detail.
   const { '*': seg = '' } = useParams();
-  const isDetail = seg !== '';
-  const sel = isDetail && /^\d+$/.test(seg) ? parseInt(seg, 10) : null;
+  const segParts = seg.split('/').filter(Boolean);
+  let urlBoardId = null, idxStr = null, segBad = false;
+  if (segParts.length === 1) {
+    if (/^\d+$/.test(segParts[0])) idxStr = segParts[0]; // bare idx → active board
+    else urlBoardId = segParts[0];
+  } else if (segParts.length === 2) {
+    [urlBoardId, idxStr] = segParts;
+  } else if (segParts.length > 2) {
+    segBad = true;
+  }
+  const isDetail = idxStr !== null;
+  const sel = isDetail && /^\d+$/.test(idxStr) ? parseInt(idxStr, 10) : null;
 
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const [siteUrl, setSiteUrl] = useState('');
   const [busy, setBusy] = useState(false);
   const [stok, setStok] = useState('');    // live model tokens (raw JSON writing)
   const [sthink, setSthink] = useState(''); // live reasoning tokens
+  const [scrape, setScrape] = useState(null); // 'site-scrape' payload — real data mid-wait
   const [editingPrompt, setEditingPrompt] = useState(false); // chipbar inline edit
   const [editPrompt, setEditPrompt] = useState('');
   const [resL, setResL] = useState(undefined); // local override; undefined → follow ctx board
@@ -736,12 +785,45 @@ export default function Strategy() {
   const [renameVal, setRenameVal] = useState('');
   const renameRef = useRef(null);
 
+  // a board-scoped URL (/strategy/<boardId>[/<idx>]) resolves its own board —
+  // /api/boards/:id serves any board, not just the server-active one, so a
+  // copied link can't silently rot into whatever board later became active.
+  // The fetch stays OUT of ctx: viewing a plan must not re-point the app's
+  // active board behind the user's back.
+  const [urlBoard, setUrlBoard] = useState(null); // {status:'loading'} | {status:'done',board} | {status:'error',err}
+  useEffect(() => {
+    // ctx/resL already holding this id wins — no refetch (covers the active
+    // board and a locally-renamed board the ctx hasn't caught up with)
+    if (!urlBoardId || urlBoardId === board?.id || urlBoardId === resL?.id) {
+      setUrlBoard(null);
+      return undefined;
+    }
+    let dead = false;
+    setUrlBoard({ status: 'loading' });
+    api.board(urlBoardId)
+      .then(({ board: b }) => { if (!dead) setUrlBoard(b ? { status: 'done', board: b } : { status: 'error', err: 'board not found' }); })
+      .catch((e) => { if (!dead) setUrlBoard({ status: 'error', err: e.message || 'board fetch failed' }); });
+    return () => { dead = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlBoardId, board?.id, resL?.id]);
+
   // the board lives in app Ctx (loaded via api.getStrategy on app mount) so it
   // survives navigation; resL lets this view clear it locally for a new prompt
-  // without revoking the global unlock.
-  const res = resL === undefined ? board : resL;
+  // without revoking the global unlock. A scoped URL overrides both.
+  const ctxRes = resL === undefined ? board : resL;
+  const res = urlBoardId
+    ? (ctxRes?.id === urlBoardId ? ctxRes : urlBoard?.board || undefined) // undefined → still fetching
+    : ctxRes;
   const resRef = useRef(res);
-  const setRes = (v) => { resRef.current = v; setResL(v); if (v) setBoard(v); };
+  const setRes = (v) => {
+    resRef.current = v;
+    if (urlBoardId && ctxRes?.id !== urlBoardId) {
+      setUrlBoard(v ? { status: 'done', board: v } : null);
+    } else {
+      setResL(v);
+      if (v) setBoard(v);
+    }
+  };
 
   // restore the submitted prompt for a persisted board (selection is the URL now)
   useEffect(() => {
@@ -781,7 +863,7 @@ export default function Strategy() {
     const url = siteUrl.trim() || findUrl(raw);
     if ((!p && !url) || busy) return;
     if (text) setPrompt(p);
-    setBusy(true); setErr(''); setNotes(''); setEx({}); setWildHint(''); setStok(''); setSthink('');
+    setBusy(true); setErr(''); setNotes(''); setEx({}); setWildHint(''); setStok(''); setSthink(''); setScrape(null);
     // stream the build — each stage lands and its section starts typing in
     // while the next is still generating. Falls back to the one-shot call.
     try {
@@ -791,6 +873,7 @@ export default function Strategy() {
       let gotBoard = null;
       try {
         const stream = api.strategyStream(p, undefined, url || undefined, (ev, data) => {
+          if (ev === 'site-scrape') setScrape(data);
           if (ev === 'stage' && data?.urlContext) setRes((r) => ({ ...(r || {}), urlContext: data.urlContext }));
           if (ev === 'audience') setRes((r) => ({ ...(r || {}), audienceRead: data.audienceRead, evidence: data.evidence, sub: s }));
           if (ev === 'strategies') { setRes((r) => ({ ...(r || {}), strategies: data.strategies })); setStok(''); }
@@ -828,9 +911,9 @@ export default function Strategy() {
 
   // pill click → collapse back to the composer (ctx board stays → app stays unlocked)
   const reset = () => {
-    setResL(null); setErr(''); setNotes(''); setEx({}); setWildHint(''); setRenaming(false);
+    setResL(null); setErr(''); setNotes(''); setEx({}); setWildHint(''); setRenaming(false); setScrape(null);
     setPrompt(''); setSiteUrl('');   // composer starts empty — no leftover text
-    if (isDetail) nav('/strategy');
+    if (seg !== '') nav('/strategy'); // drop any detail idx AND board scope
   };
 
   // inline board rename — PATCH /api/boards/:id, then patch every local copy
@@ -841,7 +924,11 @@ export default function Strategy() {
     try {
       await api.renameBoard(res.id, title);
       const nb = { ...res, title };
-      setBoard(nb); setResL(nb);
+      if (urlBoardId && ctxRes?.id !== urlBoardId) {
+        setUrlBoard({ status: 'done', board: nb }); // scoped view — don't touch ctx
+      } else {
+        setBoard(nb); setResL(nb);
+      }
       setBoards?.((bs) => (bs || []).map((b) => (b.id === res.id ? { ...b, title } : b)));
       say?.('Plan renamed');
     } catch (e) { say?.(e.message || 'rename failed'); }
@@ -1183,13 +1270,20 @@ export default function Strategy() {
   const subProduct = sub?.productId ? (profile?.catalog || []).find((p) => p.id === sub.productId) : null;
   const subHost = sub?.url ? host(sub.url) : '';
 
+  // garbage tail (/strategy/a/b/c) or a board id that doesn't resolve → the
+  // board list, with the lie replaced out of the URL
+  if (segBad || (urlBoardId && urlBoard?.status === 'error')) {
+    return <Navigate to="/strategy" replace />;
+  }
+
   if (profile === undefined || res === undefined) {
     return <div className="loading-wrap"><div className="spinner" /></div>;
   }
 
-  // detail URL without a valid board/card → back to the board list
+  // detail URL without a valid board/card → keep a valid board scope, drop
+  // the bad idx (/strategy/<boardId>/99 → /strategy/<boardId>)
   if (isDetail && !busy && !cur) {
-    return <Navigate to="/strategy" replace />;
+    return <Navigate to={urlBoardId && res?.id ? `/strategy/${urlBoardId}` : '/strategy'} replace />;
   }
 
   const pageHead = (
@@ -1399,10 +1493,16 @@ export default function Strategy() {
             </div>
           </div>
 
-          {/* while the board generates: full skeleton until the first stage
-              (audience read) lands — then real sections type in live and only
+          {/* while the board generates: the site-scrape card lands first with
+              real scraped data, then the skeleton holds until the audience
+              read arrives — after that real sections type in live and only
               the not-yet-arrived sections stay skeleton inside the board */}
-          {busy && !res?.audienceRead && !res?.strategies && <BoardSkeleton />}
+          {busy && !res?.audienceRead && !res?.strategies && (
+            <>
+              {!!scrape && <IntakeCard scrape={scrape} />}
+              <BoardSkeleton />
+            </>
+          )}
 
           {err && !busy && (
             <div className="card stg-err">
@@ -1554,7 +1654,9 @@ export default function Strategy() {
                         const pull = [s.heroSignal, ...ents].filter(Boolean).filter((v, j, a) => a.indexOf(v) === j).slice(0, 2);
                         return (
                         <Link key={s.id || i} className="stg-pick"
-                          style={{ '--i': i }} to={`/strategy/${i}`} title={s.title}>
+                          style={{ '--i': i }}
+                          to={res?.id ? `/strategy/${res.id}/${i}` : `/strategy/${i}`}
+                          title={s.title}>
                           <span className="stg-pick-top stg-fill" style={{ '--fo': '30ms' }}>
                             <span className="stg-idx">STRATEGY {String(i + 1).padStart(2, '0')}</span>
                             <Ring value={s.audienceFit?.score} label="fit" small />
@@ -1661,7 +1763,7 @@ export default function Strategy() {
                 <div className="stg-detail-top">
                   <div className="stg-strat-id">
                     <span className="stg-idx">STRATEGY {String(sel + 1).padStart(2, '0')} · CAMPAIGN BOARD
-                      <Link className="stg-back" to="/strategy">← all strategies</Link>
+                      <Link className="stg-back" to={res?.id ? `/strategy/${res.id}` : '/strategy'}>← all strategies</Link>
                     </span>
                     <Typed as="h3" className="display" text={full.title || ''} cps={40} />
                     {!!full.angle && <p className="stg-angle"><Typed text={full.angle} delay={220} cps={70} /></p>}

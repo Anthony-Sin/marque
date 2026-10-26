@@ -413,7 +413,17 @@ app.post('/api/strategy/stream', async (req, res) => {
           colors: (s.colors || []).slice(0, 5), fonts: (s.fonts || []).slice(0, 4),
           image: s.images?.[0]?.src || s.og?.image || null, siteName: s.og?.site_name || '',
         };
-      } catch { urlContext = { url: inlineUrl, scrapeFailed: true }; }
+        // the scrape lands seconds before the audience read — ship its real
+        // payload now so the wait shows what the site gave, not skeleton void
+        send('site-scrape', {
+          ok: true, url: inlineUrl, title: s.title || '',
+          colors: (s.colors || []).slice(0, 4).map((c) => c.hex || c),
+          imagesFound: (s.images || []).length, textLen: (s.text || '').length,
+        });
+      } catch (e) {
+        urlContext = { url: inlineUrl, scrapeFailed: true };
+        send('site-scrape', { ok: false, url: inlineUrl, reason: String(e?.message || e).slice(0, 160) });
+      }
       send('stage', { stage: 'scraped', urlContext });
     }
     const finalPrompt = raw || `analyze this product/site and suggest campaign strategies: ${inlineUrl}`;

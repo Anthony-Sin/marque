@@ -113,7 +113,7 @@ function ImpSteal({ n, i }) {
 
 export default function Websites() {
   const { say, status, profile } = useApp();
-  const [sp] = useSearchParams();
+  const [sp, setSp] = useSearchParams();
   const [tab, setTab] = useState(() => (sp.get('tab') === 'site' ? 'site' : 'improve')); // 'improve' | 'site'
   const [sites, setSites] = useState(null);
   const [vid, setVid] = useState(null);
@@ -127,8 +127,50 @@ export default function Websites() {
   const [unpubId, setUnpubId] = useState(null);    // site row mid-unpublish
   const stageNote = useStages(busy === 'edit' ? EDIT_STAGES : CREATE_STAGES, busy === 'create' || busy === 'edit');
   const impStage = useStages(IMPROVE_STAGES, impBusy, 2000);
-  const [siteId, setSiteId] = useState(null);      // which generated site is shown (default: newest)
+  const [siteId, setSiteId] = useState(() => sp.get('site') || null); // which generated site is shown (default: newest)
   const site = sites?.find((s) => s.id === siteId) || sites?.[sites.length - 1] || null;
+
+  // tab + site selection live in the URL: changes PUSH a history entry (Back
+  // undoes the last switch), and ?site implies the site tab when ?tab is absent
+  const goTab = (t) => {
+    setSp((p) => {
+      const n = new URLSearchParams(p);
+      if (t === 'site') n.set('tab', 'site'); else n.delete('tab'); // improve = default → bare url
+      return n;
+    });
+  };
+  const pickSite = (id) => {
+    setSp((p) => {
+      const n = new URLSearchParams(p);
+      if (id) { n.set('site', id); n.set('tab', 'site'); }
+      else n.delete('site');
+      return n;
+    });
+    setVid(null);
+  };
+
+  // URL → state: Back/Forward and shared links drive the same state as clicks
+  useEffect(() => {
+    const t = sp.get('tab');
+    setTab(t === 'site' || (!t && sp.get('site')) ? 'site' : 'improve');
+    setSiteId(sp.get('site'));
+  }, [sp]);
+
+  // stale or bogus params get cleaned (replace — the lie never stays in history):
+  // a ?site the list can't resolve, or a ?tab we don't have
+  useEffect(() => {
+    const wantSite = sp.get('site');
+    const wantTab = sp.get('tab');
+    const siteBad = wantSite && Array.isArray(sites) && !sites.some((s) => s.id === wantSite);
+    const tabBad = wantTab && !['site', 'improve'].includes(wantTab);
+    if (!siteBad && !tabBad) return;
+    setSp((p) => {
+      const n = new URLSearchParams(p);
+      if (siteBad) n.delete('site');
+      if (tabBad) n.delete('tab');
+      return n;
+    }, { replace: true });
+  }, [sp, sites]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const reload = async () => {
     try {
@@ -163,6 +205,7 @@ export default function Websites() {
       const { website } = await api.createWebsite(prompt.trim() || undefined);
       await reload();
       setVid(website?.activeVersion || website?.versions?.at(-1)?.id);
+      if (website?.id) pickSite(website.id); // land on the fresh site — url says which
       say('Your website is ready');
     } catch (e) { say(e.message); }
     setBusy('');
@@ -359,7 +402,7 @@ export default function Websites() {
                 <div key={s.id} className="ws-site-row">
                   <button type="button" className="ws-site-main"
                     title="Open this site in the generator"
-                    onClick={() => { setTab('site'); setSiteId(s.id); setVid(null); }}>
+                    onClick={() => pickSite(s.id)}>
                     <span className="ws-site-name">
                       Site {sites.length - i}{s.producedFrom?.campaignTitle ? ` — ${s.producedFrom.campaignTitle}` : ''}
                     </span>
@@ -476,7 +519,7 @@ export default function Websites() {
               style={{ marginRight: 'auto', maxWidth: 320 }}
               value={site.id}
               aria-label="Switch generated site"
-              onChange={(e) => { setSiteId(e.target.value); setVid(null); }}
+              onChange={(e) => pickSite(e.target.value)}
             >
               {[...sites].reverse().map((s, i) => (
                 <option key={s.id} value={s.id}>
@@ -570,9 +613,9 @@ export default function Websites() {
         <div className="vh-side">
           <div className="seg-tabs" role="tablist" aria-label="Websites sections">
             <button role="tab" aria-selected={tab === 'improve'} className={tab === 'improve' ? 'on' : ''}
-              onClick={() => setTab('improve')}>Improve my site</button>
+              onClick={() => goTab('improve')}>Improve my site</button>
             <button role="tab" aria-selected={tab === 'site'} className={tab === 'site' ? 'on' : ''}
-              onClick={() => setTab('site')}>Your website</button>
+              onClick={() => goTab('site')}>Your website</button>
           </div>
         </div>
       </div>

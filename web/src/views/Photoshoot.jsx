@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import api, { pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
@@ -161,10 +162,18 @@ function ShotTile({ r, onEdit, onKeep, onDl, busy }) {
 /* ---------- main view ---------- */
 export default function Photoshoot() {
   const { say, profile, refresh } = useApp();
+  const [sp, setSp] = useSearchParams();
   const [jobs, setJobs] = useState(null);          // null loading · 'error' fetch failed
   const [err, setErr] = useState('');
   const [formOpen, setFormOpen] = useState(false);
-  const [sel, setSel] = useState(null);            // selected shoot id
+  // selection lives in the URL (?shoot=<id>): selecting pushes a history entry
+  // so browser Back closes the panel instead of leaving /shoots; a shared link
+  // lands on the same detail. Closing replaces — no dead param left behind.
+  const sel = sp.get('shoot') || null;
+  const select = (id) => {
+    setEditFor(null);
+    setSp(id ? { shoot: id } : {}, { replace: !id });
+  };
   const [editFor, setEditFor] = useState(null);    // imagePath being edited
   const [editPrompt, setEditPrompt] = useState('');
   const [busy, setBusy] = useState('');            // 'launch' | 'edit' | 'del' | 'keep'
@@ -199,12 +208,20 @@ export default function Photoshoot() {
     return () => clearInterval(t);
   }, [running]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // a ?shoot= that no longer resolves (deleted, or never existed) is a lie —
+  // strip it from the URL rather than render a dead selection
+  useEffect(() => {
+    if (sel && Array.isArray(jobs) && !jobs.some((j) => j.id === sel)) {
+      setSp({}, { replace: true });
+    }
+  }, [jobs, sel]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const launch = async (payload) => {
     setBusy('launch');
     try {
       const { shoot } = await api.createPhotoshoot(payload);
       await load();
-      if (shoot?.id) setSel(shoot.id);
+      if (shoot?.id) select(shoot.id);
       setFormOpen(false);
       say('Shoot running — renders land as they finish');
     } catch (e) { say(e.message); }
@@ -246,7 +263,7 @@ export default function Photoshoot() {
     setBusy('del');
     try {
       const { freedAssets } = await api.deletePhotoshoot(job.id);
-      setSel(null); setConfirmDel(false);
+      select(null); setConfirmDel(false);
       await load();
       say(freedAssets ? `Released ${freedAssets} asset${freedAssets === 1 ? '' : 's'}` : 'Shoot deleted');
     } catch (e) { say(e.message); }
@@ -321,7 +338,7 @@ export default function Photoshoot() {
                 return (
                   <button key={j.id} type="button"
                     className={`ps-card st-${st}${sel === j.id ? ' on' : ''}`}
-                    onClick={() => { setSel(sel === j.id ? null : j.id); setEditFor(null); }}>
+                    onClick={() => select(sel === j.id ? null : j.id)}>
                     <span className="ps-card-top">
                       <i className="ps-led" />
                       <span className="ps-st mono">{st === 'error' ? 'error' : st === 'running' ? 'running' : 'done'}</span>
@@ -355,7 +372,7 @@ export default function Photoshoot() {
               <div className="zone-head">
                 <span className="z-id">SHT</span>Shoot · {job.id.slice(0, 8)}
                 <span className={`z-tag ps-tag-${jobStatus(job)}`}>{jobStatus(job)}</span>
-                <button type="button" className="icon-btn sm ps-x" onClick={() => { setSel(null); setEditFor(null); }} aria-label="Close detail">
+                <button type="button" className="icon-btn sm ps-x" onClick={() => select(null)} aria-label="Close detail">
                   <Icon name="x" size={13} />
                 </button>
               </div>

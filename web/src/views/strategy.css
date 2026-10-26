@@ -381,6 +381,29 @@
 .stg-stream-tok { color: var(--ink-3); white-space: pre-wrap; }
 .stg-stream .stg-caret { display: inline-block; width: 6px; height: .9em; background: var(--lime); vertical-align: -1px; margin-left: 2px; animation: stgStagePulse 1s steps(2) infinite; }
 
+/* interim intake card — the real scrape payload while the skeleton waits.
+   Lands on the 'site-scrape' SSE event (~seconds into a run), pre-audience. */
+.stg-intake {
+  max-width: 860px; margin: 12px auto 0; padding: 12px 16px;
+  display: flex; flex-direction: column; gap: 6px; min-width: 0;
+  border-left: 2px solid var(--lime);
+}
+.stg-intake.bad { border-left-color: var(--rose); }
+.stg-intake-head {
+  display: inline-flex; align-items: center; gap: 7px; min-width: 0;
+  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-4);
+}
+.stg-intake-head b { color: var(--lime); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stg-intake.bad .stg-intake-head b { color: var(--rose); }
+.stg-intake-title {
+  font-family: var(--font-serif); font-style: italic; font-size: 16px; color: var(--ink-2);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.stg-intake-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.stg-intake-stat { font-size: 11px; color: var(--ink-4); }
+.stg-intake-note { font-size: 12px; color: var(--ink-3); line-height: 1.45; word-break: break-word; }
+
 /* scraped-site context — what the product link actually contributed */
 .stg-site { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line-soft); }
 .stg-site-row { display: flex; gap: 12px; margin-top: 8px; align-items: flex-start; }
@@ -639,6 +662,22 @@
 @media (max-width: 640px) {
   .stg-produce { align-items: stretch; }
   .stg-produce .btn.lime { width: 100%; justify-content: center; }
+
+  /* phone: the stacked detail card runs several viewports, and the produce
+     row — the page's point — used to sit ~2.5 screens deep behind
+     audience/evidence/refs. Unbox .stg-handoff so .stg-produce becomes a
+     direct flex item of .stg-detail, then dock it to the bottom edge of the
+     .stg-wrap scrollport: the action stays on screen for the whole card and
+     rejoins the flow at the card's end (same sticky idiom as .stg-tile-head).
+     Notes keeps its natural slot just above it; desktop order untouched. */
+  .stg-detail .stg-handoff { display: contents; }
+  .stg-detail .stg-produce {
+    position: sticky; bottom: 0; z-index: 7;
+    margin: 0 calc(-1 * var(--tpx, 14px));
+    padding: 10px var(--tpx, 14px) calc(10px + env(safe-area-inset-bottom, 0px));
+    background: var(--card); border-top: 1px solid var(--line-soft);
+    box-shadow: 0 -12px 28px rgba(0, 0, 0, .5);
+  }
 }
 
 /* ---------- plans row — board switcher above the board ---------- */
