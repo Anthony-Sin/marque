@@ -1,6 +1,6 @@
 // smoke.js — sequential REAL integration checks (tensor, gemini image, qloo, scraper)
 import fs from 'node:fs';
-import { init, assetAbs } from '../src/services/store.js';
+import { init, assetAbs, list } from '../src/services/store.js';
 import { chat } from '../src/services/tensor.js';
 import { genImage } from '../src/services/gemini.js';
 import { genImageResilient, localgenHealth } from '../src/services/media.js';
@@ -154,6 +154,41 @@ async function pollJob(id, deadlineMs = 60000) {
   }
   return null; // still running at deadline — caller decides if that matters
 }
+// pixel dims straight off the wire bytes — PNG IHDR or a JPEG SOF scan. Lets
+// the resize check verify the aspect a route actually rendered, not just 200.
+function imgDims(buf) {
+  const b = Buffer.from(buf);
+  if (b.length > 24 && b[0] === 0x89 && b[1] === 0x50) return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+  if (b.length > 4 && b[0] === 0xff && b[1] === 0xd8) {
+    for (let off = 2; off + 9 < b.length;) {
+      if (b[off] !== 0xff) { off++; continue; }
+      const marker = b[off + 1], len = b.readUInt16BE(off + 2);
+      if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) { off += 2; continue; }
+      if ([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf].includes(marker))
+        return { h: b.readUInt16BE(off + 5), w: b.readUInt16BE(off + 7) };
+      off += 2 + len;
+    }
+  }
+  return null; // webp/gif/unknown — caller soft-asserts
+}
+// registered rasters that resolve through /api/images/:id — registry ids
+// first (id lookup), then creative imagePath basenames (/assets/<base>
+// lookup). No GET route lists the registry, so candidates are verified live
+// by the POST itself: a stale row just 404s and the next is tried.
+async function imageCandidates() {
+  const reg = (list('images') || []).filter((i) => /\.(png|jpe?g|webp)$/i.test(i?.path || '') && assetAbs(i.path));
+  const seen = new Set(reg.map((i) => i.path));
+  const extra = [];
+  for (const c of (await api('GET', '/api/campaigns')).body?.campaigns || []) {
+    for (const cr of c.creatives || []) {
+      if (/\.(png|jpe?g|webp)$/i.test(cr?.imagePath || '') && !seen.has(cr.imagePath) && assetAbs(cr.imagePath))
+        extra.push(cr.imagePath.split('/').pop());
+    }
+  }
+  return [...reg.slice(-6).reverse().map((i) => i.id), ...extra.slice(0, 4)];
+}
+let smokeImageRef = null;    // raster ref resolved once — resize + animate share it
+let smokeAnimateJobId = null; // fired ahead of the resize check so the video gen overlaps
 
 await check('http api reachable', async () => {
   const r = await api('GET', '/api/status');
@@ -168,6 +203,17 @@ await check('status shape: localgen + qloo fields', async () => {
   if (!/sdxl/i.test(String(lg.model || ''))) throw new Error(`localgen.model="${lg.model}" — expected sdxl variant`);
   if (!('qloo' in r.body)) throw new Error('qloo field missing from /api/status');
   return `localgen=${lg.model} ok=true qloo=${r.body.qloo}`;
+});
+
+await check('status agent honesty: ok + model reported', async () => {
+  const r = await api('GET', '/api/status');
+  const a = r.body?.agent;
+  if (r.status !== 200 || !a) throw new Error('agent field missing from /api/status');
+  // the chat/copy brain must report itself honestly: reachable AND naming the
+  // model actually answering — a green light with no model is PR, not status
+  if (a.ok !== true) throw new Error(`agent.ok=${a.ok} provider=${a.provider} error=${a.error || 'none'}`);
+  if (!a.model) throw new Error('agent.model missing — honesty requires naming the model in use');
+  return `provider=${a.provider} model=${a.model} ok=true${a.lastCallOk === false ? ' (note: lastCallOk=false)' : ''}`;
 });
 
 await check('campaign create dedupes on board+strategy+title', async () => {
@@ -202,6 +248,38 @@ await check('failed+empty campaigns filtered from list', async () => {
   const bad = campaigns.filter((c) => c.genStatus === 'error' && !(c.creatives || []).length);
   if (bad.length) throw new Error(`${bad.length} failed+empty campaign(s) listed: ${bad.map((c) => c.id.slice(0, 8)).join(',')}`);
   return `${campaigns.length} listed, none failed-and-empty`;
+});
+
+await check('demo-video refuses when no own/board site to film', async () => {
+  // the regression locked in: a campaign with no site in scope must get 400
+  // 'no website … to film' — never a 200 that quietly films a stranger's.
+  // filmableSite's scope is replicated exactly: own campaign → a sibling on
+  // the same board → a producedFrom.strategyTitle in the campaign's/board's
+  // strategy titles. Board detail routes give the full title set (the list
+  // route's `titles` is truncated to 3).
+  const [cs, ws] = await Promise.all([api('GET', '/api/campaigns'), api('GET', '/api/websites')]);
+  const campaigns = cs.body?.campaigns || [], sites = ws.body?.websites || [];
+  const boardSeen = {}; // boardId → {exists, titles[]} — a deleted board means no siblings, matching find('boards')
+  for (const id of [...new Set(campaigns.map((c) => c.boardId).filter(Boolean))]) {
+    const b = await api('GET', `/api/boards/${id}`);
+    boardSeen[id] = { exists: b.status === 200, titles: (b.body?.board?.strategies || []).map((s) => s?.title).filter(Boolean) };
+  }
+  const filmless = campaigns.find((c) => {
+    const bd = c.boardId ? boardSeen[c.boardId] : null;
+    const stratTitles = new Set([c.strategyTitle, ...(bd?.exists ? bd.titles : [])].filter(Boolean));
+    const siblingIds = bd?.exists ? new Set(campaigns.filter((x) => x.boardId === c.boardId).map((x) => x.id)) : new Set();
+    return !sites.some((w) =>
+      w.producedFrom?.campaignId === c.id
+      || siblingIds.has(w.producedFrom?.campaignId)
+      || (w.producedFrom?.strategyTitle && stratTitles.has(w.producedFrom.strategyTitle)));
+  });
+  if (!filmless) skip('every campaign on record has a site in scope — nothing filmless to probe');
+  const r = await api('POST', `/api/campaigns/${filmless.id}/demo-video`);
+  if (r.status !== 400 || !/no website.*to film/i.test(String(r.body?.error || '')))
+    throw new Error(`→ ${r.status} ${JSON.stringify(r.body)?.slice(0, 160)} — want 400 'no website … to film' (a 200 films a stranger's site)`);
+  const miss = await api('POST', '/api/campaigns/smoke-no-such-campaign/demo-video');
+  if (miss.status !== 404) throw new Error(`unknown campaign → ${miss.status}, want 404`);
+  return `campaign=${filmless.id.slice(0, 8)} "${String(filmless.brief?.title || '').slice(0, 30)}" → 400 "${r.body.error.slice(0, 60)}"; unknown id → 404`;
 });
 
 await check('brandbook unpublish idempotent', async () => {
@@ -336,6 +414,36 @@ await check('profile PUT patch round-trips tone', async () => {
   }
 });
 
+await check('profile images array round-trips intact', async () => {
+  const pre = await api('GET', '/api/profile');
+  if (pre.status !== 200) throw new Error(`GET /api/profile → ${pre.status}`);
+  if (!pre.body?.profile) skip('no profile on record to patch');
+  const before = pre.body.profile.images;
+  if (!Array.isArray(before) || !before.length) skip('profile has no images array to round-trip');
+  try {
+    // the wipe this locks in: applyPatch replaces arrays wholesale, so a
+    // partial images[] shrinks the library. The contract under test is that
+    // the FULL just-read array goes back verbatim — every id, every caption.
+    const put = await api('PUT', '/api/profile', { patch: { images: before } });
+    if (put.status !== 200) throw new Error(`PUT {patch:{images}} → ${put.status} ${JSON.stringify(put.body)?.slice(0, 140)}`);
+    const got = (await api('GET', '/api/profile')).body?.profile?.images;
+    if (!Array.isArray(got) || got.length !== before.length)
+      throw new Error(`images ${before.length} → ${Array.isArray(got) ? got.length : 'gone'} after round-trip`);
+    const byId = new Map(got.map((g) => [g?.id, g]));
+    const lost = before.filter((i) => !byId.has(i?.id));
+    if (lost.length) throw new Error(`dropped ids: ${lost.map((i) => String(i?.id).slice(0, 8)).join(',')}`);
+    const drift = before.filter((i) => byId.get(i?.id)?.caption !== i?.caption);
+    if (drift.length) throw new Error(`caption drift on ${drift.length} image(s): ${drift.map((i) => String(i?.id).slice(0, 8)).join(',')}`);
+    const capN = before.filter((i) => i?.caption).length;
+    return `${before.length} images round-tripped verbatim (${capN} captioned, all preserved)`;
+  } finally {
+    // restore on any failure — leaving a half-written array IS the wipe
+    const cur = await api('GET', '/api/profile').catch(() => null);
+    if (cur && JSON.stringify(cur.body?.profile?.images || null) !== JSON.stringify(before))
+      await api('PUT', '/api/profile', { patch: { images: before } }).catch(() => {});
+  }
+});
+
 await check('thumbnail route renders + clamps w', async () => {
   // a real raster asset — profile library first, then any creative image
   const prof = (await api('GET', '/api/profile')).body?.profile;
@@ -414,6 +522,83 @@ await check('photoshoot job lifecycle + delete frees assets', async () => {
     for (const s of (lst?.body?.jobs || []).filter((x) => String(x.prompt || '').startsWith(marker)))
       await api('DELETE', `/api/photoshoot/${s.id}`).catch(() => {});
   }
+});
+
+// the animate POST returns instantly (in-memory job runner) — fire it here so
+// its video gen overlaps the resize gens below; the animate check asserts its
+// terminal state. No ref (or a transport drop) → each check resolves its own.
+try {
+  const ref = (await imageCandidates())[0];
+  if (ref) {
+    const a = await api('POST', `/api/images/${encodeURIComponent(ref)}/animate`);
+    if (a.status === 200 && a.body?.job?.id) { smokeAnimateJobId = a.body.job.id; smokeImageRef = ref; }
+  }
+} catch { /* prelude is best-effort — the animate check retries for real */ }
+
+await check('image resize: real id → 16:9, bogus aspect → 1:1', async () => {
+  const created = []; // minted image ids — released via catalog pin+delete in finally
+  try {
+    const cands = await imageCandidates();
+    if (!cands.length) skip('no raster image on record to resize');
+    let r = null, used = null;
+    for (const id of cands) {
+      const t = await api('POST', `/api/images/${encodeURIComponent(id)}/resize`, { aspect: '16:9' });
+      if (t.status === 404) continue; // stale registry row — try the next
+      r = t; used = id; break;
+    }
+    if (!r) throw new Error(`every candidate 404'd (${cands.length} tried)`);
+    if (r.status !== 200 || !r.body?.image?.imagePath) throw new Error(`16:9 resize → ${r.status} ${JSON.stringify(r.body)?.slice(0, 160)}`);
+    created.push(r.body.image.id);
+    const head = await raw(`/assets/${r.body.image.imagePath.split('/').pop()}`);
+    if (head.status !== 200 || !head.buf.byteLength) throw new Error(`resized asset → ${head.status} ${head.buf.byteLength}B`);
+    const d = imgDims(head.buf);
+    if (d && Math.abs(d.w / d.h - 16 / 9) > 0.08) throw new Error(`asked 16:9, got ${d.w}x${d.h}`);
+    const r2 = await api('POST', `/api/images/${encodeURIComponent(used)}/resize`, { aspect: 'bogus' });
+    if (r2.status !== 200 || !r2.body?.image?.imagePath) throw new Error(`bogus-aspect resize → ${r2.status} ${JSON.stringify(r2.body)?.slice(0, 160)}`);
+    created.push(r2.body.image.id);
+    const head2 = await raw(`/assets/${r2.body.image.imagePath.split('/').pop()}`);
+    const d2 = head2.status === 200 ? imgDims(head2.buf) : null;
+    if (d2 && Math.abs(d2.w / d2.h - 1) > 0.08) throw new Error(`bogus aspect → ${d2.w}x${d2.h}, not the 1:1 default`);
+    return `id=${used.slice(0, 8)} 16:9→${d ? `${d.w}x${d.h}` : 'asset 200'} via ${r.body.image.provider}; bogus→${d2 ? `${d2.w}x${d2.h}` : '1:1'}`;
+  } finally {
+    // no unregister route — pin each minted image into catalog, then delete
+    // the item: releaseAsset unlinks file + registry row iff nothing refs it
+    for (const id of created) {
+      const pin = await api('PUT', `/api/images/${id}`, { target: 'catalog', name: 'smoke resize cleanup' }).catch(() => null);
+      const itemId = pin?.body?.item?.id;
+      if (itemId) await api('DELETE', `/api/catalog/${itemId}`).catch(() => {});
+    }
+    const cat = await api('GET', '/api/catalog').catch(() => null); // sweep a stranded pin
+    for (const it of (cat?.body?.items || cat?.body?.catalog || []).filter((x) => x?.name === 'smoke resize cleanup'))
+      await api('DELETE', `/api/catalog/${it.id}`).catch(() => {});
+  }
+});
+
+await check('image animate job reaches a terminal state', async () => {
+  // reuse the job fired before the resize check; if that prelude never got a
+  // job off (no ref, transport drop), resolve + fire one here instead
+  let jobId = smokeAnimateJobId;
+  if (!jobId) {
+    const ref = smokeImageRef || (await imageCandidates())[0];
+    if (!ref) skip('no registered raster to animate');
+    const r = await api('POST', `/api/images/${encodeURIComponent(ref)}/animate`);
+    if (r.status === 404) skip(`resolved ref went stale before animate — ${ref.slice(0, 8)}`);
+    jobId = r.body?.job?.id;
+    if (r.status !== 200 || !jobId) throw new Error(`POST → ${r.status} ${JSON.stringify(r.body)?.slice(0, 140)}`);
+  }
+  const j = await pollJob(jobId, 100000);
+  if (!j) throw new Error('still running at 100s deadline — never reached a terminal state');
+  // 'gone' means a --watch reload dropped the in-memory map — transport, not
+  // a route failure. 'error' is reported but tolerated: ffmpeg fallback makes
+  // 'done' the usual landing, and what this locks in is a TERMINAL state.
+  if (j.status === 'gone') return `job=${jobId.slice(0, 8)} map lost mid-run (server reload)`;
+  if (!['done', 'error'].includes(j.status)) throw new Error(`job.status="${j.status}" — expected terminal`);
+  if (j.status === 'error') return `job=${jobId.slice(0, 8)} errored (tolerated) — ${String(j.error).slice(0, 120)}`;
+  const vp = j.result?.videoPath;
+  if (!/^\/assets\/[\w.-]+\.mp4$/.test(vp || '')) throw new Error(`done but no videoPath → ${JSON.stringify(j.result)?.slice(0, 120)}`);
+  const abs = assetAbs(vp);
+  if (abs) try { fs.unlinkSync(abs); } catch { /* already gone — it was unreferenced */ }
+  return `job=${jobId.slice(0, 8)} done provider=${j.result?.provider} video=${vp.split('/').pop().slice(0, 12)}… (unlinked)`;
 });
 
 // --- promptStyle unit checks (no server, no network) ---

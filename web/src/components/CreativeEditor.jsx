@@ -8,6 +8,7 @@ import { downloadAsset, fileExt, useStages, providerLabel, cleanNote, isRaster }
 import CreativeOverlay, { OVERLAY_STYLES } from './CreativeOverlay.jsx';
 import { exportCreativePNG, renderCreativePNG } from './creativeExport.js';
 import { useOverlayFocus } from '../focus.js';
+import { cleanErr } from '../labels.js';
 import '../views/studio.css';
 
 // image-registry ops aren't wrapped by api.js — same shape as api.req, and
@@ -22,8 +23,9 @@ async function imgOp(pathname, body) {
   if (!r.ok) {
     let detail = '';
     try { detail = (await r.json()).error || ''; } catch { /* non-json body */ }
-    const e = new Error(detail ? `${detail} → ${r.status}` : `the request failed → ${r.status}`);
+    const e = new Error(detail ? cleanErr(detail, 160) : `the request failed → ${r.status}`);
     e.status = r.status;
+    e.debug = detail ? `${detail} → ${r.status}` : undefined;
     throw e;
   }
   const ct = r.headers.get('content-type') || '';

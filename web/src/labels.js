@@ -50,18 +50,27 @@ export function cleanErr(raw, max = 90) {
     .replace(/\s*\([^()]*$/, '')
     .replace(/\bmodels\/[^\s,}"']+/g, 'the model')
     .replace(/\b[A-Z][A-Z0-9_]*_(?:KEY|TOKEN|SECRET|URL|BASE)\b/g, 'the api key')
+    // binary-path env vars (FFMPEG_BIN, CHROMIUM_PATH) aren't keys — and the
+    // bare id inside them would otherwise be eaten by the engine scrub
+    .replace(/\b[A-Z][A-Z0-9_]*_(?:BIN|PATH|DIR)\b/g, 'the binary path')
     .replace(/\bhttps?:\S*/g, ' ');
   s = scrubEngines(s)
     .replace(/\bproviders\b/gi, 'render engines')
     .replace(/\bprovider\b/gi, 'render engine')
-    // status + socket codes → words
-    .replace(/\b(?:401|403)\b/g, 'key rejected')
-    .replace(/\b402\b/g, 'out of quota')
-    .replace(/\b429\b/g, 'rate-limited')
-    .replace(/\b5\d{2}\b/g, 'unreachable')
-    .replace(/\b4\d{2}\b/g, 'rejected')
+    // status + socket codes → words — but a '→ 404' the api client already
+    // appended stays numeric, so re-scrubbing a composed message ('job not
+    // found → 404') doesn't corrupt the status into 'rejected'
+    .replace(/(→\s*)?\b(401|402|403|429|[45]\d{2})\b/g, (m, arrow, code) => {
+      if (arrow) return m;
+      if (code === '401' || code === '403') return 'key rejected';
+      if (code === '402') return 'out of quota';
+      if (code === '429') return 'rate-limited';
+      return code[0] === '5' ? 'unreachable' : 'rejected';
+    })
     .replace(/\b(?:ECONNREFUSED|ENOTFOUND|ETIMEDOUT|ECONNRESET|EAI_AGAIN|socket hang up|fetch failed|terminated)\b/gi, 'unreachable')
     .replace(/\b(?:connect|dial|read|write)\s+(?=unreachable\b)/gi, '')
+    // socket-address residue after 'unreachable' ('…ECONNREFUSED 127.0.0.1:8090')
+    .replace(/\b(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?\b/g, '')
     .replace(/\b(?:cli|http)\b/gi, '')
     // leftover /v2/insights or /api/… path fragments (two+ segments)
     .replace(/\s\/[\w.\-]+\/[\w.\-/]*/g, ' ')
@@ -73,6 +82,8 @@ export function cleanErr(raw, max = 90) {
     .replace(/\b(\w{4,})\b([\s:;,.\-—–]+\1\b)+/gi, '$1')
     .replace(/\brequest to\s+failed\b/gi, 'the request failed')
     .replace(/\s+([:;,])/g, '$1')
+    // '::' runs — a stripped 'name():' dump leaves fused separators
+    .replace(/([:;,])(\s*[:;,])+/g, '$1')
     .replace(/["'`]+/g, '')
     .replace(/\s{2,}/g, ' ')
     .replace(/^[\s:;,.\-—–]+/, '')

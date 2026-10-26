@@ -217,6 +217,14 @@ const badgeClip = (s) => {
   const b = String(s || '').trim().slice(0, 18);
   return b.length > 16 ? (b.slice(0, 16).replace(/\s+\S*$/, '') || b.slice(0, 16)) : b;
 };
+// same idea for the internal angle label — 60 chars but never mid-word;
+// it renders verbatim in creative metadata, so "…dispensi" reads broken
+const angleClip = (s, n = 60) => {
+  const a = String(s || '').trim();
+  if (a.length <= n) return a;
+  const cut = a.slice(0, n).replace(/\s+\S*$/, '');
+  return cut.length >= n * 0.6 ? `${cut}…` : `${a.slice(0, n - 1)}…`;
+};
 // preferred overlay slot order — bottom performs best on social, so it stays
 // first pick; the dedup rotation only leaves it once a sibling claims it
 const VPOS_ROTATION = ['bottom', 'top', 'middle'];
@@ -327,7 +335,7 @@ export async function planCreatives(campaign, profile, product, n) {
     const items = diversifyPlan((Array.isArray(j?.items) ? j.items : [])
       .map((it) => ({
         beat: String(it.beat || '').slice(0, 24),
-        angle: String(it.angle || '').slice(0, 60),
+        angle: angleClip(it.angle),
         medium: ['video', 'image', 'copy'].includes(it.medium) ? it.medium : 'image',
         format: String(it.format || '').slice(0, 40),
         direction: String(it.direction || '').slice(0, 220),

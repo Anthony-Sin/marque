@@ -288,3 +288,13 @@ Counts: HIGH 3 · MED 7 · LOW 4
 - GOLD-PATH e2e (real campaign 'Cooler Door Neon'): copy now concrete (priced/verb-first CTAs), all sdxl stills, verified-motion videos. FOUND: planWantsSiteDemo regex 'store|shop' false-matched 'c-store' → site film of ANOTHER campaign's site (fix in flight ff71b401); mono-angle creatives (fix cbf221e8).
 - brandbook.js mix() inversion fixed (same bug sites.js had); 'negative space' slab-trigger reworded; profile ref swapped to skull-can hero; caption '(sdxl)' scrubbed.
 - in flight: jargon-fixer 774a7328, QA-r5 1e865063, reframe-UI cfd44b64, content-sweep 35db2d3d.
+
+## 03:30 — wave 3 landed (98b8fef)
+- jargon layer: labels.js (cleanErr/scrubEngines/ENGINE_DEDUPE), all r5 leaks fixed, raw kept in title= attrs as honest provenance.
+- site-film routing: word-boundary SITE_DEMO + filmableSite board-scoping (kills the c-store false-positive that filmed a stranger's site); manual demo-video route uses it too.
+- creative diversity: beat contract + avoid-ledger + samey retry + vpos rotation — verified A/B (1→4 CTA verbs, 1→3 vpos).
+- reframe UI: 6-AR picker → real img2img resize → variant chips (export/kit/motion).
+- moodboard desktop → horizontal snap rail (was 60px slivers); mobile rail preserved via min-width guard.
+- HMR double-root guard in main.jsx; store.js age-gate on moodboard orphan sweep (in-flight tiles survived).
+- content sweep: 104 asset refs verified, clichés scrubbed from site HTML, missing board tiles retriggered.
+- in flight: r6 matrix, final gold-path, error-realism audit, first-run audit, published-output audit, smoke extension.

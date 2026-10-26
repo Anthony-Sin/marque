@@ -95,7 +95,7 @@ export function TastePanel({ bundle, compact }) {
           {(a.entities || []).slice(0, compact ? 3 : 5).map((e, ei) => (
             <div key={e.id || `${e.name}-${ei}`} className="affin-row rich">
               {e.image
-                ? <img className="affin-thumb" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" />
+                ? <img className="affin-thumb" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(ev) => { ev.currentTarget.style.display = 'none'; ev.currentTarget.parentElement?.classList.add('affin-thumb-broken'); }} />
                 : <span className="affin-thumb ph">{(e.name || '?')[0]}</span>}
               <span className="affin-col">
                 <span className="affin-name small" title={e.description || undefined}>{e.name}</span>

@@ -1325,7 +1325,19 @@ app.get('/b/:slug', h(async (req, res) => {
 app.use(['/s', '/b'], (_req, res) => res.status(404).type('html').send(notPublished()));
 
 // ---------- upload ----------
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
+// image-ish types only — a stray .txt landing in the asset dir would surface
+// in pickers as a dead MediaFallback tile. Video too: uploads feed shoots.
+const UPLOAD_OK = /^(image\/(png|jpe?g|webp|gif|avif|svg\+xml)|video\/(mp4|webm|quicktime)|application\/pdf)$/i;
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 },
+  fileFilter: (_req, f, cb) => {
+    if (UPLOAD_OK.test(f.mimetype || '')) return cb(null, true);
+    const e = new Error(`unsupported file type ${f.mimetype || '?'} — images and video only`);
+    e.status = 422; // plain Error (not MulterError) — status travels to the catch-all
+    cb(e);
+  },
+});
 app.post('/api/upload', upload.single('file'), h(async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'file required' });
   const p = store.saveAssetBuf(req.file.buffer, store.mimeToExt(req.file.mimetype));

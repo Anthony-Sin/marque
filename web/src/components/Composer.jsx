@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
-import { scrubEngines, ENGINE_DEDUPE } from '../labels.js';
+import { scrubEngines, ENGINE_DEDUPE, cleanErr } from '../labels.js';
 import '../views/studio.css';
 
 export const ASPECTS = ['1:1', '4:5', '9:16', '16:9'];
@@ -25,7 +25,7 @@ export function cleanNote(note) {
     // an unclosed trailing paren means a JSON split cut a dump mid-way
     .replace(/\s*\([^()]*$/, '')
     .replace(/\bmodels\/[^\s,}"']+/g, 'the model')
-    .replace(/\b[A-Z][A-Z0-9_]*_(?:KEY|TOKEN|SECRET|URL|BASE)\b/g, 'the api key')
+    .replace(/\b[A-Z][A-Z0-9_]*_(?:KEY|TOKEN|SECRET|URL|BASE|BIN|PATH|DIR)\b/g, 'the api key')
     .replace(/\bproviders\b/gi, 'render engines')
     .replace(/\bprovider\b/gi, 'render engine'))
     // 'the video model failed: the video model: …' → 'the video model — …'
@@ -138,8 +138,11 @@ export async function postJson(url, body) {
     body: JSON.stringify(body || {}),
   });
   if (!r.ok) {
-    const e = new Error(`POST ${url} → ${r.status}`);
+    let detail = '';
+    try { detail = (await r.json()).error || ''; } catch { /* non-json body */ }
+    const e = new Error(detail ? cleanErr(detail) : `the request failed → ${r.status}`);
     e.status = r.status;
+    e.debug = `POST ${url} → ${r.status}${detail ? ` ${detail}` : ''}`;
     throw e;
   }
   const ct = r.headers.get('content-type') || '';
