@@ -65,13 +65,49 @@ export default function Campaigns() {
   };
   useEffect(() => { reload(); }, []);
 
-  // deep link: /campaigns?open=<id> (dashboard "Recent work" cards land here)
+  // deep links: /campaigns?open=<id> (dashboard "Recent work" cards land here)
+  // plus ?edit=<creativeId> — the editor modal is a pushed history entry, so
+  // browser Back closes the modal instead of overshooting out of the campaign
   useEffect(() => {
-    const want = new URLSearchParams(loc.search).get('open');
-    if (want && campaigns?.some((c) => c.id === want)) setOpenId(want);
-    else if (want && campaigns) nav('/campaigns', { replace: true });  // stale id — clean the url
-    else if (!want && openId) setOpenId(null);                          // browser Back left the detail
+    const q = new URLSearchParams(loc.search);
+    const want = q.get('open');
+    const editId = q.get('edit');
+    const camp = want && campaigns?.find((c) => c.id === want);
+    if (camp) {
+      setOpenId(want);
+      if (editId) {
+        const cr = (camp.creatives || []).find((x) => x.id === editId);
+        if (cr) setEditing(cr);
+        else {
+          // stale creative id — strip the param, keep the campaign open
+          q.delete('edit');
+          nav(`/campaigns?${q.toString()}`, { replace: true });
+        }
+      } else if (editing) setEditing(null);   // browser Back popped the editor entry
+    } else if (want && campaigns) nav('/campaigns', { replace: true });  // stale id — clean the url
+    else if (!want && openId) { setOpenId(null); setEditing(null); }      // browser Back left the detail
+    else if (!want && editId && campaigns) {
+      // ?edit without ?open — resolve the creative's campaign and complete
+      // the link; no owner on record → strip the param rather than leave a lie
+      const owner = campaigns.find((c) => (c.creatives || []).some((x) => x.id === editId));
+      nav(owner ? `/campaigns?open=${owner.id}&edit=${editId}` : '/campaigns', { replace: true });
+    }
   }, [loc.search, campaigns]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // opening the editor PUSHES ?edit= (see above); the modal close acts like
+  // Back — pops our own entry when we pushed it this session, else replaces
+  // (a cold-opened edit link has no prior in-app entry to pop to)
+  const editPushed = useRef(false);
+  const openEditor = (cr) => {
+    if (!cr?.id || !open) return;
+    editPushed.current = true;
+    nav(`/campaigns?open=${open.id}&edit=${cr.id}`);
+  };
+  const closeEditor = () => {
+    setEditing(null);
+    if (editPushed.current) { editPushed.current = false; nav(-1); }
+    else if (open) nav(`/campaigns?open=${open.id}`, { replace: true });
+  };
 
 
   // Strategy board handoff: 'strategyHandoff' is written by the Strategy view's
@@ -669,7 +705,7 @@ export default function Campaigns() {
                       campaign={open}
                       aspect={open.aspectRatio}
                       animating={animating === cr.id || rrMap[cr.id] === 'spin'}
-                      onEdit={setEditing}
+                      onEdit={openEditor}
                       onAnimate={animateOne}
                       onChanged={reload}
                     />
@@ -717,7 +753,7 @@ export default function Campaigns() {
           <CreativeEditor
             creative={editing}
             campaign={open}
-            onClose={() => setEditing(null)}
+            onClose={closeEditor}
             onSaved={() => reload()}
           />
         )}

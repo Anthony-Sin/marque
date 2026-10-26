@@ -173,7 +173,12 @@ export const api = {
     const fd = new FormData();
     fd.append('file', file);
     const r = await fetch('/api/upload', { method: 'POST', body: fd });
-    if (!r.ok) throw new Error(`the upload failed → ${r.status}`);
+    if (!r.ok) {
+      // the server names the reason (unsupported type / too large / undecodable)
+      // — surface it, not just the transport code
+      const j = await r.json().catch(() => null);
+      throw new Error(cleanErr(j?.error || `the upload failed → ${r.status}`));
+    }
     return r.json();
   },
   job: (id) => req('GET', `/api/jobs/${id}`),

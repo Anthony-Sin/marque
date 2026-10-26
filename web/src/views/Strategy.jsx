@@ -1220,9 +1220,14 @@ export default function Strategy() {
 
   // "why this fits" — composed from real board data: product, top entities, channels
   // prodName must be a NAME, not the whole prompt — possessive ('s) breaks on
-  // "Fern Matcha — ceremonial-grade…'s audience". Prefer the profile's real
-  // name; prompt fallback takes only its first clause.
-  const prodName = (profile?.name && profile.name !== 'Your Brand' ? profile.name : '')
+  // "Fern Matcha — ceremonial-grade…'s audience". Name the board's actual
+  // subject first (picked product, then the site it analyzed) — profile.name
+  // only when the board has no subject, else a stale profile writes its name
+  // over another brand's evidence read.
+  const subProductEarly = sub?.productId ? (profile?.catalog || []).find((p) => p.id === sub.productId) : null;
+  const prodName = subProductEarly?.name
+    || cleanAsk(res?.urlContext?.siteName || res?.urlContext?.title || '')
+    || (profile?.name && profile.name !== 'Your Brand' ? profile.name : '')
     || cleanAsk(sub?.prompt || res?.sub?.prompt || res?.title).split(/\s[—–-]\s|[,;:]/)[0].trim();
   const qTop = [...entRows].sort((a, b) => b.affinity - a.affinity).slice(0, 3);
   const qChans = chans.slice(0, 3).map((c) => chanLabel(c.name));

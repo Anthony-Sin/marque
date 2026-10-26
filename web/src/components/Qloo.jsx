@@ -16,6 +16,14 @@ const humanLabel = (l) => {
   const s = String(l || '').replace(/qloo(\s*api)?/gi, '').replace(/^[\s·—–-]+|[\s·—–-]+$/g, '');
   return s || 'Taste signals';
 };
+
+// remote thumbs 404/hotlink-block all the time — a dead img swaps back to the
+// letter tile instead of leaving an empty slot
+function AffinThumb({ e }) {
+  const [dead, setDead] = useState(false);
+  if (!e.image || dead) return <span className="affin-thumb ph">{(e.name || '?')[0]}</span>;
+  return <img className="affin-thumb" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setDead(true)} />;
+}
 export function QlooBadge({ mode = 'live', label, small }) {
   const m = mode === 'live' ? 'live' : mode === 'partial' ? 'partial' : null;
   if (!m) return null;
@@ -94,9 +102,7 @@ export function TastePanel({ bundle, compact }) {
           )}
           {(a.entities || []).slice(0, compact ? 3 : 5).map((e, ei) => (
             <div key={e.id || `${e.name}-${ei}`} className="affin-row rich">
-              {e.image
-                ? <img className="affin-thumb" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" onError={(ev) => { ev.currentTarget.style.display = 'none'; ev.currentTarget.parentElement?.classList.add('affin-thumb-broken'); }} />
-                : <span className="affin-thumb ph">{(e.name || '?')[0]}</span>}
+              <AffinThumb e={e} />
               <span className="affin-col">
                 <span className="affin-name small" title={e.description || undefined}>{e.name}</span>
                 {!!e.keywords?.length && (

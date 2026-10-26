@@ -205,8 +205,40 @@ const EXT_MIME = Object.fromEntries(Object.entries(MIME_EXT).map(([m, e]) => [e,
 export function mimeToExt(mime = '') { const k = mime.split(';')[0].trim(); return Object.hasOwn(MIME_EXT, k) ? MIME_EXT[k] : 'bin'; }
 export function extToMime(ext = '') { const k = ext.toLowerCase(); return Object.hasOwn(EXT_MIME, k) ? EXT_MIME[k] : 'application/octet-stream'; }
 
+// magic-byte sniff: declared mime/extensions are client-supplied and lie — a
+// corrupt "png" that PIL can't decode would 500 the thumb route forever
+const MAGIC = [
+  ['png',  [0x89, 0x50, 0x4e, 0x47]],
+  ['jpg',  [0xff, 0xd8, 0xff]],
+  ['gif',  [0x47, 0x49, 0x46, 0x38]],
+  ['webp', [0x52, 0x49, 0x46, 0x46]], // RIFF....WEBP
+  ['mp4',  null],                      // ftyp box — checked separately
+];
+const RASTER_EXTS = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg']);
+export function sniffExt(buf) {
+  if (!Buffer.isBuffer(buf) || buf.length < 4) return null;
+  for (const [ext, sig] of MAGIC) {
+    if (sig && sig.every((b, i) => buf[i] === b)) {
+      if (ext === 'webp' && buf.slice(8, 12).toString('latin1') !== 'WEBP') continue;
+      return ext;
+    }
+  }
+  const head = buf.slice(0, 512).toString('latin1');
+  if (/^\s*(<\?xml[^>]*>\s*)?<svg[\s>]/i.test(head)) return 'svg';
+  if (buf.length > 11 && buf.slice(4, 8).toString('latin1') === 'ftyp') return 'mp4';
+  if (head.startsWith('%PDF')) return 'pdf';
+  return null;
+}
+
 export function saveAssetBuf(buf, ext = 'png') {
   fs.mkdirSync(ASSETS_DIR, { recursive: true });
+  // corrupt-by-content raster uploads: a "png" with no valid magic is not an
+  // image — store it as bin so thumbs refuse it (415) instead of dying on it
+  if (RASTER_EXTS.has(ext) && ext !== 'svg') {
+    const real = sniffExt(buf);
+    if (real && real !== ext && !(ext === 'jpeg' && real === 'jpg')) ext = real;
+    else if (!real) ext = 'bin';
+  }
   const file = `${crypto.randomUUID()}.${ext}`;
   fs.writeFileSync(path.join(ASSETS_DIR, file), buf);
   return `/assets/${file}`;

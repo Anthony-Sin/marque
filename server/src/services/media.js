@@ -283,10 +283,23 @@ export async function ffmpegAnimate(imageWebPath, { aspectRatio = '9:16', second
 // Provider order follows ENV.localgenProvider: 'local-first' (default in .env)
 // puts the on-GPU model first; 'local-only' pins it; 'fallback' keeps gemini
 // primary and uses local as the quota escape hatch; 'off' disables it.
+// only raster refs can feed img2img/pixel pipelines — an .svg/.bin path or a
+// missing file would 500 the local engine or hand gemini an undecodable anchor
+const RASTER_REF = /\.(png|jpe?g|webp|gif)$/i;
+function usableRefs(refs = []) {
+  return (refs || []).filter((r) => {
+    if (!r) return false;
+    if (r.data || r.inline_data?.data || r.inlineData?.data) return true; // inline raster bytes
+    const p = typeof r === 'string' ? r : (r.path || r.imagePath);
+    return !!(p && RASTER_REF.test(p) && readAsset(p));
+  });
+}
+
 export async function genImageResilient(prompt, opts = {}) {
   const mode = ENV.localgenProvider || 'off';
   const useLocal = mode !== 'off' && !!ENV.localgenUrl;
-  const hasRefs = !!(opts.refs?.length || opts.images?.length);
+  opts = { ...opts, refs: usableRefs(opts.refs), images: usableRefs(opts.images) };
+  const hasRefs = !!(opts.refs.length || opts.images.length);
   const chain = opts.provider && opts.provider !== 'auto'
     ? [opts.provider]                                   // user-picked engine (e.g. "try gemini instead")
     : mode === 'local-only' ? ['local']

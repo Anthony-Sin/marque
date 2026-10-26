@@ -10,7 +10,7 @@ const execFileP = promisify(execFile);
 import { PORT, ASSETS_DIR, WEB_DIST, ENV, DATA_DIR, MOCKUPS_DIR, ROOT } from './config.js';
 import { tuning } from './tuning.js';
 import * as store from './services/store.js';
-import { chat, chatJSON, tensorConfigured, tensorHealth } from './services/tensor.js';
+import { chat, chatJSON, tensorConfigured, tensorHealth, tensorLastCall } from './services/tensor.js';
 import { devinCliAvailable, devinCliChat, devinCliInspect } from './services/devinCli.js';
 import { geminiConfigured } from './services/gemini.js';
 import { genImageResilient, genVideoResilient, localgenHealth } from './services/media.js';
@@ -98,7 +98,16 @@ app.get('/assets/thumb/:file', h(async (req, res) => {
     }
   }
   fs.mkdirSync(THUMB_DIR, { recursive: true });
-  const { stdout } = await execFileP(THUMB_PY, [THUMB_SCRIPT, src, prefix, String(w)], { timeout: 20000 });
+  const { stdout } = await execFileP(THUMB_PY, [THUMB_SCRIPT, src, prefix, String(w)], { timeout: 20000 })
+    .catch((e) => {
+      // undecodable raster (magic-sniff passed, PIL can't open) — release it so
+      // tiles stop 500ing forever (releaseAsset no-ops while still referenced)
+      try { store.releaseAsset(`/assets/${file}`); } catch { /* best effort */ }
+      return { stdout: null, _decodeFail: e };
+    });
+  if (stdout == null) {
+    return res.status(422).json({ error: 'asset is not a decodable image' });
+  }
   const out = String(stdout || '').trim();
   if (!out.startsWith(THUMB_DIR) || !fs.existsSync(out)) {
     return res.status(502).json({ error: 'thumbnail render failed' });
@@ -132,12 +141,13 @@ app.get('/api/status', h(async (_req, res) => {
     tensor: tensorConfigured(), devin: devinCliAvailable(), gemini: geminiConfigured(), qloo: q.mode, qlooNote: q.note,
     localgen: { configured: !!ENV.localgenUrl, mode: ENV.localgenProvider || 'off', ok: !!lg.ok, model: lg.model },
     // the chat/copy brain — /api/agent and every chatJSON consumer answer
-    // through tensor only (devin-cli is agentic tooling, never a chat
-    // fallback; gemini service is pixels), so report the real provider and
-    // live reachability, not just "env vars exist"
+    // through tensor, with devin-cli as a one-shot fallback when tensor's key
+    // dies (402/403/429 auth/quota only). `th.via` names whoever actually
+    // served the last call — report the real provider, not just "env vars
+    // exist"
     agent: {
-      provider: th.configured === false ? null : 'tensor',
-      model: th.configured === false ? null : ENV.tensorModel,
+      provider: th.configured === false ? null : (th.via || 'tensor'),
+      model: th.configured === false ? null : (th.via === 'devin-cli' ? 'devin-cli' : ENV.tensorModel),
       ok: !!th.ok,
       ...(th.lastCallOk != null ? { lastCallOk: th.lastCallOk } : {}),
       ...(th.lastError ? { error: th.lastError } : {}),
@@ -1150,6 +1160,7 @@ app.post('/api/websites', h(async (req, res) => {
         formats: strategy.formats || [],
       } : null,
       boardAsk: srcBoard?.sub?.prompt || null,
+      boardId: srcBoard?.id || null,
       product: product ? { name: product.name, description: product.description || '', site: product.site || product.url || '' } : null,
     };
   }
@@ -1255,6 +1266,9 @@ app.post('/api/websites/improve', h(async (req, res) => {
         auditShape,
       ].filter(Boolean).join('\n') },
     ], { maxTokens: 2600 });
+    // chatJSON may reroute to devin-cli when tensor's key is dead — name
+    // whoever actually served this call, not the default
+    auditBy = tensorLastCall()?.via || 'tensor';
   }
   const audit = { url: target, by: auditBy, scraped: !!site, socials: site?.socials || {}, missingSocials: site?.missingSocials || [], suggestions: j.suggestions || [], competitorNotes: j.competitorNotes || [], competitors, at: now() };
   set('lastSiteAudit', audit);   // a 20s+ analysis shouldn't vanish on navigation
@@ -1337,7 +1351,9 @@ app.use(['/s', '/b'], (_req, res) => res.status(404).type('html').send(notPublis
 // ---------- upload ----------
 // image-ish types only — a stray .txt landing in the asset dir would surface
 // in pickers as a dead MediaFallback tile. Video too: uploads feed shoots.
-const UPLOAD_OK = /^(image\/(png|jpe?g|webp|gif|avif|svg\+xml)|video\/(mp4|webm|quicktime)|application\/pdf)$/i;
+// every admitted mime must resolve through store.mimeToExt — avif/webm/mov
+// have no ext mapping and would land as dead '.bin' tiles in pickers
+const UPLOAD_OK = /^(image\/(png|jpe?g|webp|gif|svg\+xml)|video\/mp4|application\/pdf)$/i;
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 25 * 1024 * 1024 },

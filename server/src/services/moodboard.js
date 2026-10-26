@@ -69,7 +69,6 @@ export function boardContext(board, profile = null, product = null) {
 // first sentence — enrichPrompt splices treatment cues right after it.
 export function buildTiles(c) {
   const place = c.places.length ? `a place like ${and(c.places)}` : 'the venues this crowd gathers in';
-  const scene = short(c.strategy?.angle || c.ask, 130);
   const objects = [
     c.books[0] && `a dog-eared copy of ${short(c.books[0], 40)}`,
     c.movies[0] && `a creased still from ${short(c.movies[0], 40)}`,
@@ -85,15 +84,21 @@ export function buildTiles(c) {
     },
     {
       id: 'venue', style: 'hero',
-      prompt: `Empty venue texture study — ${place}. Raw concrete, salt-worn wood, sticker-bombed pillars, stage haze and string lights before doors open.`,
+      // measured vs "empty venue texture study": the interior/one-point anchor
+      // renders a real pre-doors room (haze, string lights) instead of a flat wall
+      prompt: `Interior photography, one-point perspective down the length of ${place}. Tungsten pools of light on raw concrete, sticker-bombed pillars, a hazy empty stage, dead string lights overhead before doors open.`,
     },
     {
       id: 'palette', style: 'photoshoot',
-      prompt: `Abstract palette-material study — swatches of powder-coated steel, matte concrete, torn print and tinted glass layered into a flat composition${c.palette.length ? ` in ${c.palette.slice(0, 3).join(', ')}` : ''}.`,
+      // "color-field photograph … no objects, no scene" pins the tile to flat
+      // material swatches — the previous 'study' wording wandered into scenes
+      prompt: `Top-down color-field photograph filling the whole frame — large flat panels of powder-coated steel, matte concrete, torn paper and tinted glass as pure color fields${c.palette.length ? ` in ${c.palette.slice(0, 3).join(', ')}` : ''}. No objects, no scene, only material and color.`,
     },
     {
       id: 'product', style: 'ad',
-      prompt: `Editorial product photograph of ${c.productName || 'the featured product'} in context — ${scene}${c.places[0] ? `, ${c.places[0]} surroundings` : ''} — a real environment, not a studio packshot.`,
+      // 'surface plain and unprinted' up front — the can renders inside the
+      // encoder window where the anti-text cue can still reach it
+      prompt: `Documentary photograph of ${c.productName || 'the featured product'}, its surface plain and unprinted, standing on a scratched bar top in ${place}. Sticky wood grain, hard tungsten practical light, shallow focus, crowd bokeh — a real environment, not a studio packshot.`,
     },
     {
       id: 'music', style: 'motion',
@@ -103,7 +108,7 @@ export function buildTiles(c) {
     },
     {
       id: 'culture', style: 'photoshoot',
-      prompt: `Hard-lit flat-lay of this audience's objects, all covers and prints blank and unmarked — ${objects.length ? objects.join(', ') : 'worn headphones, gym chalk, a creased ticket stub and a battered paperback'} — arranged on scratched steel.`,
+      prompt: `Overhead knolling photograph on scratched steel, every cover and print blank and unmarked — ${objects.length ? objects.join(', ') : 'worn headphones, gym chalk, a creased ticket stub and a battered paperback'}. Hard even light, precise grid, fingertip-wide gaps.`,
     },
     {
       id: 'strategy', style: 'hero',
@@ -113,7 +118,9 @@ export function buildTiles(c) {
     },
     {
       id: 'style', style: 'ad',
-      prompt: `Street-style detail — ${uniform.length ? `the ${uniform.join('/')}-adjacent uniform` : "this crowd's uniform"}: layered black tees, chain hardware, scuffed high-tops, wristbands and ink. Close crop on fabric texture and wear.`,
+      // 'extreme close crop' leads — 'street-style detail' rendered full-body
+      // crowd shots; the crop + hard-flash anchor holds it on fabric/hardware
+      prompt: `Extreme close crop on this crowd's uniform — ${uniform.length ? `the ${uniform.join('/')}-adjacent look` : 'the look'}: layered black tees, chain hardware, scuffed high-tops — hard flash on fabric weave, oxidized metal and cracked leather.`,
     },
     {
       id: 'atmosphere', style: 'hero',

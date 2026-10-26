@@ -1,7 +1,7 @@
 // Strategy Board: prompt + profile Qloo bundle -> candidate strategies.
 // TensorMux ideates; channel fit + audience read are computed deterministically
 // from real bundle data so "why" is always honest (see docs/STRATEGY.md).
-import { chatJSON, chatStream, extractJSON } from './tensor.js';
+import { chatJSON, chatStream, extractJSON, tensorLastCall } from './tensor.js';
 import * as qloo from './qloo.js';
 import { tuning } from '../tuning.js';
 
@@ -181,7 +181,9 @@ export async function generateStrategies({ prompt, profile, product = null, urlC
   } catch { /* fall through to deterministic */ }
 
   const modelList = raw?.strategies || raw?.strategy || (Array.isArray(raw) ? raw : null);
-  if (modelList?.length) modelNote = 'tensor';
+  // name whoever actually served the call — tensor or its devin-cli fallback —
+  // so evidence.source never credits a dead key
+  if (modelList?.length) modelNote = tensorLastCall()?.via || 'tensor';
   // the model sometimes under-delivers (1 strategy) — top up from the
   // deterministic set so a board never ships a lone card
   const merged = [...(modelList?.length ? modelList : fallbackStrategies(prompt, read))];

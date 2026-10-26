@@ -298,3 +298,26 @@ Counts: HIGH 3 · MED 7 · LOW 4
 - HMR double-root guard in main.jsx; store.js age-gate on moodboard orphan sweep (in-flight tiles survived).
 - content sweep: 104 asset refs verified, clichés scrubbed from site HTML, missing board tiles retriggered.
 - in flight: r6 matrix, final gold-path, error-realism audit, first-run audit, published-output audit, smoke extension.
+
+### Chaos-pass fixes landed (me, ~04:10)
+- `.media-fallback` + `.stg-mood-err` → `pointer-events:none` (button stays `auto`) — decorative overlays were eating tile clicks
+- `saveAssetBuf` magic-byte sniff: declared raster ext mismatches real magic → coerced/none → `.bin` (thumbs 415 not 500)
+- `/assets/thumb` PIL decode-fail → `releaseAsset` + 422 — corrupt uploads can't error-spam forever (verified: fake-PNG upload → thumb → asset released, clean 422)
+- favicon serves 200 on :8787 (earlier 404s were pre-rebuild)
+- ⌘K nav-vs-action HIGH dispatched to palette-fixer (eb48598a)
+
+### Review-fix wave + tensor fallback (me + agents, ~04:20)
+- **Tensor key died (~23h retry)** — devin-cli fallback lane landed live: key-death (401/402/403/429+400-key-err) → one-shot devinCliChat rescue, honest `via` + `agent.error` surfacing. Verified: tensor ping PASSES via fallback while key is dead.
+- status `agent.provider/model` now reflects `th.via` (was hardcoded 'tensor'); `auditBy`/`modelNote` name the real serving provider via `tensorLastCall().via`.
+- `genImageResilient` filters refs to readable rasters (`usableRefs`) — SVG/bin/missing refs dropped before localgen tries to decode them (was a 500; smoke regen check back to PASS).
+- `saveAssetBuf` magic-sniffs; `/assets/thumb` decode-fail → releaseAsset + 422 (poison-asset loop killed, verified live).
+- `UPLOAD_OK` trimmed to mimes `MIME_EXT` can name (avif/webm/mov would land as dead .bin tiles).
+- `api.upload` surfaces server 422 reason (was raw status only).
+- `.ob-stage.done` → `.past` retarget in both stylesheets (rename orphaned the styles).
+- `prodName` keys board subject (subProduct → urlContext.siteName/title → profile → prompt) — stops wrong-brand possessive on foreign-site boards. TDZ-order bug introduced+caught in review, fixed via `subProductEarly`.
+- `filmableSite`: `producedFrom.boardId` persisted (index.js+sitevideo ctx→sites.js); boardId-carrying sites must board-match — title alone no longer crosses brands.
+- `.media-fallback`+`.stg-mood-err` pointer-events:none (click-eating overlays); AffinThumb→letter-tile on img error; main.jsx MutationObservers cached+disconnected on HMR re-eval (leak fix).
+- gemini quota regex covers 402/prepayment — smoke's skipOnQuota now engages (was a permanent red).
+- deeplinks lane: `/strategy/<boardId>/<idx>` shareable (was server-global activeIdx — links rotted); shoots/websites/brandbook/editor selections URL-backed; favicon served.
+- prompt-lab: 5/9 moodboard tiles + flat-lay re-prompted, render-verified (real :8807 + vision judging).
+- Smoke: 26 PASS / 1 SKIP (gemini image quota — resilient path covers); tensor ping green via devin fallback.

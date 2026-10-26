@@ -104,7 +104,7 @@ export async function genImage(prompt, opts = {}) {
       }
     }
   }
-  const allQuota = errs.length && errs.every((s) => /429|quota|RESOURCE_EXHAUSTED/i.test(s));
+  const allQuota = errs.length && errs.every((s) => /429|402|quota|RESOURCE_EXHAUSTED|prepayment|credits? depleted/i.test(s));
   const e = new Error(`gemini: all image models failed (${allQuota ? 'quota exhausted' : errs.join(' | ').slice(0, 400)})`);
   e.quota = allQuota;
   throw e;
@@ -137,7 +137,7 @@ export async function genVideo(prompt, opts = {}) {
   }
   if (!opName) {
     const e = new Error(`gemini video: could not start operation (${errs.join(' | ').slice(0, 400)})`);
-    e.quota = errs.length && errs.every((s) => /429|quota|RESOURCE_EXHAUSTED/i.test(s));
+    e.quota = errs.length && errs.every((s) => /429|402|quota|RESOURCE_EXHAUSTED|prepayment|credits? depleted/i.test(s));
     throw e;
   }
   const deadline = Date.now() + tuning('videoPollTimeoutMs');

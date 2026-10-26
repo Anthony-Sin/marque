@@ -163,14 +163,16 @@ export default function Dashboard() {
 
   useEffect(() => { if (renaming) renameRef.current?.focus(); }, [renaming]);
 
-  // click a plan card → activate it on the server, then open the board view
+  // click a plan card → activate it on the server, then open the board view.
+  // The board id rides in the URL so a copied link can't rot onto whatever
+  // plan later becomes active.
   const open = async (b) => {
     if (renaming === b.id) return;
     if (b.id) {
       try { await openBoard(b.id); }
       catch (e) { say?.(e.message || 'could not open that plan'); return; }
     }
-    nav('/strategy');
+    nav(b.id ? `/strategy/${b.id}` : '/strategy');
   };
 
   const commitRename = async (b) => {

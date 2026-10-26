@@ -814,6 +814,9 @@ export async function generateWebsite(profile, prompt = '', ctx = null) {
     campaignId: ctx.campaign?.id || null,
     campaignTitle: ctx.campaign?.title || null,
     strategyTitle: ctx.strategy?.title || null,
+    // boardId is the collision-free scope key — strategy titles repeat across
+    // boards, and filmableSite must never film another brand's site
+    boardId: ctx.boardId || null,
   };
   push('websites', website);
   return website;

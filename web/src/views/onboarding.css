@@ -138,20 +138,20 @@
   padding: 9px 12px; border: 1px solid transparent;
 }
 .ob-stage.now { color: var(--ink); border-color: var(--line-soft); background: var(--bg-raise); }
-.ob-stage.done { color: var(--ink-3); }
+.ob-stage.past { color: var(--ink-3); }
 .ob-stage-ic {
   width: 24px; height: 24px; border-radius: 50%; flex: 0 0 24px;
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--card-3); color: var(--lime);
 }
-.ob-stage.done .ob-stage-ic { background: var(--lime); color: var(--lime-ink); }
+.ob-stage.past .ob-stage-ic { background: var(--lime); color: var(--lime-ink); }
 .ob-stage .grow { flex: 1; }
 .ob-stage-st {
   font-family: var(--font-mono); font-size: 8px; font-weight: 700;
   letter-spacing: .16em; color: var(--ink-4);
 }
 .ob-stage.now .ob-stage-st { color: var(--lime); }
-.ob-stage.done .ob-stage-st { color: var(--teal); }
+.ob-stage.past .ob-stage-st { color: var(--teal); }
 .ob-build-note {
   margin: 0; color: var(--ink-4);
   font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .08em;

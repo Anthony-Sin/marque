@@ -24,8 +24,15 @@ const stripExtOverlays = () => {
 };
 const docs = stripExtOverlays();
 // watch EVERY same-origin document — the host's toast lands after our load,
-// a one-shot strip misses it
-docs.forEach((d) => new MutationObserver(stripExtOverlays).observe(d.documentElement, { childList: true, subtree: true }));
+// a one-shot strip misses it. Observers are cached globally: on HMR re-eval
+// this module re-runs — disconnecting old ones keeps O(observers × DOM)
+// mutation cost from compounding over a dev session.
+(globalThis.__marqueObservers || []).forEach((o) => o.disconnect());
+globalThis.__marqueObservers = docs.map((d) => {
+  const o = new MutationObserver(stripExtOverlays);
+  o.observe(d.documentElement, { childList: true, subtree: true });
+  return o;
+});
 
 class ErrorBoundary extends React.Component {
   constructor(props) {

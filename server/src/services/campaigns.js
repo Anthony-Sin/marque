@@ -418,10 +418,16 @@ export function filmableSite(campaign) {
   const siblingIds = new Set(
     (list('campaigns') || []).filter((c) => board && c.boardId === board.id).map((c) => c.id),
   );
-  return sites.filter((w) =>
-    siblingIds.has(w.producedFrom?.campaignId)
-    || (w.producedFrom?.strategyTitle && stratTitles.has(w.producedFrom.strategyTitle)),
-  ).at(-1) || null;
+  return sites.filter((w) => {
+    if (siblingIds.has(w.producedFrom?.campaignId)) return true;
+    // strategyTitle is only trustworthy inside the same board — titles repeat
+    // across deterministic boards, so a boardId-carrying site must match it;
+    // title alone remains a fallback for legacy rows written before boardId
+    if (!w.producedFrom?.strategyTitle || !stratTitles.has(w.producedFrom.strategyTitle)) return false;
+    // a site that knows its board must match ours — a boardless campaign can
+    // only trust title-matches on legacy boardless rows
+    return w.producedFrom.boardId ? (board && w.producedFrom.boardId === board.id) : true;
+  }).at(-1) || null;
 }
 
 async function oneCreative(campaign, profile, product, angle, plan = null, avoid = null) {

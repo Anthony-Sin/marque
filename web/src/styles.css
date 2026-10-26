@@ -373,6 +373,7 @@ input[type="color"]:focus-visible,
 .media-fallback {
   position: relative; display: flex; align-items: center; justify-content: center;
   width: 100%; height: 100%; overflow: hidden; color: var(--ink-2);
+  pointer-events: none; /* decorative stand-in — never eat a tile click */
 }
 .media-fallback .mf-mono {
   font-family: var(--font-display); font-style: italic; font-weight: 500;
@@ -463,9 +464,9 @@ input[type="color"]:focus-visible,
 .ob-stages { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; min-width: min(280px, 100%); }
 .ob-stage { display: flex; align-items: center; gap: 10px; color: var(--ink-4); font-size: 14px; }
 .ob-stage.now { color: var(--ink); }
-.ob-stage.done { color: var(--ink-3); }
+.ob-stage.past { color: var(--ink-3); }
 .ob-stage-ic { width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--card-3); color: var(--lime); flex: 0 0 24px; }
-.ob-stage.done .ob-stage-ic { background: var(--lime); color: var(--lime-ink); }
+.ob-stage.past .ob-stage-ic { background: var(--lime); color: var(--lime-ink); }
 .ob-scratch { display: flex; flex-direction: column; height: 56vh; min-height: 340px; }
 .ob-scratch-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 4px 2px 12px; }
 .ob-atts { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 0; }

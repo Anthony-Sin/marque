@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
@@ -62,6 +62,7 @@ const NotSet = ({ children }) => (
 export default function BrandBook() {
   const { profile, setProfile, say, status } = useApp();
   const nav = useNavigate();
+  const [sp, setSp] = useSearchParams();
   const [book, setBook] = useState(undefined);       // undefined=loading, null=none
   const [step, setStep] = useState('cover');         // cover | images | view
   const [cover, setCover] = useState(null);          // {id?, path}
@@ -172,7 +173,7 @@ export default function BrandBook() {
         } catch { say('Cover composed — republish the book to restore the live link'); }
       }
       if (b) setBook(b);
-      setPage(0);
+      goPage(0, { replace: true });
       say('Cover composed');
     } catch (e) { say(e.message); }
     setBusy('');
@@ -186,7 +187,7 @@ export default function BrandBook() {
       const { book: b } = await api.createBrandBook({ coverImageId, imageIds });
       setBook(b);
       setStep('view');
-      setPage(0);
+      goPage(0, { replace: true });
       say('Brand book created');
     } catch (e) { say(e.message); }
     setBusy('');
@@ -226,6 +227,49 @@ export default function BrandBook() {
     : profile?.qloo?.mode === 'partial' ? 'partial'
     : profile?.qloo?.mode === 'error' ? 'error'
     : status?.qloo === 'live' ? 'live' : 'off';
+
+  // page list — a page only exists if it has real content, no empty spreads.
+  // Computed ahead of the early returns: the ?page= deep link + clamp below
+  // need the true count while any state is on screen.
+  const hasStory = !!(profile?.tagline || profile?.description || profile?.audience || profile?.values?.length);
+  const hasTaste = !!profile?.qloo && profile.qloo.mode !== 'error' && profile.qloo.mode !== 'none';
+  const pages = useMemo(() => [
+    { id: 'cover', label: 'Cover' },
+    hasStory && { id: 'story', label: 'Story' },
+    { id: 'voice', label: 'Voice' },
+    swatchSpecs(profile).length > 0 && { id: 'palette', label: 'Palette' },
+    { id: 'type', label: 'Typography' },
+    { id: 'imagery', label: 'Imagery' },
+    hasTaste && { id: 'taste', label: 'Taste' },
+  ].filter(Boolean), [profile]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ?page=N (1-based) deep link — the URL drives the pager. Out-of-range
+  // clamps to the real page count and rewrites itself; non-numeric or ≤0 is a
+  // lie → stripped back to the canonical bare url.
+  useEffect(() => {
+    if (step !== 'view') return;
+    const raw = sp.get('page');
+    if (raw === null) { setPage(0); return; }
+    const n = /^\d+$/.test(raw) ? parseInt(raw, 10) : NaN;
+    if (!Number.isInteger(n) || n < 1) {
+      setPage(0);
+      setSp({}, { replace: true });
+      return;
+    }
+    const p = Math.min(n, pages.length) - 1;            // clamp high → last page
+    setPage(p);
+    if (n !== p + 1) setSp(p ? { page: String(p + 1) } : {}, { replace: true });
+    else if (p === 0) setSp({}, { replace: true });     // ?page=1 → bare url
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sp, step, pages.length]);
+
+  // page turns write the URL (push → Back returns to the previous spread);
+  // turning back to page 1 strips the param — the cover IS the bare url.
+  // Programmatic jumps (fresh book, new cover) replace instead of pushing.
+  const goPage = (i, { replace = false } = {}) => {
+    const p = Math.max(0, Math.min(pages.length - 1, i));
+    setSp(p ? { page: String(p + 1) } : {}, { replace });
+  };
 
   // ---------- loading ----------
   if (book === undefined) {
@@ -357,18 +401,8 @@ export default function BrandBook() {
   const fbStack = fontStack(fBody, "system-ui,-apple-system,'Segoe UI',Arial,sans-serif");
   const when = new Date(book.createdAt || Date.now());
   const coverDate = when.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
-  // a page only exists if it has real content — no empty spreads
-  const hasStory = !!(profile?.tagline || profile?.description || profile?.audience || profile?.values?.length);
-  const hasTaste = !!profile?.qloo && profile.qloo.mode !== 'error' && profile.qloo.mode !== 'none';
-  const pages = [
-    { id: 'cover', label: 'Cover' },
-    hasStory && { id: 'story', label: 'Story' },
-    { id: 'voice', label: 'Voice' },
-    swatches.length > 0 && { id: 'palette', label: 'Palette' },
-    { id: 'type', label: 'Typography' },
-    { id: 'imagery', label: 'Imagery' },
-    hasTaste && { id: 'taste', label: 'Taste' },
-  ].filter(Boolean);
+  // `pages` is computed above (the ?page= deep link needs it before any early
+  // return fires); page stays clamped to whatever actually rendered
   const cur = pages[Math.min(page, pages.length - 1)];
 
   // ←/→ turns pages once the stage has focus (click it or Tab to it);
@@ -376,8 +410,8 @@ export default function BrandBook() {
   const onBookKey = (e) => {
     const t = e.target;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
-    if (e.key === 'ArrowLeft') { e.preventDefault(); setPage((p) => Math.max(0, p - 1)); }
-    if (e.key === 'ArrowRight') { e.preventDefault(); setPage((p) => Math.min(pages.length - 1, p + 1)); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goPage(page - 1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); goPage(page + 1); }
   };
 
   return (
@@ -573,14 +607,14 @@ export default function BrandBook() {
         </div>
 
         <div className="book-nav" role="navigation" aria-label="Book pages">
-          <button className="icon-btn" aria-label="Previous page" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>←</button>
+          <button className="icon-btn" aria-label="Previous page" disabled={page === 0} onClick={() => goPage(page - 1)}>←</button>
           <span className="book-dots">
             {pages.map((p, i) => (
-              <button key={p.id} className={`book-dot${i === page ? ' on' : ''}`} title={p.label} aria-label={`Go to ${p.label} page`} aria-current={i === page ? 'page' : undefined} onClick={() => setPage(i)} />
+              <button key={p.id} className={`book-dot${i === page ? ' on' : ''}`} title={p.label} aria-label={`Go to ${p.label} page`} aria-current={i === page ? 'page' : undefined} onClick={() => goPage(i)} />
             ))}
           </span>
           <span className="book-pageno" aria-live="polite">{pad2(page + 1)} / {pad2(pages.length)}</span>
-          <button className="icon-btn" aria-label="Next page" disabled={page >= pages.length - 1} onClick={() => setPage((p) => Math.min(pages.length - 1, p + 1))}>→</button>
+          <button className="icon-btn" aria-label="Next page" disabled={page >= pages.length - 1} onClick={() => goPage(page + 1)}>→</button>
         </div>
 
         <div className="bb-foot">

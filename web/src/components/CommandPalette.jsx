@@ -44,12 +44,72 @@ const GROUPS = [
 const ACTION_VERBS = [
   're', 'gen', 'new', 'creat', 'make', 'pub', 'unpub', 'shoot', 'photo',
   'film', 'anim', 'audit', 'mood', 'run', 'prod', 'compil', 'fix', 'launch',
-  'queue', 'start',
+  'queue', 'start', 'improve', 'check', 'take', 'down', 'deploy', 'record',
+  'share', 'review', 'analyze', 'video', 'demo', 'motion',
 ];
 const verbQuery = (q) => {
   const s = q.trim().toLowerCase();
   return !!s && ACTION_VERBS.some((v) => s.startsWith(v));
 };
+
+// filler words carry no intent — 'the shoots' and 'go to shoots' both boil
+// down to 'shoots' once they're stripped
+const FILLER = new Set([
+  'a', 'an', 'the', 'my', 'our', 'your', 'this', 'that', 'it', 'its', 'to',
+  'of', 'for', 'on', 'in', 'me', 'go', 'up', 'at', 'do', 'so', 'be',
+]);
+const TOKEN_SPLIT = /[\s\-_./(&:—–,!?]+/;
+const qwords = (q) =>
+  q.trim().toLowerCase().split(TOKEN_SPLIT).filter((w) => w && !FILLER.has(w));
+
+// multi-word queries score per-token: every content word must land somewhere
+// in the target, and the mean keeps scores on fuzz()'s scale. 'film the site
+// demo' works even though 'the' never sits next to 'film' in the hay.
+function qfuzz(q, target) {
+  const ws = qwords(q);
+  if (!ws.length) return fuzz(q, target);
+  if (ws.length === 1) return fuzz(ws[0], target);
+  let sum = 0;
+  for (const w of ws) {
+    const s = fuzz(w, target);
+    if (s < 0) return -1;
+    sum += s;
+  }
+  return sum / ws.length;
+}
+
+// the routes + the words that mean each place. A lone place word — or a place
+// word inside a query that isn't verb-led — pins its nav row above everything
+// and keeps mutating rows out of the running: 'shoots' opens Shoots, it never
+// fires 'film the site demo'.
+const PLACES = [
+  { icon: 'layout',   label: 'Dashboard',        to: '/dashboard',         meta: 'the deck — plans at a glance',        words: 'dashboard home deck overview' },
+  { icon: 'sparkle',  label: 'Strategy board',   to: '/strategy',          meta: 'the active plan · strategies',        words: 'strategy strategies board boards plan plans' },
+  { icon: 'campaign', label: 'Campaigns',        to: '/campaigns',         meta: 'the output studio — ad sets',         words: 'campaigns campaign output studio creatives creative ads', gate: true },
+  { icon: 'photo',    label: 'Shoots',           to: '/shoots',            meta: 'photoshoots — product + lifestyle',   words: 'shoots shoot photoshoot photoshoots photo photos session still stills' },
+  { icon: 'site',     label: 'Websites',         to: '/websites?tab=site', meta: 'generated sites — publish + audit',   words: 'websites website sites site webpages landing', gate: true },
+  { icon: 'book',     label: 'Brand book',       to: '/brandbook',         meta: 'the printable brand book',            words: 'brandbook book books guide guidelines identity', gate: true },
+  { icon: 'dna',      label: 'Business profile', to: '/profile',           meta: 'edit brand identity, palette, voice', words: 'profile brand business settings dna voice palette' },
+];
+// 2 = the word IS an alias, 1 = a prefix of one (≥2 chars) or an alias plus a
+// tail ('shoots' ⊃ 'shoot', 'decks' ⊃ 'deck'); 0 = not a place word
+const aliasHit = (words, w) => {
+  let hit = 0;
+  for (const a of words.split(' ')) {
+    if (a === w) return 2;
+    if ((w.length >= 2 && a.startsWith(w)) || (a.length >= 4 && w.startsWith(a))) hit = 1;
+  }
+  return hit;
+};
+const isPlaceWord = (w) => !!w && PLACES.some((p) => aliasHit(p.words, w));
+
+// a mutating row's intent words = its own label + synonyms (the hay). A lone
+// query word (≥3 chars) reaches a POST only through one of these — a fuzzy
+// hit on 'shoot' inside the film row's hay isn't intent to film anything.
+const intentHit = (it, w) =>
+  w.length >= 3 &&
+  it.hay.toLowerCase().split(TOKEN_SPLIT)
+    .some((v) => v === w || v.startsWith(w) || w.startsWith(v));
 
 // api errors arrive as 'POST /api/x → 503 detail' — the detail is the part a
 // human reads; strip the transport noise for the status line
@@ -76,6 +136,13 @@ export default function CommandPalette({ open, onClose }) {
   const actT = useRef(null);
   const setAct = (v) => { actRef.current = v; setActRaw(v); };
   const actAfter = (ms, fn) => { clearTimeout(actT.current); actT.current = setTimeout(fn, ms); };
+  // uid of a confirm-armed heavy row — pick() arms it, a second pick on the
+  // same row fires, and any other input cancels the arm via disarm()
+  const armRef = useRef(null);
+  const disarm = () => {
+    armRef.current = null;
+    if (actRef.current?.k === 'confirm') setAct(null);
+  };
   const inputRef = useRef(null);
   const listRef = useRef(null);
   const boxRef = useRef(null);
@@ -86,7 +153,7 @@ export default function CommandPalette({ open, onClose }) {
   // reset + refocus on open; lazy-pull the lists ctx doesn't carry
   useEffect(() => {
     if (!open) return;
-    setQ(''); setNavIdx(null); setAct(null); clearTimeout(actT.current);
+    setQ(''); setNavIdx(null); setAct(null); armRef.current = null; clearTimeout(actT.current);
     inputRef.current?.focus();
     let dead = false;
     api.listCampaigns()
@@ -115,9 +182,14 @@ export default function CommandPalette({ open, onClose }) {
     const push = (group, icon, label, meta, hay, run, tag, opts) =>
       out.push({ id: `${group}:${out.length}`, group, icon, label, meta, hay: `${label} ${hay || ''}`, run, tag, ...(opts || {}) });
     // cmd = an item that runs through the status line instead of closing on
-    // pick; run() returns {line, hold?, pending?} — pending resolves to a toast
-    const cmd = (icon, label, meta, hay, busy, run, tag) =>
-      push('actions', icon, label, meta, hay, run, tag, { async: true, busy });
+    // pick; run() returns {line, hold?, pending?} — pending resolves to a
+    // toast. Every cmd POSTs something, so all are `mutating`: the ranker
+    // only lists them when the query expresses intent. `extra` carries
+    // {uid, confirm} — a confirm string arms the row: first pick explains on
+    // the status line, second pick on the same row fires.
+    const cmd = (icon, label, meta, hay, busy, run, tag, extra) =>
+      push('actions', icon, label, meta, hay, run, tag,
+        { async: true, busy, mutating: true, ...(extra || {}) });
 
     // every plan — pick = activate it on the server, then land on the board
     (boards || []).forEach((b, i) => {
@@ -129,17 +201,19 @@ export default function CommandPalette({ open, onClose }) {
         async () => {
           try { if (b.id && !active) await openBoard(b.id); }
           catch (e) { say?.(e.message || 'could not open that plan'); return; }
-          nav('/strategy');
+          nav(b.id ? `/strategy/${b.id}` : '/strategy');
         },
         active ? 'active' : '');
     });
 
-    // the active plan's strategies — /strategy/:idx is the view's detail route
+    // the active plan's strategies — /strategy/<boardId>/<idx> keeps the link
+    // true even after another plan gets activated (bare /strategy/:idx still
+    // resolves on the active board as a fallback)
     (board?.strategies || []).forEach((s, i) =>
       push('strategies', 'layout', s.title || `Strategy ${i + 1}`,
         `#${i + 1} · ${board.title || 'active plan'}`,
         `${s.angle || ''} ${s.brief?.title || ''} ${s.brief?.keyMessage || ''} ${(s.channels || []).map(chanLabel).join(' ')}`,
-        () => nav(`/strategy/${i}`), 'on board'));
+        () => nav(board.id ? `/strategy/${board.id}/${i}` : `/strategy/${i}`), 'on board'));
 
     (extra.camps || []).forEach((c) => {
       const chans = (c.brief?.channels || []).map(chanLabel).join(', ');
@@ -221,7 +295,12 @@ export default function CommandPalette({ open, onClose }) {
           }
           nav('/strategy');
           return { line: 'opening the board' };
-        }, 'job');
+        }, 'job',
+        // already-running is just a board open — only a fresh render asks twice
+        running ? null : {
+          uid: 'moodboard',
+          confirm: `render 9 moodboard tiles for ${board.title || 'the active plan'} · ~1 min`,
+        });
     }
 
     // single-still reroll — same endpoint as the card's hover reroll. The POST
@@ -244,7 +323,10 @@ export default function CommandPalette({ open, onClose }) {
               return 'still re-rendered — reopen the card to view it';
             }),
           };
-        }, '');
+        }, '', {
+          uid: 'reroll-still',
+          confirm: `re-render “${(lastStill.headline || 'the still').slice(0, 34)}” on ${stillCamp.brief?.title || 'the campaign'} · ~30s`,
+        });
     }
 
     // still → motion — same per-card shortcut the campaign view runs; the
@@ -252,7 +334,7 @@ export default function CommandPalette({ open, onClose }) {
     if (animStill) {
       cmd('play', 'Animate last still',
         `${stillCamp.brief?.title || 'campaign'} · “${(animStill.headline || 'still').slice(0, 34)}” → video`,
-        'animate video motion render still creative film move',
+        'animate video motion render still creative film move make',
         'queueing render…',
         async () => {
           const { job } = await api.animateCreative(animStill.id);
@@ -262,7 +344,10 @@ export default function CommandPalette({ open, onClose }) {
             line: 'queued · animating still · ~1 min',
             pending: job?.id ? pollJob(job.id).then(() => 'animation ready — open the creative to watch') : null,
           };
-        }, 'job');
+        }, 'job', {
+          uid: 'anim',
+          confirm: `animate “${(animStill.headline || 'the still').slice(0, 34)}” → video · lands on ${stillCamp.brief?.title || 'the campaign'}`,
+        });
     }
 
     // site demo film — screen-captures the newest site version into a video
@@ -270,7 +355,7 @@ export default function CommandPalette({ open, onClose }) {
     if (filmCamp && filmable) {
       cmd('film', 'Film site demo',
         `screen-capture · lands on ${filmCamp.brief?.title || 'newest campaign'}`,
-        'film video demo shoot record capture site screen animate',
+        'film video demo shoot record capture site screen animate make produce',
         'queueing capture…',
         async () => {
           const { job } = await api.campaignDemoVideo(filmCamp.id);
@@ -280,7 +365,10 @@ export default function CommandPalette({ open, onClose }) {
             line: 'queued · filming the site',
             pending: job?.id ? pollJob(job.id).then(() => 'site film ready — on the campaign') : null,
           };
-        }, 'job');
+        }, 'job', {
+          uid: 'film',
+          confirm: `film the site demo · lands on ${filmCamp.brief?.title || 'the newest campaign'}`,
+        });
     }
 
     // publish/unpublish — the site id resolves from the lazy list; the slug
@@ -295,7 +383,10 @@ export default function CommandPalette({ open, onClose }) {
           setExtra((x) => ({ ...x, sites: (x.sites || []).map((s) => (s.id === draftSite.id ? { ...s, publishedSlug } : s)) }));
           say?.(`Live · /s/${publishedSlug}`);
           return { line: `live · /s/${publishedSlug}` };
-        }, '');
+        }, '', {
+          uid: `pub-${draftSite.id}`,
+          confirm: `publish ${siteName(draftSite)} — live at /s/site-${draftSite.id.slice(0, 8)}`,
+        });
     }
     liveSites.forEach((s) => {
       cmd('globe', `Unpublish — /s/${s.publishedSlug}`,
@@ -307,7 +398,10 @@ export default function CommandPalette({ open, onClose }) {
           setExtra((x) => ({ ...x, sites: (x.sites || []).map((w) => (w.id === s.id ? { ...w, publishedSlug: null } : w)) }));
           say?.(`/s/${s.publishedSlug} unpublished`);
           return { line: 'offline · unpublished' };
-        }, '');
+        }, '', {
+          uid: `unpub-${s.id}`,
+          confirm: `unpublish /s/${s.publishedSlug} — ${siteName(s)} goes dark`,
+        });
     });
 
     // publish the compiled book — only meaningful when a book exists and
@@ -322,7 +416,10 @@ export default function CommandPalette({ open, onClose }) {
           setExtra((x) => ({ ...x, book: x.book ? { ...x.book, publishedSlug } : x.book }));
           say?.(`Book live · /b/${publishedSlug}`);
           return { line: `live · /b/${publishedSlug}` };
-        }, '');
+        }, '', {
+          uid: 'pub-book',
+          confirm: 'publish the brand book — goes live',
+        });
     }
 
     // site audit — the improve endpoint audits the profile's own source url,
@@ -364,27 +461,56 @@ export default function CommandPalette({ open, onClose }) {
     }
     push('actions', 'site', 'New site', 'generate a marketing site',
       'website landing page create', () => nav('/websites?tab=site'), gate);
-    push('actions', 'book', 'Brand book', 'compile the printable brand book',
-      'brandbook guidelines identity', () => nav('/brandbook'), gate);
     // the drawer reads profile.qloo + board.evidence.calls — all ctx-reachable
     push('actions', 'qloo', 'Evidence', 'taste-graph evidence trail',
       'qloo signals affinity proof calls', () => setEvi(true));
-    push('actions', 'layout', 'Dashboard', 'the deck — plans at a glance',
-      'home deck overview', () => nav('/dashboard'));
-    push('actions', 'dna', 'Business profile', 'edit brand identity, palette, voice',
-      'profile brand dna palette voice settings', () => nav('/profile'));
+    // one nav row per route — `place` words pin the row to the top when the
+    // query names the page, and they're always safe to hit: nav never mutates
+    PLACES.forEach((p) =>
+      push('actions', p.icon, p.label, p.meta, p.words,
+        () => nav(p.to), p.gate ? gate : '', { place: p.words }));
     return out;
   }, [boards, board, extra, hasStrategy, nav, openBoard, say, setBoard, profile, status]);
 
   // score → sort within each group → fixed HUD group order → flat list w/
   // a global index + the best-scoring row (beam lands there until arrows move)
   const { groups, flat, best } = useMemo(() => {
+    const T = qwords(q);                        // content words, filler stripped
+    const single = T.length === 1;
+    const place = single && isPlaceWord(T[0]);  // the query IS a place name
+    const verb = verbQuery(q);
     const scored = [];
+    let anyPin = false;
     for (const it of items) {
-      const sl = fuzz(q, it.label);
+      const sl = qfuzz(q, it.label);
       // label hits outweigh hay hits; the active plan pins to the top on ties
-      const s = Math.max(sl >= 0 ? sl * 1.6 : -1, fuzz(q, it.hay)) + (it.tag === 'active' ? 0.05 : 0);
-      if (s >= 0) scored.push({ it, s });
+      let s = Math.max(sl >= 0 ? sl * 1.6 : -1, qfuzz(q, it.hay)) + (it.tag === 'active' ? 0.05 : 0);
+      // a place word pins its nav row — always when the query IS the word;
+      // inside a longer query only when it isn't verb-led ('film a site
+      // video' is a film ask, 'open the dashboard' is a nav ask). The pin
+      // can rescue a nav row the rest of the query sank.
+      if (T.length && it.place && (single ? place : !verb)) {
+        let pin = 0, ts = -1;
+        for (const t of T) {
+          const ph = aliasHit(it.place, t);
+          if (ph > 0 && ph >= pin) { pin = ph; ts = Math.max(ts, fuzz(t, it.hay)); }
+        }
+        if (pin) { s = Math.max(s, ts) + (pin === 2 ? 200 : 100); anyPin = true; }
+      }
+      if (s < 0) continue;
+      // mutating rows (every cmd POSTs) list only on expressed intent —
+      // never on a place word; a lone word must reach the action's own
+      // trigger words or land a decent label hit; a phrase needs a
+      // non-place trigger plus a real score; a query that's all filler
+      // can't fire one at all
+      if (it.mutating && q.trim()) {
+        if (!T.length) continue;
+        if (single) {
+          // ≥3 chars so bare prefixes ('re', 'fi', 's') can't arm a POST
+          if (place || T[0].length < 3 || !(intentHit(it, T[0]) || sl >= 0.55)) continue;
+        } else if (!(s >= 0.2 && T.some((t) => !isPlaceWord(t) && intentHit(it, t)))) continue;
+      }
+      scored.push({ it, s });
     }
     scored.sort((a, b) => b.s - a.s || a.it.label.localeCompare(b.it.label));
     const byGroup = new Map();
@@ -393,8 +519,11 @@ export default function CommandPalette({ open, onClose }) {
       byGroup.get(it.group).push({ it, s });
     }
     const gs = []; let gi = 0, bestGi = 0, bestS = -1;
-    // verb-y queries read as commands — ACTIONS rises above the data groups
-    const order = verbQuery(q) ? [['actions', 'ACTIONS'], ...GROUPS.filter(([k]) => k !== 'actions')] : GROUPS;
+    // verb-y queries read as commands, place words read as jumps — either
+    // way ACTIONS rises above the data groups
+    const order = (verb || place || anyPin)
+      ? [['actions', 'ACTIONS'], ...GROUPS.filter(([k]) => k !== 'actions')]
+      : GROUPS;
     for (const [key, name] of order) {
       const its = byGroup.get(key);
       if (!its?.length) continue;
@@ -409,7 +538,8 @@ export default function CommandPalette({ open, onClose }) {
   }, [items, q]);
 
   const sel = flat.length ? Math.min(navIdx ?? best, flat.length - 1) : -1;
-  useEffect(() => { setNavIdx(null); }, [q]);
+  // typing changes what ↵ means — drop the beam position and any armed confirm
+  useEffect(() => { setNavIdx(null); disarm(); }, [q]);
 
   // fire-and-report — async items run under the status line: 'run' while the
   // call is out, 'ok' briefly on ack (then close), 'err' stays a few seconds
@@ -432,6 +562,14 @@ export default function CommandPalette({ open, onClose }) {
 
   const pick = (it) => {
     if (!it) return;
+    // heavyweight jobs arm first — the status line says what ↵ will run, a
+    // second Enter/click on the same row fires it
+    if (it.confirm && armRef.current !== (it.uid || it.id)) {
+      armRef.current = it.uid || it.id;
+      setAct({ k: 'confirm', msg: `${it.confirm} — ↵ again runs it` });
+      return;
+    }
+    armRef.current = null;
     if (it.async) return void fire(it);          // real command — reports on the status line
     const k = actRef.current?.k;
     if (k === 'run' || k === 'ok') return;       // a fire is settling — don't nav out from under it
@@ -446,8 +584,8 @@ export default function CommandPalette({ open, onClose }) {
     if (!open) return;
     const onKey = (e) => {
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); onClose(); }
-      else if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); setNavIdx(flat.length ? (sel + 1) % flat.length : null); }
-      else if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); setNavIdx(flat.length ? (sel - 1 + flat.length) % flat.length : null); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); disarm(); setNavIdx(flat.length ? (sel + 1) % flat.length : null); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); disarm(); setNavIdx(flat.length ? (sel - 1 + flat.length) % flat.length : null); }
       else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); if (flat[sel] || flat[0]) pick(flat[sel] || flat[0]); }
       else return;
     };
@@ -489,7 +627,7 @@ export default function CommandPalette({ open, onClose }) {
                   padding: '7px 14px', borderBottom: '1px solid var(--line-soft)',
                   fontFamily: 'var(--font-mono)', fontSize: 10, fontWeight: 700,
                   letterSpacing: '.12em', textTransform: 'uppercase',
-                  color: act.k === 'err' ? 'var(--rose)' : act.k === 'ok' ? 'var(--lime)' : 'var(--ink-3)',
+                  color: act.k === 'err' ? 'var(--rose)' : act.k === 'ok' ? 'var(--lime)' : act.k === 'confirm' ? 'var(--amber)' : 'var(--ink-3)',
                 }}>
                 <i style={{
                   width: 6, height: 6, borderRadius: '50%', flex: 'none', display: 'inline-block',

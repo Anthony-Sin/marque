@@ -99,12 +99,12 @@ async function pump() {
   pumping = true;
   try {
     while (queue.length) {
-      const { parts, agentic, resolve, reject } = queue.shift();
+      const { parts, agentic, timeoutMs, resolve, reject } = queue.shift();
       try {
         await ensureReady();
         const sid = await ensureSession();
         current = { text: '' };
-        await rpc('session/prompt', { sessionId: sid, prompt: parts }, agentic ? 600000 : 300000);
+        await rpc('session/prompt', { sessionId: sid, prompt: parts }, timeoutMs || (agentic ? 600000 : 300000));
         resolve(current.text.trim());
       } catch (e) {
         reject(e);
@@ -117,18 +117,26 @@ async function pump() {
   }
 }
 
-function enqueue(parts, agentic) {
-  return new Promise((resolve, reject) => { queue.push({ parts, agentic, resolve, reject }); pump(); });
+function enqueue(parts, agentic, timeoutMs) {
+  return new Promise((resolve, reject) => { queue.push({ parts, agentic, timeoutMs, resolve, reject }); pump(); });
 }
 
 const flatten = (messages) => messages
   .map((m) => (m.role === 'system' ? `Instructions: ${m.content}` : m.role === 'assistant' ? `Assistant: ${m.content}` : String(m.content)))
   .join('\n\n');
 
-// plain text exchange — used when the agent must answer, not act
-export async function devinCliChat(messages) {
-  const text = `${flatten(messages)}\n\nRespond with ONLY the requested output — no tools, no file writes, no narration.`;
-  return enqueue([{ type: 'text', text }], false);
+// plain text exchange — used when the agent must answer, not act.
+// opts.json: caller needs machine-parseable output (tensor chatJSON fallback)
+//   → demand raw JSON in the closing instruction instead of generic output.
+// opts.timeoutMs: cap the prompt RPC (default 300s non-agentic). The tensor
+//   fallback deliberately leaves the default — the bridge is the last resort
+//   and the cap already bounds it.
+export async function devinCliChat(messages, opts = {}) {
+  const tail = opts.json
+    ? 'Respond with ONLY the requested JSON — raw JSON, no markdown fences, no tools, no file writes, no narration.'
+    : 'Respond with ONLY the requested output — no tools, no file writes, no narration.';
+  const text = `${flatten(messages)}\n\n${tail}`;
+  return enqueue([{ type: 'text', text }], false, opts.timeoutMs);
 }
 
 // vision — send one or more image files for the agent to actually look at
