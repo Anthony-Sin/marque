@@ -672,11 +672,11 @@ export default function CommandPalette({ open, onClose }) {
             )}
             <div className="ck-list" ref={listRef} role="listbox" id="ck-list">
               {!flat.length && (
-                <div className="ck-empty">No match — try a plan, campaign or action</div>
+                <div className="ck-empty" role="presentation">No match — try a plan, campaign or action</div>
               )}
               {groups.map((g) => (
-                <div key={g.key} className="ck-group">
-                  <div className="ck-group-head">
+                <div key={g.key} className="ck-group" role="group" aria-label={g.name}>
+                  <div className="ck-group-head" role="presentation">
                     <span className="ck-gh-name">{g.name}</span>
                     <span className="ck-gh-n">{g.items.length}</span>
                   </div>

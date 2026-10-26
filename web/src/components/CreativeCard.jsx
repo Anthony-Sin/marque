@@ -283,13 +283,13 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
           {[1, 2, 3, 4, 5].map((n) => (
             <button key={n} type="button"
               className={`grade-star${grade >= n ? ' on' : ''}`}
-              aria-label={`${n} star${n > 1 ? 's' : ''}`} aria-pressed={grade === n}
+              aria-label={`${n} star${n > 1 ? 's' : ''}`} aria-pressed={grade >= n}
               onClick={() => rate(n)}>★</button>
           ))}
         </span>
       </div>
       {zoom && createPortal(
-        <div ref={zoomRef} className="lightbox" role="dialog" aria-modal="true" aria-label={video ? 'Animated creative' : 'Creative zoom'} onClick={() => setZoom(false)}>
+        <div ref={zoomRef} className="lightbox" role="dialog" aria-modal="true" aria-label={video ? 'Animated creative' : 'Creative zoom'} onClick={(e) => { if (e.target === e.currentTarget) setZoom(false); }}>
           <button type="button" className="lightbox-x" aria-label="Close" onClick={() => setZoom(false)}><Icon name="x" size={18} /></button>
           {video ? (
             <div className="lightbox-media" onClick={(e) => e.stopPropagation()}>

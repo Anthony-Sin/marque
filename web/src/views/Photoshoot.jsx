@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api, { pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
-import { useOverlayFocus, isTopOverlay } from '../focus.js';
+import { anyOverlayOpen } from '../focus.js';
 import Icon from '../components/Icon.jsx';
 import { thumb, providerLabel, downloadAsset, fmtDate } from '../components/Composer.jsx';
 import { cleanErr } from '../labels.js';
@@ -66,7 +66,7 @@ function ShootForm({ profile, busy, onLaunch, onClose }) {
     <section className="card hud ps-form" aria-label="New photoshoot">
       <div className="zone-head">
         <span className="z-id">NEW</span>New shoot
-        <span className="z-tag" title="rendered locally · sdxl-turbo">{providerLabel('local-sdxl-turbo')}</span>
+        <span className="z-tag" title="rendered on the local studio engine">{providerLabel('local-sdxl-turbo')}</span>
         <button type="button" className="icon-btn sm ps-x" onClick={onClose} aria-label="Close form"><Icon name="x" size={13} /></button>
       </div>
       <div className="ps-form-body">
@@ -202,16 +202,14 @@ export default function Photoshoot() {
   const nRenders = sorted.reduce((n, j) => n + renders(j).length, 0);
   const latest = sorted[0]?.createdAt;
   const job = sorted.find((j) => j.id === sel) || null;
-  // the detail panel runs the drawer contract — focus moves in on open
-  // (close button first), Tab wraps inside, and closing hands focus back to
-  // the card that opened it. A deleted shoot's card is gone by then; the
-  // hook checks document.contains before restoring, so nothing lands on body.
-  useOverlayFocus(detRef, !!job);
+  // The detail is an inline rail-adjacent panel, not a modal — no veil, no
+  // focus trap (Tab must still reach the job rail). Esc still closes it, but
+  // defers to any real stacked overlay above it.
 
   // Esc closes the detail like every other overlay
   useEffect(() => {
     if (!job) return undefined;
-    const onKey = (e) => { if (e.key === 'Escape' && isTopOverlay(detRef.current)) select(null); };
+    const onKey = (e) => { if (e.key === 'Escape' && !anyOverlayOpen()) select(null); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [job]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -383,7 +381,7 @@ export default function Photoshoot() {
 
           {/* ---------- detail panel ---------- */}
           {job && (
-            <aside ref={detRef} className="card hud ps-detail" role="dialog" aria-modal="true" aria-label="Shoot detail">
+            <aside ref={detRef} className="card hud ps-detail" role="dialog" aria-label="Shoot detail">
               <div className="zone-head">
                 <span className="z-id">SHT</span>Shoot · {job.id.slice(0, 8)}
                 <span className={`z-tag ps-tag-${jobStatus(job)}`}>{jobStatus(job)}</span>

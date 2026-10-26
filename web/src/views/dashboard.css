@@ -95,7 +95,7 @@
   background: var(--lime); transform: scaleY(0); transform-origin: top;
   transition: transform .22s ease; pointer-events: none;
 }
-.dash-plan:hover::after, .dash-plan.on::after, .dash-plan:focus-visible::after { transform: scaleY(1); }
+.dash-plan:hover::after, .dash-plan.on::after, .dash-plan:focus-within::after { transform: scaleY(1); }
 .dash-plan:hover {
   transform: translateY(-3px); border-color: rgba(255, 176, 58, .45);
   box-shadow: 0 8px 22px rgba(0, 0, 0, .42);
@@ -195,7 +195,6 @@
   animation: fade-in .35s ease;
 }
 .dash-plan:hover .dash-plan-ghost,
-.dash-plan:focus-visible .dash-plan-ghost,
 .dash-plan:focus-within .dash-plan-ghost { border-color: rgba(255,176,58,.45); color: var(--ink-3); }
 /* base cluster anchors to the card floor — work strip + stats + foot */
 .dash-plan-base { margin-top: auto; display: flex; flex-direction: column; }

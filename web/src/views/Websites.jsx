@@ -114,7 +114,7 @@ function ImpSteal({ n, i }) {
 export default function Websites() {
   const { say, status, profile } = useApp();
   const [sp, setSp] = useSearchParams();
-  const [tab, setTab] = useState(() => (sp.get('tab') === 'site' ? 'site' : 'improve')); // 'improve' | 'site'
+  const [tab, setTab] = useState(() => (sp.get('tab') === 'site' || (!sp.get('tab') && sp.get('site')) ? 'site' : 'improve')); // 'improve' | 'site'
   const tabBtn = { improve: useRef(null), site: useRef(null) };
   // APG tablist: arrows/Home/End move the selection like the click does (each
   // switch is URL-backed), then focus lands on the newly-selected tab
@@ -151,7 +151,7 @@ export default function Websites() {
   const goTab = (t) => {
     setSp((p) => {
       const n = new URLSearchParams(p);
-      if (t === 'site') n.set('tab', 'site'); else n.delete('tab'); // improve = default → bare url
+      n.set('tab', t); // explicit for both — a bare ?site would else snap improve back
       return n;
     });
   };

@@ -5,6 +5,7 @@ import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
 import { thumb } from '../components/Composer.jsx';
 import EvidenceDrawer from '../components/EvidenceDrawer.jsx';
+import { anyOverlayOpen } from '../focus.js';
 import { QlooBadge, SignalChips } from '../components/Qloo.jsx';
 import './studio.css';
 import './profile.css';
@@ -128,7 +129,7 @@ export default function ProfilePage() {
   // Esc disarms a pending remove veil — the keyboard cancel for the two-tap
   useEffect(() => {
     if (!confirmRm) return;
-    const onKey = (e) => { if (e.key === 'Escape') disarmRm(); };
+    const onKey = (e) => { if (e.key === 'Escape' && !anyOverlayOpen()) disarmRm(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps

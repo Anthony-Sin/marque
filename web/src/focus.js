@@ -45,7 +45,9 @@ export function useOverlayFocus(ref, active = true) {
     stack.push(root);
 
     const items = () => [...root.querySelectorAll(FOCUSABLE)]
-      .filter((n) => !!(n.offsetWidth || n.offsetHeight || n.getClientRects().length));
+      // tabIndex<0 rows (e.g. ⌘K options) match FOCUSABLE but the browser skips
+      // them on Tab — including them would let focus fall out of the dialog.
+      .filter((n) => n.tabIndex >= 0 && !!(n.offsetWidth || n.offsetHeight || n.getClientRects().length));
 
     const target = root.querySelector('[data-autofocus]') || items()[0];
     target?.focus({ preventScroll: true });

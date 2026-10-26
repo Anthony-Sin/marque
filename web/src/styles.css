@@ -247,7 +247,6 @@ h2.display { font-size: 26px; margin: 0 0 6px; }
 a.rail-brand:focus-visible,
 a.dash-pw:focus-visible,
 button.dash-new:focus-visible,
-.stg-chipbar:focus-visible,
 .stg-mood-grid:focus-visible,
 select.stg-plan-switch:focus-visible,
 button.stg-plan-edit:focus-visible,
@@ -308,8 +307,6 @@ a.ws-live:focus-visible {
 .suggest-card { padding: 20px; position: relative; }
 .suggest-card h4 { margin: 0 0 8px; font-size: 16px; font-weight: 600; }
 .suggest-card p { margin: 0; color: var(--ink-3); font-size: 13.5px; }
-.kebab { position: absolute; top: 12px; right: 10px; background: none; border: none; color: var(--ink-3); font-size: 18px; padding: 4px 8px; border-radius:0; }
-.kebab:hover { background: var(--card-3); color: var(--ink); }
 
 /* ---------- profile fields ---------- */
 .profile-wrap { max-width: 1020px; margin: 0 auto; padding: 0 26px 80px; }
@@ -320,18 +317,6 @@ a.ws-live:focus-visible {
   font-size: 14px;
 }
 .tab.on { background: var(--card-2); color: var(--ink); font-weight: 600; border-bottom: 1px solid var(--card-2); }
-.field {
-  display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--line-soft);
-  align-items: flex-start;
-}
-.field .f-label { width: 190px; flex: 0 0 190px; color: var(--ink-3); font-size: 13px; padding-top: 3px; }
-.field .f-val { flex: 1; color: var(--ink); }
-.field .f-edit { background: none; border: none; color: var(--ink-3); padding: 4px; border-radius:0; }
-.field .f-edit:hover { color: var(--lime); }
-.field input, .field textarea, .field select {
-  background: var(--bg-raise); border: 1px solid var(--line); color: var(--ink);
-  border-radius:0; padding: 9px 12px; font-size: 14px; width: 100%;
-}
 .taglist { display: flex; flex-wrap: wrap; gap: 8px; }
 .tag { background: var(--card-3); padding: 6px 13px; border-radius: var(--radius-pill); font-size: 13px; }
 .swatches { display: flex; gap: 8px; }
@@ -496,8 +481,6 @@ a.ws-live:focus-visible {
 
 .pf-bigname { font-size: 28px; display: inline-block; }
 .pf-hint { font-size: 11.5px; color: var(--ink-4); margin-top: 3px; font-weight: 400; }
-.field.editing .f-edit { display: none; }
-.f-val > a { display: inline-flex; align-items: center; gap: 6px; }
 
 /* swatches + fonts display/edit */
 .pf-swatch { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; }
@@ -526,17 +509,6 @@ a.ws-live:focus-visible {
 .pf-taglink { color: var(--ink-2); }
 .pf-taglink:hover { color: var(--lime); }
 
-/* kebab dropdown (reusable) */
-.pf-kebab { position: relative; display: inline-flex; }
-.pf-kebab.corner { position: absolute; top: 8px; right: 6px; z-index: 6; }
-.pf-kbtn { width: 34px; height: 34px; border-radius:0; border: 1px solid var(--line); background: var(--card-2); color: var(--ink-2); display: inline-flex; align-items: center; justify-content: center; }
-.pf-kbtn:hover { color: var(--ink); border-color: var(--ink-3); }
-.pf-kebab.corner .pf-kbtn { background: rgba(20, 20, 20, .55); backdrop-filter: blur(4px); border-color: transparent; color: var(--ink); }
-.pf-kebab .menu { position: absolute; right: 0; top: calc(100% + 6px); }
-.pf-kebab.left .menu { right: auto; left: 0; }
-.pf-kebab.up .menu { top: auto; bottom: calc(100% + 6px); }
-.pf-kebab .menu button { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-.pf-kebab .menu button.pf-danger { color: var(--rose); }
 
 /* modal */
 .pf-modal-narrow { max-width: 520px; }
@@ -656,9 +628,6 @@ a.ws-live:focus-visible {
   /* collapsible on small screens — 46% of the viewport is too much chrome */
   .agent-pane--collapsed { height: auto; max-height: 58px; overflow: hidden; }
   .agent-pane--collapsed .agent-body, .agent-pane--collapsed .agent-input { display: none; }
-  /* field rows: 190px label column leaves ~50px for values — stack label over value */
-  .field { flex-wrap: wrap; }
-  .field .f-label { flex: 0 0 100%; width: auto; padding-top: 0; }
   .tabs .tab, .pf-wtabs .tab { padding-left: 14px; padding-right: 14px; font-size: 13px; }
 }
 
@@ -867,7 +836,7 @@ input, textarea, select { border-color: var(--ink); }
 a { text-underline-offset: 2px; }
 
 /* plakat geometry sweep — square everything except true circles */
-.msg, .menu, .modal, .field, .swatch, .icon-btn, .pf-thumb, .pf-font-slot, .pf-kbtn,
+.msg, .menu, .modal, .swatch, .icon-btn, .pf-thumb, .pf-font-slot,
 .skel, .affin-thumb, .affin-kws i, .ob-error, .msg .caret,
 .chan-chip, .stg-reach, .stg-src-item, .stg-hchip, .stg-habit i,
 .dash-work-card, .dash-new, .dash-empty, .ovl-styles .ovl-st { border-radius: 0 !important; }
@@ -876,7 +845,7 @@ input:not([type=checkbox]):not([type=radio]), textarea, select { border-radius: 
 
 /* ---------- plakat contrast corrections (dark overlays + pale text) ---------- */
 /* media overlays keep dark scrims but text on them must be light, not ink */
-.pf-cap, .pick-tile .cap, .lightbox-cap, .promote-caption, .pf-kebab.corner .pf-kbtn svg,
+.pf-cap, .pick-tile .cap, .lightbox-cap, .promote-caption,
 .veil-btn, .veil-btn svg, .book-cover .cover-txt h2, .book-cover .cover-txt p,
 .gen-hero h2, .gen-hero p, .taste-panel, .taste-panel * { color: #f5f2ea !important; }
 .msg.bot { background: var(--card-3); border: 1px solid var(--line); }

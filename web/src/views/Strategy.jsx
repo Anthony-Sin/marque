@@ -1351,8 +1351,7 @@ export default function Strategy() {
             <div className="stg-topline-cell"><Wayfind /></div>
             <div className="stg-topline-cell stg-topline-mid">
           {(busy || res) && (
-            <div className={`stg-chipbar${editingPrompt ? ' editing' : ''}`}
-              onClick={() => { if (!editingPrompt && !busy) { setEditPrompt(sub?.prompt || ''); setEditingPrompt(true); } }}>
+            <div className={`stg-chipbar${editingPrompt ? ' editing' : ''}`}>
               <span className="stg-chipbar-ic"><Icon name="sparkle" size={14} /></span>
               {editingPrompt ? (
                 <input className="stg-chipbar-edit" autoFocus value={editPrompt}

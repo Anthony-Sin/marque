@@ -144,10 +144,15 @@ export default function App() {
     const onKey = (e) => {
       const t = e.target;
       const typing = t?.tagName === 'INPUT' || t?.tagName === 'TEXTAREA' || t?.tagName === 'SELECT' || t?.isContentEditable;
+      // the palette only mounts off /onboarding — arming it there would pop it
+      // unsolicited on the next route change
+      const canPalette = window.location.pathname !== '/onboarding';
       if ((e.metaKey || e.ctrlKey) && !e.altKey && String(e.key).toLowerCase() === 'k') {
+        if (!canPalette) return;
         e.preventDefault();
         setPalOpen((o) => !o);
       } else if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (!canPalette) return;
         e.preventDefault();
         setPalOpen(true);
       }
