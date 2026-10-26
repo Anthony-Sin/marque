@@ -63,6 +63,10 @@
 }
 
 /* ---------- campaign cards ---------- */
+/* min-width:0 — a grid item's auto minimum is its content's min-content, and
+   the fixed-size .thumbs strip reports ~312px; zeroing it lets the card fit
+   narrow columns while the strip scrolls internally (fade already cued) */
+.camp-card { min-width: 0; }
 .camp-card { padding: 18px; display: flex; flex-direction: column; gap: 4px; }
 .camp-card h4 { margin: 0; font-size: 16px; }
 .camp-card .thumbs {
@@ -94,6 +98,9 @@
 .creative-card { container-type: inline-size; }
 /* image well — holds the veil action bar + promote fold above the .meta row */
 .creative-card .cc-media { position: relative; }
+/* keyboard target — role=button tabindex=0; ring stays inside the card's
+   overflow:hidden edge */
+.creative-card .cc-media:focus-visible { outline: 2px solid var(--lime); outline-offset: -2px; }
 .creative-card .cc-media > .media-fallback { aspect-ratio: var(--ar, 1/1); height: auto; }
 .cc-skel-media { display: block; width: 100%; aspect-ratio: var(--ar, 1/1); border-radius: 0; }
 .creative-card .media-fallback .mf-mono { font-size: 52px; }

@@ -60,6 +60,13 @@ input.pfv-in.pfv-name { font-size: 17px; font-weight: 600; }
   background: var(--lime); box-shadow: 0 0 8px rgba(255, 176, 58, .8);
   animation: railLedBlink 2.2s infinite;
 }
+@media (prefers-reduced-motion: reduce) {
+  .pfv-dirty i { animation: none; }
+}
+
+/* the color inputs are opacity:0 over their swatches — focus lands invisibly
+   unless the swatch itself carries the ring */
+.pfv-sw-chip:focus-within { outline: 2px solid var(--lime); outline-offset: 1px; }
 
 /* ---------- palette swatch cards ---------- */
 .pfv-swgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(126px, 100%), 1fr)); gap: 10px; }

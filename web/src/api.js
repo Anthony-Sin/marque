@@ -114,6 +114,10 @@ export const api = {
   activateBoard: (id) => req('POST', `/api/boards/${id}/activate`),
   renameBoard: (id, title) => req('PATCH', `/api/boards/${id}`, { title }),
   deleteBoard: (id) => req('DELETE', `/api/boards/${id}`),
+  // moodboard — 9 localgen tiles per board; POST starts the ~1min job
+  // (dedup mid-run returns the same job), GET 404s until tiles exist
+  moodboard: (id) => req('GET', `/api/boards/${id}/moodboard`),
+  genMoodboard: (id) => req('POST', `/api/boards/${id}/moodboard`),
   dashboard: () => req('GET', '/api/dashboard'),
   // campaigns
   listCampaigns: () => req('GET', '/api/campaigns'),

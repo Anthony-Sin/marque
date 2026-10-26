@@ -1,9 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Icon from './Icon.jsx';
+import { useOverlayFocus } from '../focus.js';
 
 // <Modal title onClose footer narrow width>children</Modal>
 // veil + centered card; closes on veil click and Escape.
 export default function Modal({ title, onClose, children, footer, narrow = false, width }) {
+  const boxRef = useRef(null);
+  // focus moves into the dialog (close button first) and back to the opener
+  useOverlayFocus(boxRef);
+
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
     window.addEventListener('keydown', onKey);
@@ -12,7 +17,7 @@ export default function Modal({ title, onClose, children, footer, narrow = false
 
   return (
     <div className="modal-veil" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}>
-      <div className={`modal${narrow ? ' pf-modal-narrow' : ''}`} style={width ? { maxWidth: width } : undefined}
+      <div ref={boxRef} className={`modal${narrow ? ' pf-modal-narrow' : ''}`} style={width ? { maxWidth: width } : undefined}
         role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : 'Dialog'}>
         {(title || onClose) && (
           <div className="pf-modal-head">

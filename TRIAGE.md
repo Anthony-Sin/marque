@@ -9,6 +9,10 @@
 ## Findings board (this sprint)
 _(reviewers append; builders consume)_
 
+- `/api/strategy/examples` vite-proxy "socket hang up" — ROOT-CAUSED benign: POST-only route runs a ≤90s reference pull; hang-ups occur when `--watch` reloads (agent edits) or client aborts kill the in-flight socket. UI already degrades to "Couldn't pull live examples" + Retry. No fix needed; noise from concurrent edits.
+- Data hygiene agent (9be154c8): freed 176 orphan assets / 64.5MB via new `POST /api/maintenance/prune-assets` (dry-default); dead `jobId`/`moodboardJob` markers swept at boot; `strategyStale` reconciliation; `lastStrategy` fully deprecated → live projection. smoke 15/15.
+- site-tpl published-site template polish verified live on `/s/site-51b4ce2d` (hero TOC, product splits, contrast tuning).
+
 | # | Sev | Finding | Status |
 |---|-----|---------|--------|
 | — | — | UI: vertical page scroll must go — every route fits 100dvh | in-progress (variants A/B) |

@@ -62,6 +62,18 @@ export function init() {
     const live = imgs.filter((i) => !i?.path?.startsWith('/assets/') || fs.existsSync(path.join(ASSETS_DIR, path.basename(i.path))));
     if (live.length !== imgs.length) { state.images = live; dirty = true; }
   }
+  // fuzz litter: upload probes register under curl's default filename — they
+  // were never brand assets. Drop the registry rows, then releaseAsset the
+  // files so anything a record somehow came to reference still survives.
+  if (Array.isArray(state.images)) {
+    const junk = state.images.filter((i) => i?.name === 'mp.bin' || /^smoke\b/i.test(i?.name || ''));
+    if (junk.length) {
+      const junkIds = new Set(junk.map((i) => i.id));
+      state.images = state.images.filter((i) => !junkIds.has(i.id));
+      dirty = true;
+      for (const i of junk) releaseAsset(i.path);
+    }
+  }
   // interrupted-by-restart sweep: the job runner is in-memory — any record
   // still marked 'running' at boot is dead work, not live progress. Mark it
   // honestly so the UI stops spinning instead of spinning forever.
@@ -71,6 +83,11 @@ export function init() {
       c.genStatus = 'error';
       c.genError = note;
       c.genErrorHuman = 'Generation was interrupted by a server restart — hit retry.';
+      delete c.jobId;
+      dirty = true;
+    } else if (c?.jobId) {
+      // a jobId on a settled record is a dead handle — the jobs map is
+      // in-memory, so a client that re-attaches to it can only 404
       delete c.jobId;
       dirty = true;
     }
@@ -86,7 +103,13 @@ export function init() {
   // landed; either way the marker must not dedupe a future POST onto a
   // job id that no longer exists
   for (const b of state.boards || []) {
-    if (b?.moodboardJob) { delete b.moodboardJob; b.moodboardError = note; dirty = true; }
+    if (b && 'moodboardJob' in b) {
+      // any persisted marker is a dead handle — drop the key; only a marker
+      // that held an actual job id was interrupted work worth an error note
+      if (b.moodboardJob) b.moodboardError = note;
+      delete b.moodboardJob;
+      dirty = true;
+    }
   }
   // tiles a killed moodboard run left behind: registered with source
   // 'moodboard' but referenced by no board's tile list — they can never be
@@ -96,6 +119,36 @@ export function init() {
     if (img?.source === 'moodboard' && img.path && !mbRefs.has(img.path)) {
       releaseAsset(img.path); dirty = true;
     }
+  }
+  // strategyTitle is a stored copy of the board strategy's title made at
+  // create time — boards keep living, so the copy drifts. When the link
+  // still resolves and the live title differs, refresh the stored copy,
+  // keep the original for provenance, and flag that drift happened.
+  // Campaigns whose link no longer resolves keep their stored title.
+  for (const c of state.campaigns || []) {
+    const board = (state.boards || []).find((x) => x.id === c?.boardId);
+    const live = board && (board.strategies || []).find((s) => s.id && s.id === c.strategyId);
+    if (!live?.title) continue; // nothing trustworthy to compare against
+    if (live.title !== c.strategyTitle) {
+      c.strategyTitleAtCreate = c.strategyTitle;
+      c.strategyTitle = live.title;
+      c.strategyStale = true;
+      dirty = true;
+    } else if (c.strategyStale || c.strategyTitleAtCreate) {
+      // live title matches the stored copy again — a lingering stale flag
+      // would be a lie
+      delete c.strategyStale;
+      delete c.strategyTitleAtCreate;
+      dirty = true;
+    }
+  }
+  // lastStrategy is a verbatim dup of a board for legacy readers — it drifts
+  // (the active board, resolved live, is the projection). Once boards exist
+  // the copy is dead weight; only an empty boards list still needs it —
+  // migrateBoards promotes it into a real board on first read.
+  if (Array.isArray(state.boards) && state.boards.length && 'lastStrategy' in state) {
+    delete state.lastStrategy;
+    dirty = true;
   }
   if (dirty) persist();
 }
@@ -167,26 +220,109 @@ export function readAsset(webPath) {
 
 // does anything in state still reference this asset path? The images registry
 // is an index, not a consumer — records (profile/catalog/campaigns/shoots/
-// sites) are what keep a file alive.
+// sites/boards/book) are what keep a file alive. Consulted shapes:
+//   profile.images[].path, catalog[].image,
+//   campaigns[].creatives[].imagePath|videoPath, campaigns[].ingredients.images[],
+//   photoshoots[].inputImage|results[].imagePath|edits[].imagePath,
+//   websites (any /assets/ URL embedded in the record — demoVideo.path plus
+//     the literal refs baked into stored version HTML),
+//   boards[].moodboard.tiles[].path,
+//   brandbook.coverImage|images[] — profile-image ids resolved to paths,
+//   lastStrategy — legacy board mirror, serialized scan while it survives.
+// A '<uuid>-poster.png' is derived data — it stays alive exactly as long as
+// the '<uuid>.mp4' it was captured from.
+const posterParent = (webPath) => (typeof webPath === 'string' && webPath.endsWith('-poster.png'))
+  ? `${webPath.slice(0, -'-poster.png'.length)}.mp4` : null;
 export function assetInUse(webPath) {
   if (!webPath) return false;
-  const ref = (v) => v === webPath;
+  const parent = posterParent(webPath);
+  const ref = (v) => v === webPath || (parent !== null && v === parent);
   const p = state.profile;
   if (p && (p.images || []).some((i) => ref(i?.path))) return true;
   if ((state.catalog || []).some((i) => ref(i?.image))) return true;
   for (const c of state.campaigns || []) {
     for (const cr of c.creatives || []) if (ref(cr?.imagePath) || ref(cr?.videoPath)) return true;
+    for (const im of c.ingredients?.images || []) if (ref(typeof im === 'string' ? im : im?.path)) return true;
   }
   for (const s of state.photoshoots || []) {
     if (ref(s.inputImage)) return true;
     for (const r of s.results || []) if (ref(r?.imagePath)) return true;
     for (const e of s.edits || []) if (ref(e?.imagePath)) return true;
   }
-  for (const w of state.websites || []) if (ref(w?.demoVideo?.path)) return true;
+  for (const w of state.websites || []) {
+    const blob = JSON.stringify(w);
+    if (blob.includes(webPath) || (parent && blob.includes(parent))) return true;
+  }
   for (const b of state.boards || []) {
     for (const t of b.moodboard?.tiles || []) if (ref(t?.path)) return true;
   }
+  const book = state.brandbook;
+  if (book) {
+    for (const id of [book.coverImage, ...(book.images || [])]) {
+      const hit = (p?.images || []).find((i) => i.id === id) || (state.images || []).find((i) => i.id === id);
+      if (hit && ref(hit.path)) return true;
+    }
+  }
+  if (state.lastStrategy) {
+    const blob = JSON.stringify(state.lastStrategy);
+    if (blob.includes(webPath) || (parent && blob.includes(parent))) return true;
+  }
   return false;
+}
+
+// every /assets/ web path a record keeps alive — the same universe
+// assetInUse() answers one path at a time, collected once so the prune sweep
+// can subtract it from the on-disk listing in O(1) per file.
+export function referencedAssetPaths() {
+  const refs = new Set();
+  const add = (v) => { if (typeof v === 'string' && v.startsWith('/assets/')) refs.add(v); };
+  const addBlob = (v) => { for (const m of JSON.stringify(v).matchAll(/\/assets\/[\w.-]+/g)) refs.add(m[0]); };
+  const p = state.profile;
+  for (const i of p?.images || []) add(i?.path);
+  for (const i of state.catalog || []) add(i?.image);
+  for (const c of state.campaigns || []) {
+    for (const cr of c.creatives || []) { add(cr?.imagePath); add(cr?.videoPath); }
+    for (const im of c.ingredients?.images || []) add(typeof im === 'string' ? im : im?.path);
+  }
+  for (const s of state.photoshoots || []) {
+    add(s.inputImage);
+    for (const r of s.results || []) add(r?.imagePath);
+    for (const e of s.edits || []) add(e?.imagePath);
+  }
+  for (const w of state.websites || []) addBlob(w);
+  for (const b of state.boards || []) for (const t of b.moodboard?.tiles || []) add(t?.path);
+  const book = state.brandbook;
+  if (book) {
+    for (const id of [book.coverImage, ...(book.images || [])]) {
+      const hit = (p?.images || []).find((i) => i.id === id) || (state.images || []).find((i) => i.id === id);
+      add(hit?.path);
+    }
+  }
+  if (state.lastStrategy) addBlob(state.lastStrategy);
+  return refs;
+}
+
+// uuid-named files in ASSETS_DIR that no record and no registry row points
+// at — the prune sweep's candidate set. The filename gate means anything not
+// minted by saveAssetBuf (thumbs dir lives one level down, dotfiles, foreign
+// files) is never even considered; registry membership makes a file part of
+// the library, so registry rows are enough to keep a file.
+const ASSET_FILE_RE = /^[0-9a-f-]{36}(\.\w+|-poster\.png)$/;
+export function orphanAssets() {
+  const refs = referencedAssetPaths();
+  const registered = new Set(list('images').map((i) => i?.path));
+  const orphans = [];
+  for (const d of fs.readdirSync(ASSETS_DIR, { withFileTypes: true })) {
+    if (!d.isFile() || !ASSET_FILE_RE.test(d.name)) continue;
+    const webPath = `/assets/${d.name}`;
+    if (registered.has(webPath)) continue;
+    const parent = posterParent(webPath);
+    if (refs.has(webPath) || (parent && refs.has(parent))) continue;
+    let bytes = 0;
+    try { bytes = fs.statSync(path.join(ASSETS_DIR, d.name)).size; } catch { continue; }
+    orphans.push({ path: webPath, bytes });
+  }
+  return orphans;
 }
 
 // unlink iff unreferenced — drops the file plus any registry rows. Used by the

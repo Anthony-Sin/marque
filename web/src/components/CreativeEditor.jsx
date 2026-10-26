@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
@@ -7,6 +7,7 @@ import EvidenceDrawer from './EvidenceDrawer.jsx';
 import { downloadAsset, fileExt, useStages, providerLabel } from './Composer.jsx';
 import CreativeOverlay, { OVERLAY_STYLES } from './CreativeOverlay.jsx';
 import { exportCreativePNG } from './creativeExport.js';
+import { useOverlayFocus } from '../focus.js';
 import '../views/studio.css';
 
 const ANIM_STAGES = ['Animating the creative — this takes a minute…', 'Directing the motion…', 'Rendering frames…', 'Polishing the cut…'];
@@ -30,6 +31,9 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
   const [media, setMedia] = useState('image');    // 'image' | 'video'
   const stageNote = useStages(busy === 'anim' ? ANIM_STAGES : REGEN_STAGES, busy === 'anim' || busy === 'regen');
   const aspect = campaign?.aspectRatio || '1:1';
+  const boxRef = useRef(null);
+  // dialog focus: first control inside on open, back to the card on close
+  useOverlayFocus(boxRef);
 
   // Escape closes the editor — but let the evidence drawer take the key first.
   useEffect(() => {
@@ -93,7 +97,7 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
 
   return (
     <div className="modal-veil" onClick={onClose}>
-      <div className="modal editor" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Edit creative">
+      <div ref={boxRef} className="modal editor" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Edit creative">
         <div className="row" style={{ justifyContent: 'space-between', marginBottom: 16 }}>
           <h3 style={{ margin: 0, fontSize: 18 }}>Edit creative</h3>
           <div className="row">

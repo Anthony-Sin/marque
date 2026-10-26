@@ -4,6 +4,7 @@ import { api } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import EvidenceDrawer from './EvidenceDrawer.jsx';
+import { useOverlayFocus } from '../focus.js';
 import { chanLabel } from '../labels.js';
 
 /* Tiny fuzzy scorer — no deps. Every query char must land in order
@@ -50,6 +51,10 @@ export default function CommandPalette({ open, onClose }) {
   const [evi, setEvi] = useState(false);                          // evidence drawer (ctx-reachable)
   const inputRef = useRef(null);
   const listRef = useRef(null);
+  const boxRef = useRef(null);
+  // focus lands in the input on open (data-autofocus), returns to the opener
+  // on close; Tab cycles inside the strip while it's up
+  useOverlayFocus(boxRef, open);
 
   // reset + refocus on open; lazy-pull the lists ctx doesn't carry
   useEffect(() => {
@@ -195,11 +200,12 @@ export default function CommandPalette({ open, onClose }) {
     <>
       {open && (
         <div className="ck-veil" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-          <div className="ck hud" role="dialog" aria-modal="true" aria-label="Command palette">
+          <div ref={boxRef} className="ck hud" role="dialog" aria-modal="true" aria-label="Command palette">
             <div className="ck-inrow">
               <span className="ck-prompt">❯</span>
               <input
                 ref={inputRef}
+                data-autofocus
                 className="ck-in"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}

@@ -11,7 +11,7 @@ const BRIEF_SYS = `You are a senior marketing strategist. Given a brand profile 
 {"title":"campaign name","angle":"one line positioning angle","audience":"who this targets","keyMessage":"the single message","channels":[2-4 of "instagram","tiktok","facebook","email","print","web"],"suggestions":[{...2 more alternative briefs as {"title","angle","keyMessage"}}]}.
 Ground everything in the brand's tone, audience and taste signals.`;
 
-function flattenAffinities(profile) {
+export function flattenAffinities(profile) {
   const out = [];
   for (const aff of profile?.qloo?.affinities || []) {
     for (const e of aff.entities || []) out.push({ entity: e.name, type: aff.type, affinity: e.affinity ?? 0 });

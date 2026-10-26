@@ -1,14 +1,18 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import { QlooBadge } from './Qloo.jsx';
 import { epLabel } from '../labels.js';
+import { useOverlayFocus } from '../focus.js';
 import '../views/studio.css';
 
 // Right slide-over: the Qloo evidence trail — every signal type the asset was
 // grounded in, plus the raw call log (live or failed, never synthesized).
 export default function EvidenceDrawer({ title = 'Taste evidence', signals = [], extra = [], bundle: bundleProp, calls: callsProp, info = null, onClose }) {
   const { profile } = useApp();
+  const boxRef = useRef(null);
+  // focus lands on the drawer's close button, returns to whatever opened it
+  useOverlayFocus(boxRef);
   // the asset's OWN board bundle wins — the global profile bundle is generic
   const bundle = bundleProp || profile?.qloo;
   const calls = callsProp || bundle?.calls || [];
@@ -29,7 +33,7 @@ export default function EvidenceDrawer({ title = 'Taste evidence', signals = [],
   return (
     <>
       <div className="drawer-veil" onClick={onClose} />
-      <aside className="drawer" role="dialog" aria-label="Taste evidence">
+      <aside ref={boxRef} className="drawer" role="dialog" aria-label="Taste evidence">
         <div className="row" style={{ justifyContent: 'space-between' }}>
           <h3><Icon name="qloo" size={18} /> {title}</h3>
           <button className="icon-btn" onClick={onClose} aria-label="Close"><Icon name="x" size={16} /></button>

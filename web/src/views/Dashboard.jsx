@@ -236,7 +236,13 @@ export default function Dashboard() {
                 <div key={b.id || b.title} className={`card dash-plan${active ? ' on' : ''}`}
                   role="button" tabIndex={0}
                   onClick={() => open(b)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(b); } }}>
+                  onKeyDown={(e) => {
+                    // only the card itself activates — Enter/Space bubbled up
+                    // from a child (rename/delete buttons, work links) belongs
+                    // to that child, not to the card's "open plan" shortcut
+                    if (e.target !== e.currentTarget) return;
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(b); }
+                  }}>
                   <div className="dash-plan-top">
                     {renaming === b.id ? (
                       <input

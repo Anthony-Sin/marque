@@ -172,8 +172,10 @@ app.put('/api/profile', h(async (req, res) => {
 }));
 app.delete('/api/profile', h(async (_req, res) => {
   set('profile', null); set('catalog', []); set('campaigns', []); set('photoshoots', []);
-  set('websites', []); set('brandbook', null); set('lastStrategy', null);
-  set('boards', []); set('activeBoardId', null); exCache.clear();
+  set('websites', []); set('brandbook', null);
+  // lastStrategy too — a surviving legacy value would be resurrected into a
+  // board by migrateBoards on the next read
+  set('boards', []); set('activeBoardId', null); set('lastStrategy', null); exCache.clear();
   ok(res, { profile: null });
 }));
 app.post('/api/agent', h(async (req, res) => ok(res, await agentChat(req.body?.messages))));
@@ -327,11 +329,14 @@ function migrateBoards() {
   const board = { id: uid(), title: boardTitle(last.sub?.prompt), createdAt: last.fetchedAt || now(), activeStrategyIdx: null, ...last };
   push('boards', board);
   set('activeBoardId', board.id);
+  set('lastStrategy', null); // consumed — boards+activeBoardId are the projection now
 }
 function resolveActiveBoard() {
   migrateBoards();
   const boards = list('boards');
-  return boards.find((b) => b.id === get('activeBoardId')) || get('lastStrategy') || boards.at(-1) || null;
+  // live projection: the board activeBoardId points at, newest as fallback —
+  // no stored copy to drift
+  return boards.find((b) => b.id === get('activeBoardId')) || boards.at(-1) || null;
 }
 
 app.post('/api/strategy', h(async (req, res) => {
@@ -360,7 +365,6 @@ app.post('/api/strategy', h(async (req, res) => {
   const board = { id: uid(), title: boardTitle(finalPrompt), createdAt: now(), activeStrategyIdx: null, urlContext, ...result };
   push('boards', board);
   set('activeBoardId', board.id);
-  set('lastStrategy', board);   // backward compat: GET /api/strategy + legacy readers
   ok(res, slimBoard(board));
 }));
 app.get('/api/strategy', h(async (_req, res) => {
@@ -409,7 +413,6 @@ app.post('/api/strategy/stream', async (req, res) => {
     const board = { id: uid(), title: boardTitle(finalPrompt), createdAt: now(), activeStrategyIdx: null, urlContext, ...result };
     push('boards', board);
     set('activeBoardId', board.id);
-    set('lastStrategy', board);
     send('done', { board: slimBoard(board) });
   } catch (e) {
     send('error', { error: String(e.message || e) });
@@ -470,7 +473,6 @@ app.post('/api/boards/:id/activate', h(async (req, res) => {
   const b = find('boards', req.params.id);
   if (!b) return res.status(404).json({ error: 'board not found' });
   set('activeBoardId', b.id);
-  set('lastStrategy', b);   // whole board — keeps GET /api/strategy correct
   ok(res, { board: b, activeBoardId: b.id });
 }));
 app.patch('/api/boards/:id', h(async (req, res) => {
@@ -479,7 +481,6 @@ app.patch('/api/boards/:id', h(async (req, res) => {
   const title = typeof req.body?.title === 'string' ? req.body.title.trim() : '';
   if (!title || title.length > 120) return res.status(400).json({ error: 'title must be a non-empty string up to 120 chars' });
   const board = update('boards', b.id, { title });
-  if (get('activeBoardId') === b.id) set('lastStrategy', board); // keep legacy pointer fresh
   ok(res, { board });
 }));
 app.delete('/api/boards/:id', h(async (req, res) => {
@@ -496,9 +497,6 @@ app.delete('/api/boards/:id', h(async (req, res) => {
       .sort((x, y) => String(x.createdAt || '').localeCompare(String(y.createdAt || '')))
       .at(-1) || null;
     set('activeBoardId', next?.id || null);
-    set('lastStrategy', next);
-  } else if (get('lastStrategy')?.id === b.id) {
-    set('lastStrategy', find('boards', get('activeBoardId')));
   }
   ok(res, { ok: true, activeBoardId: get('activeBoardId'), freedAssets: freedTiles });
 }));
@@ -532,7 +530,9 @@ app.post('/api/boards/:id/moodboard', h(async (req, res) => {
       throw e;
     } finally {
       const cur = find('boards', b.id);
-      if (cur?.moodboardJob) update('boards', b.id, { moodboardJob: null });
+      // only clear OUR marker — a POST that slipped in as this job finished
+      // may already have written the next job's id here
+      if (cur?.moodboardJob?.jobId === job.id) update('boards', b.id, { moodboardJob: null });
     }
   });
   update('boards', b.id, { moodboardJob: { jobId: job.id, startedAt: now() } });
@@ -847,13 +847,17 @@ app.post('/api/creatives/:id/regenerate-image', h(async (req, res) => {
   const brandName = prod?.name || profile?.name;
   const vpos = hit.creative.layout?.vpos || 'bottom';
   const space = vpos === 'top' ? 'upper third' : vpos === 'middle' ? 'center band' : 'lower third';
+  const affNames = campaigns.flattenAffinities(profile).slice(0, 3).map((a) => a.entity).join(', ');
   const prompt = [
     `Editorial ad photograph for "${brandName}", ${hit.campaign.aspectRatio || '1:1'} composition native to ${(hit.campaign.brief?.channels || [])[0] || 'instagram'} — strong focal subject, real platform content feel, not a generic stock gradient.`,
     hit.campaign.brief?.angle ? `Campaign angle: ${hit.campaign.brief.angle}.` : '',
     prod ? `Featuring: "${prod.name}"${prod.description ? ` — ${prod.description}` : ''}.` : '',
     `CRITICAL: absolutely NO text, words, letters, typography, logos, captions or watermarks — NO newspapers, magazines, books, posters, packaging, signage, screens or printed materials; plain unmarked objects only. Clean negative space in the ${space} for a headline overlay.`,
-    `Art direction palette: ${c.primary}, ${c.secondary}, accent ${c.accent}. ${extra}`,
-  ].join(' ');
+    `Art direction palette: ${c.primary}, ${c.secondary}, accent ${c.accent}.`,
+    profile?.tone?.length ? `Mood: ${profile.tone.join(', ')}.` : '',
+    affNames ? `Cultural vibe for art direction: ${affNames}.` : '',
+    extra,
+  ].filter(Boolean).join(' ');
   try {
     const g = await genImageResilient(prompt, { aspectRatio: hit.campaign.aspectRatio, provider: ['local', 'gemini', 'pollinations'].includes(req.body?.provider) ? req.body.provider : undefined, refs: (profile?.images || []).slice(0, 1).map((i) => ({ path: i.path })) });
     hit.creative.imagePath = g.path;
@@ -1295,6 +1299,27 @@ app.post('/api/upload', upload.single('file'), h(async (req, res) => {
   const p = store.saveAssetBuf(req.file.buffer, store.mimeToExt(req.file.mimetype));
   store.registerImage(p, { source: 'upload', name: req.file.originalname });
   ok(res, { path: p });
+}));
+
+// ---------- maintenance ----------
+// data/assets accumulates files nothing references — generations from before
+// releaseAsset existed, killed runs, dead-end outputs. The sweep only ever
+// touches uuid-named files that no record AND no images-registry row points
+// at: the registry is the library index (pickers read profile.images, and
+// profile refs are counted as record refs), so anything registered stays.
+// dry (default) lists; dry:false deletes. Response reports count + bytes.
+app.post('/api/maintenance/prune-assets', h(async (req, res) => {
+  const dry = req.body?.dry !== false;
+  const orphans = store.orphanAssets();
+  const bytes = orphans.reduce((n, o) => n + o.bytes, 0);
+  if (dry) return ok(res, { dry: true, count: orphans.length, bytes, files: orphans });
+  let freed = 0, deleted = 0;
+  for (const o of orphans) {
+    try { fs.unlinkSync(path.join(ASSETS_DIR, path.basename(o.path))); freed += o.bytes; deleted++; }
+    catch { /* already gone */ }
+  }
+  console.log(`[marque] prune-assets: deleted ${deleted}/${orphans.length} orphan file(s), freed ${freed} bytes`);
+  ok(res, { dry: false, count: orphans.length, deleted, bytes, freed });
 }));
 
 // unknown API paths get a JSON 404, never Express's HTML page

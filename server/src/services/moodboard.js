@@ -175,6 +175,9 @@ export async function generateMoodboard(boardId, onProgress) {
     ...(failures.length ? { failed: failures.length, failures } : {}),
   };
   store.update('boards', boardId, { moodboard, moodboardError: null });
+  // lastStrategy mirrors the whole board — refresh it BEFORE releasing the
+  // old tile set, or assetInUse sees the stale copy still holding them
+  if (store.get('lastStrategy')?.id === boardId) store.set('lastStrategy', store.find('boards', boardId));
   const live = new Set(tiles.map((t) => t.path));
   for (const p of prev) if (!live.has(p)) store.releaseAsset(p);
   return { boardId, tiles: tiles.length, failed: failures.length, provider, moodboard };

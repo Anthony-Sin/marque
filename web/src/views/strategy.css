@@ -677,7 +677,8 @@
   border-top: 5px solid var(--ink-3);
 }
 .stg-switch-wrap:hover .stg-plans-title { color: var(--lime); }
-.stg-switch-wrap:focus-within { outline: 1px dashed rgba(255,176,58,.5); outline-offset: 3px; }
+/* the <select> is opacity:0 — the ring lands on the wrap that hosts it */
+.stg-switch-wrap:focus-within { outline: 2px solid var(--lime); outline-offset: 3px; }
 .stg-plan-switch {
   position: absolute; inset: 0; width: 100%; height: 100%;
   appearance: none; -webkit-appearance: none; opacity: 0; border: none;
@@ -753,7 +754,9 @@
   .stg-chipbar, .stg-plans, .stg-pick, .stg-pick-check, .stg-detail, .stg-wx,
   .stg-fill, .stg-detailpage, .stg-call-line, .stg-wx-check.on,
   .stg-wx-fold, .stg-qread,
-  .stg-wx.skel i::after { animation: none !important; }
+  .stg-wx.skel i::after,
+  /* blinking/pulsing chrome holds steady — live carets + stage/pull dots */
+  .stg-caret, .stg-stream .stg-caret, .stg-stage-dot, .stg-pull-dot { animation: none !important; }
   .stg-tile:hover, .stg-ex:hover, .stg-pick:hover, .stg-pick.sel,
   .stg-wx.pickable:hover, .stg-wx.pickable.sel, .stg-wx.pickable.sel:hover { transform: none; }
   .stg-compose, .stg-compose-in { transition: none; }
@@ -1322,3 +1325,165 @@
 
 /* chip text wraps: anonymous flex items can't ellipsize, real spans can */
 .stg-src-txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ==================== moodboard (stg-mood) ====================
+   The board's taste read rendered as a 3x3 of local tiles. It owns the
+   board's second row — overflow lives inside the tile like every other
+   zone on the deck; the page never gains a scrollbar for it. */
+.stg-board.has-mood { grid-template-rows: minmax(0, 1fr) minmax(0, 45%); }
+.stg-mood { grid-column: span 12; position: relative; }
+.stg-mood-tools { display: inline-flex; align-items: center; gap: 12px; }
+.stg-mood-prog {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: .1em; color: var(--lime); font-variant-numeric: tabular-nums;
+}
+.stg-mood-prog .stg-bar { width: 86px; flex: none; }
+.stg-mood-regen { flex: none; }
+
+.stg-mood-grid {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding-right: 4px;
+  scrollbar-color: rgba(255,176,58,.45) rgba(255,255,255,.04);
+  /* bottom fade — same scroll affordance as the pick grid */
+  -webkit-mask-image: linear-gradient(180deg, #000 0, #000 calc(100% - 26px), rgba(0,0,0,.3) 100%);
+  mask-image: linear-gradient(180deg, #000 0, #000 calc(100% - 26px), rgba(0,0,0,.3) 100%);
+}
+.stg-mood-grid.regen { opacity: .5; transition: opacity .25s; }
+.stg-mood-grid.off { overflow: hidden; }
+
+/* tiles — square thumbs, mono kind chip riding top-left */
+.stg-mood-tile {
+  position: relative; display: block; aspect-ratio: 1; padding: 0;
+  border: 1px solid var(--line-soft); background: var(--card-3);
+  overflow: hidden; cursor: zoom-in; text-align: left; border-radius: 0;
+}
+.stg-mood-tile img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform .35s ease;
+}
+.stg-mood-tile:hover { border-color: rgba(255,176,58,.55); }
+.stg-mood-tile:hover img { transform: scale(1.045); }
+.stg-mood-tile:focus-visible { outline: 2px solid rgba(255,176,58,.7); outline-offset: 1px; }
+/* kind chip rides TOP-left — the panel shows the top of each tile in its
+   scroll window, so a bottom-anchored chip would never be seen */
+.stg-mood-kind {
+  position: absolute; left: 6px; top: 6px; pointer-events: none;
+  font-family: var(--font-mono); font-size: 8.5px; font-weight: 700;
+  letter-spacing: .11em; text-transform: uppercase; color: var(--lime-2);
+  background: rgba(7,10,9,.8); border: 1px solid rgba(255,176,58,.3);
+  padding: 1.5px 7px;
+}
+
+/* sockets — dormant dim slots, or shimmering slots while renders run.
+   .done slots freeze solid-left-to-right with the real `done` count. */
+.stg-mood-skel {
+  display: block; aspect-ratio: 1;
+  background: var(--card-3); border: 1px dashed var(--line-soft);
+}
+.stg-mood-grid.off .stg-mood-skel { opacity: .32; }
+.stg-mood-skel.lit { position: relative; overflow: hidden; border-style: solid; }
+.stg-mood-skel.lit::after {
+  content: ''; position: absolute; inset: 0; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.07), transparent);
+  animation: stgShim 1.4s ease-in-out infinite; animation-delay: calc(var(--i, 0) * .1s);
+}
+.stg-mood-skel.done { border-style: solid; border-color: rgba(255,176,58,.45); background: var(--card-2); }
+.stg-mood-skel.done::after { animation: none; }
+.stg-mood-skel.done::before {
+  content: ''; position: absolute; right: 6px; top: 6px;
+  width: 5px; height: 5px; background: var(--lime);
+}
+
+/* dormant-state CTA — floats over the socket grid; the note is the honest
+   cost label (what it makes + how long it takes), not a promise */
+.stg-mood-cta {
+  position: absolute; inset: 46px 10px 12px; z-index: 5;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px;
+}
+.stg-mood-cta-note {
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--ink-4); text-align: center;
+}
+
+/* errors + partial failures are counted aloud — never silent gaps */
+.stg-mood-err {
+  position: absolute; left: 50%; top: 55%; transform: translate(-50%, -50%); z-index: 5;
+  width: min(92%, 520px);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-size: 12px; color: var(--ink-3);
+  background: rgba(18,26,24,.94); border: 1px dashed rgba(240,138,120,.45);
+  padding: 11px 13px; box-shadow: var(--shadow);
+}
+.stg-mood-err span { display: inline-flex; align-items: center; gap: 7px; flex: 1; min-width: 180px; }
+.stg-mood-err svg { color: var(--rose); flex: none; }
+.stg-mood-failnote {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--rose);
+}
+.stg-mood-failnote svg { flex: none; }
+
+/* footer microline — honest provenance: where the tiles actually came from */
+.stg-mood-foot {
+  display: flex; align-items: center; gap: 7px; margin-top: auto;
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink-4);
+  border-top: 1px dashed var(--line-soft); padding-top: 8px;
+}
+.stg-mood-foot svg { color: var(--teal); flex: none; }
+
+/* tile lightbox — reuses .lightbox chrome (studio.css is bundled app-wide) */
+.stg-mood-lb img {
+  max-width: min(88vw, 1080px); max-height: 74vh; object-fit: contain;
+  border: 1px solid var(--line); background: var(--card-3);
+}
+.stg-mood-lb-cap {
+  margin-top: 10px; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; max-width: 88vw;
+}
+.stg-mood-lb-kind {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--lime-2);
+}
+.stg-mood-lb-prompt {
+  font-size: 11px; color: var(--ink-4); line-height: 1.45; max-width: 72ch;
+  text-align: center;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* detail-open: the board folds to a context strip — the moodboard folds away
+   with it (it's a board-level artifact, not a strategy-level one) */
+.stg-wrap.detail-open .stg-board.has-mood { grid-template-rows: minmax(0, 1fr); }
+.stg-wrap.detail-open .stg-mood { display: none; }
+
+/* below the fixed-viewport range the page scrolls — rows go back to natural
+   sizing so the 3x3 shows whole */
+@media (max-width: 900px) {
+  .stg-board.has-mood { grid-template-rows: none; }
+  .stg-mood-cta { position: static; padding: 14px 0 4px; }
+  .stg-mood-err { position: static; transform: none; width: auto; margin-top: 8px; }
+}
+
+/* phone: a 3x3 stacks three tall — the snap rail keeps the panel pocket-size
+   (same scroll-strip idiom as the wild-card grid) */
+@media (max-width: 640px) {
+  .stg-mood-grid {
+    display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden;
+    scroll-snap-type: x proximity; overscroll-behavior-x: contain;
+    padding-bottom: 6px;
+    -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 44px), transparent 100%);
+    mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 44px), transparent 100%);
+  }
+  .stg-mood-tile, .stg-mood-skel { flex: 0 0 40%; scroll-snap-align: start; }
+  .stg-mood-grid.off { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .stg-mood-grid.off .stg-mood-skel { flex: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stg-mood-skel.lit::after { animation: none; }
+  .stg-mood-tile img { transition: none; }
+  .stg-mood-tile:hover img { transform: none; }
+  .stg-mood-grid.regen { transition: none; }
+}

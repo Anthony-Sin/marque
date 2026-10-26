@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../App.jsx';
@@ -344,7 +345,12 @@ function WildCard({ e, i, sel, onToggle }) {
       role="button" tabIndex={0} aria-pressed={!!sel}
       title={sel ? 'Selected — will feed the campaign' : 'Select as a campaign reference'}
       onClick={onToggle}
-      onKeyDown={(ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onToggle?.(); } }}>
+      onKeyDown={(ev) => {
+        // same rule as .dash-plan: keys bubbled up from the inner play button
+        // or the out-link belong to them, not to the card's select toggle
+        if (ev.target !== ev.currentTarget) return;
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onToggle?.(); }
+      }}>
       {!!img && !imgDead && <span className="stg-wx-media"><img src={img} alt="" loading="lazy" onError={() => setImgDead(true)} /></span>}
       <span className="stg-wx-body stg-fill">
         <span className="stg-wx-plat">
@@ -419,6 +425,242 @@ function WildCard({ e, i, sel, onToggle }) {
         </span>
       )}
     </div>
+  );
+}
+
+// ---------- moodboard — the board's own taste data rendered to a 3x3 ----------
+// POST /boards/:id/moodboard starts a 9-tile localgen job (~1 min); the stored
+// result lives on the board record. States: dormant sockets + generate action →
+// determinate n/9 skeleton tiles → kind-labeled grid → inline error + retry.
+// Honesty: the footer names the real renderer, failed tiles are counted aloud,
+// and nothing renders that the API didn't actually produce.
+const MOOD_TOTAL = 9;
+// humanized tile-kind labels — backend ids are model-facing jargon
+const MOOD_KIND = { palette: 'color', music: 'sound' };
+const moodKind = (k) => MOOD_KIND[k] || k || 'tile';
+// tiles are keyed by basename — the thumb route resolves it and the flat
+// /assets/<file> path serves even when a record carries a virtual subdir
+const assetBase = (p) => String(p || '').split('/').pop();
+const moodThumb = (p, w = 400) => `/assets/thumb/${assetBase(p)}?w=${w}`;
+const moodFull = (p) => `/assets/${assetBase(p)}`;
+
+function Moodboard({ board }) {
+  const { say, setBoard, status } = useApp();
+  const bid = board?.id;
+  const [mb, setMb] = useState(null);      // stored moodboard {tiles,provider,failed,...}
+  const [job, setJob] = useState(null);    // live job {id,status,progress{done,total,tiles,failed}}
+  const [err, setErr] = useState('');      // board.moodboardError + fetch/post failures
+  const [zoom, setZoom] = useState(null);  // tile open in the lightbox
+  const reqRef = useRef(0);                // stale-fetch guard across board switches
+
+  // pull the tiles + running job onto the board record so the board object
+  // stays the single source of truth for other surfaces
+  const syncBoard = (patch) =>
+    setBoard?.((b) => (b?.id === bid ? { ...b, ...patch } : b));
+
+  // initial load — seed from the board record, then confirm with a real GET;
+  // an in-flight marker resumes its poll (e.g. back-nav mid-generation)
+  useEffect(() => {
+    const seq = ++reqRef.current;
+    setMb(board?.moodboard?.tiles?.length ? board.moodboard : null);
+    setErr(board?.moodboardError || '');
+    setJob(null);
+    setZoom(null);
+    if (!bid) return;
+    (async () => {
+      try {
+        const d = await api.moodboard(bid);
+        if (reqRef.current !== seq) return;
+        setMb(d.moodboard || null);
+        if (d.moodboard) setErr('');
+        if (d.job?.status === 'running') { setJob(d.job); setErr(''); }
+      } catch (e) {
+        if (reqRef.current !== seq) return;
+        if (e.status === 404) setMb(null);
+        else setErr(e.message || 'moodboard fetch failed');
+      }
+      // the record's own marker — covers the GET-404-while-running case (the
+      // 404 body carries `job` but the api wrapper only surfaces .error)
+      const jid = board?.moodboardJob?.jobId;
+      if (jid && reqRef.current === seq) {
+        try {
+          const { job: j } = await api.job(jid);
+          // a live run supersedes whatever error the record still carries
+          if (reqRef.current === seq && j?.status === 'running') { setJob(j); setErr(''); }
+        } catch { /* stale marker — the job is gone; nothing to resume */ }
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bid]);
+
+  // fetch the finished board state after the job lands
+  const refreshTiles = async () => {
+    try {
+      const d = await api.moodboard(bid);
+      setMb(d.moodboard || null);
+      if (d.moodboard) {
+        setErr('');
+        syncBoard({ moodboard: d.moodboard, moodboardError: null });
+      }
+    } catch { /* 404 mid-swap — the job result may still be writing */ }
+  };
+
+  // 1.5s poll while the job runs — stops on done/error/unmount
+  useEffect(() => {
+    if (!bid || !job?.id || job.status !== 'running') return undefined;
+    let alive = true;
+    const iv = setInterval(async () => {
+      try {
+        const { job: j } = await api.job(job.id);
+        if (!alive) return;
+        setJob(j);
+        // a confirmed-live run clears any stale board error still on screen
+        if (j.status === 'running') setErr('');
+        if (j.status === 'done') { setErr(''); await refreshTiles(); }
+        else if (j.status === 'error') {
+          const m = j.error || 'moodboard generation failed';
+          setErr(m); syncBoard({ moodboardError: m }); say?.(m);
+        }
+      } catch (e) {
+        if (!alive) return;
+        if (e.status === 404) {
+          // job map entry lost (server restart) — stop polling, say what happened
+          setJob((j) => (j ? { ...j, status: 'error' } : j));
+          setErr('the generation job vanished — the server may have restarted');
+        }
+        // other blips (network flick) keep polling — the job is still alive
+      }
+    }, 1500);
+    return () => { alive = false; clearInterval(iv); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [job?.id, job?.status, bid]);
+
+  // Escape closes the tile lightbox like every other overlay
+  useEffect(() => {
+    if (!zoom) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setZoom(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [zoom]);
+
+  const generate = async () => {
+    if (!bid || job?.status === 'running') return;
+    setErr('');
+    try {
+      const d = await api.genMoodboard(bid);
+      if (d?.job) setJob(d.job);               // deduplicated or fresh — same shape
+      else if (d?.moodboard) setMb(d.moodboard);
+    } catch (e) {
+      const m = e.message || 'could not start generation';
+      setErr(m); say?.(m);
+    }
+  };
+
+  const tiles = mb?.tiles || [];
+  const running = job?.status === 'running';
+  const prog = job?.progress || {};
+  const total = prog.total || MOOD_TOTAL;
+  const done = Math.min(prog.done || 0, total);
+  const failedN = mb?.failed || prog.failed || 0;
+  // 'local-sdxl-turbo' → 'sdxl-turbo' — the honest renderer tag in the footer;
+  // mid-run (no stored provider yet) the live /status model tag stands in
+  const providerTag = mb?.provider
+    ? String(mb.provider).replace(/^local-/, '')
+    : String(status?.localgen?.model || '').split('/').pop() || '';
+  const genAt = mb?.generatedAt ? String(mb.generatedAt).slice(11, 16) : '';
+
+  return (
+    <section className="card stg-tile stg-mood" style={{ '--i': 2 }}>
+      <div className="stg-tile-head">
+        <span className="stg-ml">Moodboard{!!tiles.length && ` · ${tiles.length}/${total}`}</span>
+        <span className="stg-mood-tools">
+          {running && (
+            <span className="stg-mood-prog" role="status" aria-live="polite">
+              <span className="stg-pull-dot" />{done}/{total}
+              <span className="stg-bar"><i className="hot" style={{ width: `${(done / total) * 100}%` }} /></span>
+            </span>
+          )}
+          {!!tiles.length && (
+            <button type="button" className="btn ghost sm stg-mood-regen" disabled={running}
+              title="Regenerate — 9 new local renders (~1 min). The current tiles stay up until the new set lands."
+              onClick={generate}>
+              <Icon name="refresh" size={12} /> reshuffle
+            </button>
+          )}
+        </span>
+      </div>
+
+      {/* sockets — the panel's 9 slots: dormant (dim) until generation runs,
+          then shimmering and filling l→r as `done` counts up. They stay up
+          behind the error overlay too — the panel never reads as blank. */}
+      {!tiles.length && (
+        <>
+          <div className={`stg-mood-grid${running ? ' run' : ' off'}`} aria-hidden="true">
+            {Array.from({ length: running ? total : MOOD_TOTAL }).map((_, i) => (
+              <span key={i} className={`stg-mood-skel${running ? ' lit' : ''}${running && i < done ? ' done' : ''}`}
+                style={{ '--i': i }} />
+            ))}
+          </div>
+          {!running && !err && (
+            <div className="stg-mood-cta">
+              <button type="button" className="btn ghost sm" onClick={generate}>
+                <Icon name="sparkle" size={13} /> Generate moodboard
+              </button>
+              <span className="stg-mood-cta-note">9 local renders · ~1 min · distilled from this board's taste read</span>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* the tiles — kept visible (dimmed) while a reshuffle runs underneath */}
+      {!!tiles.length && (
+        <div className={`stg-mood-grid${running ? ' regen' : ''}`}>
+          {tiles.map((t, i) => (
+            <button key={t.path || i} type="button" className="stg-mood-tile stg-fill"
+              style={{ '--fo': `${i * 45}ms` }}
+              title={`${moodKind(t.kind)} — open full render`}
+              onClick={() => setZoom(t)}>
+              <img src={moodThumb(t.path, 400)} alt={`${moodKind(t.kind)} moodboard tile`} loading="lazy" />
+              <span className="stg-mood-kind">{moodKind(t.kind)}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* failures are counted aloud — never silent gaps in the grid */}
+      {!!err && (
+        <div className="stg-mood-err">
+          <span><Icon name="x" size={12} /> {err}</span>
+          <button type="button" className="btn ghost sm" disabled={running} onClick={generate}>
+            <Icon name="refresh" size={12} /> Retry
+          </button>
+        </div>
+      )}
+      {!err && !!failedN && (
+        <div className="stg-mood-failnote" title={(mb?.failures || []).map((f) => `${f.kind}: ${f.error}`).join(' · ')}>
+          <Icon name="info" size={11} /> {failedN} tile{failedN === 1 ? '' : 's'} failed to render
+        </div>
+      )}
+
+      {(!!tiles.length || running) && (
+        <div className="stg-mood-foot">
+          <Icon name="image" size={10} />
+          <span>rendered locally{providerTag ? ` · ${providerTag}` : ''}{genAt ? ` · ${genAt}` : ''}</span>
+        </div>
+      )}
+
+      {zoom && createPortal(
+        <div className="lightbox" role="dialog" aria-modal="true" aria-label={`${moodKind(zoom.kind)} moodboard tile`} onClick={() => setZoom(null)}>
+          <button type="button" className="lightbox-x" aria-label="Close" onClick={() => setZoom(null)}><Icon name="x" size={18} /></button>
+          <div className="lightbox-media stg-mood-lb" onClick={(e) => e.stopPropagation()}>
+            <img src={moodFull(zoom.path)} alt={`${moodKind(zoom.kind)} moodboard tile`} />
+            <span className="stg-mood-lb-cap">
+              <span className="stg-mood-lb-kind">{moodKind(zoom.kind)} · rendered locally{providerTag ? ` · ${providerTag}` : ''}</span>
+              {!!zoom.prompt && <span className="stg-mood-lb-prompt" title={zoom.prompt}>{zoom.prompt}</span>}
+            </span>
+          </div>
+        </div>, document.body)}
+    </section>
   );
 }
 
@@ -953,7 +1195,7 @@ export default function Strategy() {
             <div className={`stg-chipbar${editingPrompt ? ' editing' : ''}`} role="button" tabIndex={editingPrompt ? -1 : 0}
               title="Click to modify this prompt"
               onClick={() => { if (!editingPrompt && !busy) { setEditPrompt(sub?.prompt || ''); setEditingPrompt(true); } }}
-              onKeyDown={(e) => { if (e.key === 'Enter' && !editingPrompt && !busy) { setEditPrompt(sub?.prompt || ''); setEditingPrompt(true); } }}>
+              onKeyDown={(e) => { if (e.target !== e.currentTarget) return; if (e.key === 'Enter' && !editingPrompt && !busy) { setEditPrompt(sub?.prompt || ''); setEditingPrompt(true); } }}>
               <span className="stg-chipbar-ic"><Icon name="sparkle" size={14} /></span>
               {editingPrompt ? (
                 <input className="stg-chipbar-edit" autoFocus value={editPrompt}
@@ -1138,7 +1380,9 @@ export default function Strategy() {
 
           {res && (res.audienceRead || res.strategies || !busy) && (
             <>
-              <div className="stg-board">
+              {/* has-mood reserves the board's second row for the moodboard
+                  tile — only a persisted board (res.id) can hold one */}
+              <div className={`stg-board${res?.id ? ' has-mood' : ''}`}>
                 {/* ---- audience read ---- */}
                 {!res.audienceRead ? (
                   <section className="card stg-tile stg-aud skel-tile"><AudSkeleton /></section>
@@ -1355,6 +1599,9 @@ export default function Strategy() {
                     </div>
                   )}
                 </section>
+
+                {/* ---- moodboard — the board's taste data as rendered tiles ---- */}
+                {!!res?.id && <Moodboard board={res} />}
               </div>
 
               {/* provenance lives inside the audience tile + evidence drawer */}

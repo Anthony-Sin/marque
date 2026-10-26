@@ -224,7 +224,7 @@ export function renderSiteHTML(site) {
   if (style.theme === 'dark' && !dark) { bg = '#14110e'; dark = true; }
   if (style.theme === 'light' && dark) { bg = '#faf8f4'; dark = false; }
   const ink = rgb(c.text) && contrast(c.text, bg) >= 3 ? c.text : bestInk(bg);
-  const mut = mix(ink, bg, 0.6) || (dark ? '#9a958c' : '#6f6a60');
+  const mut = mix(ink, bg, 0.68) || (dark ? '#9a958c' : '#6f6a60');
   const line = mix(ink, bg, 0.16) || (dark ? '#333026' : '#ded9cd');
   const sf = rgb(c.surface) && contrast(c.surface, bg) > 1.04 ? c.surface : (mix(ink, bg, 0.045) || bg);
   const accent = rgb(c.accent) ? c.accent : (rgb(c.primary) ? c.primary : '#9a4b1f');
@@ -233,7 +233,7 @@ export function renderSiteHTML(site) {
   // when primary would sit too close to the page background to read as a band
   const band = rgb(c.primary) && contrast(c.primary, bg) >= 1.35 ? c.primary : ink;
   const bandInk = bestInk(band);
-  const bandMut = mix(bandInk, band, 0.62) || mut;
+  const bandMut = mix(bandInk, band, 0.68) || mut;
   const bandLine = mix(bandInk, band, 0.28) || line;
 
   // fonts — Google Fonts <link> only for real family names (same external
@@ -269,14 +269,17 @@ export function renderSiteHTML(site) {
   const story = content.story || {};
   const storyParas = (story.paras || []).filter(Boolean);
   const storyPoints = (story.points || []).filter((p) => p?.title);
-  let galleryImgs = pool.filter((i) => i.path !== heroImg?.path).slice(0, 4);
   let storyImg = story.image && okImg(story.image) && story.image !== heroImg?.path ? pool.find((p) => p.path === story.image) || { path: story.image, caption: '' } : null;
+  let galleryImgs = pool.filter((i) => i.path !== heroImg?.path && i.path !== storyImg?.path).slice(0, 4);
   if (!storyImg && galleryImgs.length === 1) storyImg = galleryImgs.pop(); // lone leftover image earns a place in the story column
   const storyOn = !!(story.headline || storyParas.length || storyPoints.length || storyImg);
   // catalog renders as photo cards + a ruled spec index for image-less items —
   // two deliberate anatomies instead of fake placeholder art
-  const catImg = catalog.filter((it) => it.image && okImg(it.image));
-  const catTx = catalog.filter((it) => !(it.image && okImg(it.image)));
+  // an image already anchoring the hero/story must not reappear as a product
+  // photo — recycled art reads instantly as template reuse
+  const imgUsed = (p) => !p || p === heroImg?.path || p === storyImg?.path;
+  const catImg = catalog.filter((it) => it.image && okImg(it.image) && !imgUsed(it.image));
+  const catTx = catalog.filter((it) => !(it.image && okImg(it.image) && !imgUsed(it.image)));
   const productsOn = catalog.length > 0 && content.products !== null; // an explicit products:null drops the shop even with a catalog on file
   const galleryOn = galleryImgs.length >= 2 && !!(content.gallery !== null);
   const taste = content.taste || null;
@@ -292,10 +295,13 @@ export function renderSiteHTML(site) {
   if (productsOn) secs.push({ id: 'products', label: 'Catalog' });
   if (galleryOn) secs.push({ id: 'gallery', label: 'Gallery' });
   if (tasteOn) secs.push({ id: 'taste', label: 'Taste' });
+  // hero meta line — a real section index when sections exist, honest
+  // issue-style chrome when the page is too thin to index
+  const hmetaItems = secs.length ? secs.map((s) => s.label) : (ctaOn ? ['Contact'] : ['Vol. 01', String(new Date().getFullYear())]);
   const navLinks = secs.map((s) => `<a href="#${s.id}">${esc(s.label)}</a>`).join('');
   const ctaHref = links[0]?.href || (productsOn ? '#products' : (ctaOn ? '#cta' : '#top'));
   const heroGhost = hero.ctaAlt ? `<a class="arr" href="#${secs[0]?.id || 'cta'}">${esc(hero.ctaAlt)} <i>→</i></a>` : '';
-  const navCta = content.navCta ? `<a class="btn btn-sm" href="${esc(ctaHref)}">${esc(content.navCta)}</a>` : '';
+  const navCta = content.navCta ? `<a class="btn-o" href="${esc(ctaHref)}">${esc(content.navCta)}</a>` : '';
   const mnav = secs.length ? `<details class="mnav"><summary>Menu</summary><nav>${navLinks}${ctaOn ? '<a href="#cta">Contact</a>' : ''}</nav></details>` : '';
 
   // eyebrow — hairline tick + tracked caps (numbering stays on the semantic
@@ -307,10 +313,13 @@ export function renderSiteHTML(site) {
   const heroHtml = `
   <header class="hero ${heroSplit ? 'split' : 'solo'}"><div class="wrap ${heroSplit ? 'grid' : ''}">
     <div class="h-copy">
+      <div class="h-core">
       ${hero.kicker ? `<div class="kick ${heroSplit ? '' : 'center'}"><i></i><span>${esc(hero.kicker)}</span></div>` : ''}
       <h1>${esc(hero.headline || brand.tagline || name)}</h1>
       ${hero.sub ? `<p class="lede">${esc(hero.sub)}</p>` : ''}
       <div class="acts">${hero.cta ? `<a class="btn" href="${esc(ctaHref)}">${esc(hero.cta)}</a>` : ''}${heroGhost}</div>
+      </div>
+      ${heroSplit ? `<div class="hmeta"><span class="hm-k">${secs.length ? 'In this issue' : esc(name)}</span>${hmetaItems.map((s) => `<span>${esc(s)}</span>`).join('<i>/</i>')}</div>` : ''}
     </div>
     ${heroSplit ? fig(heroImg, 'h-img') : ''}
   </div></header>
@@ -329,6 +338,7 @@ export function renderSiteHTML(site) {
   const productsHtml = productsOn ? `
   <section id="products" class="sec"><div class="wrap">
     <div class="phead"><div>${kick(content.products?.kicker)}${content.products?.headline ? `<h2>${esc(content.products.headline)}</h2>` : ''}</div>${content.products?.sub ? `<p class="sub">${esc(content.products.sub)}</p>` : ''}</div>
+    ${catImg.length === 1 && catTx.length ? '<div class="psplit">' : ''}
     ${catImg.length ? `<div class="pgrid">${catImg.map((it) => `
       <article class="pcell">
         <img class="ph" src="${esc(it.image)}" alt="${esc(it.name)}" loading="lazy">
@@ -337,9 +347,10 @@ export function renderSiteHTML(site) {
         <div class="pfoot"><span class="price">${esc(it.price != null && it.price !== '' ? it.price : '')}</span><span class="arr2">→</span></div>
       </article>`).join('')}
     </div>` : ''}
-    ${catTx.length ? `<ol class="plist"${catImg.length ? ' style="margin-top:2.4rem"' : ''}>${catTx.map((it, i) => `
+    ${catTx.length ? `<ol class="plist"${catImg.length > 1 ? ' style="margin-top:2.4rem"' : ''}>${catTx.map((it, i) => `
       <li class="prow"><span class="n">${String(i + 1).padStart(2, '0')}</span><div class="pr"><h3>${esc(it.name)}</h3>${it.description ? `<p class="pd">${esc(it.description)}</p>` : ''}</div><span class="price">${esc(it.price != null && it.price !== '' ? it.price : '')}</span><span class="arr2">→</span></li>`).join('')}
     </ol>` : ''}
+    ${catImg.length === 1 && catTx.length ? '</div>' : ''}
   </div></section>` : '';
 
   const galleryHtml = galleryOn ? `
@@ -393,6 +404,8 @@ h1,h2,h3{font-family:var(--fd);font-weight:500;line-height:1.05;letter-spacing:-
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;background:var(--acc);color:var(--acc-ink);text-decoration:none;font:600 .73rem/1 var(--fb);letter-spacing:.22em;text-transform:uppercase;padding:1.05rem 1.75rem;border-radius:2px;transition:opacity .2s,transform .2s;white-space:nowrap}
 .btn:hover{opacity:.87;transform:translateY(-1px)}
 .btn-sm{padding:.8rem 1.2rem;font-size:.68rem}
+.btn-o{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font:600 .68rem/1 var(--fb);letter-spacing:.22em;text-transform:uppercase;padding:.75rem 1.15rem;border:1px solid var(--line);color:var(--ink);border-radius:2px;white-space:nowrap;transition:border-color .2s,color .2s}
+.btn-o:hover{border-color:var(--acc);color:var(--acc)}
 .band .btn{background:var(--band-ink);color:var(--band)}
 .arr{display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;font:600 .74rem/1 var(--fb);letter-spacing:.2em;text-transform:uppercase;color:var(--ink);border-bottom:1px solid var(--acc);padding-bottom:.4rem}
 .arr i{font-style:normal;color:var(--acc)}
@@ -419,6 +432,12 @@ h1,h2,h3{font-family:var(--fd);font-weight:500;line-height:1.05;letter-spacing:-
 .hero.solo .lede{margin-inline:auto}
 .acts{display:flex;align-items:center;gap:1.6rem;margin-top:2.5rem;flex-wrap:wrap}
 .hero.solo .acts{justify-content:center}
+.hero.split .h-copy{display:flex;flex-direction:column;align-self:stretch;justify-content:center}
+.hero.split .h-core{margin:auto 0}
+.hmeta{padding-top:3.2rem;display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap;font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--mut)}
+.hmeta .hm-k{color:var(--acc)}
+.hmeta span{white-space:nowrap}
+.hmeta i{font-style:normal;opacity:.5}
 figure{margin:0}
 .h-img img{width:100%;aspect-ratio:4/5;object-fit:cover}
 figcaption{display:flex;justify-content:space-between;gap:1rem;border-top:1px solid var(--line);margin-top:.9rem;padding-top:.75rem;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
@@ -446,6 +465,9 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15.5rem,22rem));width:fit-content;max-width:100%;border:1px solid var(--line);border-width:1px 0 0 1px}
 .pcell{background:var(--bg);padding:1.5rem;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:.85rem}
 .ph{width:100%;aspect-ratio:4/5;object-fit:cover}
+.psplit{display:grid;grid-template-columns:minmax(16rem,21rem) minmax(0,1fr);gap:clamp(2rem,4.5vw,4rem);align-items:stretch}
+.psplit .plist{border-top:0;height:100%;display:flex;flex-direction:column}
+.psplit .prow{flex:1;align-items:center}
 .plist{list-style:none;border-top:1px solid var(--line)}
 .prow{display:flex;align-items:baseline;gap:1.6rem;padding:1.35rem 0;border-bottom:1px solid var(--line)}
 .prow .n{font-size:.74rem;letter-spacing:.22em;color:var(--acc);min-width:2.6rem}
@@ -474,8 +496,8 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 .idx .n{font-size:.74rem;letter-spacing:.22em;color:var(--band-mut);min-width:2.8rem}
 .idx .nm{font-family:var(--fd);font-size:clamp(1.5rem,3.4vw,2.7rem);line-height:1.08}
 .idx .sc{margin-left:auto;display:flex;align-items:center;gap:.7rem;font-size:.82rem;letter-spacing:.08em;color:var(--band-mut);font-variant-numeric:tabular-nums}
-.idx .sc i{display:block;width:clamp(4.5rem,10vw,8rem);height:3px;background:var(--band-line)}
-.idx .sc u{display:block;height:100%;background:var(--band-ink);opacity:.85}
+.idx .sc i{display:block;width:clamp(5rem,11vw,9rem);height:4px;background:var(--band-line)}
+.idx .sc u{display:block;height:100%;background:var(--band-ink)}
 .idx .sc b{font-weight:600;min-width:2.2rem;text-align:right}
 .cta{text-align:center;background:var(--sf);border-block:1px solid var(--line)}
 .cta .wrap{padding-block:clamp(4.5rem,10vw,8rem)}
@@ -488,9 +510,8 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 .foot{border-top:1px solid var(--line)}
 .foot .wrap{padding-block:clamp(3.5rem,7vw,5.5rem) 1.6rem}
 .fgrid{display:grid;gap:clamp(2rem,5vw,4rem)}
-.fgrid.c0{grid-template-columns:1fr;text-align:center}
-.fgrid.c0 .fnote{margin-inline:auto}
-.fgrid.c0 .ftone{justify-content:center}
+.fgrid.c0{grid-template-columns:1fr}
+.fgrid.c0 .fnote{margin-inline:0}
 .fgrid.c1{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
 .fgrid.c2{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr)}
 .fmark{font-family:var(--fd);font-size:clamp(1.9rem,3.4vw,2.9rem);line-height:1.05;letter-spacing:-.015em}
@@ -505,6 +526,9 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 @media (max-width:980px){
   .hero .grid{grid-template-columns:1fr}
   .h-img{max-width:34rem}
+  .hero.split .h-copy{align-self:auto}
+  .hmeta{padding-top:2.6rem}
+  .psplit{grid-template-columns:1fr}
   .s-grid{grid-template-columns:1fr}
   .fgrid.c1,.fgrid.c2{grid-template-columns:1fr 1fr}
 }
@@ -514,16 +538,19 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
   .top .wrap{min-height:3.9rem}
 }
 @media (max-width:640px){
-  .acts{flex-direction:column;align-items:flex-start;gap:1rem}
-  .hero.solo .acts,.cta .acts{align-items:center}
+  .acts{gap:1.1rem}
   .idx .sc i{display:none}
   figcaption{font-size:.78rem}
   .phead{flex-direction:column;align-items:flex-start;gap:1rem}
-  .g-grid{grid-template-columns:1fr}
-  .g-grid figure:nth-child(even){margin-top:0}
+  .g-grid{grid-template-columns:1fr 1fr;gap:.9rem}
+  .g-grid figure:nth-child(even){margin-top:1.4rem}
+  .g-grid figcaption{display:none}
   .fgrid.c1,.fgrid.c2{grid-template-columns:1fr}
   .mark{max-width:56vw}
   .idx li{gap:1rem}
+  .prow{flex-wrap:wrap;gap:.8rem 1.6rem}
+  .prow .pr{flex-basis:calc(100% - 4.2rem)}
+  .prow .price{margin-left:4.2rem}
   .steps li{grid-template-columns:2.6rem 1fr}
 }
 </style></head>
@@ -543,7 +570,7 @@ ${ctaHtml}
 </main>
 <footer class="foot"><div class="wrap">
   <div class="fgrid c${fcols}">
-    <div><div class="fmark">${esc(name)}</div>${content.footer?.note || brand.tagline ? `<p class="fnote">${esc(content.footer?.note || brand.tagline)}</p>` : ''}${(brand.tone || []).length ? `<div class="ftone">${brand.tone.slice(0, 5).map((t) => `<span>${esc(t)}</span>`).join('<i>·</i>')}</div>` : ''}</div>
+    <div><div class="fmark">${esc(name)}</div>${(content.footer?.note || brand.tagline || brand.description) ? `<p class="fnote">${esc(content.footer?.note || brand.tagline || brand.description)}</p>` : ''}${(brand.tone || []).length ? `<div class="ftone">${brand.tone.slice(0, 5).map((t) => `<span>${esc(t)}</span>`).join('<i>·</i>')}</div>` : ''}</div>
     ${indexCol}${footerLinks}
   </div>
   <div class="fbase"><span>© ${year} ${esc(name)}</span><span>Site by Marque</span></div>

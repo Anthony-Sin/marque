@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Icon from './Icon.jsx';
 import { api } from '../api.js';
+import { useOverlayFocus } from '../focus.js';
 import { arCss, cleanNote, downloadAsset, fileExt, isRaster, MediaFallback, providerLabel, thumb } from './Composer.jsx';
 import CreativeOverlay from './CreativeOverlay.jsx';
 import { exportCreativePNG } from './creativeExport.js';
@@ -22,6 +23,9 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
   const [delArm, setDelArm] = useState(false);   // two-tap confirm for delete
   const [deling, setDeling] = useState(false);
   const [zoom, setZoom] = useState(false);       // lightbox — image zoom / video playback
+  const zoomRef = useRef(null);
+  // lightbox takes focus (close button first) and hands it back on close
+  useOverlayFocus(zoomRef, zoom);
   // coarse pointers tap to pin the veil; mouse click opens the lightbox
   const COARSE = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
 
@@ -128,7 +132,18 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
 
   return (
     <div className={`card creative-card${promote ? ' promoting' : ''}`} style={{ '--ar': arCss(aspect) }}>
-      <div className="cc-media" onClick={(e) => {
+      <div className="cc-media" role="button" tabIndex={0}
+        aria-label={onEdit ? `Edit ${creative.headline || 'creative'}` : video ? `Play ${creative.headline || 'creative'} animation` : `Preview ${creative.headline || 'creative'} media`}
+        onKeyDown={(e) => {
+          // keyboard activation lives on the media well itself — keys bubbled
+          // up from veil buttons / the promote panel belong to those controls
+          if (e.target !== e.currentTarget) return;
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (onEdit) onEdit(creative); else setZoom(true);
+          }
+        }}
+        onClick={(e) => {
         if (e.target.closest('.veil-btn') || e.target.closest('.promote-panel')) return;
         if (COARSE) { setPinned((p) => !p); return; }
         // desktop: click the card → open the editor (zoom lives on the veil button)
@@ -278,7 +293,7 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
         </span>
       </div>
       {zoom && createPortal(
-        <div className="lightbox" role="dialog" aria-modal="true" aria-label={video ? 'Animated creative' : 'Creative zoom'} onClick={() => setZoom(false)}>
+        <div ref={zoomRef} className="lightbox" role="dialog" aria-modal="true" aria-label={video ? 'Animated creative' : 'Creative zoom'} onClick={() => setZoom(false)}>
           <button type="button" className="lightbox-x" aria-label="Close" onClick={() => setZoom(false)}><Icon name="x" size={18} /></button>
           {video ? (
             <div className="lightbox-media" onClick={(e) => e.stopPropagation()}>

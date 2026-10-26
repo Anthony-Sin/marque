@@ -157,6 +157,17 @@ export function enrichPrompt(prompt, opts = {}) {
   const bank = CUES[kind] || CUES.generic;
   const parts = [];
 
+  // palette FIRST — the clause is spliced after sentence 1, but with a long
+  // opener the tail cues still cross the 77-token window; the palette anchor
+  // is the one cue tied to live profile data, so it must lead the clause.
+  const hexes = extractPalette(src, opts.palette);
+  const head = src.slice(0, 200).toLowerCase();
+  const early = hexes.filter((h) => !head.includes(h));
+  if (early.length) {
+    const [a, b, ...rest] = early;
+    parts.push(`palette anchored on ${a}${b ? ` and ${b}` : ''}${rest.length ? ` with ${rest.join(', ')} accents` : ''}`);
+  }
+
   const light = pick(bank.lighting, src);
   if (!has(src, light.skip)) parts.push(light.t);
   const lens = pick(bank.lens, `${src}#lens`);
@@ -168,16 +179,6 @@ export function enrichPrompt(prompt, opts = {}) {
   const tex = pick(bank.texture, `${src}#tex`);
   if (!has(src, tex.skip)) parts.push(tex.t);
   if (bank.grade && !has(src, bank.grade.skip)) parts.push(bank.grade.t);
-
-  // palette hexes: re-state early only when they aren't already near the
-  // front (hexes in the tail get truncated away by the 77-token encoder).
-  const hexes = extractPalette(src, opts.palette);
-  const head = src.slice(0, 200).toLowerCase();
-  const early = hexes.filter((h) => !head.includes(h));
-  if (early.length) {
-    const [a, b, ...rest] = early;
-    parts.push(`palette anchored on ${a}${b ? ` and ${b}` : ''}${rest.length ? ` with ${rest.join(', ')} accents` : ''}`);
-  }
 
   if (!parts.length) return src;
   const clause = `Shot detail: ${parts.join(', ')}.`;
