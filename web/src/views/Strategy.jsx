@@ -843,8 +843,10 @@ export default function Strategy() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [res]);
 
-  // the plans row lists every board — refresh summaries on mount
+  // the plans row lists every board — App already loads summaries into ctx
+  // on mount; refetch only when that payload hasn't landed (cold ctx)
   useEffect(() => {
+    if (boards?.length) return;
     api.boards()
       .then(({ boards: bs }) => { if (Array.isArray(bs)) setBoards?.(bs); })
       .catch(() => {}); // older backend — the switcher just stays short
