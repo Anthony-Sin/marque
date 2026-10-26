@@ -1298,11 +1298,13 @@ app.get('/s/:slug', h(async (req, res) => {
   // renderer-native versions re-render from their snapshot at serve time so
   // template polish reaches already-published pages; legacy docs serve stored
   // html. A render fault must never 500 a live page — fall back to the bake.
+  const origin = `${req.protocol}://${req.get('host')}`;
+  const serve = (html) => res.type('html').send(html?.replace(/(<meta\s+property=["']og:image["']\s+content=["'])\/(?!\/)/i, `$1${origin}/`));
   if (v.site) {
-    try { return res.type('html').send(renderSiteHTML(v.site)); }
+    try { return serve(renderSiteHTML(v.site)); }
     catch (e) { console.error(`[marque] site render /s/${req.params.slug} →`, e.message); }
   }
-  res.type('html').send(normalizeHTML(v.html)); // normalize covers docs stored before the fix
+  serve(normalizeHTML(v.html)); // normalize covers docs stored before the fix
 }));
 
 // ---------- brand book ----------
