@@ -8,6 +8,7 @@ import DashboardPage from './views/Dashboard.jsx';
 import StrategyPage from './views/Strategy.jsx';
 import CampaignsPage from './views/Campaigns.jsx';
 import WebsitesPage from './views/Websites.jsx';
+import PhotoshootPage from './views/Photoshoot.jsx';
 import BrandBookPage from './views/BrandBook.jsx';
 import ProfilePage from './views/Profile.jsx';
 
@@ -20,6 +21,7 @@ const RAIL = [
   { to: '/dashboard', icon: 'layout', label: 'deck' },
   { to: '/strategy', icon: 'sparkle', label: 'board' },
   { to: '/campaigns', icon: 'campaign', label: 'output', gate: true },
+  { to: '/shoots', icon: 'photo', label: 'shoots' },
   { to: '/websites', icon: 'site', label: 'sites', gate: true },
   { to: '/brandbook', icon: 'book', label: 'book', gate: true },
   { to: '/profile', icon: 'dna', label: 'brand' },
@@ -208,7 +210,8 @@ export default function App() {
             {/* retired surfaces — the pipeline runs board → output now; old
                 links land on the hub instead of a dead route */}
             <Route path="/campaigns/*" element={<Gate board={board} onRetry={loadBoard}><CampaignsPage /></Gate>} />
-            <Route path="/photoshoot" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/shoots" element={<PhotoshootPage />} />
+            <Route path="/photoshoot" element={<Navigate to="/shoots" replace />} />
             <Route path="/websites" element={<Gate board={board} onRetry={loadBoard}><WebsitesPage /></Gate>} />
             <Route path="/brandbook" element={<Gate board={board} onRetry={loadBoard}><BrandBookPage /></Gate>} />
             <Route path="/brand-book" element={<Navigate to="/brandbook" replace />} />

@@ -224,17 +224,20 @@ export function renderSiteHTML(site) {
   if (style.theme === 'dark' && !dark) { bg = '#14110e'; dark = true; }
   if (style.theme === 'light' && dark) { bg = '#faf8f4'; dark = false; }
   const ink = rgb(c.text) && contrast(c.text, bg) >= 3 ? c.text : bestInk(bg);
-  const mut = mix(ink, bg, 0.68) || (dark ? '#9a958c' : '#6f6a60');
-  const line = mix(ink, bg, 0.16) || (dark ? '#333026' : '#ded9cd');
-  const sf = rgb(c.surface) && contrast(c.surface, bg) > 1.04 ? c.surface : (mix(ink, bg, 0.045) || bg);
+  const mut = mix(ink, bg, 0.48) || (dark ? '#9a958c' : '#6f6a60');
+  const line = mix(bg, ink, 0.14) || (dark ? '#333026' : '#ded9cd');
+  // a surface token only earns its slot when it's subtly distinct AND keeps
+  // the page polarity — a light surface on a dark theme would leave ink-colored
+  // text on a cream card (the contrast check alone can't see that)
+  const sf = rgb(c.surface) && contrast(c.surface, bg) > 1.04 && ((lum(c.surface) ?? 1) < 0.5) === dark ? c.surface : (mix(bg, ink, 0.05) || bg);
   const accent = rgb(c.accent) ? c.accent : (rgb(c.primary) ? c.primary : '#9a4b1f');
   const accInk = bestInk(accent);
   // the inverted band prefers the brand primary; it only falls back to ink
   // when primary would sit too close to the page background to read as a band
   const band = rgb(c.primary) && contrast(c.primary, bg) >= 1.35 ? c.primary : ink;
   const bandInk = bestInk(band);
-  const bandMut = mix(bandInk, band, 0.68) || mut;
-  const bandLine = mix(bandInk, band, 0.28) || line;
+  const bandMut = mix(bandInk, band, 0.5) || mut;
+  const bandLine = mix(band, bandInk, 0.3) || line;
 
   // fonts — Google Fonts <link> only for real family names (same external
   // allowance the generated docs already used); system stack otherwise
@@ -396,7 +399,7 @@ a{color:inherit}
 h1,h2,h3{font-family:var(--fd);font-weight:500;line-height:1.05;letter-spacing:-.015em}
 ::selection{background:var(--acc);color:var(--acc-ink)}
 .wrap{max-width:1280px;margin:0 auto;padding-inline:clamp(1.25rem,4vw,3.5rem)}
-.kick{display:flex;align-items:center;gap:.85rem;font:600 .7rem/1.2 var(--fb);letter-spacing:.3em;text-transform:uppercase;color:var(--mut);flex-wrap:wrap}
+.kick{display:flex;align-items:center;gap:.85rem;font:600 .72rem/1.2 var(--fb);letter-spacing:.3em;text-transform:uppercase;color:var(--mut);flex-wrap:wrap}
 .kick i{width:2.2rem;height:1px;background:var(--acc);flex:none}
 .kick.center{justify-content:center}
 .kick.onband{color:var(--band-mut)}
@@ -434,17 +437,17 @@ h1,h2,h3{font-family:var(--fd);font-weight:500;line-height:1.05;letter-spacing:-
 .hero.solo .acts{justify-content:center}
 .hero.split .h-copy{display:flex;flex-direction:column;align-self:stretch;justify-content:center}
 .hero.split .h-core{margin:auto 0}
-.hmeta{padding-top:3.2rem;display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap;font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--mut)}
+.hmeta{padding-top:3.2rem;display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap;font-size:.7rem;letter-spacing:.26em;text-transform:uppercase;color:var(--mut)}
 .hmeta .hm-k{color:var(--acc)}
 .hmeta span{white-space:nowrap}
 .hmeta i{font-style:normal;opacity:.5}
 figure{margin:0}
 .h-img img{width:100%;aspect-ratio:4/5;object-fit:cover}
-figcaption{display:flex;justify-content:space-between;gap:1rem;border-top:1px solid var(--line);margin-top:.9rem;padding-top:.75rem;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+figcaption{display:flex;justify-content:space-between;gap:1rem;border-top:1px solid var(--line);margin-top:.9rem;padding-top:.75rem;font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
 .strip{border-block:1px solid var(--line);padding-block:1.05rem;overflow:hidden}
 .mq{display:flex}
 .mq-in{display:flex;align-items:center;gap:1.8rem;white-space:nowrap;animation:mq 46s linear infinite;will-change:transform}
-.mq span{font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mut)}
+.mq span{font-size:.76rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mut)}
 .mq i{color:var(--acc);font-style:normal}
 @keyframes mq{to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.mq-in{animation:none;transform:none}}
@@ -540,9 +543,11 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 @media (max-width:640px){
   .acts{gap:1.1rem}
   .idx .sc i{display:none}
-  figcaption{font-size:.78rem}
+  figcaption{font-size:.8rem}
   .phead{flex-direction:column;align-items:flex-start;gap:1rem}
   .g-grid{grid-template-columns:1fr 1fr;gap:.9rem}
+  .g-grid.n2{grid-template-columns:1fr}
+  .g-grid.n2 figure:nth-child(even){margin-top:0}
   .g-grid figure:nth-child(even){margin-top:1.4rem}
   .g-grid figcaption{display:none}
   .fgrid.c1,.fgrid.c2{grid-template-columns:1fr}

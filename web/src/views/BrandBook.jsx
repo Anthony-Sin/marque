@@ -29,6 +29,36 @@ const lightHex = (hex) => {
   return lum > 150;
 };
 
+const pad2 = (n) => String(n).padStart(2, '0');
+
+// palette usage split — same weights the printed book's .pal-strip uses, so
+// the in-app bar and the published sheet agree on how the palette divides
+const SW_ROLE = {
+  primary: 'Primary mark & cover', secondary: 'Secondary elements', accent: 'Moments of emphasis',
+  background: 'Page ground', surface: 'Cards & fields', text: 'Ink & type',
+};
+const SW_W = { primary: 3, secondary: 2, accent: 2 };
+const swatchSpecs = (p) => colorList(p).map(({ label, hex }) => ({
+  label, hex,
+  role: SW_ROLE[String(label).toLowerCase()] || 'Supporting tone',
+  w: SW_W[String(label).toLowerCase()] || 1,
+}));
+
+// brand faces — sanitize like the server template's fontName (strips anything
+// that could break out of a style attr), then build an honest fallback stack
+const SYSFONTS = new Set(['serif', 'sans-serif', 'monospace', 'system-ui', 'georgia', 'helvetica', 'arial', 'times new roman', 'courier', 'courier new', 'verdana', 'tahoma', 'trebuchet ms', 'ui-sans-serif', 'ui-serif', 'ui-monospace', 'inherit']);
+const fontName = (v) => String(v || '').replace(/['"\\;{}()<>]/g, '').trim().slice(0, 60) || null;
+const googleFont = (v) => { const n = fontName(v); return n && !SYSFONTS.has(n.toLowerCase()) ? n : null; };
+const fontStack = (v, fallback) => { const n = fontName(v); return n ? `'${n}',${fallback}` : fallback; };
+
+// honest empty state — the book prints "not set" instead of inventing content
+const NotSet = ({ children }) => (
+  <div className="bb-unset">
+    <span className="bb-unset-tag">Not set</span>
+    <p className="muted small">{children}</p>
+  </div>
+);
+
 export default function BrandBook() {
   const { profile, setProfile, say, status } = useApp();
   const nav = useNavigate();
@@ -49,6 +79,23 @@ export default function BrandBook() {
     } catch { setBook(null); }
   };
   useEffect(() => { reload(); }, []);
+
+  // the type page previews real faces — pull the profile's Google fonts into
+  // the doc (system faces skip the CDN round-trip entirely). One shared link,
+  // updated in place; removing it would clobber other views' font stacks.
+  useEffect(() => {
+    const names = [...new Set([googleFont(profile?.fonts?.heading), googleFont(profile?.fonts?.body)].filter(Boolean))];
+    if (!names.length) return undefined;
+    let link = document.getElementById('bb-gfonts');
+    if (!link) {
+      link = document.createElement('link');
+      link.id = 'bb-gfonts';
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+    link.href = `https://fonts.googleapis.com/css2?${names.map((n) => `family=${encodeURIComponent(n).replace(/%20/g, '+')}:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500`).join('&')}&display=swap`;
+    return undefined;
+  }, [profile?.fonts?.heading, profile?.fonts?.body]);
 
   // image refs may be ids or paths depending on what was stored
   const imgPath = (ref) => {
@@ -83,20 +130,50 @@ export default function BrandBook() {
     } catch (err) { say(err.message); }
   };
 
-  // "generate new" cover → photoshoot free mode
+  // "generate new" cover → photoshoot free mode (shared by the wizard's
+  // Generate-new tile and the book view's Compose-cover action)
+  const runCoverShoot = async () => {
+    const { job, shoot } = await api.createPhotoshoot({
+      mode: 'free',
+      prompt: `Brand book cover for ${profile?.name || 'the brand'} — ${(profile?.tone || []).slice(0, 3).join(', ') || 'clean'} style, palette ${colorList(profile).slice(0, 3).map((c) => c.hex).join(' ')}, elegant editorial layout space`,
+    });
+    if (job?.id) await pollJob(job.id).catch(() => {});
+    const { jobs } = await api.listPhotoshoot();
+    const j = (jobs || []).find((x) => x.id === shoot?.id) || (jobs || []).at(-1);
+    return (j?.results || []).find((r) => r.imagePath)?.imagePath || null;
+  };
+
   const genCover = async () => {
     setBusy('gen-cover');
     try {
-      const { job, shoot } = await api.createPhotoshoot({
-        mode: 'free',
-        prompt: `Brand book cover for ${profile?.name || 'the brand'} — ${(profile?.tone || []).slice(0, 3).join(', ') || 'clean'} style, palette ${colorList(profile).slice(0, 3).map((c) => c.hex).join(' ')}, elegant editorial layout space`,
-      });
-      if (job?.id) await pollJob(job.id).catch(() => {});
-      const { jobs } = await api.listPhotoshoot();
-      const j = (jobs || []).find((x) => x.id === shoot?.id) || (jobs || []).at(-1);
-      const path = (j?.results || []).find((r) => r.imagePath)?.imagePath;
+      const path = await runCoverShoot();
       if (path) { setCover({ path }); say('Cover generated'); }
       else say('No cover image came back');
+    } catch (e) { say(e.message); }
+    setBusy('');
+  };
+
+  // view-mode cover composition — no PATCH route exists for the book's cover,
+  // so the book is re-POSTed with the same imageIds + the new coverImageId.
+  // buildBook resets publishedSlug → republish the same slug so a live book
+  // stays live at the same URL (fail loudly, never fake the badge).
+  const composeCover = async () => {
+    setBusy('gen-cover');
+    try {
+      const path = await runCoverShoot();
+      if (!path) { say('No cover image came back'); setBusy(''); return; }
+      const coverImageId = await ensureImageId(path, 'Brand book cover');
+      const wasLive = book?.publishedSlug;
+      const { book: b } = await api.createBrandBook({ coverImageId, imageIds: book?.images || [] });
+      if (wasLive && b) {
+        try {
+          const r = await api.publishBrandBook(wasLive);
+          b.publishedSlug = r.publishedSlug || r.slug || wasLive;
+        } catch { say('Cover composed — republish the book to restore the live link'); }
+      }
+      if (b) setBook(b);
+      setPage(0);
+      say('Cover composed');
     } catch (e) { say(e.message); }
     setBusy('');
   };
@@ -265,20 +342,43 @@ export default function BrandBook() {
   }
 
   // ---------- book view ----------
-  const coverSrc = imgPath(book.coverImage);
-  const bookImgs = (book.images || []).map(imgPath).filter(Boolean);
+  // the cover resolves like the published sheet: book's coverImageId first,
+  // then the profile library's first real image
+  const coverSrc = imgPath(book.coverImage) || (profile?.images || []).find((i) => i?.path)?.path || '';
+  const coverCaption = (profile?.images || []).find((i) => i.path === coverSrc)?.caption || '';
+  const bookImgs = (book.images || [])
+    .map((ref) => (profile?.images || []).find((i) => i.id === ref || i.path === ref))
+    .filter((i) => i?.path);
+  const swatches = swatchSpecs(profile);
+  const tones = (profile?.tone || []).filter(Boolean);
+  const fHead = fontName(profile?.fonts?.heading);
+  const fBody = fontName(profile?.fonts?.body);
+  const fdStack = fontStack(fHead, "Georgia,'Times New Roman',serif");
+  const fbStack = fontStack(fBody, "system-ui,-apple-system,'Segoe UI',Arial,sans-serif");
+  const when = new Date(book.createdAt || Date.now());
+  const coverDate = when.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
   // a page only exists if it has real content — no empty spreads
   const hasStory = !!(profile?.tagline || profile?.description || profile?.audience || profile?.values?.length);
   const hasTaste = !!profile?.qloo && profile.qloo.mode !== 'error' && profile.qloo.mode !== 'none';
   const pages = [
     { id: 'cover', label: 'Cover' },
     hasStory && { id: 'story', label: 'Story' },
-    colorList(profile).length > 0 && { id: 'palette', label: 'Palette' },
+    { id: 'voice', label: 'Voice' },
+    swatches.length > 0 && { id: 'palette', label: 'Palette' },
     { id: 'type', label: 'Typography' },
     { id: 'imagery', label: 'Imagery' },
     hasTaste && { id: 'taste', label: 'Taste' },
   ].filter(Boolean);
   const cur = pages[Math.min(page, pages.length - 1)];
+
+  // ←/→ turns pages once the stage has focus (click it or Tab to it);
+  // text inputs inside the stage (publish slug) keep their own arrow keys
+  const onBookKey = (e) => {
+    const t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); setPage((p) => Math.max(0, p - 1)); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); setPage((p) => Math.min(pages.length - 1, p + 1)); }
+  };
 
   return (
     <div className="section view bb-view">
@@ -301,37 +401,104 @@ export default function BrandBook() {
         </div>
       </div>
 
-      <div className="book-stage card hud">
+      <div className="book-stage card hud" tabIndex={0} role="region"
+        aria-label="Brand book spreads — focus, then use the arrow keys to turn pages"
+        onKeyDown={onBookKey}>
         <div className="book-page">
           {cur.id === 'cover' && (
             <div className="book-cover">
-              {coverSrc && <img src={thumb(coverSrc, 960)} alt="cover" />}
-              <div className="cover-txt">
-                <div className="pg-label" style={{ color: 'var(--ink-3)' }}>Brand Book</div>
-                <h2 className="display">{profile?.name || 'Your brand'}</h2>
-                {profile?.tagline && <p>{profile.tagline}</p>}
+              <div className="cov-top"><span>Brand Book</span><span>Vol. 01 — {coverDate}</span></div>
+              {coverSrc ? (
+                <figure className="cov-plate">
+                  <span className="cov-frame">
+                    <img src={thumb(coverSrc, 800)} alt={coverCaption || `${profile?.name || 'Brand'} cover art`} />
+                  </span>
+                  <figcaption><span>Plate I — Brand mark</span><span>{coverCaption || 'Studio series'}</span></figcaption>
+                </figure>
+              ) : (
+                <figure className="cov-plate">
+                  {/* no plate art yet — the frame falls back to the real palette
+                      (matching the published sheet), never a gray box */}
+                  {swatches.length ? (
+                    <span className="cov-frame cov-pal" role="img" aria-label="Cover fallback — brand palette strip">
+                      {swatches.map((s) => <i key={s.label + s.hex} style={{ flex: s.w, background: s.hex }} />)}
+                    </span>
+                  ) : (
+                    <span className="cov-frame cov-blank">
+                      <Icon name="image" size={24} /><span>No cover art on file</span>
+                    </span>
+                  )}
+                  <figcaption>
+                    <span>Plate I — {swatches.length ? 'Palette' : 'Not set'}</span>
+                    <span>{swatches.length ? `${swatches.length} colors` : ''}</span>
+                  </figcaption>
+                  <div className="cov-compose">
+                    <button className="btn ghost sm" onClick={composeCover} disabled={busy === 'gen-cover'}>
+                      {busy === 'gen-cover' ? <span className="spinner" /> : <Icon name="sparkle" />} Compose cover
+                    </button>
+                    <span className="cov-compose-note">one studio render, set as Plate I</span>
+                  </div>
+                  {busy === 'gen-cover' && <div className="gen-note"><span className="spinner" />{coverNote}</div>}
+                </figure>
+              )}
+              <div className="cov-name-row">
+                <h2 className="display cov-name">{profile?.name || 'Your brand'}</h2>
+                {profile?.tagline && <p className="cov-tag">{profile.tagline}</p>}
               </div>
+              <div className="cov-bot"><span>{profile?.name || 'Your brand'}</span><span>Brand book</span><span>© {when.getFullYear()}</span></div>
             </div>
           )}
           {cur.id === 'story' && (
             <div className="page-in">
               <div className="pg-label">Our story</div>
-              <h2 className="display" style={{ fontSize: 30 }}>{profile?.tagline || profile?.name}</h2>
-              <p style={{ maxWidth: 560 }}>{profile?.description}</p>
-              {profile?.audience && <p className="muted small">For {profile.audience}</p>}
+              <h2 className="display bb-h2">{profile?.tagline || profile?.name}</h2>
+              <p className="bb-lede">{profile?.description}</p>
+              {profile?.audience && <p className="muted small mt16">For {profile.audience}</p>}
               {!!profile?.values?.length && (
-                <div className="taglist mt8">{profile.values.map((v) => <span key={v} className="tag">{v}</span>)}</div>
+                <>
+                  <div className="bb-sub">What we value</div>
+                  <div className="taglist">{profile.values.map((v) => <span key={v} className="tag">{v}</span>)}</div>
+                </>
+              )}
+            </div>
+          )}
+          {cur.id === 'voice' && (
+            <div className="page-in">
+              <div className="pg-label">Voice</div>
+              <h2 className="display bb-h2">How we sound</h2>
+              <div className="bb-sub">Tone of voice{tones.length ? ` — ${tones.length} register${tones.length === 1 ? '' : 's'}` : ''}</div>
+              {tones.length ? (
+                <div className="bb-tones">
+                  {tones.map((t, i) => <span key={t} className="bb-tone"><b>{pad2(i + 1)}</b>{t}</span>)}
+                </div>
+              ) : (
+                <NotSet>No tone keywords on the profile — add tone of voice on your Business Profile and republish the book.</NotSet>
+              )}
+              <div className="bb-sub">In one line</div>
+              {profile?.tagline ? (
+                <blockquote className="bb-quote">“{profile.tagline}”<cite>— {profile?.name || 'the brand'}, tagline</cite></blockquote>
+              ) : (
+                <NotSet>No tagline on the profile — the one-line voice sample lands here once set.</NotSet>
               )}
             </div>
           )}
           {cur.id === 'palette' && (
             <div className="page-in">
               <div className="pg-label">Palette</div>
-              <div className="palette-strip">
-                {colorList(profile).map(({ label, hex }) => (
-                  <span key={label + hex} className={`sw${lightHex(hex) ? ' sw-light' : ''}`} style={{ background: hex }}>
-                    <span>{label}<br />{hex}</span>
-                  </span>
+              <h2 className="display bb-h2">The palette</h2>
+              <div className="bb-sub">How the palette splits</div>
+              <div className="pal-bar" role="img"
+                aria-label={`Palette proportions — ${swatches.map((s) => s.label).join(', ')}`}>
+                {swatches.map((s) => (
+                  <span key={s.label + s.hex} style={{ flex: s.w, background: s.hex }} title={`${s.label} ${s.hex}`} />
+                ))}
+              </div>
+              <div className="pal-specs">
+                {swatches.map(({ label, hex, role }) => (
+                  <div className="pal-spec" key={label + hex}>
+                    <span className={`pal-sw${lightHex(hex) ? ' sw-light' : ''}`} style={{ background: hex }}><i>{hex}</i></span>
+                    <span className="pal-meta"><b>{label}</b><span>{role}</span></span>
+                  </div>
                 ))}
               </div>
               {book.paletteNote && <p className="muted small mt16">{book.paletteNote}</p>}
@@ -340,19 +507,52 @@ export default function BrandBook() {
           {cur.id === 'type' && (
             <div className="page-in">
               <div className="pg-label">Typography</div>
-              <div className="type-sample">
-                <div className="muted small">Heading · {profile?.fonts?.heading || 'default'}</div>
-                <div className="h display" style={{ fontStyle: 'italic' }}>The quick brown fox</div>
-                <div className="muted small mt16">Body · {profile?.fonts?.body || 'default'}</div>
-                <div className="b">The quick brown fox jumps over the lazy dog.</div>
-              </div>
+              <h2 className="display bb-h2">Typefaces</h2>
+              {!(fHead || fBody) ? (
+                <NotSet>No brand faces on the profile — set heading and body fonts on your Business Profile.</NotSet>
+              ) : (
+                <>
+                  <div className="bb-faces">
+                    <div className="bb-face">
+                      <div className="bb-face-k"><span>Display face</span><span>{fHead || 'not set'}</span></div>
+                      {fHead ? (
+                        <>
+                          <div className="bb-face-aa" style={{ fontFamily: fdStack }}>Aa</div>
+                          <p className="bb-face-pg" style={{ fontFamily: fdStack }}>The quick brown fox jumps over the lazy dog — 0123456789</p>
+                        </>
+                      ) : <NotSet>Falls back to the serif stack until a display face is set.</NotSet>}
+                    </div>
+                    <div className="bb-face">
+                      <div className="bb-face-k"><span>Text face</span><span>{fBody || 'not set'}</span></div>
+                      {fBody ? (
+                        <>
+                          <div className="bb-face-aa" style={{ fontFamily: fbStack }}>Aa</div>
+                          <p className="bb-face-pg" style={{ fontFamily: fbStack }}>Pack my box with five dozen liquor jugs — the quick brown fox jumps over the lazy dog. 0123456789</p>
+                        </>
+                      ) : <NotSet>Falls back to the system sans until a text face is set.</NotSet>}
+                    </div>
+                  </div>
+                  <div className="bb-sub">Scale in use</div>
+                  <div className="bb-ladder">
+                    <div className="bb-lrow"><span className="bb-lk">Display — 48</span><span className="bb-ls" style={{ fontFamily: fdStack, fontSize: 'clamp(1.6rem,4.6vw,3rem)' }}>Headlines lead</span></div>
+                    <div className="bb-lrow"><span className="bb-lk">Title — 28</span><span className="bb-ls" style={{ fontFamily: fdStack, fontSize: '1.5rem' }}>Sections breathe</span></div>
+                    <div className="bb-lrow"><span className="bb-lk">Body — 16</span><span className="bb-ls" style={{ fontFamily: fbStack, fontSize: '1rem' }}>Long-form copy stays quiet and readable.</span></div>
+                    <div className="bb-lrow"><span className="bb-lk">Caption — 11</span><span className="bb-ls bb-lcap">Labels &amp; captions track wide</span></div>
+                  </div>
+                </>
+              )}
             </div>
           )}
           {cur.id === 'imagery' && (
             <div className="page-in">
-              <div className="pg-label">Imagery · {bookImgs.length}</div>
+              <div className="pg-label">Imagery{bookImgs.length ? ` · ${bookImgs.length}` : ''}</div>
               <div className="book-imgs">
-                {bookImgs.map((p, i) => <span key={i} className="media-tile"><img src={thumb(p, 560)} alt="" /></span>)}
+                {bookImgs.map((im, i) => (
+                  <figure key={im.id || im.path} className="media-tile bb-fig">
+                    <img src={thumb(im.path, 560)} alt={im.caption || `Book image ${i + 1}`} />
+                    <figcaption>FIG. {pad2(i + 1)}{im.caption ? ` — ${im.caption}` : ''}</figcaption>
+                  </figure>
+                ))}
                 {!bookImgs.length && (
                   <div className="empty" style={{ padding: '30px 10px', gridColumn: '1 / -1' }}>
                     <p>No imagery recorded on this book — images land here after onboarding scrapes your site.</p>
@@ -372,11 +572,14 @@ export default function BrandBook() {
           )}
         </div>
 
-        <div className="book-nav">
+        <div className="book-nav" role="navigation" aria-label="Book pages">
           <button className="icon-btn" aria-label="Previous page" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>←</button>
-          {pages.map((p, i) => (
-            <button key={p.id} className={`book-dot${i === page ? ' on' : ''}`} title={p.label} aria-label={`Go to ${p.label} page`} aria-current={i === page ? 'page' : undefined} onClick={() => setPage(i)} />
-          ))}
+          <span className="book-dots">
+            {pages.map((p, i) => (
+              <button key={p.id} className={`book-dot${i === page ? ' on' : ''}`} title={p.label} aria-label={`Go to ${p.label} page`} aria-current={i === page ? 'page' : undefined} onClick={() => setPage(i)} />
+            ))}
+          </span>
+          <span className="book-pageno" aria-live="polite">{pad2(page + 1)} / {pad2(pages.length)}</span>
           <button className="icon-btn" aria-label="Next page" disabled={page >= pages.length - 1} onClick={() => setPage((p) => Math.min(pages.length - 1, p + 1))}>→</button>
         </div>
 

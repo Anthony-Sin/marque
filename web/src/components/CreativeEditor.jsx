@@ -4,7 +4,7 @@ import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import { QlooBadge, SignalChips } from './Qloo.jsx';
 import EvidenceDrawer from './EvidenceDrawer.jsx';
-import { downloadAsset, fileExt, useStages, providerLabel } from './Composer.jsx';
+import { downloadAsset, fileExt, useStages, providerLabel, cleanNote } from './Composer.jsx';
 import CreativeOverlay, { OVERLAY_STYLES } from './CreativeOverlay.jsx';
 import { exportCreativePNG } from './creativeExport.js';
 import { useOverlayFocus } from '../focus.js';
@@ -62,6 +62,7 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
   });
   const regen = () => run('regen', async () => {
     const { creative: c } = await api.regenCreativeImage(cur.id, regenPrompt.trim() || undefined, regenProvider === 'auto' ? undefined : regenProvider);
+    c.imageAt = new Date().toISOString();   // 'rendered just now' stamp — the server doesn't return one
     done(c, 'Image regenerated');
     setMedia('image');
   });
@@ -94,6 +95,27 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
 
   const signals = [...(cur.qlooSignals || []), ...(campaign?.qlooSignals || [])];
   const showVideo = media === 'video' && cur.videoPath;
+
+  // footer microline — honest render provenance: which engine produced the
+  // media currently in view (raw engine tag kept when it carries the model id)
+  // plus the best timestamp on record. Regens stamp `imageAt` client-side;
+  // campaign-born creatives fall back to the campaign's own creation time.
+  const ago = (d) => {
+    const ms = Date.now() - new Date(d).getTime();
+    if (!isFinite(ms) || ms < 0) return '';
+    const m = Math.floor(ms / 60000);
+    if (m < 1) return 'just now';
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    return h < 24 ? `${h}h ago` : `${Math.floor(h / 24)}d ago`;
+  };
+  const prov = showVideo ? cur.videoProvider : cur.imageProvider;
+  const stamp = cur.imageAt || cur.createdAt || campaign?.createdAt;
+  const micro = [
+    prov ? providerLabel(prov) : 'engine unrecorded',
+    prov && String(prov).includes('-') ? String(prov) : '',
+    ago(stamp),
+  ].filter(Boolean).join(' · ');
 
   return (
     <div className="modal-veil" onClick={onClose}>
@@ -209,6 +231,12 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
               <p className="muted small mt8">Animation is available on 9:16 creatives only.</p>
             )}
           </div>
+        </div>
+        <div className="ed-micro" title="Render provenance — the engine that made the media in view, and the best timestamp on record">
+          <span className="ed-micro-src">{micro}</span>
+          <span className="grow" />
+          {showVideo && !!cleanNote(cur.videoNote) && <span className="ed-micro-warn">{cleanNote(cur.videoNote)}</span>}
+          {!!cur.editedBy && <span>tuned by {cur.editedBy}</span>}
         </div>
       </div>
       {evi && <EvidenceDrawer signals={cur.qlooSignals || []} extra={campaign?.qlooSignals || []} onClose={() => setEvi(false)} />}

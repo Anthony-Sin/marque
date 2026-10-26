@@ -54,6 +54,10 @@ export default function Campaigns() {
   const [liveAspect, setLiveAspect] = useState('4:5'); // composer's real pill state
   const [engine, setEngine] = useState('auto');        // campaign-level image engine override
   const [creativeCount, setCreativeCount] = useState(EXPECTED_CREATIVES); // set size for the next run
+  const [reroll, setReroll] = useState(null);          // batch re-render progress {i,total} while running
+  const [rrMap, setRrMap] = useState({});              // creativeId → queued | spin | done | fail
+  const [rrNote, setRrNote] = useState('');            // inline result/stop note in the CRE zone head
+  const rrCtl = useRef(null);                          // {cancel} — leaving the detail view stops the loop
 
   const reload = async () => {
     try { setCampaigns((await api.listCampaigns()).campaigns || []); }
@@ -190,6 +194,14 @@ export default function Campaigns() {
     }, 2500);
     return () => { dead = true; clearInterval(t); };
   }, [openId, campaigns, making]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // batch re-render housekeeping — leaving the detail view (Back, another
+  // campaign, or unmount) cancels the loop between posts; an in-flight regen
+  // still lands its tile update. Per-tile rings + notes reset per campaign.
+  useEffect(() => {
+    setRrMap({}); setRrNote('');
+    return () => { if (rrCtl.current) rrCtl.current.cancel = true; };
+  }, [openId]);
 
   const open = (campaigns || []).find((c) => c.id === openId) || null;
 
@@ -437,6 +449,82 @@ export default function Campaigns() {
     setAnimating('');
   };
 
+  // ---------- re-render stills (batch + per-tile reroll) ----------
+  // engine for a regen — the creative's own provider when it's a real image
+  // engine ('local-sdxl-turbo' → 'local'); anything else falls back to local
+  const rrProvider = (cr) => {
+    const p = String(cr?.imageProvider || '').split('-')[0];
+    return ['local', 'gemini', 'pollinations'].includes(p) ? p : 'local';
+  };
+  // the endpoint 200s even when the render fails — the honest signal is a
+  // placeholder/error flag on the returned creative, not the HTTP status
+  const rrOk = (cr) => !!cr && !cr.imageError && !cr.placeholder;
+  // fold a regenerated creative back into the open campaign so its tile
+  // refreshes in place — no full reload between posts
+  const applyCreative = (campId, next) => {
+    if (!next) return;
+    next.imageAt = new Date().toISOString();   // 'rendered just now' stamp for the editor microline
+    setCampaigns((cs) => (cs || []).map((c) => (c.id === campId
+      ? { ...c, creatives: (c.creatives || []).map((x) => (x.id === next.id ? next : x)) }
+      : c)));
+  };
+
+  // per-tile hover reroll — one click, no editor round-trip
+  const rerollOne = async (cr) => {
+    if (!open || reroll || rrMap[cr.id] === 'spin') return;
+    setRrMap((m) => ({ ...m, [cr.id]: 'spin' }));
+    let ok = false;
+    try {
+      const { creative: next } = await api.regenCreativeImage(cr.id, undefined, rrProvider(cr));
+      applyCreative(open.id, next);
+      ok = rrOk(next);
+      if (!ok) say(`Re-render failed — ${next?.imageError || 'renderer returned a placeholder'}`);
+    } catch (e) { say(e.message); }
+    setRrMap((m) => ({ ...m, [cr.id]: ok ? 'done' : 'fail' }));
+  };
+
+  // header batch — sequential regen of every still in the visible campaign.
+  // Stops early on a 3-failure streak (a wedged local renderer won't recover
+  // mid-run) and reports the streak honestly instead of grinding through.
+  const rerollAll = async () => {
+    if (!open || reroll) return;
+    const targets = (open.creatives || []).filter((cr) => cr.imagePath);
+    if (!targets.length) return;
+    const ctl = { cancel: false };
+    rrCtl.current = ctl;
+    setRrNote('');
+    setRrMap(Object.fromEntries(targets.map((cr) => [cr.id, 'queued'])));
+    setReroll({ i: 0, total: targets.length });
+    let streak = 0, fails = 0, stopped = false;
+    for (let i = 0; i < targets.length; i++) {
+      if (ctl.cancel) break;
+      const cr = targets[i];
+      setReroll({ i: i + 1, total: targets.length });
+      setRrMap((m) => ({ ...m, [cr.id]: 'spin' }));
+      let ok = false;
+      try {
+        const { creative: next } = await api.regenCreativeImage(cr.id, undefined, rrProvider(cr));
+        applyCreative(open.id, next);
+        ok = rrOk(next);
+      } catch { /* counted as a failure below */ }
+      fails += ok ? 0 : 1;
+      streak = ok ? 0 : streak + 1;
+      setRrMap((m) => ({ ...m, [cr.id]: ok ? 'done' : 'fail' }));
+      if (streak >= 3) { stopped = true; break; }
+    }
+    setReroll(null);
+    if (rrCtl.current === ctl) rrCtl.current = null;
+    if (ctl.cancel) return;
+    if (stopped) {
+      setRrNote('local renderer unstable — stopped early');
+      say('Re-render stopped early — 3 failures in a row');
+    } else if (fails) {
+      setRrNote(`${targets.length - fails}/${targets.length} re-rendered — ${fails} failed`);
+    } else {
+      setRrNote(`${targets.length} still${targets.length === 1 ? '' : 's'} re-rendered`);
+    }
+  };
+
   // ---------- detail: the final result ----------
   if (open) {
     const creatives = open.creatives || [];
@@ -556,20 +644,57 @@ export default function Campaigns() {
             </section>
           )}
           <section className="card hud cp-panel cp-bay">
-            <div className="zone-head"><span className="z-id">CRE</span>Creatives<span className="z-tag">{creatives.length} TOTAL</span></div>
+            <div className="zone-head">
+              <span className="z-id">CRE</span>Creatives
+              <span className="z-tag">{creatives.length} TOTAL</span>
+              <span className="rr-cluster" aria-live="polite">
+                {!!rrNote && !reroll && <span className="rr-note">{rrNote}</span>}
+                <button type="button" className="rr-btn"
+                  disabled={!!reroll || !creatives.some((cr) => cr.imagePath)}
+                  title={reroll
+                    ? `Re-rendering ${reroll.i}/${reroll.total} — sequential, each takes a few seconds`
+                    : 'Re-render every still in this campaign — sequential regen, honest progress'}
+                  onClick={rerollAll}>
+                  {!!reroll && <span className="spinner" />}
+                  {reroll ? `REROLL ${reroll.i}/${reroll.total}` : `REROLL ×${creatives.filter((cr) => cr.imagePath).length}`}
+                </button>
+              </span>
+            </div>
             <div className="cp-panel-body">
               <div className="creative-grid">
                 {creatives.map((cr) => (
-                  <CreativeCard
-                    key={cr.id}
-                    creative={cr}
-                    campaign={open}
-                    aspect={open.aspectRatio}
-                    animating={animating === cr.id}
-                    onEdit={setEditing}
-                    onAnimate={animateOne}
-                    onChanged={reload}
-                  />
+                  <div key={cr.id} className="cc-wrap">
+                    <CreativeCard
+                      creative={cr}
+                      campaign={open}
+                      aspect={open.aspectRatio}
+                      animating={animating === cr.id || rrMap[cr.id] === 'spin'}
+                      onEdit={setEditing}
+                      onAnimate={animateOne}
+                      onChanged={reload}
+                    />
+                    <span className="cc-tools">
+                      {(!!cr.videoPath || cr.medium === 'video') && (
+                        <span className="cc-motion"
+                          title={cr.videoPath
+                            ? `Motion unit${cr.videoProvider ? ` · ${providerLabel(cr.videoProvider)}` : ''}`
+                            : cr.videoState === 'error' ? 'Planned motion — render failed' : 'Planned as a motion unit'}>
+                          <Icon name="film" size={9} />motion
+                        </span>
+                      )}
+                      {!!rrMap[cr.id] && (
+                        <span className={`cc-ring ${rrMap[cr.id]}`} role="status"
+                          title={{ queued: 'Queued for re-render', spin: 'Re-rendering…', done: 'Re-rendered', fail: 'Re-render failed' }[rrMap[cr.id]]} />
+                      )}
+                      {!!cr.imagePath && rrMap[cr.id] !== 'spin' && (
+                        <button type="button" className="cc-reroll" disabled={!!reroll}
+                          title="Reroll — regenerate this image in place"
+                          onClick={(e) => { e.stopPropagation(); rerollOne(cr); }}>
+                          <Icon name="refresh" size={10} />reroll
+                        </button>
+                      )}
+                    </span>
+                  </div>
                 ))}
                 {Array.from({ length: pendingSkels }, (_, i) => skelCreative(i, open.aspectRatio))}
               </div>

@@ -6,6 +6,7 @@ import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
 import Wayfind from '../components/Wayfind.jsx';
 import { SignalChips } from '../components/Qloo.jsx';
+import { providerLabel } from '../components/Composer.jsx';
 import './strategy.css';
 
 // the textarea opens with this default — editable; chips below swap in alternates.
@@ -468,20 +469,27 @@ function Moodboard({ board }) {
     setZoom(null);
     if (!bid) return;
     (async () => {
-      try {
-        const d = await api.moodboard(bid);
-        if (reqRef.current !== seq) return;
-        setMb(d.moodboard || null);
-        if (d.moodboard) setErr('');
-        if (d.job?.status === 'running') { setJob(d.job); setErr(''); }
-      } catch (e) {
-        if (reqRef.current !== seq) return;
-        if (e.status === 404) setMb(null);
-        else setErr(e.message || 'moodboard fetch failed');
+      // no stored tiles + no live-run marker = a guaranteed 404 — skip the
+      // fetch entirely so it never lands in the console (the record is the
+      // source of truth anyway; a server-side job always sets the marker)
+      const hasTiles = !!board?.moodboard?.tiles?.length;
+      const jid = board?.moodboardJob?.jobId;
+      if (hasTiles || jid) {
+        try {
+          const d = await api.moodboard(bid);
+          if (reqRef.current !== seq) return;
+          setMb(d.moodboard || null);
+          // the record's moodboardError stays — tiles + error coexist when a
+          // reshuffle failed but an older set survived; only a new run clears it
+          if (d.job?.status === 'running') { setJob(d.job); setErr(''); }
+        } catch (e) {
+          if (reqRef.current !== seq) return;
+          if (e.status === 404) setMb(null);
+          else setErr(e.message || 'moodboard fetch failed');
+        }
       }
       // the record's own marker — covers the GET-404-while-running case (the
       // 404 body carries `job` but the api wrapper only surfaces .error)
-      const jid = board?.moodboardJob?.jobId;
       if (jid && reqRef.current === seq) {
         try {
           const { job: j } = await api.job(jid);
@@ -494,7 +502,7 @@ function Moodboard({ board }) {
   }, [bid]);
 
   // fetch the finished board state after the job lands
-  const refreshTiles = async () => {
+  const refreshTiles = async (attempt = 0) => {
     try {
       const d = await api.moodboard(bid);
       setMb(d.moodboard || null);
@@ -502,7 +510,11 @@ function Moodboard({ board }) {
         setErr('');
         syncBoard({ moodboard: d.moodboard, moodboardError: null });
       }
-    } catch { /* 404 mid-swap — the job result may still be writing */ }
+    } catch (e) {
+      // 404 mid-swap — the job result may still be writing; a short retry
+      // lands it instead of leaving the grid empty
+      if (e.status === 404 && attempt < 3) setTimeout(() => refreshTiles(attempt + 1), 1200);
+    }
   };
 
   // 1.5s poll while the job runs — stops on done/error/unmount
@@ -548,8 +560,10 @@ function Moodboard({ board }) {
     setErr('');
     try {
       const d = await api.genMoodboard(bid);
-      if (d?.job) setJob(d.job);               // deduplicated or fresh — same shape
-      else if (d?.moodboard) setMb(d.moodboard);
+      if (d?.job) {
+        setJob(d.job);                          // deduplicated or fresh — same shape
+        if (d.job.status === 'done') refreshTiles(); // a sync finish skips the poll
+      } else if (d?.moodboard) setMb(d.moodboard);
     } catch (e) {
       const m = e.message || 'could not start generation';
       setErr(m); say?.(m);
@@ -562,11 +576,12 @@ function Moodboard({ board }) {
   const total = prog.total || MOOD_TOTAL;
   const done = Math.min(prog.done || 0, total);
   const failedN = mb?.failed || prog.failed || 0;
-  // 'local-sdxl-turbo' → 'sdxl-turbo' — the honest renderer tag in the footer;
-  // mid-run (no stored provider yet) the live /status model tag stands in
-  const providerTag = mb?.provider
-    ? String(mb.provider).replace(/^local-/, '')
-    : String(status?.localgen?.model || '').split('/').pop() || '';
+  // shared provider map → 'studio render' (same label the campaign chips
+  // show). The raw engine id stays honest in the footer's tooltip instead.
+  // Mid-run (no stored provider yet) the live /status model means the same
+  // local renderer.
+  const engineId = String(mb?.provider || status?.localgen?.model || '').split('/').pop() || '';
+  const providerTag = mb?.provider ? providerLabel(mb.provider) : (engineId ? 'studio render' : '');
   const genAt = mb?.generatedAt ? String(mb.generatedAt).slice(11, 16) : '';
 
   return (
@@ -645,7 +660,9 @@ function Moodboard({ board }) {
       {(!!tiles.length || running) && (
         <div className="stg-mood-foot">
           <Icon name="image" size={10} />
-          <span>rendered locally{providerTag ? ` · ${providerTag}` : ''}{genAt ? ` · ${genAt}` : ''}</span>
+          <span title={engineId ? `engine: ${engineId}` : undefined}>
+            {providerTag || 'rendered locally'}{genAt ? ` · ${genAt}` : ''}
+          </span>
         </div>
       )}
 
@@ -655,7 +672,9 @@ function Moodboard({ board }) {
           <div className="lightbox-media stg-mood-lb" onClick={(e) => e.stopPropagation()}>
             <img src={moodFull(zoom.path)} alt={`${moodKind(zoom.kind)} moodboard tile`} />
             <span className="stg-mood-lb-cap">
-              <span className="stg-mood-lb-kind">{moodKind(zoom.kind)} · rendered locally{providerTag ? ` · ${providerTag}` : ''}</span>
+              <span className="stg-mood-lb-kind" title={engineId ? `engine: ${engineId}` : undefined}>
+                {moodKind(zoom.kind)} · {providerTag || 'rendered locally'}
+              </span>
               {!!zoom.prompt && <span className="stg-mood-lb-prompt" title={zoom.prompt}>{zoom.prompt}</span>}
             </span>
           </div>
@@ -916,6 +935,16 @@ export default function Strategy() {
 
   const read = res?.audienceRead || {};
   const lean = read.lean || {};
+  // "Taste drivers" rows that verbatim-repeat the lean's own signal bullets
+  // carry zero extra info — drop the dupes (a section of pure echoes hides).
+  const leanSigSet = new Set((lean.signals || []).map((s) => String(s).trim().toLowerCase()));
+  const habitSeen = new Set();
+  const habitRows = (read.mediaHabits || []).filter((h) => {
+    const n = String(h?.note || '').trim().toLowerCase();
+    if (!n || leanSigSet.has(n) || habitSeen.has(n)) return false;
+    habitSeen.add(n);
+    return true;
+  });
   const strats = res?.strategies || [];
   // `cur` is the SLIM card (title/angle/fit/channels{name,fit} only) — the detail
   // page must fetch the full strategy; nothing below may read brief/watchouts/etc
@@ -1425,11 +1454,11 @@ export default function Strategy() {
                     </div>
                   )}
 
-                  {!!read.mediaHabits?.length && (
+                  {!!habitRows.length && (
                     <div className="stg-fill stg-aud-habits" style={{ '--fo': '380ms' }}>
                       <span className="stg-ml">Taste drivers</span>
                       <div className="stg-habits" style={{ marginTop: 8 }}>
-                        {read.mediaHabits.map((h, i) => (
+                        {habitRows.map((h, i) => (
                           <div className="stg-habit stg-fill" key={i} style={{ '--fo': `${410 + i * 55}ms` }}>
                             <span className="stg-hchip">{String(h.type || '').replace('urn:entity:', '').replace(/_/g, ' ') || h.channel}</span>
                             <span className="stg-hnote">{h.note}</span>
@@ -1773,11 +1802,11 @@ export default function Strategy() {
                     <div className="stg-qread">
                       <div className="stg-tile-head">
                         <span className="stg-ml">Audience read</span>
-                        <span className="stg-prov" title="Where this evidence came from">
+                        <span className="stg-prov"
+                          title={`Where this evidence came from${detSources.length ? ` — ${detSources.join(', ')}` : ''}`}>
                           <Icon name="qloo" size={10} />
                           <span>
-                            audience data · {detCalls.length} call{detCalls.length === 1 ? '' : 's'}
-                            {!!detSources.length && ` · ${detSources.join(' ')}`}
+                            audience data{detCalls.length ? ` · ${detCalls.length} taste call${detCalls.length === 1 ? '' : 's'}` : ''}
                           </span>
                         </span>
                       </div>
@@ -1789,7 +1818,7 @@ export default function Strategy() {
                               <span className="stg-qtype">taste fit · {g.type}</span>
                               {g.rows.map((r, ri) => (
                                 <span className="stg-qrow" key={`${r.name}-${ri}`}>
-                                  <span className="stg-qname">{r.name}</span>
+                                  <span className="stg-qname" title={r.name}>{r.name}</span>
                                   <span className="stg-qbar"><i style={{ width: `${pct(r.affinity)}%` }} /></span>
                                   <span className="stg-qaff">{r.affinity.toFixed(2)}</span>
                                 </span>

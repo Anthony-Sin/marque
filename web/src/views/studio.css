@@ -432,6 +432,25 @@
 .imp-steal span { font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
 .imp-note { font-size: 11.5px; color: var(--ink-4); text-align: center; }
 
+/* clamped audit copy expands on tap — the card grows inside the panel's own
+   scroller, never off the deck. 'more' only shows when the clamp cut text. */
+.imp-sug.can { cursor: pointer; }
+.imp-sug.can:hover { border-color: var(--line); }
+.imp-sug.can:focus-visible, .imp-steal[role="button"]:focus-visible {
+  outline: 2px solid rgba(255,176,58,.65); outline-offset: 2px;
+}
+.imp-steal[role="button"] { cursor: pointer; }
+.imp-steal[role="button"]:hover .imp-steal-txt { color: var(--ink-2); }
+.imp-sug.open .imp-fix, .imp-sug.open .imp-why,
+.imp-steal.open .imp-steal-txt { -webkit-line-clamp: unset; }
+.imp-more {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 2px; font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: .13em; text-transform: uppercase; color: var(--lime);
+}
+.imp-more::before { content: '⌄'; font-size: 11px; line-height: 1; }
+.imp-sug.open .imp-more::before, .imp-steal.open .imp-more::before { content: '⌃'; }
+
 /* ---------- websites ---------- */
 .gen-hero {
   max-width: 900px; margin: 30px auto; padding: 74px 30px; text-align: center;
@@ -482,46 +501,154 @@
 
 /* ---------- brand book ---------- */
 .book-stage { max-width: 840px; margin: 0 auto; }
+/* keyboard target for ←/→ paging — quiet hairline ring, HUD stays clean */
+.book-stage:focus-visible { outline: 1px solid rgba(255,176,58,.5); outline-offset: 3px; }
 .book-page {
   border-radius:0; overflow: hidden; border: 1px solid var(--line);
   background: var(--card); min-height: 480px; display: flex; flex-direction: column;
 }
 .book-page .page-in { padding: 38px; flex: 1; display: flex; flex-direction: column; }
-.book-page .pg-label { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-4); margin-bottom: 18px; }
-.book-cover { position: relative; min-height: 480px; flex: 1; display: flex; }
-.book-cover > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-/* in-flow, not inset-absolute: a long brand name wraps to several lines and
-   must grow the cover DOWNWARD — an absolute box overflows upward and the
-   page's overflow:hidden slices the eyebrow label off the top */
-.book-cover .cover-txt {
-  position: relative; z-index: 1; flex: 1;
-  display: flex; flex-direction: column; justify-content: flex-end;
-  padding: 38px; background: linear-gradient(180deg, transparent 42%, rgba(0,0,0,.74));
+.book-page .pg-label {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .18em; color: var(--ink-4); margin-bottom: 18px;
 }
-.book-cover .cover-txt h2 { margin: 0; font-size: 40px; overflow-wrap: anywhere; }
-.book-cover .cover-txt p { margin: 4px 0 0; color: var(--ink-2); }
-@media (max-width: 560px) {
-  .book-cover .cover-txt { padding: 24px; }
-  .book-cover .cover-txt h2 { font-size: clamp(24px, 8vw, 32px); }
-  .book-cover .cover-txt .pg-label { margin-bottom: 10px; }
+.book-page .bb-h2 { font-size: clamp(24px, 4vw, 30px); margin: 0 0 6px; overflow-wrap: anywhere; }
+.book-page .bb-lede { max-width: 560px; margin: 10px 0 0; overflow-wrap: anywhere; }
+/* section micro-label — same mono kick the printed sheets use (.sub-k) */
+.bb-sub {
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--ink-4);
+  margin-top: clamp(18px, 3.5vh, 28px); margin-bottom: 10px;
 }
-.book-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 18px; }
+/* honest empty block — amber dashed tag + guidance, never fabricated content */
+.bb-unset { display: flex; align-items: flex-start; gap: 10px; }
+.bb-unset p { margin: 1px 0 0; }
+.bb-unset-tag {
+  flex: none; font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--amber);
+  border: 1px dashed rgba(232, 200, 143, .5); background: rgba(232, 200, 143, .07);
+  padding: 3px 8px; border-radius:0;
+}
+
+/* cover — editorial sheet: furniture rows top/bottom, framed plate between */
+.book-cover { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: clamp(18px, 4.5%, 40px); }
+.cov-top, .cov-bot {
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--ink-4);
+}
+.cov-top { padding-bottom: 12px; border-bottom: 1px solid var(--line-soft); }
+.cov-bot { padding-top: 12px; border-top: 1px solid var(--line-soft); margin-top: 18px; }
+.cov-plate { flex: 1; min-height: 0; margin: 0; display: flex; flex-direction: column; justify-content: center; padding: 18px 0; gap: 9px; }
+.cov-frame { flex: 1; min-height: 0; display: block; border: 1px solid var(--line); background: var(--card-2); padding: 9px; }
+.cov-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cov-frame.cov-pal { display: flex; padding: 0; }
+.cov-frame.cov-pal i { display: block; height: 100%; }
+.cov-frame.cov-blank {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px;
+  color: var(--ink-4); font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: .14em; text-transform: uppercase;
+}
+.cov-plate figcaption {
+  display: flex; justify-content: space-between; gap: 12px;
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--ink-4);
+}
+.cov-plate figcaption > span:last-child { min-width: 0; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cov-compose { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.cov-compose-note { font-size: 11px; color: var(--ink-4); }
+.cov-plate .gen-note { margin: 2px 0 0; justify-content: flex-start; }
+.cov-name-row { flex: none; }
+.cov-name { margin: 0; font-size: clamp(26px, 4.6vw, 42px); overflow-wrap: anywhere; }
+.cov-tag { margin: 5px 0 0; color: var(--ink-2); overflow-wrap: anywhere; }
+
+/* pager — prev/next + dots + folio readout; wraps on narrow decks */
+.book-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 18px; flex-wrap: wrap; }
+/* dots keep their grown hit-boxes inside this lane — margins zeroed so the
+   ≥40px mobile boxes edge up instead of overlapping and swallowing a tap
+   meant for the next dot */
+.book-dots { display: inline-flex; align-items: center; gap: 10px; }
+.book-dots .book-dot { margin: 0; }
+@media (max-width: 720px) { .book-dots { gap: 2px; } }
+.book-pageno {
+  font-family: var(--font-mono); font-size: 10.5px; font-weight: 700;
+  letter-spacing: .14em; color: var(--ink-3); font-variant-numeric: tabular-nums;
+}
 /* 8px dot inside a 24px+ hit area via padding, visual stays a dot */
 .book-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--card-3); border: none; padding: 0; box-sizing: content-box; border: 8px solid transparent; background-clip: padding-box; margin: -8px; }
 .book-dot.on { border-color: transparent; }
 .book-dot.on { background: var(--lime); }
 .book-dot:hover { background: var(--ink-3); }
-.palette-strip { display: flex; gap: 12px; flex-wrap: wrap; }
-.palette-strip .sw {
-  width: 86px; height: 86px; border-radius:0; border: 1px solid var(--line);
-  display: flex; align-items: flex-end; padding: 8px; font-size: 10px;
-  color: rgba(255,255,255,.9); text-shadow: 0 1px 3px rgba(0,0,0,.55);
+
+/* palette — usage bar (proportional split) + spec swatches w/ hex + role */
+.pal-bar { display: flex; height: 34px; border: 1px solid var(--line); overflow: hidden; }
+.pal-bar span { display: block; min-width: 0; }
+.pal-specs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr)); gap: 12px; margin-top: 14px; }
+.pal-spec { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line-soft); padding: 8px; background: var(--card-2); }
+.pal-sw {
+  flex: none; width: 56px; height: 56px; border: 1px solid var(--line);
+  display: flex; align-items: flex-end; padding: 5px 6px;
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .04em;
+  color: rgba(255,255,255,.92); text-shadow: 0 1px 3px rgba(0,0,0,.6);
 }
-.palette-strip .sw-light { color: rgba(20,20,20,.85); text-shadow: 0 1px 2px rgba(255,255,255,.4); }
-.type-sample .h { font-size: 34px; margin: 6px 0 2px; }
-.type-sample .b { font-size: 16px; color: var(--ink-2); }
+.pal-sw i { font-style: normal; }
+.pal-sw.sw-light { color: rgba(20,20,20,.85); text-shadow: 0 1px 2px rgba(255,255,255,.4); }
+.pal-meta { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.pal-meta b { font-size: 12.5px; text-transform: capitalize; }
+.pal-meta span { font-size: 10.5px; color: var(--ink-4); }
+
+/* typography — real faces at display/body sizes + a scale ladder */
+.bb-faces { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr)); gap: 12px; }
+.bb-face { border: 1px solid var(--line-soft); background: var(--card-2); padding: 14px 16px 16px; min-width: 0; }
+.bb-face-k {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--ink-4);
+}
+.bb-face-k span:last-child { color: var(--ink-3); text-align: right; overflow-wrap: anywhere; }
+.bb-face-aa { font-size: 52px; line-height: 1.05; margin-top: 12px; }
+.bb-face-pg { margin: 8px 0 0; font-size: 12.5px; color: var(--ink-2); line-height: 1.55; overflow-wrap: anywhere; }
+.bb-ladder { border-top: 1px solid var(--line-soft); }
+.bb-lrow { display: flex; align-items: baseline; gap: 18px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+.bb-lk { flex: none; width: 118px; font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-4); }
+.bb-ls { min-width: 0; overflow-wrap: anywhere; }
+.bb-lcap { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--ink-3); }
+
+/* voice — numbered tone chips + a real sample line */
+.bb-tones { display: flex; flex-wrap: wrap; gap: 8px; }
+.bb-tone {
+  display: inline-flex; align-items: baseline; gap: 8px;
+  background: var(--card-3); border: 1px solid var(--line); border-radius: 0;
+  padding: 8px 14px; font-size: 13px; text-transform: capitalize;
+}
+.bb-tone b { font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: .1em; color: var(--lime); }
+.bb-quote {
+  margin: 0; padding: 4px 0 4px 18px; border-left: 2px solid var(--lime);
+  font-family: var(--font-serif); font-style: italic; font-size: clamp(17px, 2.4vw, 22px);
+  line-height: 1.45; color: var(--ink); overflow-wrap: anywhere;
+}
+.bb-quote cite { display: block; margin-top: 8px; font-family: var(--font-mono); font-style: normal; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-4); }
+
 .book-imgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(150px, 100%), 1fr)); gap: 10px; }
 .book-imgs .media-tile { aspect-ratio: 1; }
+.bb-fig { margin: 0; }
+.bb-fig figcaption {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 8px 6px;
+  background: linear-gradient(transparent, rgba(0,0,0,.75));
+  font-family: var(--font-mono); font-size: 8.5px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: #f5f2ea;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* narrow decks — the plate + paddings shrink, nothing clips mid-word */
+@media (max-width: 560px) {
+  .book-page { min-height: 380px; }
+  .book-page .page-in { padding: 24px 20px; }
+  .book-cover { padding: 18px 16px; }
+  .bb-lrow { gap: 12px; }
+  .bb-lk { width: 96px; }
+  .pal-specs { grid-template-columns: 1fr; }
+}
 
 /* ---------- promote panel (post-ready kit per creative) — a fold over the image well ---------- */
 .promote-panel {
@@ -820,3 +947,83 @@
 }
 .cp-notes .section-label { margin: 0 0 5px; }
 .cp-notes p { margin: 0; font-style: italic; }
+
+/* ══ re-render stills — batch control + per-tile HUD chrome (campaign detail) ══ */
+/* grid-item wrapper lets the detail view pin rings/tags over each creative
+   card without touching the shared card component */
+.cc-wrap { position: relative; }
+.cc-tools {
+  position: absolute; top: 8px; right: 8px; z-index: 4;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+  pointer-events: none;               /* the lane never eats card clicks… */
+}
+.cc-tools > * { pointer-events: auto; } /* …the controls themselves do */
+
+/* subtle 'motion' tag — distinguishes video units from stills (the loud
+   badge-v 'watch' pill stays the play affordance; this is just provenance) */
+.cc-motion {
+  pointer-events: none;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--font-mono); font-size: 8px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-3); background: rgba(20,20,20,.78);
+  border: 1px solid var(--line-soft); padding: 2px 7px;
+}
+.cc-motion svg { flex: none; }
+
+/* per-tile regen status ring — queued / spinning / done / failed */
+.cc-ring {
+  width: 13px; height: 13px; border-radius: 50%; box-sizing: border-box;
+  border: 2px solid rgba(255,255,255,.3); background: rgba(0,0,0,.4);
+}
+.cc-ring.queued { border-color: rgba(255,255,255,.28); }
+.cc-ring.spin {
+  border-color: rgba(255,176,58,.25); border-top-color: var(--lime);
+  animation: ccRingSpin .7s linear infinite;
+}
+.cc-ring.done { border-color: var(--lime); background: var(--lime); box-shadow: 0 0 7px rgba(255,176,58,.55); }
+.cc-ring.fail { border-color: var(--rose); background: var(--rose); }
+@keyframes ccRingSpin { to { transform: rotate(360deg); } }
+
+/* hover reroll — one-click regen on the tile, no editor round-trip */
+.cc-reroll {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--font-mono); font-size: 8.5px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(255,255,255,.92); background: rgba(20,20,20,.82);
+  border: 1px solid rgba(255,255,255,.28); padding: 3px 8px; cursor: pointer;
+  opacity: 0; transform: translateY(-3px);
+  transition: opacity .16s ease, transform .16s ease;
+}
+.cc-wrap:hover .cc-reroll, .cc-wrap:focus-within .cc-reroll { opacity: 1; transform: none; }
+.cc-reroll:hover:not(:disabled) { background: var(--lime); color: var(--lime-ink); border-color: var(--lime); }
+.cc-reroll:focus-visible { opacity: 1; transform: none; outline: 1px solid var(--lime); outline-offset: 1px; }
+.cc-reroll:disabled { opacity: 0 !important; pointer-events: none; }  /* a batch owns the lane */
+
+/* batch control inside the CRE zone head — mono HUD button + honest notes */
+.rr-cluster { display: inline-flex; align-items: center; gap: 9px; margin-left: 10px; }
+.rr-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-3); background: var(--card-3);
+  border: 1px solid var(--line); padding: 3px 10px; cursor: pointer;
+}
+.rr-btn:hover:not(:disabled) { color: var(--lime); border-color: rgba(255,176,58,.45); }
+.rr-btn:disabled { opacity: .6; cursor: default; }
+.rr-btn .spinner { width: 10px; height: 10px; border-width: 1.5px; }
+.rr-note {
+  font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .06em;
+  color: var(--amber); text-transform: none; white-space: nowrap;
+}
+
+/* editor footer microline — render provenance, engine tag + honest age */
+.ed-micro {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  margin-top: 16px; padding-top: 10px; border-top: 1px dashed var(--line-soft);
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .06em;
+  color: var(--ink-4);
+}
+.ed-micro .grow { flex: 1; }
+.ed-micro-src { color: var(--ink-3); }
+.ed-micro-warn { color: var(--amber); }

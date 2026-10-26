@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../App.jsx';
@@ -19,6 +19,78 @@ const SOC_ICON = { instagram: 'image', tiktok: 'film', youtube: 'play', x: 'shar
 const socIcon = (p) => SOC_ICON[String(p || '').toLowerCase()] || 'link';
 const IMPACT_ORD = { high: 0, med: 1, medium: 1, low: 2 };
 const impOrd = (v) => IMPACT_ORD[String(v || '').toLowerCase()] ?? 3;
+
+// recommendation cards clamp their copy to fit the fixed deck — a tap expands
+// the card inside the panel's own scroller. The 'more' toggle only appears
+// when the clamp actually cut text (measured, never guessed).
+function useClampToggle(probeSel, deps = []) {
+  const ref = useRef(null);
+  const [clipped, setClipped] = useState(false);
+  const [open, setOpen] = useState(false);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const probe = () => {
+      let hit = false;
+      el.querySelectorAll(probeSel).forEach((n) => {
+        if (n.scrollHeight > n.clientHeight + 1) hit = true;
+      });
+      setClipped(hit);
+    };
+    probe();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(probe) : null;
+    ro?.observe(el);
+    window.addEventListener('resize', probe);
+    return () => { ro?.disconnect(); window.removeEventListener('resize', probe); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+  const expandable = clipped || open;
+  const onKey = (e) => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen((o) => !o); }
+  };
+  return {
+    ref, open, expandable,
+    expandProps: expandable
+      ? { role: 'button', tabIndex: 0, 'aria-expanded': open, onClick: () => setOpen((o) => !o), onKeyDown: onKey }
+      : {},
+  };
+}
+
+// fix-list card — 'why' copy is the audit's core output; it un-clamps on tap
+function ImpSug({ s }) {
+  const { ref, open, expandable, expandProps } = useClampToggle('.imp-fix, .imp-why', [s.fix, s.why]);
+  return (
+    <div ref={ref} className={`card imp-sug${open ? ' open' : ''}${expandable ? ' can' : ''}`}
+      title={expandable ? (open ? 'Collapse' : 'Read the full recommendation') : undefined}
+      {...expandProps}>
+      <div className="imp-sug-top">
+        <span className="imp-area">{s.area || 'site'}</span>
+        <span className="imp-badges">
+          {!!s.impact && <span className={`imp-badge impact-${String(s.impact).toLowerCase()}`}>impact {s.impact}</span>}
+          {!!s.effort && <span className="imp-badge">effort {s.effort}</span>}
+        </span>
+      </div>
+      {!!s.fix && <div className="imp-fix">{s.fix}</div>}
+      {!!s.why && <div className="imp-why">{s.why}</div>}
+      {expandable && <span className="imp-more">{open ? 'less' : 'more'}</span>}
+    </div>
+  );
+}
+
+// "what to steal" row — same clamp→tap-to-expand contract as the fix cards
+function ImpSteal({ n, i }) {
+  const { ref, open, expandable, expandProps } = useClampToggle('.imp-steal-txt', [n.steal]);
+  return (
+    <div ref={ref} className={`imp-steal${open ? ' open' : ''}`}
+      title={expandable ? (open ? 'Collapse' : 'Read the full note') : undefined}
+      {...expandProps}>
+      <b><i className="imp-steal-n">{String(i + 1).padStart(2, '0')}</i>{n.brand}</b>
+      <span className="imp-steal-txt">{n.steal}</span>
+      {expandable && <span className="imp-more">{open ? 'less' : 'more'}</span>}
+    </div>
+  );
+}
 
 export default function Websites() {
   const { say, status, profile } = useApp();
@@ -219,12 +291,7 @@ export default function Websites() {
               {!!impSteals.length && (
                 <div className="card pad imp-steal-card">
                   <div className="section-label" style={{ margin: '0 0 6px' }}>What to steal</div>
-                  {impSteals.map((n, i) => (
-                    <div className="imp-steal" key={i}>
-                      <b><i className="imp-steal-n">{String(i + 1).padStart(2, '0')}</i>{n.brand}</b>
-                      <span>{n.steal}</span>
-                    </div>
-                  ))}
+                  {impSteals.map((n, i) => <ImpSteal key={i} n={n} i={i} />)}
                   {!!impComps.length && (
                     <div className="imp-note" style={{ textAlign: 'left' }}>Benchmarked against: {impComps.join(', ')}</div>
                   )}
@@ -262,19 +329,7 @@ export default function Websites() {
         <div className="cp-panel-body">
           {!!impSugs.length ? (
             <div className="grid c2">
-              {impSugs.map((s, i) => (
-                <div key={i} className="card imp-sug">
-                  <div className="imp-sug-top">
-                    <span className="imp-area">{s.area || 'site'}</span>
-                    <span className="imp-badges">
-                      {!!s.impact && <span className={`imp-badge impact-${String(s.impact).toLowerCase()}`}>impact {s.impact}</span>}
-                      {!!s.effort && <span className="imp-badge">effort {s.effort}</span>}
-                    </span>
-                  </div>
-                  {!!s.fix && <div className="imp-fix">{s.fix}</div>}
-                  {!!s.why && <div className="imp-why">{s.why}</div>}
-                </div>
-              ))}
+              {impSugs.map((s, i) => <ImpSug key={i} s={s} />)}
             </div>
           ) : (
             <div className="empty">

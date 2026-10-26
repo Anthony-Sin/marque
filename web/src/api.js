@@ -137,6 +137,10 @@ export const api = {
   listPhotoshoot: () => req('GET', '/api/photoshoot'),
   createPhotoshoot: (payload) => req('POST', '/api/photoshoot', payload),
   editPhotoshoot: (id, payload) => req('POST', `/api/photoshoot/${id}/edit`, payload),
+  deletePhotoshoot: (id) => req('DELETE', `/api/photoshoot/${id}`),
+  // image registry ops — :id resolves registry id OR a path basename; the
+  // profile target promotes a render into profile.images (brand kit)
+  promoteImage: (idOrPath, payload) => req('PUT', `/api/images/${encodeURIComponent(idOrPath)}`, payload),
   // websites
   listWebsites: () => req('GET', '/api/websites'),
   createWebsite: (promptOrOpts) => req('POST', '/api/websites', typeof promptOrOpts === 'string' ? { prompt: promptOrOpts } : (promptOrOpts || {})),
