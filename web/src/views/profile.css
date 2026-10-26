@@ -1,0 +1,159 @@
+/* ==================== brand profile view (pfv-) ====================
+   Business Profile viewer/editor — the record every board, campaign and site
+   reads. Fixed-viewport split: identity rail left, instrument panels right;
+   overflow lives inside .cp-panel-body zones, never on .main. */
+
+.pfv-split {
+  flex: 1; min-height: 0;
+  display: grid; grid-template-columns: minmax(310px, 5fr) minmax(0, 7fr); gap: 12px;
+}
+.pfv-col {
+  min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  display: flex; flex-direction: column; gap: 12px; padding-bottom: 2px;
+}
+.pfv-col > * { flex: none; }
+
+/* ---------- fields ---------- */
+.pfv-field { display: flex; flex-direction: column; gap: 6px; }
+.pfv-lbl {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--ink-4);
+}
+input.pfv-in, textarea.pfv-in {
+  width: 100%; background: var(--bg-raise); border: 1px solid var(--line);
+  color: var(--ink); border-radius: 0; padding: 9px 12px; font-size: 14px;
+}
+input.pfv-in:focus, textarea.pfv-in:focus { outline: none; border-color: var(--lime); }
+textarea.pfv-in { resize: vertical; min-height: 70px; line-height: 1.5; }
+input.pfv-in.pfv-name { font-size: 17px; font-weight: 600; }
+
+/* read-only record facts at the bottom of the identity rail */
+.pfv-meta {
+  display: grid; grid-template-columns: auto 1fr; gap: 5px 14px; margin: 0;
+  padding-top: 12px; border-top: 1px dashed var(--line-soft);
+}
+.pfv-meta dt {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--ink-4); padding-top: 1px;
+}
+.pfv-meta dd { margin: 0; color: var(--ink-2); font-family: var(--font-mono); font-size: 11px; overflow-wrap: anywhere; }
+.pfv-rail .cp-panel-body { height: 100%; } /* lets the regen note sit at the foot */
+
+/* ---------- save bar — honest dirty state, pinned strip ---------- */
+.pfv-savebar {
+  flex: none; position: sticky; bottom: 0; z-index: 6;
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 10px; padding: 9px 14px;
+  background: linear-gradient(180deg, rgba(255, 176, 58, .12), rgba(255, 176, 58, .06));
+  border: 1px solid rgba(255, 176, 58, .4);
+  backdrop-filter: blur(6px);
+}
+.pfv-savebar .grow { flex: 1; }
+.pfv-dirty {
+  display: flex; align-items: center; gap: 7px; min-width: 0;
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--lime-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.pfv-dirty i {
+  width: 6px; height: 6px; border-radius: 50%; flex: none;
+  background: var(--lime); box-shadow: 0 0 8px rgba(255, 176, 58, .8);
+  animation: railLedBlink 2.2s infinite;
+}
+
+/* ---------- palette swatch cards ---------- */
+.pfv-swgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(126px, 100%), 1fr)); gap: 10px; }
+.pfv-sw {
+  position: relative; display: flex; flex-direction: column; overflow: hidden;
+  border: 1px solid var(--line-soft); background: var(--bg-raise);
+}
+.pfv-sw-chip { position: relative; display: block; height: 60px; cursor: pointer; }
+.pfv-sw-chip input[type="color"] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.pfv-sw-x {
+  position: absolute; top: 4px; right: 4px; z-index: 2;
+  width: 18px; height: 18px; border: none; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, .48); color: var(--ink); opacity: 0;
+  transition: opacity .15s, background .15s;
+}
+.pfv-sw:hover .pfv-sw-x, .pfv-sw-x:focus-visible { opacity: 1; }
+.pfv-sw-x:hover { background: var(--rose); color: #2a1218; }
+@media (hover: none) { .pfv-sw-x { opacity: 1; } } /* touch: no hover to reveal */
+.pfv-sw-body { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 9px; }
+.pfv-sw-key {
+  font-family: var(--font-mono); font-size: 8.5px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3);
+}
+.pfv-sw-hex {
+  width: 100%; background: none; border: none; padding: 0 0 1px;
+  border-bottom: 1px dashed transparent;
+  font-family: var(--font-mono); font-size: 11.5px; color: var(--ink);
+}
+.pfv-sw-hex:hover { border-bottom-color: var(--line); }
+.pfv-sw-hex:focus { outline: none; border-bottom-color: var(--lime); }
+.pfv-sw-hex.bad { color: var(--rose); }
+
+.pfv-addsw {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px; border: 1px dashed var(--line);
+}
+.pfv-addsw input {
+  background: var(--bg-raise); border: 1px solid var(--line); border-radius: 0;
+  color: var(--ink); padding: 7px 10px; font-size: 12.5px;
+}
+.pfv-addsw input:first-child { flex: 1; min-width: 120px; }
+.pfv-addsw input.pfv-hexin { width: 92px; font-family: var(--font-mono); }
+.pfv-addsw input:focus { outline: none; border-color: var(--lime); }
+
+/* ---------- fonts ---------- */
+.pfv-fonts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pfv-font {
+  display: flex; align-items: center; gap: 12px;
+  border: 1px solid var(--line-soft); background: var(--bg-raise); padding: 10px 12px;
+}
+.pfv-font .font-aa { font-size: 30px; color: var(--ink-2); flex: none; }
+.pfv-font-l { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.pfv-font-l input {
+  width: 100%; background: none; border: none; padding: 0 0 2px;
+  border-bottom: 1px dashed var(--line);
+  color: var(--ink); font-size: 13px;
+}
+.pfv-font-l input:focus { outline: none; border-bottom-color: var(--lime); }
+
+/* ---------- editable chips ---------- */
+.pfv-chips { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+.pfv-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--card-3); border: 1px solid transparent;
+  padding: 5px 8px 5px 12px; border-radius: var(--radius-pill);
+  font-size: 12.5px; color: var(--ink-2);
+}
+.pfv-chip button { display: flex; background: none; border: none; padding: 0; color: var(--ink-4); }
+.pfv-chip button:hover { color: var(--rose); }
+.pfv-chipin {
+  min-width: 96px; flex: 1; max-width: 190px;
+  background: none; border: none; border-bottom: 1px dashed var(--line);
+  padding: 5px 2px; color: var(--ink); font-size: 12.5px;
+}
+.pfv-chipin:focus { outline: none; border-bottom-color: var(--lime); }
+
+/* ---------- taste signal rows ---------- */
+.pfv-trow { display: flex; flex-direction: column; gap: 6px; }
+.pfv-trow .taglist { display: flex; flex-wrap: wrap; gap: 7px; }
+.pfv-tent { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink); }
+.pfv-tent em { font-style: normal; color: var(--ink-4); font-family: var(--font-mono); font-size: 10.5px; }
+.pfv-trow .qloo-badge { align-self: flex-start; }
+.pfv-view .zone-head .qloo-badge { margin-left: auto; }
+
+/* ---------- stacking ---------- */
+@media (max-width: 1100px) {
+  /* single scroll column — the view scrolls, zones stop clipping */
+  .pfv-split { display: flex; flex-direction: column; overflow-y: auto; }
+  .pfv-col { overflow: visible; }
+  .pfv-split .cp-panel { flex: none; overflow: visible; }
+  .pfv-split .cp-panel-body { overflow: visible; }
+}
+@media (max-width: 560px) {
+  .pfv-fonts { grid-template-columns: 1fr; }
+  .pfv-savebar { flex-wrap: wrap; }
+}

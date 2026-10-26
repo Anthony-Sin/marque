@@ -144,8 +144,11 @@ const TEMPLATES = {
 export const TEMPLATE_IDS = Object.keys(TEMPLATES);
 
 export async function buildFromTemplate(templateId) {
-  const t = TEMPLATES[templateId];
-  if (!t) throw new Error(`unknown templateId "${templateId}" (options: ${TEMPLATE_IDS.join(', ')})`);
+  // own-property check — 'constructor'/'toString' resolve inherited members on
+  // a plain object, which would normalizeProfile(<function>) and wipe the
+  // stored profile with a garbage template
+  const t = typeof templateId === 'string' && Object.hasOwn(TEMPLATES, templateId) ? TEMPLATES[templateId] : null;
+  if (!t) { const e = new Error(`unknown templateId "${String(templateId).slice(0, 60)}" (options: ${TEMPLATE_IDS.join(', ')})`); e.status = 400; throw e; }
   const profile = normalizeProfile(t, { source: { type: 'template', templateId } });
   profile.qloo = await enrichProfile(profile);
   persistProfile(profile);

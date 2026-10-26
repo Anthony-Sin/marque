@@ -193,3 +193,9 @@ LOW (noted, later):
 - ISSUE: rail-foot LED labels ("QLOO LIVE", clock) overflow the 66px icon rail — graft agent mid-edit on that block; recheck after it lands.
 - PERF: /assets pngs now 1.7-2.2MB (2x upscale) — book/dashboard thumbs load full-size; consider downscale thumbs later (perf lane).
 - Stale creatives all regen'd → local-sdxl-turbo (8/8 visible creatives on new model).
+### @01:15 — round 3 results
+LANDED: graft-all-12 (LEDs/clock/stat-tiles/folio/zone-counts/wash/labels/hover/sticky/kickers/middles/2col-console) · img2img on localgen (shared-weight, +0MB vram, reframe_canvas) · site-film FIXED (pw-ffmpeg slot heal + CDP screencast fallback; verified real mp4s) · smoke 15→16 checks all green · thumbs route −99.4% payload · Cmd+K palette · gemini timeouts.
+FLOW-TEST: real campaign produced e2e; findings → reload-during-gen no auto-resume, produce auto-fires w/o review, EXPECTED_CREATIVES=4 hardcoded, jargon remnants in Strategy views.
+QA-POST-MERGE: systematic jargon bypass in merged views (engine chips Local/Gemini/Pollinations raw, QLOO AFFINITY headers, QLOO LIVE LED, epLabel+raw double-print) + mobile defects (390px affinity-table crush, ring label clip, header stats off-canvas).
+FUZZ: crash on /api/strategy/stream; proto-key bypass wipes profile (TEMPLATES['constructor'], PUBLISH_PLATFORMS); deep-nest DoS stored in profile; numeric slug → unreachable; DNS-rebind SSRF; id-overwrite via catalog PUT; error-middleware order leaks HTML stacks; photoshoot has no DELETE; jobs-map in-mem → stuck 'running' after restart.
+IN-FLIGHT: fixr3(flow+jargon views) · cmdk(done) · thumbs(done) · site-tpl · book-tpl · hardening(0bddb9dc) · fuzzer residue: __FUZZTEST__ photoshoot dc36b5b1 + ~20 orphan assets (no API to remove yet — hardening adds DELETE).

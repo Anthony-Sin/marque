@@ -9,6 +9,7 @@ import StrategyPage from './views/Strategy.jsx';
 import CampaignsPage from './views/Campaigns.jsx';
 import WebsitesPage from './views/Websites.jsx';
 import BrandBookPage from './views/BrandBook.jsx';
+import ProfilePage from './views/Profile.jsx';
 
 export const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
@@ -21,6 +22,7 @@ const RAIL = [
   { to: '/campaigns', icon: 'campaign', label: 'output', gate: true },
   { to: '/websites', icon: 'site', label: 'sites', gate: true },
   { to: '/brandbook', icon: 'book', label: 'book', gate: true },
+  { to: '/profile', icon: 'dna', label: 'brand' },
 ];
 function Rail({ onPalette }) {
   const { hasStrategy, status, boards, profile } = useApp();
@@ -202,9 +204,9 @@ export default function App() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/strategy/*" element={<StrategyPage />} />
+            <Route path="/profile/*" element={<ProfilePage />} />
             {/* retired surfaces — the pipeline runs board → output now; old
                 links land on the hub instead of a dead route */}
-            <Route path="/profile/*" element={<Navigate to="/dashboard" replace />} />
             <Route path="/campaigns/*" element={<Gate board={board} onRetry={loadBoard}><CampaignsPage /></Gate>} />
             <Route path="/photoshoot" element={<Navigate to="/dashboard" replace />} />
             <Route path="/websites" element={<Gate board={board} onRetry={loadBoard}><WebsitesPage /></Gate>} />

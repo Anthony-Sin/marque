@@ -2,21 +2,86 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { lookup } from 'node:dns/promises';
+import { isIP } from 'node:net';
 import { DATA_DIR, ASSETS_DIR, STATE_FILE } from '../config.js';
 
 let state = {};
+
+// keys a caller-controlled patch must never write — `id` keeps records
+// addressable (a PUT body's "id" must not rename the row), dunder/proto keys
+// are pollution vectors once merged or re-serialized
+const PATCH_BAD_KEY = /^(id|__.*|prototype|constructor)$/;
+// for stored-data repair `id` is legitimate — only strip the pollution keys
+const DATA_BAD_KEY = /^(__.*|prototype|constructor)$/;
+
+export const isPlainObject = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
+
+// depth check that never recurses — a hostile patch can nest thousands deep
+export function exceedsDepth(root, max = 24) {
+  const stack = [[root, 0]];
+  while (stack.length) {
+    const [v, d] = stack.pop();
+    if (d > max) return true;
+    if (v && typeof v === 'object') for (const x of Object.values(v)) stack.push([x, d + 1]);
+  }
+  return false;
+}
+
+// repair pass for state.json junk written by earlier builds: strip dunder/proto
+// keys and truncate pathological nesting (>32) so reads/stringify stay healthy
+const CLEAN_MAX_DEPTH = 32;
+function cleanDeep(root) {
+  let changed = false;
+  const walk = (v, depth) => {
+    if (!v || typeof v !== 'object') return v;
+    if (depth > CLEAN_MAX_DEPTH) { changed = true; return Array.isArray(v) ? [] : {}; }
+    if (Array.isArray(v)) return v.map((x) => walk(x, depth + 1));
+    const out = {};
+    for (const [k, x] of Object.entries(v)) {
+      if (DATA_BAD_KEY.test(k)) { changed = true; continue; }
+      out[k] = walk(x, depth + 1);
+    }
+    return out;
+  };
+  const out = walk(root, 0);
+  return changed ? out : root;
+}
 
 export function init() {
   fs.mkdirSync(ASSETS_DIR, { recursive: true });
   try { state = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')); }
   catch { state = {}; }
+  let dirty = false;
+  const cleaned = cleanDeep(state);
+  if (cleaned !== state) { state = cleaned; dirty = true; }
   // heal once at boot: image-registry rows pointing at deleted files are stale
   // refs — any <img> or image op built on them 404s. Drop them.
   const imgs = state.images;
   if (Array.isArray(imgs)) {
     const live = imgs.filter((i) => !i?.path?.startsWith('/assets/') || fs.existsSync(path.join(ASSETS_DIR, path.basename(i.path))));
-    if (live.length !== imgs.length) { state.images = live; persist(); }
+    if (live.length !== imgs.length) { state.images = live; dirty = true; }
   }
+  // interrupted-by-restart sweep: the job runner is in-memory — any record
+  // still marked 'running' at boot is dead work, not live progress. Mark it
+  // honestly so the UI stops spinning instead of spinning forever.
+  const note = 'interrupted by restart';
+  for (const c of state.campaigns || []) {
+    if (c?.genStatus === 'running') {
+      c.genStatus = 'error';
+      c.genError = note;
+      c.genErrorHuman = 'Generation was interrupted by a server restart — hit retry.';
+      delete c.jobId;
+      dirty = true;
+    }
+    for (const cr of c.creatives || []) {
+      if (cr?.videoState === 'running') { cr.videoState = 'error'; cr.videoNote = note; dirty = true; }
+    }
+  }
+  for (const s of state.photoshoots || []) {
+    if (s?.status === 'running') { s.status = 'error'; s.note = note; dirty = true; }
+  }
+  if (dirty) persist();
 }
 
 function persist() {
@@ -34,11 +99,19 @@ export function set(key, val) { state[key] = val; persist(); return val; }
 export function list(key) { return get(key, []); }
 export function push(key, item) { const arr = list(key); arr.push(item); set(key, arr); return item; }
 export function find(key, id) { return list(key).find((x) => x.id === id) || null; }
+// central scrub for record patches: drops id/proto/dunder keys and non-object
+// bodies so a caller-controlled PUT can't rename the row or plant junk keys
+export function sanitizePatch(patch) {
+  if (!isPlainObject(patch)) return {};
+  const out = {};
+  for (const [k, v] of Object.entries(patch)) if (!PATCH_BAD_KEY.test(k)) out[k] = v;
+  return out;
+}
 export function update(key, id, patch) {
   const arr = list(key);
   const i = arr.findIndex((x) => x.id === id);
   if (i < 0) return null;
-  arr[i] = { ...arr[i], ...patch };
+  arr[i] = { ...arr[i], ...sanitizePatch(patch) };
   set(key, arr);
   return arr[i];
 }
@@ -50,8 +123,10 @@ const MIME_EXT = {
 };
 const EXT_MIME = Object.fromEntries(Object.entries(MIME_EXT).map(([m, e]) => [e, m]));
 
-export function mimeToExt(mime = '') { return MIME_EXT[mime.split(';')[0].trim()] || 'bin'; }
-export function extToMime(ext = '') { return EXT_MIME[ext.toLowerCase()] || 'application/octet-stream'; }
+// own-property lookups — 'constructor'/'toString' would resolve inherited
+// members and land a function where a string belongs
+export function mimeToExt(mime = '') { const k = mime.split(';')[0].trim(); return Object.hasOwn(MIME_EXT, k) ? MIME_EXT[k] : 'bin'; }
+export function extToMime(ext = '') { const k = ext.toLowerCase(); return Object.hasOwn(EXT_MIME, k) ? EXT_MIME[k] : 'application/octet-stream'; }
 
 export function saveAssetBuf(buf, ext = 'png') {
   fs.mkdirSync(ASSETS_DIR, { recursive: true });
@@ -74,22 +149,117 @@ export function readAsset(webPath) {
   return { buf: fs.readFileSync(abs), mime: extToMime(path.extname(abs).slice(1)) };
 }
 
-export async function downloadToAsset(url, timeoutMs = 20000) {
+// does anything in state still reference this asset path? The images registry
+// is an index, not a consumer — records (profile/catalog/campaigns/shoots/
+// sites) are what keep a file alive.
+export function assetInUse(webPath) {
+  if (!webPath) return false;
+  const ref = (v) => v === webPath;
+  const p = state.profile;
+  if (p && (p.images || []).some((i) => ref(i?.path))) return true;
+  if ((state.catalog || []).some((i) => ref(i?.image))) return true;
+  for (const c of state.campaigns || []) {
+    for (const cr of c.creatives || []) if (ref(cr?.imagePath) || ref(cr?.videoPath)) return true;
+  }
+  for (const s of state.photoshoots || []) {
+    if (ref(s.inputImage)) return true;
+    for (const r of s.results || []) if (ref(r?.imagePath)) return true;
+    for (const e of s.edits || []) if (ref(e?.imagePath)) return true;
+  }
+  for (const w of state.websites || []) if (ref(w?.demoVideo?.path)) return true;
+  return false;
+}
+
+// unlink iff unreferenced — drops the file plus any registry rows. Used by the
+// DELETE routes so removing a record doesn't leave orphaned files behind.
+export function releaseAsset(webPath) {
+  if (!webPath || !String(webPath).startsWith('/assets/') || assetInUse(webPath)) return false;
+  const abs = assetAbs(webPath);
+  if (abs) { try { fs.unlinkSync(abs); } catch { /* already gone */ } }
+  const imgs = list('images');
+  const keep = imgs.filter((i) => i.path !== webPath);
+  if (keep.length !== imgs.length) set('images', keep);
+  return true;
+}
+
+// ---------- outbound-fetch SSRF guard ----------
+// A public-looking hostname can still resolve to a private/loopback address
+// (DNS-rebind, e.g. lvh.me → 127.0.0.1). String-check the host as a fast path,
+// then resolve and vet EVERY candidate before a socket opens.
+const PRIVATE_HOST = /^(localhost|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|::1|\[::1\]|.*\.local$|.*\.internal$)/i;
+
+export function isPrivateAddr(addr) {
+  let a = String(addr || '').toLowerCase();
+  if (a.startsWith('::ffff:')) a = a.slice(7); // v4-mapped v6
+  if (isIP(a) === 6) {
+    if (a === '::1' || a === '::') return true;
+    const h = parseInt(a.split(':')[0] || '0', 16);
+    if ((h & 0xfe00) === 0xfc00) return true;  // fc00::/7 unique-local
+    if ((h & 0xffc0) === 0xfe80) return true;  // fe80::/10 link-local
+    if ((h & 0xff00) === 0xff00) return true;  // ff00::/8 multicast
+    return false;
+  }
+  if (isIP(a) !== 4) return true;              // fail closed on weird input
+  const p = a.split('.').map(Number);
+  if (p[0] === 0 || p[0] === 10 || p[0] === 127) return true;
+  if (p[0] === 169 && p[1] === 254) return true;                    // link-local / metadata
+  if (p[0] === 172 && p[1] >= 16 && p[1] <= 31) return true;
+  if (p[0] === 192 && p[1] === 168) return true;
+  if (p[0] === 100 && p[1] >= 64 && p[1] <= 127) return true;       // CGNAT — non-public
+  if (p[0] === 192 && p[1] === 0 && p[2] === 0) return true;        // IETF protocol assignments
+  if (p[0] >= 224) return true;                                     // multicast / reserved
+  return false;
+}
+
+export async function assertPublicUrl(url) {
+  const u = new URL(url); // throws on garbage input
+  if (!/^https?:$/.test(u.protocol)) throw new Error('only http/https URLs can be fetched');
+  if (PRIVATE_HOST.test(u.hostname)) throw new Error(`cannot fetch private/local addresses (${u.hostname})`);
+  const host = u.hostname.replace(/^\[|\]$/g, ''); // strip v6 brackets for lookup
+  let addrs;
+  try { addrs = await lookup(host, { all: true, verbatim: true }); }
+  catch { throw new Error(`cannot resolve host ${u.hostname}`); }
+  if (!addrs.length || addrs.some((x) => isPrivateAddr(x.address))) {
+    throw new Error(`cannot fetch private/local addresses — ${u.hostname} resolves to a non-public range`);
+  }
+  return u;
+}
+
+// fetch that follows redirects hop-by-hop so every target gets the DNS+range
+// vet BEFORE a socket opens — fetch(redirect:'follow') connects to a private
+// redirect target first and only lets us inspect res.url afterwards (too late).
+export async function fetchPublic(url, { headers = {}, timeoutMs = 20000, maxHops = 8 } = {}) {
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const res = await fetch(url, {
-      signal: ctrl.signal,
-      headers: { 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' },
-    });
-    if (!res.ok) throw new Error(`download ${res.status}`);
-    const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.length < 100 || buf.length > 30 * 1024 * 1024) throw new Error('bad size');
-    const ext = mimeToExt(res.headers.get('content-type') || '') !== 'bin'
-      ? mimeToExt(res.headers.get('content-type'))
-      : (path.extname(new URL(url).pathname).slice(1) || 'png');
-    return saveAssetBuf(buf, ext);
+    let current = url;
+    for (let hop = 0; ; hop++) {
+      await assertPublicUrl(current);
+      const res = await fetch(current, { signal: ctrl.signal, redirect: 'manual', headers });
+      const loc = res.headers.get('location');
+      if (res.status >= 300 && res.status < 400 && loc) {
+        try { await res.body?.cancel(); } catch { /* free the socket either way */ }
+        if (hop >= maxHops) throw new Error('too many redirects');
+        current = new URL(loc, current).href;
+        continue;
+      }
+      return res;
+    }
   } finally { clearTimeout(t); }
+}
+
+export async function downloadToAsset(url, timeoutMs = 20000) {
+  const res = await fetchPublic(url, {
+    timeoutMs,
+    headers: { 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36' },
+  });
+  if (!res.ok) throw new Error(`download ${res.status}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  if (buf.length < 100 || buf.length > 30 * 1024 * 1024) throw new Error('bad size');
+  const ext = mimeToExt(res.headers.get('content-type') || '') !== 'bin'
+    ? mimeToExt(res.headers.get('content-type'))
+    : (path.extname(new URL(url).pathname).slice(1) || 'png');
+  return saveAssetBuf(buf, ext);
 }
 
 // images registry so /api/images/:id can resolve any generated asset
@@ -107,13 +277,18 @@ export function findImage(idOrPath) {
     || imgs.find((i) => i.path === `/assets/${idOrPath}`) || null;
 }
 
-// shallow+deep merge for profile patches: objects merge, arrays/primitives replace
-export function applyPatch(target, patch) {
-  if (!patch || typeof patch !== 'object') return target;
-  const out = { ...target };
+// shallow+deep merge for profile patches: objects merge, arrays/primitives
+// replace. Guards against hostile patches — dunder/proto keys are dropped and
+// merge recursion is capped (route validation rejects deep patches outright;
+// this is defense-in-depth for other callers like the profile agent).
+const PATCH_MERGE_MAX_DEPTH = 24;
+export function applyPatch(target, patch, depth = 0) {
+  if (!isPlainObject(patch)) return target;
+  const out = { ...(isPlainObject(target) ? target : {}) };
   for (const [k, v] of Object.entries(patch)) {
-    if (v && typeof v === 'object' && !Array.isArray(v) && target?.[k] && typeof target[k] === 'object' && !Array.isArray(target[k])) {
-      out[k] = applyPatch(target[k], v);
+    if (PATCH_BAD_KEY.test(k)) continue;
+    if (isPlainObject(v) && isPlainObject(out[k])) {
+      out[k] = depth >= PATCH_MERGE_MAX_DEPTH ? v : applyPatch(out[k], v, depth + 1);
     } else out[k] = v;
   }
   return out;

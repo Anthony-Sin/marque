@@ -56,8 +56,11 @@ if (process.env.NODE_ENV !== 'production' || process.env.MARQUE_DEV_MOCKUPS === 
 const h = (fn) => (req, res) => Promise.resolve(fn(req, res)).catch((e) => {
   console.error(`[marque] ${req.method} ${req.path} →`, e.message);
   const msg = String(e.message || e);
-  // caller-caused failures (unreachable/private URLs) are 4xx, not 5xx
-  res.status(/private|loopback|link-local|metadata/i.test(msg) ? 400 : 500).json({ error: msg });
+  // caller-caused failures are 4xx, not 5xx — an explicit e.status wins, then
+  // the private-URL family of fetch errors
+  const status = Number.isInteger(e?.status) && e.status >= 400 && e.status < 600 ? e.status
+    : (/private|loopback|link-local|metadata/i.test(msg) ? 400 : 500);
+  res.status(status).json({ error: msg });
 });
 const ok = (res, body) => res.json(body);
 
@@ -150,7 +153,14 @@ app.post('/api/profile/template', h(async (req, res) => {
 }));
 app.get('/api/profile', h(async (_req, res) => ok(res, { profile: brand.currentProfile() })));
 app.put('/api/profile', h(async (req, res) => {
-  const patch = { ...(req.body?.patch || req.body || {}) };
+  const body = req.body || {};
+  // 'patch' present → it alone is the patch (null must NOT fall back to the
+  // whole body — that merged {patch:null, ...junk} into the profile)
+  const raw = 'patch' in body ? body.patch : body;
+  if (!store.isPlainObject(raw)) return res.status(400).json({ error: 'patch must be a plain object' });
+  if (JSON.stringify(raw).length > 1024 * 1024) return res.status(413).json({ error: 'patch too large — 1MB max' });
+  if (store.exceedsDepth(raw, 24)) return res.status(400).json({ error: 'patch nested too deeply' });
+  const patch = { ...raw };
   for (const k of ['id', 'createdAt', 'source', 'qloo']) delete patch[k];
   const profile = get('profile');
   if (!profile) return res.status(404).json({ error: 'no profile yet' });
@@ -232,13 +242,20 @@ app.post('/api/catalog/from-url', h(async (req, res) => {
   ok(res, { item });
 }));
 app.put('/api/catalog/:id', h(async (req, res) => {
-  const item = update('catalog', req.params.id, req.body?.patch || req.body || {});
+  const body = req.body || {};
+  const raw = 'patch' in body ? body.patch : body;
+  if (!store.isPlainObject(raw)) return res.status(400).json({ error: 'patch must be a plain object' });
+  // update() strips id/__proto__/constructor/prototype — a body can't rename
+  // the record it's patching
+  const item = update('catalog', req.params.id, raw);
   if (!item) return res.status(404).json({ error: 'not found' });
   syncProfileCatalog();
   ok(res, { item });
 }));
 app.delete('/api/catalog/:id', h(async (req, res) => {
+  const item = find('catalog', req.params.id);
   remove('catalog', req.params.id); syncProfileCatalog();
+  if (item?.image) store.releaseAsset(item.image); // unlink iff nothing else refs it
   ok(res, { ok: true });
 }));
 app.post('/api/catalog/:id/sync-image', h(async (req, res) => {
@@ -318,9 +335,11 @@ function resolveActiveBoard() {
 
 app.post('/api/strategy', h(async (req, res) => {
   const { prompt, productId, url } = req.body || {};
-  const raw = (prompt || '').trim();
+  // type-check before trim — a non-string prompt must 400, never TypeError
+  const raw = typeof prompt === 'string' ? prompt.trim() : '';
+  const urlStr = typeof url === 'string' ? url.trim() : '';
   // allow the URL itself to be the "prompt" (product/site scouting)
-  const inlineUrl = url || (raw.match(/https?:\/\/\S+/) || [])[0] || null;
+  const inlineUrl = urlStr || (raw.match(/https?:\/\/\S+/) || [])[0] || null;
   if (!raw && !inlineUrl) return res.status(400).json({ error: 'prompt required' });
   const product = productId ? find('catalog', productId) : null;
   let urlContext = null;
@@ -351,8 +370,11 @@ app.get('/api/strategy', h(async (_req, res) => {
 // then strategies, then ruled-out rows, then the saved board.
 app.post('/api/strategy/stream', async (req, res) => {
   const { prompt, productId, url } = req.body || {};
-  const raw = (prompt || '').trim();
-  const inlineUrl = url || (raw.match(/https?:\/\/\S+/) || [])[0] || null;
+  // type-check before trim — (123).trim() throws OUTSIDE the try below and
+  // kills the whole process: this handler isn't h()-wrapped
+  const raw = typeof prompt === 'string' ? prompt.trim() : '';
+  const urlStr = typeof url === 'string' ? url.trim() : '';
+  const inlineUrl = urlStr || (raw.match(/https?:\/\/\S+/) || [])[0] || null;
   if (!raw && !inlineUrl) return res.status(400).json({ error: 'prompt required' });
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -530,7 +552,12 @@ app.get('/api/publish/status', h(async (_req, res) => {
 }));
 app.post('/api/publish/caption', h(async (req, res) => {
   const { creative = {}, platform, campaign = {} } = req.body || {};
-  if (!PUBLISH_PLATFORMS[platform]) return res.status(400).json({ error: 'platform must be tiktok|instagram|youtube' });
+  // own-property check — 'constructor' etc. resolve inherited members and would
+  // slip past a plain lookup as if the platform were allowed
+  if (typeof platform !== 'string' || !Object.hasOwn(PUBLISH_PLATFORMS, platform)) {
+    return res.status(400).json({ error: 'platform must be tiktok|instagram|youtube' });
+  }
+  const plat = PUBLISH_PLATFORMS[platform];
   const profile = brand.currentProfile();
   let caption = '';
   try {
@@ -538,11 +565,11 @@ app.post('/api/publish/caption', h(async (req, res) => {
       { role: 'system', content: 'You write platform-native social captions for ad creatives. Strict JSON {"caption","hashtags":[]} only.' },
       {
         role: 'user', content: [
-          `Platform: ${PUBLISH_PLATFORMS[platform].label} (${PUBLISH_PLATFORMS[platform].aspect}).`,
+          `Platform: ${plat.label} (${plat.aspect}).`,
           `Brand: ${profile?.name || ''} — tone: ${(profile?.tone || []).join(', ')}.`,
           `Creative headline: ${creative.headline || ''}. Body: ${creative.body || ''}. CTA: ${creative.cta || ''}.`,
           campaign.brief?.title ? `Campaign: ${campaign.brief.title}.` : '',
-          `Write a caption native to ${PUBLISH_PLATFORMS[platform].label} — tiktok: casual hook + trending-style tags; instagram: punchy line + curated tags; youtube: title + one-line description. Max 8 hashtags, real topical tags only.`,
+          `Write a caption native to ${plat.label} — tiktok: casual hook + trending-style tags; instagram: punchy line + curated tags; youtube: title + one-line description. Max 8 hashtags, real topical tags only.`,
         ].filter(Boolean).join('\n'),
       },
     ], { maxTokens: 900 });
@@ -614,9 +641,14 @@ app.post('/api/campaigns/:id/demo-video', h(async (req, res) => {
   ok(res, { job, creative });
 }));
 app.delete('/api/campaigns/:id', h(async (req, res) => {
-  if (!find('campaigns', req.params.id)) return res.status(404).json({ error: 'not found' });
+  const c = find('campaigns', req.params.id);
+  if (!c) return res.status(404).json({ error: 'not found' });
+  // collect every asset the campaign generated — image paths, video paths and
+  // the poster frames derived from videos — then drop the ones nothing else refs
+  const paths = (c.creatives || []).flatMap((cr) => [cr?.imagePath, cr?.videoPath, cr?.videoPath?.replace(/\.mp4$/, '-poster.png')]).filter(Boolean);
   remove('campaigns', req.params.id);
-  ok(res, { deleted: req.params.id });
+  const freed = paths.filter((p) => store.releaseAsset(p)).length;
+  ok(res, { deleted: req.params.id, freedAssets: freed });
 }));
 app.post('/api/campaigns/brief', h(async (req, res) => {
   ok(res, await campaigns.generateBrief(req.body || {}, brand.currentProfile()));
@@ -804,8 +836,10 @@ app.post('/api/creatives/:id/fix-layout', h(async (req, res) => {
 app.delete('/api/creatives/:id', h(async (req, res) => {
   const hit = findCreative(req.params.id);
   if (!hit) return res.status(404).json({ error: 'not found' });
+  const paths = [hit.creative.imagePath, hit.creative.videoPath, hit.creative.videoPath?.replace(/\.mp4$/, '-poster.png')].filter(Boolean);
   hit.campaign.creatives = (hit.campaign.creatives || []).filter((x) => x.id !== req.params.id);
   saveCampaign(hit.campaign);
+  paths.forEach((p) => store.releaseAsset(p));
   ok(res, { deleted: req.params.id });
 }));
 app.post('/api/creatives/:id/animate', h(async (req, res) => {
@@ -850,40 +884,75 @@ const SHOOT_TEMPLATES = tuning('shootTemplates');
 
 function runShoot(shot, profile) {
   return runJob('image', async () => {
-    const results = [];
-    const refs = shot.inputImage ? [{ path: shot.inputImage }] : [];
-    for (const tpl of shot.templates) {
-      const scene = SHOOT_TEMPLATES[tpl] || tpl;
-      const prompt = shot.mode === 'product'
-        ? `Professional photoshoot image of this product — ${scene}. Brand "${profile?.name || ''}" style: ${(profile?.tone || []).join(', ') || 'clean, modern'}. Palette accents ${profile?.colors?.primary || ''}, ${profile?.colors?.accent || ''}. Commercial photography, high detail.`
-        : `${shot.prompt || 'Brand photoshoot image'} — ${scene}. Style: ${(profile?.tone || []).join(', ') || 'clean, modern'}. Palette: ${profile?.colors?.primary || ''}, ${profile?.colors?.secondary || ''}.`;
-      try {
-        const g = await genImageResilient(prompt, { refs, aspectRatio: '4:5' });
-        store.registerImage(g.path, { source: 'photoshoot', template: tpl, provider: g.provider });
-        results.push({ id: uid(), imagePath: g.path, template: tpl, provider: g.provider });
-      } catch (e) {
-        results.push({ id: uid(), imagePath: null, template: tpl, error: String(e.message || e).slice(0, 200) });
+    try {
+      const results = [];
+      const refs = shot.inputImage ? [{ path: shot.inputImage }] : [];
+      for (const tpl of shot.templates) {
+        const scene = (SHOOT_TEMPLATES && Object.hasOwn(SHOOT_TEMPLATES, tpl)) ? SHOOT_TEMPLATES[tpl] : tpl;
+        const prompt = shot.mode === 'product'
+          ? `Professional photoshoot image of this product — ${scene}. Brand "${profile?.name || ''}" style: ${(profile?.tone || []).join(', ') || 'clean, modern'}. Palette accents ${profile?.colors?.primary || ''}, ${profile?.colors?.accent || ''}. Commercial photography, high detail.`
+          : `${shot.prompt || 'Brand photoshoot image'} — ${scene}. Style: ${(profile?.tone || []).join(', ') || 'clean, modern'}. Palette: ${profile?.colors?.primary || ''}, ${profile?.colors?.secondary || ''}.`;
+        try {
+          const g = await genImageResilient(prompt, { refs, aspectRatio: '4:5' });
+          store.registerImage(g.path, { source: 'photoshoot', template: tpl, provider: g.provider });
+          results.push({ id: uid(), imagePath: g.path, template: tpl, provider: g.provider });
+        } catch (e) {
+          results.push({ id: uid(), imagePath: null, template: tpl, error: String(e.message || e).slice(0, 200) });
+        }
       }
+      const stored = find('photoshoots', shot.id);
+      if (stored) { stored.results = results; stored.status = 'done'; update('photoshoots', shot.id, stored); }
+      else results.forEach((r) => r.imagePath && store.releaseAsset(r.imagePath)); // deleted mid-run — don't litter
+      return { shootId: shot.id, n: results.filter((r) => r.imagePath).length };
+    } catch (e) {
+      const stored = find('photoshoots', shot.id);
+      if (stored) { stored.status = 'error'; stored.note = String(e.message || e).slice(0, 200); update('photoshoots', shot.id, stored); }
+      throw e;
     }
-    const stored = find('photoshoots', shot.id);
-    if (stored) { stored.results = results; update('photoshoots', shot.id, stored); }
-    return { shootId: shot.id, n: results.filter((r) => r.imagePath).length };
   });
 }
 
 app.get('/api/photoshoot', h(async (_req, res) => ok(res, { jobs: list('photoshoots') })));
 app.post('/api/photoshoot', h(async (req, res) => {
   const { mode, inputImage, prompt, templates } = req.body || {};
-  const tpls = Array.isArray(templates) && templates.length ? templates.slice(0, 4) : ['studio', 'lifestyle'];
-  const shot = { id: uid(), createdAt: now(), mode: mode === 'product' ? 'product' : 'free', inputImage: inputImage || null, prompt: prompt || '', templates: tpls, results: [], edits: [] };
+  if (mode != null && !['product', 'free'].includes(mode)) return res.status(400).json({ error: 'mode must be product|free' });
+  if (prompt != null && typeof prompt !== 'string') return res.status(400).json({ error: 'prompt must be a string' });
+  if (inputImage != null && (typeof inputImage !== 'string' || !inputImage.startsWith('/assets/') || !store.assetAbs(inputImage))) {
+    return res.status(400).json({ error: 'inputImage must be an existing /assets/ path' });
+  }
+  let tpls = ['studio', 'lifestyle'];
+  if (templates !== undefined) {
+    if (!Array.isArray(templates) || !templates.length || templates.some((t) => typeof t !== 'string' || !t.trim() || t.length > 200)) {
+      return res.status(400).json({ error: 'templates must be a non-empty array of strings ≤200 chars' });
+    }
+    tpls = templates.map((t) => t.trim()).slice(0, 4);
+  }
+  // status tracks the in-memory job on the record — the boot sweep marks
+  // anything left 'running' across a restart as interrupted
+  const shot = { id: uid(), createdAt: now(), mode: mode === 'product' ? 'product' : 'free', status: 'running', inputImage: inputImage || null, prompt: (prompt || '').slice(0, 2000), templates: tpls, results: [], edits: [] };
   push('photoshoots', shot);
   ok(res, { job: runShoot(shot, brand.currentProfile()), shoot: shot });
+}));
+app.delete('/api/photoshoot/:id', h(async (req, res) => {
+  const shot = find('photoshoots', req.params.id);
+  if (!shot) return res.status(404).json({ error: 'not found' });
+  // generated files go with the record — but only when nothing else refs them
+  // (a result promoted into the profile/catalog stays alive)
+  const paths = [...(shot.results || []), ...(shot.edits || [])].map((r) => r?.imagePath).filter(Boolean);
+  remove('photoshoots', shot.id);
+  const freed = paths.filter((p) => store.releaseAsset(p)).length;
+  ok(res, { deleted: shot.id, freedAssets: freed });
 }));
 app.post('/api/photoshoot/:id/edit', h(async (req, res) => {
   const shot = find('photoshoots', req.params.id);
   if (!shot) return res.status(404).json({ error: 'not found' });
   const { prompt, imagePath } = req.body || {};
-  if (!prompt || !imagePath) return res.status(400).json({ error: 'prompt and imagePath required' });
+  if (typeof prompt !== 'string' || !prompt.trim()) return res.status(400).json({ error: 'prompt must be a non-empty string' });
+  // imagePath feeds readAsset AND devinCliInspect — must be a real asset, not
+  // an arbitrary filesystem path
+  if (typeof imagePath !== 'string' || !imagePath.startsWith('/assets/') || !store.assetAbs(imagePath)) {
+    return res.status(400).json({ error: 'imagePath must be an existing /assets/ path' });
+  }
   const job = runJob('image', async () => {
     // Devin looks at the source image and turns the loose instruction into a
     // precise edit spec; the image backend executes the pixels
@@ -902,6 +971,7 @@ app.post('/api/photoshoot/:id/edit', h(async (req, res) => {
     const g = await genImageResilient(spec, { refs: [{ path: imagePath }], aspectRatio: '4:5' });
     store.registerImage(g.path, { source: 'photoshoot-edit', provider: g.provider });
     const stored = find('photoshoots', shot.id);
+    if (!stored) { store.releaseAsset(g.path); return { shootId: shot.id, imagePath: g.path, provider: g.provider, discarded: true }; }
     stored.edits = [...(stored.edits || []), { prompt, spec: directed === 'devin' ? spec : undefined, imagePath: g.path, provider: g.provider, directed }];
     update('photoshoots', shot.id, stored);
     return { shootId: shot.id, imagePath: g.path, provider: g.provider };
@@ -994,11 +1064,23 @@ app.post('/api/websites/:id/edit', h(async (req, res) => {
   ok(res, { version: await editWebsite(w, req.body?.prompt || '', brand.currentProfile()) });
 }));
 const slugRe = /^[a-z0-9][a-z0-9-]{1,60}$/;
+// slugs are served from a string param match — a non-string slug (123) would
+// store a NUMBER that /s/<slug> can never match. Returns false on invalid,
+// null on empty/absent, the normalized slug otherwise.
+const normalizeSlug = (v) => {
+  if (v == null || v === '') return null;
+  if (typeof v !== 'string') return false;
+  const s = v.trim().toLowerCase();
+  return (slugRe.test(s) && !s.endsWith('-')) ? s : false;
+};
 app.post('/api/websites/:id/publish', h(async (req, res) => {
   const w = find('websites', req.params.id);
   if (!w) return res.status(404).json({ error: 'not found' });
-  let slug = req.body?.slug || w.publishedSlug || `site-${w.id.slice(0, 8)}`;
-  if (!slugRe.test(slug)) return res.status(400).json({ error: 'slug must be lowercase alphanumerics and dashes' });
+  let slug = normalizeSlug(req.body?.slug);
+  if (slug === false) return res.status(400).json({ error: 'slug must be a string of lowercase alphanumerics and dashes (no trailing dash)' });
+  // stored poisoned slugs (e.g. a number from the old coercion bug) self-heal
+  // to the default on the next publish
+  if (slug == null) slug = normalizeSlug(w.publishedSlug) || `site-${w.id.slice(0, 8)}`;
   const clash = list('websites').find((x) => x.publishedSlug === slug && x.id !== w.id);
   if (clash) return res.status(409).json({ error: 'slug already in use' });
   update('websites', w.id, { publishedSlug: slug });
@@ -1020,8 +1102,11 @@ app.post('/api/websites/:id/video', h(async (req, res) => {
   ok(res, { job });
 }));
 app.delete('/api/websites/:id', h(async (req, res) => {
-  if (!find('websites', req.params.id)) return res.status(404).json({ error: 'not found' });
+  const w = find('websites', req.params.id);
+  if (!w) return res.status(404).json({ error: 'not found' });
+  const video = w.demoVideo?.path;
   remove('websites', req.params.id);
+  if (video) store.releaseAsset(video);
   ok(res, { deleted: req.params.id });
 }));
 app.delete('/api/brandbook', h(async (_req, res) => {
@@ -1114,8 +1199,9 @@ app.post('/api/brandbook', h(async (req, res) => {
 app.post('/api/brandbook/publish', h(async (req, res) => {
   const book = get('brandbook');
   if (!book) return res.status(404).json({ error: 'no book yet' });
-  const slug = req.body?.slug || book.publishedSlug || `book-${book.id.slice(0, 8)}`;
-  if (!slugRe.test(slug)) return res.status(400).json({ error: 'slug must be lowercase alphanumerics and dashes' });
+  let slug = normalizeSlug(req.body?.slug);
+  if (slug === false) return res.status(400).json({ error: 'slug must be a string of lowercase alphanumerics and dashes (no trailing dash)' });
+  if (slug == null) slug = normalizeSlug(book.publishedSlug) || `book-${book.id.slice(0, 8)}`;
   book.publishedSlug = slug;
   set('brandbook', book);
   ok(res, { publishedSlug: slug });
@@ -1147,6 +1233,9 @@ app.get('/b/:slug', h(async (req, res) => {
   if (!book || book.publishedSlug !== req.params.slug || !profile) return res.status(404).type('html').send(notPublished());
   res.type('html').send(htmlBook(book, liveProfileImages(profile)));
 }));
+// anything else under /s or /b is an unpublished/broken link — serve the same
+// styled 404 the known routes do instead of Express's default HTML page
+app.use(['/s', '/b'], (_req, res) => res.status(404).type('html').send(notPublished()));
 
 // ---------- upload ----------
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
@@ -1175,6 +1264,24 @@ if (fs.existsSync(path.join(WEB_DIST, 'index.html'))) {
   });
   console.log('[marque] serving web/dist');
 }
+
+// final catch-all JSON error handler — must sit AFTER every route/middleware.
+// Errors thrown at route time (bad param decodes, multer, stray throws) land
+// here instead of Express's default page: JSON body, no stack, no abs paths.
+app.use((err, req, res, _next) => {
+  if (res.headersSent) return _next(err);
+  const status = err?.name === 'MulterError'
+    ? (err.code === 'LIMIT_FILE_SIZE' ? 413 : 400)
+    : (Number.isInteger(err?.status) && err.status >= 400 && err.status < 600)
+      ? err.status
+      : (err instanceof URIError || err instanceof SyntaxError ? 400 : 500);
+  console.error(`[marque] ${req.method} ${req.path} →`, err?.message || err);
+  // 4xx messages are safe to echo (strip any stack fragments/paths); 5xx is generic
+  const msg = status < 500
+    ? String(err?.message || 'request failed').replace(/\s+at\s+\S.*$/gm, '').replace(/\/[^\s()]*\//g, '/').trim().slice(0, 300)
+    : 'internal server error';
+  res.status(status).json({ error: msg || 'request failed' });
+});
 
 app.listen(PORT, () => {
   console.log(`[marque] listening on :${PORT}`);

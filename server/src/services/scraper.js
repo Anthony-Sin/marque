@@ -1,29 +1,18 @@
 // fetchSite(url): HTML -> {title,description,text,colors,fonts,images,links,htmlLen}
-import { downloadToAsset } from './store.js';
+import { downloadToAsset, fetchPublic } from './store.js';
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
-
-const PRIVATE_HOST = /^(localhost|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|::1|\[::1\]|.*\.local$)/i;
-function assertPublicHttp(url) {
-  const u = new URL(url);
-  if (!/^https?:$/.test(u.protocol)) throw new Error('only http/https URLs can be scraped');
-  if (PRIVATE_HOST.test(u.hostname)) throw new Error('cannot scrape private/local addresses');
-}
 
 async function fetchText(url, timeoutMs = 15000) {
   // users paste bare domains ("liquiddeath.com") — assume https, keep the
   // explicit-scheme contract for everything else
   if (url && !/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) url = `https://${url}`;
-  assertPublicHttp(url);
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, { signal: ctrl.signal, headers: { 'user-agent': UA, accept: 'text/html,*/*' }, redirect: 'follow' });
-    if (!res.ok) throw new Error(`fetch ${res.status} ${url}`);
-    assertPublicHttp(res.url || url); // re-validate after redirects
-    const html = (await res.text()).slice(0, 2_000_000);
-    return { html, finalUrl: res.url || url };
-  } finally { clearTimeout(t); }
+  // fetchPublic vets the host string AND every resolved address per redirect
+  // hop — a public name that resolves to a private range never gets a socket
+  const res = await fetchPublic(url, { timeoutMs, headers: { 'user-agent': UA, accept: 'text/html,*/*' } });
+  if (!res.ok) throw new Error(`fetch ${res.status} ${url}`);
+  const html = (await res.text()).slice(0, 2_000_000);
+  return { html, finalUrl: res.url || url };
 }
 
 const attr = (tag, name) => {
@@ -182,7 +171,8 @@ export async function fetchSite(url) {
   for (const m of html.matchAll(/href\s*=\s*["'](https?:\/\/[^"'<>\s]+)["']/gi)) {
     try {
       const h = new URL(m[1]).hostname.replace(/^www\.|^m\./, '');
-      const plat = SOCIAL_HOST[h] || SOCIAL_HOST[h.split('.').slice(-2).join('.')];
+      const plat = (Object.hasOwn(SOCIAL_HOST, h) ? SOCIAL_HOST[h] : null)
+        || SOCIAL_HOST[h.split('.').slice(-2).join('.')] || null;
       if (plat && !socials[plat] && !/share|intent|sharer|\/p\/|plugins|dialog/i.test(m[1])) socials[plat] = m[1].split('?')[0];
     } catch { /* bad url */ }
   }

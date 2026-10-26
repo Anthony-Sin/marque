@@ -1556,8 +1556,9 @@ export default function Strategy() {
                         <div className="stg-qev">
                           {detEv.qlooEvidence.map((row, i) => (
                             <div className="stg-qev-row" key={i}>
-                              <span className="stg-qev-lbl">{row.label}</span>
-                              <span className="stg-qev-detail">{row.detail}</span>
+                              {/* evidence rows arrive with vendor jargon baked in — scrub to taste language */}
+                              <span className="stg-qev-lbl">{String(row.label).replace(/^qloo$/i, 'taste')}</span>
+                              <span className="stg-qev-detail">{String(row.detail).replace(/\bqloo\b/gi, 'taste')}</span>
                             </div>
                           ))}
                         </div>
