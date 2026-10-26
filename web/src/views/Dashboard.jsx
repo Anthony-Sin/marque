@@ -100,7 +100,8 @@ export default function Dashboard() {
   useEffect(() => {
     if (dash === undefined) return;
     const hasWork = new Set(campaigns.map((c) => c.boardId).filter(Boolean));
-    const want = boards.slice(0, 6).filter((b) => b.id && moods[b.id] === undefined && !hasWork.has(b.id));
+    const want = boards.slice(0, 6).filter((b) => b.id && moods[b.id] === undefined && !hasWork.has(b.id)
+      && (b.hasMoodboard || b.moodboardJobId));
     if (!want.length) return;
     let dead = false;
     Promise.allSettled(want.map((b) => api.moodboard(b.id))).then((rs) => {

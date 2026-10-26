@@ -321,3 +321,14 @@ Counts: HIGH 3 · MED 7 · LOW 4
 - deeplinks lane: `/strategy/<boardId>/<idx>` shareable (was server-global activeIdx — links rotted); shoots/websites/brandbook/editor selections URL-backed; favicon served.
 - prompt-lab: 5/9 moodboard tiles + flat-lay re-prompted, render-verified (real :8807 + vision judging).
 - Smoke: 26 PASS / 1 SKIP (gemini image quota — resilient path covers); tensor ping green via devin fallback.
+
+### r7 cleanup wave (me, ~04:35)
+- QA-r7 verdict: no P0/P1 on merged tree. Palette fixer landed PLACES-table nav pinning + mutating-gate + confirm veils on heavy actions (verified: 'shoots' navigates, zero surprise POSTs).
+- `/campaigns/<uuid>` normalizes to `?open=` (was dead list render).
+- boards list payload gained `hasMoodboard`/`moodboardJobId` — Dashboard prefetch skips guaranteed-404 boards → console now silent.
+- `Ctx` cached on globalThis — HMR re-eval no longer null-destructures in mounted views (the /shoots pageerror).
+- `.affin-name` nowrap+ellipsis+min-width:0 — entity names truncate instead of mid-word wrap.
+- `prodName` siteName clause splits '|'/'—' taglines — 'Liquid Death', not 'Liquid Death | Murder Your Thirst'.
+- creative edit route accepts `badge`; stored 'MURDER YOUR THIR' → 'MURDER YOUR THIRST'.
+- 168 orphans / 124MB pruned; orphanAssets() now grace-gates 20min like the boot sweep (in-flight writes can't be pruned).
+- Watchdog restarted on prod cadence (deep every ~10min; was test 2min).

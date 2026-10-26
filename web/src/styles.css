@@ -345,7 +345,7 @@ input[type="color"]:focus-visible,
 .taste-panel { background: linear-gradient(160deg, #14201c, #101917 60%, #0e1513); border: 1px solid #29433a; }
 .affin-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.05); }
 .affin-row:last-child { border-bottom: none; }
-.affin-name { flex: 1; }
+.affin-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .affin-bar { width: 120px; height: 6px; background: var(--card-3); border-radius: 4px; overflow: hidden; }
 .affin-bar i { display: block; height: 100%; background: var(--lime); border-radius: 4px; }
 .affin-score { width: 44px; text-align: right; font-size: 12px; color: var(--lime); }

@@ -309,6 +309,10 @@ function boardSummary(b) {
     titles: strats.slice(0, 3).map((s) => s.title).filter(Boolean),
     channels: [...new Set(strats.flatMap((s) => (s.channels || []).map((c) => c.name)))].slice(0, 5),
     qlooMode: honestBoard(b).evidence?.qlooMode || null,
+    // lets list UIs prefetch moods only where tiles exist — a bare GET would
+    // 404 otherwise, and a swallowed 404 still soils the console
+    hasMoodboard: !!b.moodboard?.tiles?.length,
+    moodboardJobId: b.moodboardJob?.jobId || null,
   };
 }
 // card-level strategy — deep fields (brief/watchouts/formats/fit likes) are
@@ -838,7 +842,7 @@ app.get('/api/campaigns/:id', h(async (req, res) => {
 app.post('/api/creatives/:id/edit', h(async (req, res) => {
   const hit = findCreative(req.params.id);
   if (!hit) return res.status(404).json({ error: 'not found' });
-  const { headline, body, cta, layout, grade, overlayStyle, agent } = req.body || {};
+  const { headline, body, cta, layout, grade, overlayStyle, badge, agent } = req.body || {};
   // agentic edit — Devin looks at the actual creative and decides the change
   if (agent) {
     if (!devinCliAvailable()) return res.status(503).json({ error: 'devin cli not available' });
@@ -873,6 +877,7 @@ app.post('/api/creatives/:id/edit', h(async (req, res) => {
   if (headline != null) hit.creative.headline = headline;
   if (body != null) hit.creative.body = body;
   if (cta != null) hit.creative.cta = cta;
+  if (badge != null) hit.creative.badge = String(badge).slice(0, 24);
   if (grade != null) hit.creative.grade = Math.max(0, Math.min(5, +grade || 0));
   if (overlayStyle != null) hit.creative.overlayStyle = String(overlayStyle).slice(0, 24);
   if (layout && typeof layout === 'object') hit.creative.layout = { ...hit.creative.layout, ...layout };

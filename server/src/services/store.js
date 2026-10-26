@@ -348,6 +348,9 @@ export function referencedAssetPaths() {
 // files) is never even considered; registry membership makes a file part of
 // the library, so registry rows are enough to keep a file.
 const ASSET_FILE_RE = /^[0-9a-f-]{36}(\.\w+|-poster\.png)$/;
+// same grace the boot sweep uses: a file younger than this may belong to a
+// generation job another process is still running — never a prune candidate
+const ORPHAN_GRACE_MS = 20 * 60 * 1000;
 export function orphanAssets() {
   const refs = referencedAssetPaths();
   const registered = new Set(list('images').map((i) => i?.path));
@@ -358,9 +361,10 @@ export function orphanAssets() {
     if (registered.has(webPath)) continue;
     const parent = posterParent(webPath);
     if (refs.has(webPath) || (parent && refs.has(parent))) continue;
-    let bytes = 0;
-    try { bytes = fs.statSync(path.join(ASSETS_DIR, d.name)).size; } catch { continue; }
-    orphans.push({ path: webPath, bytes });
+    let st = null;
+    try { st = fs.statSync(path.join(ASSETS_DIR, d.name)); } catch { continue; }
+    if (Date.now() - st.mtimeMs < ORPHAN_GRACE_MS) continue;
+    orphans.push({ path: webPath, bytes: st.size });
   }
   return orphans;
 }

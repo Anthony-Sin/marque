@@ -69,6 +69,13 @@ export default function Campaigns() {
   // plus ?edit=<creativeId> — the editor modal is a pushed history entry, so
   // browser Back closes the modal instead of overshooting out of the campaign
   useEffect(() => {
+    // /campaigns/<uuid> is a pasted deep link — normalize to ?open=<uuid>
+    // instead of silently rendering the list (the splat route covers it)
+    const seg = loc.pathname.replace(/^\/campaigns\/?/, '').replace(/\/+$/, '');
+    if (seg) {
+      nav(`/campaigns?open=${encodeURIComponent(seg)}${loc.search.includes('?') ? '&' + loc.search.slice(1) : ''}`, { replace: true });
+      return;
+    }
     const q = new URLSearchParams(loc.search);
     const want = q.get('open');
     const editId = q.get('edit');

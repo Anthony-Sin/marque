@@ -1225,8 +1225,12 @@ export default function Strategy() {
   // only when the board has no subject, else a stale profile writes its name
   // over another brand's evidence read.
   const subProductEarly = sub?.productId ? (profile?.catalog || []).find((p) => p.id === sub.productId) : null;
+  // a scraped <title> carries taglines ("Liquid Death | Murder Your Thirst") —
+  // the brand head is the clause before the separator
+  const siteName = cleanAsk(res?.urlContext?.siteName || res?.urlContext?.title || '')
+    .split(/\s*[\|·—–]\s*/)[0].trim();
   const prodName = subProductEarly?.name
-    || cleanAsk(res?.urlContext?.siteName || res?.urlContext?.title || '')
+    || siteName
     || (profile?.name && profile.name !== 'Your Brand' ? profile.name : '')
     || cleanAsk(sub?.prompt || res?.sub?.prompt || res?.title).split(/\s[—–-]\s|[,;:]/)[0].trim();
   const qTop = [...entRows].sort((a, b) => b.affinity - a.affinity).slice(0, 3);

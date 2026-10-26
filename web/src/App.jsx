@@ -19,7 +19,9 @@ const PhotoshootPage = lazy(() => import('./views/Photoshoot.jsx'));
 const BrandBookPage = lazy(() => import('./views/BrandBook.jsx'));
 const ProfilePage = lazy(() => import('./views/Profile.jsx'));
 
-export const Ctx = createContext(null);
+// HMR-stable context — a re-evaluated App.jsx must keep the SAME context
+// object, else mounted children holding the old Ctx destructure null
+export const Ctx = globalThis.__marqueCtx || (globalThis.__marqueCtx = createContext(null));
 export const useApp = () => useContext(Ctx);
 
 // Nav rail — the deck's always-on instrument strip. One icon+label per surface;

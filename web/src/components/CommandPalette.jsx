@@ -63,15 +63,19 @@ const qwords = (q) =>
   q.trim().toLowerCase().split(TOKEN_SPLIT).filter((w) => w && !FILLER.has(w));
 
 // multi-word queries score per-token: every content word must land somewhere
-// in the target, and the mean keeps scores on fuzz()'s scale. 'film the site
-// demo' works even though 'the' never sits next to 'film' in the hay.
+// in the target — as a subsequence across it, or on a single word of it
+// (word hits are the strong signal: 'take down site' finds 'take' + 'down' +
+// 'site' as words in the unpublish row's hay). 'film the site demo' works
+// even though 'the' never sits next to 'film' in the hay.
 function qfuzz(q, target) {
   const ws = qwords(q);
   if (!ws.length) return fuzz(q, target);
   if (ws.length === 1) return fuzz(ws[0], target);
+  const twords = String(target || '').toLowerCase().split(TOKEN_SPLIT);
   let sum = 0;
   for (const w of ws) {
-    const s = fuzz(w, target);
+    let s = fuzz(w, target);
+    for (const tw of twords) s = Math.max(s, fuzz(w, tw));
     if (s < 0) return -1;
     sum += s;
   }
@@ -102,6 +106,10 @@ const aliasHit = (words, w) => {
   return hit;
 };
 const isPlaceWord = (w) => !!w && PLACES.some((p) => aliasHit(p.words, w));
+
+// nav-intent words — with a place word they still mean 'take me there'
+// ('open the brand book', 'sites list'), so the pin survives a longer query
+const NAV_WORDS = new Set(['open', 'show', 'view', 'see', 'page', 'goto', 'jump', 'list', 'nav', 'tab']);
 
 // a mutating row's intent words = its own label + synonyms (the hay). A lone
 // query word (≥3 chars) reaches a POST only through one of these — a fuzzy
@@ -479,17 +487,22 @@ export default function CommandPalette({ open, onClose }) {
     const single = T.length === 1;
     const place = single && isPlaceWord(T[0]);  // the query IS a place name
     const verb = verbQuery(q);
+    // the query asks for a place — always when it IS the word; inside a longer
+    // query only when it isn't verb-led AND every other word is a place/nav
+    // word too: 'open the dashboard' is a nav ask, 'ravers campaign' and
+    // 'film a site video' are not
+    const placeQ = single
+      ? place
+      : !!T.length && !verb && T.every((t) => isPlaceWord(t) || NAV_WORDS.has(t));
     const scored = [];
     let anyPin = false;
     for (const it of items) {
       const sl = qfuzz(q, it.label);
       // label hits outweigh hay hits; the active plan pins to the top on ties
       let s = Math.max(sl >= 0 ? sl * 1.6 : -1, qfuzz(q, it.hay)) + (it.tag === 'active' ? 0.05 : 0);
-      // a place word pins its nav row — always when the query IS the word;
-      // inside a longer query only when it isn't verb-led ('film a site
-      // video' is a film ask, 'open the dashboard' is a nav ask). The pin
-      // can rescue a nav row the rest of the query sank.
-      if (T.length && it.place && (single ? place : !verb)) {
+      // a place ask pins its nav row — the pin can rescue a nav row the rest
+      // of the query sank
+      if (T.length && it.place && placeQ) {
         let pin = 0, ts = -1;
         for (const t of T) {
           const ph = aliasHit(it.place, t);
@@ -539,7 +552,9 @@ export default function CommandPalette({ open, onClose }) {
 
   const sel = flat.length ? Math.min(navIdx ?? best, flat.length - 1) : -1;
   // typing changes what ↵ means — drop the beam position and any armed confirm
-  useEffect(() => { setNavIdx(null); disarm(); }, [q]);
+  useEffect(() => { setNavIdx(null); disarm(); },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [q]);
 
   // fire-and-report — async items run under the status line: 'run' while the
   // call is out, 'ok' briefly on ack (then close), 'err' stays a few seconds
