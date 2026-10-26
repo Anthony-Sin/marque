@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import { QlooBadge } from './Qloo.jsx';
-import { epLabel } from '../labels.js';
+import { epLabel, cleanErr } from '../labels.js';
 import { useOverlayFocus } from '../focus.js';
 import '../views/studio.css';
 import './evidence.css';
@@ -116,7 +116,7 @@ function CallRow({ c, idx, bundle, matchedName }) {
       <div className="ev-meta">
         <span className="ev-n">{c?.n ?? '—'} {(c?.n ?? 0) === 1 ? 'result' : 'results'}</span>
         {c?.tookMs != null && <span className={`ev-ms${msTier(c.tookMs)}`} title="graph response time">{fmtDur(c.tookMs)}</span>}
-        {!live && <span className="ev-fail" title={c?.error || undefined}>failed{c?.error ? ` — ${String(c.error).slice(0, 90)}` : ''}</span>}
+        {!live && <span className="ev-fail" title={c?.error || undefined}>failed{c?.error ? ` — ${cleanErr(c.error)}` : ''}</span>}
         {!!matchedName && <span className="ev-match">matched → {matchedName}</span>}
         {!!ents && (
           <button type="button" className="ev-ret" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
@@ -256,7 +256,7 @@ export default function EvidenceDrawer({ title = 'Taste evidence', signals = [],
               <div key={a.type} style={{ marginBottom: 10 }}>
                 <div className="small" style={{ color: 'var(--ink-3)', textTransform: 'capitalize', marginBottom: 3 }}>
                   {cat(a.type)}
-                  {a.error && <span style={{ color: 'var(--rose, #e88)' }}> · call failed — {String(a.error).slice(0, 60)}</span>}
+                  {a.error && <span style={{ color: 'var(--rose, #e88)' }} title={a.error}> · call failed — {cleanErr(a.error)}</span>}
                 </div>
                 {!a.error && (a.entities || []).slice(0, 8).map((e, i) => (
                   <div key={e.id || i} className="affin-row" title={e.description || e.tagline || e.name}>

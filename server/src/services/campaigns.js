@@ -193,6 +193,112 @@ export function placeholderCreative(profile, copy) {
   return saveAssetBuf(Buffer.from(svg), 'svg');
 }
 
+// ---- set-level diversity ----
+// One campaign ≠ one argument repeated: the planner names each unit's beat
+// (persuasion family), the copy pass is told which hooks/CTA verbs/layout
+// slots siblings already claimed, and a cheap deterministic net catches
+// whatever samey copy slips through anyway — before image gen pays for it.
+const STOPWORDS = new Set('the a an and or of to in on at it its is are be with from this that under over just now new out off up my our your you yours their his her them they we us get got for all one two how why who what when where will would could can has have had not but so if as by per via any each every some most more less much many very too also than then there here into onto about after before again once only own same such while do does did no'.split(' '));
+const normToks = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter((w) => w && !STOPWORDS.has(w));
+// share of the smaller token set also present in the other — 1 = clone
+const tokOverlap = (a, b) => {
+  const A = new Set(a || []), B = new Set(b || []);
+  if (!A.size || !B.size) return 0;
+  let hit = 0;
+  for (const w of A) if (B.has(w)) hit++;
+  return hit / Math.min(A.size, B.size);
+};
+// a CTA's first content word is its verb — "Find a cooler" vs "Find nearest
+// cooler" are the same pitch even though the strings differ
+const ctaVerb = (cta) => (String(cta || '').toLowerCase().match(/[a-z']+/) || [''])[0];
+// badge stickers cap at 16 chars — trim at a word boundary so a long claim
+// reads "MURDER YOUR" instead of shipping a clipped "MURDER YOUR THIR"
+const badgeClip = (s) => {
+  const b = String(s || '').trim().slice(0, 18);
+  return b.length > 16 ? (b.slice(0, 16).replace(/\s+\S*$/, '') || b.slice(0, 16)) : b;
+};
+// preferred overlay slot order — bottom performs best on social, so it stays
+// first pick; the dedup rotation only leaves it once a sibling claims it
+const VPOS_ROTATION = ['bottom', 'top', 'middle'];
+
+// persuasion families — the vocabulary beat labels normalize into; the
+// planner picks one per unit, the post-pass fills gaps with fresh families
+const BEAT_FAMILIES = ['price', 'convenience', 'identity', 'occasion', 'proof', 'comparison', 'ritual', 'problem', 'novelty'];
+function beatFamily(s) {
+  const t = String(s || '').toLowerCase().trim();
+  if (!t) return null;
+  if (BEAT_FAMILIES.includes(t)) return t;
+  if (/price|cost|cheap|budget|deal|discount|\$|afford|value|under/.test(t)) return 'price';
+  if (/easy|fast|quick|instant|convenient|nearby|grab|simple|friction/.test(t)) return 'convenience';
+  if (/identity|status|style|become|belong|vibe|aesthetic|tribe|image/.test(t)) return 'identity';
+  if (/occasion|night|morning|weekend|party|festival|holiday|season|moment|summer|winter|late|1 ?am/.test(t)) return 'occasion';
+  if (/proof|review|rated|rating|stars|loved|tested|data|science|result|number/.test(t)) return 'proof';
+  if (/versus|vs\.?|compare|instead|switch|better than|unlike|default|swap/.test(t)) return 'comparison';
+  if (/ritual|routine|habit|daily|everyday/.test(t)) return 'ritual';
+  if (/problem|pain|fix|solve|tired|sick|struggle|hate/.test(t)) return 'problem';
+  if (/novel|drop|launch|first|introducing|limited|new/.test(t)) return 'novelty';
+  return null;
+}
+
+// plan post-pass — even when the model returns samey items (repeated beat
+// labels, near-identical angle wording, the same badge sticker twice),
+// reassign fresh beat labels and drop repeat stickers so the copy pass is
+// pushed apart instead of handed four copies of one argument
+function diversifyPlan(items) {
+  const usedBeats = new Set();
+  const usedBadges = new Set();
+  const seenAngles = [];
+  return items.map((it, i) => {
+    const angToks = normToks(it.angle);
+    const angleDup = seenAngles.some((t) => tokOverlap(t, angToks) >= 0.6);
+    let beat = beatFamily(it.beat) || beatFamily(it.angle);
+    if (!beat || usedBeats.has(beat) || angleDup) {
+      beat = BEAT_FAMILIES.find((b) => !usedBeats.has(b)) || beat || `beat-${i + 1}`;
+    }
+    usedBeats.add(beat);
+    seenAngles.push(angToks);
+    let badge = it.badge;
+    const bkey = String(badge || '').toLowerCase().replace(/[^a-z0-9$%★]+/g, '');
+    if (bkey) {
+      // same sticker family twice reads as one ad repeated, not a campaign
+      if (usedBadges.has(bkey)) badge = '';
+      else usedBadges.add(bkey);
+    }
+    return { ...it, beat, badge };
+  });
+}
+
+// does this headline reuse a sibling's hook? Clone check = heavy token
+// overlap; samey check = 2+ shared salient nouns (digits, long words — the
+// "every hook leads with the pack size" failure survives different phrasings)
+function headlineDup(headline, priorToks) {
+  const t = normToks(headline);
+  const salient = new Set(t.filter((w) => /\d/.test(w) || w.length >= 7));
+  return priorToks.some((p) => {
+    if (tokOverlap(t, p) >= 0.5) return true;
+    let shared = 0;
+    for (const w of salient) if (p.includes(w)) shared++;
+    return shared >= 2;
+  });
+}
+
+// the running ledger's worth of exclusions, spelled out for the copy call —
+// naming the taken elements beats a bare "be different"
+function diversityBlock(avoid, plan) {
+  const bits = [];
+  if (plan?.beat) bits.push(`This unit argues the "${plan.beat}" beat — headline, body and CTA must all serve that persuasion family.`);
+  const lines = [];
+  if (avoid?.beats?.size) lines.push(`beats already argued: ${[...avoid.beats].join(', ')}`);
+  if (avoid?.headlines?.length) lines.push(`headlines already taken: ${avoid.headlines.map((h) => `"${h}"`).join(' | ')}`);
+  if (avoid?.ctaVerbs?.size) lines.push(`CTA opening verbs already used: ${[...avoid.ctaVerbs].join(', ')}`);
+  if (avoid?.vpos?.size) lines.push(`layout vpos slots already claimed: ${[...avoid.vpos].join(', ')}`);
+  if (avoid?.rejected) lines.push(`REJECTED draft "${avoid.rejected.headline}" / "${avoid.rejected.cta}" — it ${avoid.rejected.reason === 'cta-verb-taken' ? 'opened the CTA on a verb a sibling already used' : `reused a sibling's headline nouns`}; pick something clearly different`);
+  if (lines.length) {
+    bits.push(`Sibling creatives in THIS campaign already claimed:\n- ${lines.join('\n- ')}\nDo not reuse those hooks, nouns, verbs or slots — argue your beat from a different side.`);
+  }
+  return bits.length ? `\n\n${bits.join('\n')}` : '';
+}
+
 // agentic plan — the model picks each creative's medium + angle from the
 // brief/product/notes so output isn't one fixed medium: product demos, video
 // spots, stills, copy-led cards all on the table depending on the ask.
@@ -206,9 +312,10 @@ export async function planCreatives(campaign, profile, product, n) {
           `Brief: ${JSON.stringify(campaign.brief || {}).slice(0, 700)}.`,
           product?.name ? `Product: ${product.name}${product.description ? ` — ${String(product.description).slice(0, 200)}` : ''}.` : '',
           campaign.notes ? `Notes: ${campaign.notes}` : '',
-          `Return {"items":[{"angle","medium","format","direction","badge","overlayStyle","score"}]} — exactly ${n} items.`,
+          `Return {"items":[{"beat","angle","medium","format","direction","badge","overlayStyle","score"}]} — exactly ${n} items.`,
+          `beat = the persuasion family this unit argues — one word from: price, convenience, identity, occasion, proof, comparison, ritual, problem, novelty. DIVERSITY CONTRACT: every item MUST argue a different beat — ${n} creatives = ${n} distinct reasons to care, not one hook rephrased. Do not repeat these elements across items: beat, the hook subject inside angle (size/price/scene/proof), badge sticker, format, or the subject of direction. If two items would make the same argument, push one into another beat family.`,
           `angle = the creative angle (short, specific to this brief — name the product/offer/audience moment, not a generic label like "lifestyle"). medium = "video" | "image" | "copy" — pick video when the brief/notes ask for demos, motion, how-it-works, before/after or the product benefits from movement; image for stills; copy for text-led cards. format = platform shape ("reel","spot","carousel","billboard"). direction = one line of shot/art direction naming the real subject in a real moment, not "product on gradient".`,
-          `badge = a real claim/label sticker the brief supports — a rating, category tag, certification or true offer ("NEW DROP","4.9★","VEGAN","SPF 50","LIMITED","2-FOR-1") — never filler ("PROMO","WOW","HOT","BEST") and "" when nothing factual fits. overlayStyle = one of performance|ugc|editorial|marker|brutalist|glass — pick the treatment that fits the angle (ugc for creator-style, editorial for luxury, performance for direct-response). score = your predicted thumbstop strength 40-98 (honest estimate, not random).`,
+          `badge = a real claim/label sticker the brief supports — a rating, category tag, certification or true offer ("NEW DROP","4.9★","VEGAN","SPF 50","LIMITED","2-FOR-1") — never filler ("PROMO","WOW","HOT","BEST"), never the same sticker or claim twice in the set, and "" when nothing factual fits. overlayStyle = one of performance|ugc|editorial|marker|brutalist|glass — pick the treatment that fits the angle (ugc for creator-style, editorial for luxury, performance for direct-response). score = your predicted thumbstop strength 40-98 (honest estimate, not random).`,
           campaign.medium === 'video'
             ? `Every item MUST be medium "video" — this is a video-first production run (demos, spots, motion). Directions should read like shot lists.`
             : campaign.medium === 'image'
@@ -217,17 +324,18 @@ export async function planCreatives(campaign, profile, product, n) {
         ].filter(Boolean).join('\n'),
       },
     ], { maxTokens: 1600 });
-    const items = (Array.isArray(j?.items) ? j.items : [])
+    const items = diversifyPlan((Array.isArray(j?.items) ? j.items : [])
       .map((it) => ({
+        beat: String(it.beat || '').slice(0, 24),
         angle: String(it.angle || '').slice(0, 60),
         medium: ['video', 'image', 'copy'].includes(it.medium) ? it.medium : 'image',
         format: String(it.format || '').slice(0, 40),
         direction: String(it.direction || '').slice(0, 220),
-        badge: String(it.badge || '').slice(0, 16),
+        badge: badgeClip(it.badge),
         overlayStyle: ['performance', 'ugc', 'editorial', 'marker', 'brutalist', 'glass'].includes(it.overlayStyle) ? it.overlayStyle : null,
         score: Math.max(40, Math.min(98, Math.round(+it.score || 0) || 0)) || null,
       }))
-      .filter((it) => it.angle);
+      .filter((it) => it.angle));
     return items.length ? items : null;
   } catch { return null; }
 }
@@ -252,8 +360,10 @@ function fallbackCta(campaign, product, plan) {
 }
 
 // the copy pass alone — exported so tests/harnesses can exercise real model
-// output without paying for image gen
-export async function writeCopy(campaign, profile, product, angle, plan = null) {
+// output without paying for image gen. `avoid` is the set-level ledger of
+// hooks/CTA verbs/vpos slots earlier creatives already claimed (built in
+// generateCreatives); null = standalone call with no exclusions.
+export async function writeCopy(campaign, profile, product, angle, plan = null, avoid = null) {
   const copy = await chatJSON([
     { role: 'system', content: COPY_SYS },
     {
@@ -263,7 +373,8 @@ export async function writeCopy(campaign, profile, product, angle, plan = null) 
         brief: campaign.brief, product: product ? { name: product.name, description: product.description } : null,
         notes: campaign.notes || undefined,
         angle,
-      }),
+        beat: plan?.beat || undefined,
+      }) + diversityBlock(avoid, plan),
     },
   ], { maxTokens: 3000 });
   const ctaIn = String(copy?.cta || '').trim();
@@ -280,9 +391,64 @@ export async function writeCopy(campaign, profile, product, angle, plan = null) 
   };
 }
 
-async function oneCreative(campaign, profile, product, angle, plan = null) {
-  const safe = await writeCopy(campaign, profile, product, angle, plan);
+// which site may this campaign honestly film? Scoped provenance, in order:
+// (a) a site produced FROM this campaign, (b) a site produced from the
+// campaign's board — a sibling campaign's, or the named strategy's. Anything
+// else is a stranger's site: an honest "screen film" label over unrelated
+// content still lies about the work, so this returns null and the caller must
+// skip the capture. Only boardId + producedFrom.campaignId are collision-free
+// keys — strategy ids/titles repeat across deterministic boards, so a
+// boardless campaign matches solely on its own strategyTitle.
+export function filmableSite(campaign) {
+  const sites = list('websites') || [];
+  const own = sites.filter((w) => w.producedFrom?.campaignId === campaign.id).at(-1);
+  if (own) return own;
+  const board = campaign.boardId ? (list('boards') || []).find((b) => b.id === campaign.boardId) : null;
+  const stratTitles = new Set(
+    [campaign.strategyTitle, ...(board?.strategies || []).map((s) => s?.title)].filter(Boolean),
+  );
+  const siblingIds = new Set(
+    (list('campaigns') || []).filter((c) => board && c.boardId === board.id).map((c) => c.id),
+  );
+  return sites.filter((w) =>
+    siblingIds.has(w.producedFrom?.campaignId)
+    || (w.producedFrom?.strategyTitle && stratTitles.has(w.producedFrom.strategyTitle)),
+  ).at(-1) || null;
+}
+
+async function oneCreative(campaign, profile, product, angle, plan = null, avoid = null) {
+  let safe = await writeCopy(campaign, profile, product, angle, plan, avoid);
+  let dupe = null;
+  // samey-copy net — when this draft reuses a sibling's CTA verb or headline
+  // nouns, retry once with the theft spelled out; a stubborn repeat still
+  // ships (a live ad beats a dead slot) but is flagged so the set can report
+  // it honestly instead of quietly passing clones off as a campaign
+  if (avoid) {
+    let ctaDup = !!ctaVerb(safe.cta) && avoid.ctaVerbs.has(ctaVerb(safe.cta));
+    let headDup = headlineDup(safe.headline, avoid.headlineToks);
+    if (ctaDup || headDup) {
+      const retry = await writeCopy(campaign, profile, product, angle, plan, {
+        ...avoid,
+        rejected: { headline: safe.headline, cta: safe.cta, reason: ctaDup ? 'cta-verb-taken' : 'headline-nouns-taken' },
+      });
+      const rCtaDup = !!ctaVerb(retry.cta) && avoid.ctaVerbs.has(ctaVerb(retry.cta));
+      const rHeadDup = headlineDup(retry.headline, avoid.headlineToks);
+      if ((rCtaDup ? 1 : 0) + (rHeadDup ? 1 : 0) < (ctaDup ? 1 : 0) + (headDup ? 1 : 0)) {
+        safe = retry; ctaDup = rCtaDup; headDup = rHeadDup;
+      }
+      if (ctaDup || headDup) dupe = [ctaDup && 'cta-verb', headDup && 'headline'].filter(Boolean).join('+');
+    }
+    // vpos: slot already claimed → deterministic next-free rotation, applied
+    // BEFORE the image prompt reserves the calm zone for that slot so the art
+    // and the overlay stay consistent
+    if (avoid.vpos.has(safe.layout.vpos)) {
+      const free = VPOS_ROTATION.filter((v) => !avoid.vpos.has(v));
+      if (free.length) safe = { ...safe, layout: { ...safe.layout, vpos: free[0] } };
+    }
+  }
   const creative = { id: uid(), headline: safe.headline, body: safe.body, cta: safe.cta, layout: safe.layout, angle, cleanImage: true };
+  if (dupe) creative.dupe = dupe;   // still-samey flag — surfaced, not hidden
+  creative.beat = plan?.beat || beatFamily(angle) || null;
   // resolve the real brand for the lockup — product name first, then the
   // product half of a "Campaign — Product" brief title, never a template name
   const tplName = profile?.name && profile.name !== 'Your Brand' ? profile.name : null;
@@ -322,13 +488,16 @@ async function oneCreative(campaign, profile, product, angle, plan = null) {
   if (plan?.medium === 'video' && creative.imagePath && !creative.placeholder) {
     creative.videoState = 'running';
     try {
-      const site = list('websites').filter((w) => w.producedFrom?.campaignId === campaign.id).at(-1)
-        || list('websites')?.at(-1);
+      // film only a provenance-scoped site — no own/board site means the unit
+      // stays a normal motion creative, never a screencast of unrelated work
+      const site = filmableSite(campaign);
       const version = site ? siteVersion(site) : null;
-      let v = null;
+      let v = null, filmedSite = null;
       if (version?.html && planWantsSiteDemo(plan, campaign) && siteVideoAvailable()) {
         v = await renderSiteVideo({ html: version.html }, { aspectRatio: campaign.aspectRatio, seconds: 8 });
         creative.videoDirection = 'site-demo';
+        // 'screen film' stays honest only if the tile says WHICH site ran
+        filmedSite = site.publishedSlug || site.producedFrom?.campaignTitle || site.producedFrom?.strategyTitle || `site-${site.id.slice(0, 8)}`;
       }
       if (!v) v = await genVideoResilient(
         [
@@ -341,6 +510,7 @@ async function oneCreative(campaign, profile, product, angle, plan = null) {
       );
       creative.videoPath = v.path; creative.videoState = 'done';
       creative.videoProvider = v.provider; if (v.note) creative.videoNote = v.note;
+      if (filmedSite) creative.videoNote = `${creative.videoNote ? `${creative.videoNote} — ` : ''}filmed site: ${filmedSite}`;
     } catch (e) {
       creative.videoState = 'error';
       creative.videoNote = String(e.message || e).slice(0, 200);
@@ -357,16 +527,32 @@ export async function generateCreatives(campaign, profile, n = 4, onProgress = n
   // when the LLM plan comes back null or mixed
   const forceMedium = ['video', 'image'].includes(campaign.medium) ? campaign.medium : null;
   const creatives = [];
+  // running ledger of what earlier units claimed — fed into each copy call so
+  // the model is told which hooks/CTA verbs/layout slots are already taken
+  const avoid = { beats: new Set(), ctaVerbs: new Set(), vpos: new Set(), headlines: [], headlineToks: [] };
   for (let i = 0; i < n; i++) {
     let p = plan?.[i] || null;
     if (forceMedium) p = { ...(p || {}), medium: forceMedium };
     onProgress?.({ stage: `writing + rendering${p ? ` · ${p.medium}` : ''}`, done: i, total: n });
     try {
-      creatives.push(await oneCreative(campaign, profile, product, p?.angle || ANGLES[i % ANGLES.length], p));
+      const cr = await oneCreative(campaign, profile, product, p?.angle || ANGLES[i % ANGLES.length], p, avoid);
+      creatives.push(cr);
+      if (!cr.failed) {
+        if (cr.beat) avoid.beats.add(cr.beat);
+        const v = ctaVerb(cr.cta); if (v) avoid.ctaVerbs.add(v);
+        if (cr.layout?.vpos) avoid.vpos.add(cr.layout.vpos);
+        if (cr.headline) { avoid.headlines.push(cr.headline); avoid.headlineToks.push(normToks(cr.headline)); }
+      }
     } catch (e) {
       creatives.push({ id: `cr-${Date.now()}-${i}`, failed: true, imageError: String(e?.message || e).slice(0, 200), headline: 'Generation failed' });
     }
     onProgress?.({ stage: 'writing + rendering', done: i + 1, total: n });
+  }
+  // last-resort fan-out — every unit somehow claimed the same vpos → rotate
+  // deterministically so the set doesn't stack all its overlays in one zone
+  const laid = creatives.filter((c) => !c.failed && c.layout?.vpos);
+  if (laid.length > 1 && new Set(laid.map((c) => c.layout.vpos)).size === 1) {
+    laid.forEach((c, i) => { c.layout = { ...c.layout, vpos: VPOS_ROTATION[i % VPOS_ROTATION.length] }; });
   }
   return creatives;
 }

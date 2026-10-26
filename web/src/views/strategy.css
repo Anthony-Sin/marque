@@ -1349,14 +1349,21 @@
 .stg-mood-prog .stg-bar { width: 86px; flex: none; }
 .stg-mood-regen { flex: none; }
 
+/* desktop: horizontal snap rail — the panel only gets ~200px of height, so a
+   3×3 square grid squishes tiles into slivers; one row of ~square tiles shows
+   every tile's identity and scrolls like the pick/rails elsewhere */
 .stg-mood-grid {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;
-  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
-  padding-right: 4px;
+  display: grid; grid-auto-flow: column; grid-template-rows: minmax(0, 1fr);
+  grid-auto-columns: clamp(130px, 24vh, 200px); gap: 8px;
+  flex: 1; min-height: 0; overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x proximity; overscroll-behavior-x: contain;
+  padding: 2px 4px 8px 0;
   scrollbar-color: rgba(255,176,58,.45) rgba(255,255,255,.04);
-  /* bottom fade — same scroll affordance as the pick grid */
-  -webkit-mask-image: linear-gradient(180deg, #000 0, #000 calc(100% - 26px), rgba(0,0,0,.3) 100%);
-  mask-image: linear-gradient(180deg, #000 0, #000 calc(100% - 26px), rgba(0,0,0,.3) 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 44px), transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 44px), transparent 100%);
+}
+.stg-mood-grid .stg-mood-tile, .stg-mood-grid .stg-mood-skel {
+  aspect-ratio: auto; scroll-snap-align: start;
 }
 .stg-mood-grid.regen { opacity: .5; transition: opacity .25s; }
 .stg-mood-grid.off { overflow: hidden; }

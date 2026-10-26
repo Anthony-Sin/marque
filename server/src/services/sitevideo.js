@@ -209,7 +209,12 @@ export async function renderSiteVideo({ html, url }, { aspectRatio = '16:9', sec
 }
 
 // does this plan call for a site/product demo rather than generated footage?
+// Fires on the brand's OWN web surface — site/landing/app/demo intent. Bare
+// retail words can't fire it: unqualified 'store'/'shop'/'checkout' name a
+// place ('convenience store run', 'c-store', 'checkout counter'), not a page —
+// the old unbounded store|shop match once filmed a stranger's site.
+const SITE_DEMO = /\b(?:web ?sites?|web ?apps?|web ?stores?|web ?shops?|e-?stores?|e-?shops?|e-?comm(?:erce|s)?|micro ?sites?|landings?(?: ?pages?)?|home ?pages?|online (?:stores?|shops?)|storefronts?|(?:our|brand|new) sites?|apps?|ui|ux|dashboards?|demos?|software|platforms?|interfaces?|saas|checkouts? (?:flows?|funnels?|pages?|screens?|process(?:es)?|experiences?|journeys?)|(?:web|online|site) checkouts?|onboardings?|product tours?)\b/;
 export function planWantsSiteDemo(plan = {}, campaign = {}) {
-  const text = [plan.format, plan.direction, plan.angle, campaign?.brief?.angle, campaign?.notes || campaign?.brief?.notes, campaign?.brief?.keyMessage].filter(Boolean).join(' ').toLowerCase();
-  return /\b(web ?site|web ?app|app\b|ui|ux|dashboard|landing|demo|software|platform|interface|store|shop|checkout|onboard)/.test(text);
+  const text = [plan.format, plan.direction, plan.angle, campaign?.brief?.title, campaign?.brief?.angle, campaign?.notes || campaign?.brief?.notes, campaign?.brief?.keyMessage].filter(Boolean).join(' ').toLowerCase();
+  return SITE_DEMO.test(text);
 }

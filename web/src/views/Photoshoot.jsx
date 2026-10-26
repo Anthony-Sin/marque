@@ -3,6 +3,7 @@ import api, { pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
 import { thumb, providerLabel, downloadAsset, fmtDate } from '../components/Composer.jsx';
+import { cleanErr } from '../labels.js';
 import './photoshoot.css';
 
 // Scene presets — mirrors server tuning.json `shootTemplates`. The POST also
@@ -63,7 +64,7 @@ function ShootForm({ profile, busy, onLaunch, onClose }) {
     <section className="card hud ps-form" aria-label="New photoshoot">
       <div className="zone-head">
         <span className="z-id">NEW</span>New shoot
-        <span className="z-tag">rendered locally · sdxl-turbo</span>
+        <span className="z-tag" title="rendered locally · sdxl-turbo">{providerLabel('local-sdxl-turbo')}</span>
         <button type="button" className="icon-btn sm ps-x" onClick={onClose} aria-label="Close form"><Icon name="x" size={13} /></button>
       </div>
       <div className="ps-form-body">
@@ -129,7 +130,7 @@ function ShotTile({ r, onEdit, onKeep, onDl, busy }) {
       {err ? (
         <span className="ps-tile-broken" title={r.error || 'render failed'}>
           <Icon name="x" size={16} />
-          <i>{r.error || 'render failed'}</i>
+          <i>{cleanErr(r.error) || 'render failed'}</i>
         </span>
       ) : (
         <img src={thumb(r.imagePath, 480)} alt={r.template || 'shoot render'} loading="lazy" />
@@ -370,7 +371,7 @@ export default function Photoshoot() {
                 </dl>
 
                 {jobStatus(job) === 'error' && !!job.note && (
-                  <div className="ps-note" role="alert"><Icon name="info" size={13} /> {job.note}</div>
+                  <div className="ps-note" role="alert" title={job.note}><Icon name="info" size={13} /> {cleanErr(job.note) || 'the render run failed — try again'}</div>
                 )}
                 {jobStatus(job) === 'running' && (
                   <div className="ps-note run"><span className="spinner" /> Rendering on the local engine…</div>

@@ -1,4 +1,6 @@
 // Marque API client — thin fetch wrapper matching docs/API.md.
+import { cleanErr } from './labels.js';
+
 const J = (r) => {
   if (!r.ok) throw Object.assign(new Error(`HTTP ${r.status}`), { status: r.status, body: r._body });
   return r;
@@ -13,8 +15,21 @@ async function req(method, url, body, opts = {}) {
   if (!r.ok) {
     let detail = '';
     try { detail = (await r.json()).error || ''; } catch {}
-    const e = new Error(`${method} ${url} → ${r.status} ${detail}`);
+    // ~30 toasts and {err} blocks print e.message verbatim — it must read
+    // like a sentence, never a "POST /api/x → 503 {provider dump}" combo.
+    // A short plain detail keeps its status for honesty ('not found → 404');
+    // a long or raw one (paths, JSON, engine dumps) reduces to the cleaned
+    // detail text alone. The untouched route+status+detail lives on e.debug
+    // for console logging.
+    const debug = `${method} ${url} → ${r.status}${detail ? ` ${detail}` : ''}`;
+    const plain = !!detail && detail.length <= 90 && !/[{}"'<>\\/]|https?:/.test(detail);
+    const e = new Error(
+      detail
+        ? (plain ? `${cleanErr(detail) || 'the request failed'} → ${r.status}` : cleanErr(detail, 160) || 'the request failed — try again')
+        : `the request failed → ${r.status}`,
+    );
     e.status = r.status;
+    e.debug = debug;
     throw e;
   }
   const ct = r.headers.get('content-type') || '';
@@ -38,7 +53,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages }),
     });
-    if (!r.ok || !r.body) throw new Error(`agent stream → ${r.status}`);
+    if (!r.ok || !r.body) throw new Error(`the agent stream failed → ${r.status}`);
     const reader = r.body.getReader();
     const dec = new TextDecoder();
     let buf = ''; let final = null;
@@ -54,7 +69,7 @@ export const api = {
         if (!ev || !raw) continue;
         let data = null; try { data = JSON.parse(raw); } catch {}
         if (ev === 'done') final = data;
-        else if (ev === 'error') throw new Error(data?.error || 'agent failed');
+        else if (ev === 'error') throw new Error(cleanErr(data?.error, 160) || 'agent failed');
         else onEvent?.(ev, data);
       }
     }
@@ -82,7 +97,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, productId, url }),
     });
-    if (!r.ok || !r.body) throw new Error(`stream → ${r.status}`);
+    if (!r.ok || !r.body) throw new Error(`the strategy stream failed → ${r.status}`);
     const reader = r.body.getReader();
     const dec = new TextDecoder();
     let buf = ''; let finalBoard = null;
@@ -98,7 +113,7 @@ export const api = {
         if (!ev || !raw) continue;
         let data = null; try { data = JSON.parse(raw); } catch {}
         if (ev === 'done') finalBoard = data?.board;
-        else if (ev === 'error') throw new Error(data?.error || 'strategy failed');
+        else if (ev === 'error') throw new Error(cleanErr(data?.error, 160) || 'strategy failed');
         else onEvent?.(ev, data);
       }
     }
@@ -158,7 +173,7 @@ export const api = {
     const fd = new FormData();
     fd.append('file', file);
     const r = await fetch('/api/upload', { method: 'POST', body: fd });
-    if (!r.ok) throw new Error(`upload ${r.status}`);
+    if (!r.ok) throw new Error(`the upload failed → ${r.status}`);
     return r.json();
   },
   job: (id) => req('GET', `/api/jobs/${id}`),
@@ -171,7 +186,9 @@ export async function pollJob(id, { interval = 2500, timeout = 8 * 60 * 1000, on
     const { job } = await api.job(id);
     onTick?.(job);
     if (job.status === 'done') return job.result;
-    if (job.status === 'error') throw new Error(job.error || 'job failed');
+    // job.error is a raw server string (often a provider dump) — toasts print
+    // it verbatim, so it goes through the same scrub as HTTP details
+    if (job.status === 'error') throw Object.assign(new Error(cleanErr(job.error, 160) || 'job failed'), { debug: job.error });
     if (Date.now() - t0 > timeout) throw new Error('job timed out');
     await new Promise((r) => setTimeout(r, interval));
   }

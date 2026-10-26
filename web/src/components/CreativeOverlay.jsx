@@ -44,7 +44,7 @@ export default function CreativeOverlay({ creative, profile, chrome = false }) {
       <div className={`co-scrim v-${vpos}`} />
       <div className={`co-card`}>
         <div className={`co-grid v-${vpos} h-${hpos}`}>
-          {!!angle && <div className="co-kicker">{kickerFor(angle)}</div>}
+          {!!angle && <div className="co-kicker">{kickerFor(creative?.beat, angle)}</div>}
           {!!headline && <div className="co-headline">{styleHeadline(st, headline)}</div>}
           {!!body && <div className="co-body">{body}</div>}
           {!!cta && (
@@ -101,6 +101,11 @@ function pickInk(hex) {
   const r = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
   return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#141412' : '#f4f3ec';
 }
-function kickerFor(angle) {
+function kickerFor(beat, angle) {
+  // a planned beat label (the persuasion family this unit argues) makes the
+  // set's variety legible — fall back to the legacy angle map when absent
+  const byBeat = { price: 'Value', convenience: 'Made easy', identity: 'For you', occasion: 'The moment', proof: 'Receipts', comparison: 'The swap', ritual: 'Daily ritual', problem: 'The fix', novelty: 'New drop' };
+  if (beat && byBeat[beat]) return byBeat[beat];
+  if (beat && /^[a-z][a-z-]{2,19}$/i.test(beat)) return beat.replace(/(^|-)([a-z])/gi, (_m, p, c) => (p === '-' ? ' ' : '') + c.toUpperCase());
   return { product: 'Product', lifestyle: 'Lifestyle', offer: 'Offer', ugc: 'Community', retargeting: 'For you' }[angle] || 'Spotlight';
 }

@@ -113,10 +113,18 @@ export function init() {
   }
   // tiles a killed moodboard run left behind: registered with source
   // 'moodboard' but referenced by no board's tile list — they can never be
-  // reached again, so release them instead of littering the asset dir
+  // reached again, so release them instead of littering the asset dir.
+  // AGE-GATE: a --watch restart mid-run leaves an in-flight job's fresh tiles
+  // looking exactly like orphans (registered, not yet board-referenced —
+  // boards only record tiles when the job completes). Files younger than the
+  // grace window may belong to a job another process is still running.
+  const MB_GRACE_MS = 20 * 60 * 1000;
   const mbRefs = new Set((state.boards || []).flatMap((b) => (b.moodboard?.tiles || []).map((t) => t?.path)));
   for (const img of list('images')) {
     if (img?.source === 'moodboard' && img.path && !mbRefs.has(img.path)) {
+      let mtime = 0;
+      try { mtime = fs.statSync(assetAbs(img.path)).mtimeMs; } catch { /* gone */ }
+      if (mtime && Date.now() - mtime < MB_GRACE_MS) continue; // could still be landing
       releaseAsset(img.path); dirty = true;
     }
   }

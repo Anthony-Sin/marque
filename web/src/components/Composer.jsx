@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
+import { scrubEngines, ENGINE_DEDUPE } from '../labels.js';
 import '../views/studio.css';
 
 export const ASPECTS = ['1:1', '4:5', '9:16', '16:9'];
@@ -13,19 +14,30 @@ export function fileExt(p, fallback = 'png') {
   return (m ? m[1] : fallback).toLowerCase();
 }
 
-// stored notes from provider failures can carry raw JSON blobs and model
-// identifiers — keep the human-readable lead-in only.
+// stored notes from provider failures can carry raw JSON blobs, model
+// identifiers and per-engine dumps — keep the human-readable residue only.
+// Engine names come from the shared scrub (labels.js) so every surface uses
+// the same vocabulary providerLabel() reports.
 export function cleanNote(note) {
   if (!note) return '';
-  const s = String(note)
+  const s = scrubEngines(String(note)
     .split('{')[0]
+    // an unclosed trailing paren means a JSON split cut a dump mid-way
+    .replace(/\s*\([^()]*$/, '')
     .replace(/\bmodels\/[^\s,}"']+/g, 'the model')
-    .replace(/\b(veo|imagen|gemini|pollinations|sd-turbo|stabilityai)[\w.-]*/gi, 'the provider')
-    .replace(/(the provider[\s:(]*?){2,}/gi, 'the provider ')
+    .replace(/\b[A-Z][A-Z0-9_]*_(?:KEY|TOKEN|SECRET|URL|BASE)\b/g, 'the api key')
+    .replace(/\bproviders\b/gi, 'render engines')
+    .replace(/\bprovider\b/gi, 'render engine'))
+    // 'the video model failed: the video model: …' → 'the video model — …'
+    .replace(ENGINE_DEDUPE, '$1 — ')
+    .replace(/\b(the [\w ]{2,24}?)\/\1\b/gi, '$1')
     .replace(/\b[45]\d{2}\b/g, '')
     .replace(/\s*\(.*$/, '')
-    .replace(/(\bthe provider\b[\s:—\-–,.]*)+$/i, '')
-    .replace(/["'`]+$/, '').replace(/[—\-–:,.\s]+$/, '');
+    .replace(/\s+([:;,])/g, '$1')
+    .replace(/(\bthe (?:video model|studio renderer|cloud renderer|web renderer|chat brain|taste graph|render engine)\b[\s:—\-–,.]*)+$/i, '')
+    .replace(/["'`]+$/, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/[—\-–:,.\s]+$/, '');
   return s.length > 110 ? `${s.slice(0, 110).replace(/\s+\S*$/, '')}…` : s;
 }
 

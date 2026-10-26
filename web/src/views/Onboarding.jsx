@@ -4,6 +4,7 @@ import api from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon, { Logo } from '../components/Icon.jsx';
 import { QlooBadge } from '../components/Qloo.jsx';
+import { cleanErr } from '../labels.js';
 import './onboarding.css';
 
 const STAGES = [
@@ -40,17 +41,31 @@ function Led({ mode = 'off', label, title }) {
   );
 }
 
+// what the chat/copy backend calls itself in the UI — keyed on
+// status.agent.provider so a raw model id never reaches a tooltip
+const AGENT_KIND = { tensor: 'Chat brain', devin: 'Agent runtime' };
+
 // The status cluster shown under the hero and in the chat head — agent link,
 // taste graph, image engine. Same vocabulary as the nav rail LEDs.
 function StatusLeds({ status, agentMode }) {
   const agentOk = status?.agent ? status.agent.ok : (status?.tensor || status?.devin);
   const agent = agentMode || (agentOk ? 'on' : 'warn');
+  const agentName = AGENT_KIND[status?.agent?.provider] || 'Chat brain';
+  // raw model ids and vendor note strings stay out of LED tooltips — the
+  // console keeps them for debugging
+  useEffect(() => {
+    if (status?.agent && (status.agent.model || status.agent.error))
+      console.debug('[status] agent:', status.agent.provider, status.agent.model || '', status.agent.error || 'ok');
+    if (status?.qlooNote) console.debug('[status] taste graph:', status.qlooNote);
+  }, [status?.agent?.provider, status?.agent?.model, status?.agent?.error, status?.qlooNote]);
   return (
     <div className="ob-leds">
       <Led mode={agent} label={`AGENT ${agent === 'on' ? 'READY' : agent === 'busy' ? 'LIVE' : agent === 'err' ? 'ERR' : 'OFFLINE'}`}
-        title={status?.agent ? `Chat brain: ${status.agent.model || status.agent.provider}${status.agent.ok ? '' : ` — down (${status.agent.error || 'unreachable'})`}` : agentOk ? 'Chat backend configured' : 'No chat backend configured — agent replies will fail'} />
+        title={status?.agent
+          ? `${agentName} — ${status.agent.ok ? 'online' : `down${status.agent.error ? ` · ${cleanErr(status.agent.error)}` : ' · unreachable'}`}`
+          : agentOk ? 'Chat brain configured' : 'No chat backend configured — agent replies will fail'} />
       <Led mode={status?.qloo === 'live' ? 'on' : 'off'} label={`TASTE ${status?.qloo === 'live' ? 'LIVE' : 'OFF'}`}
-        title={status?.qlooNote || 'Taste graph'} />
+        title={status?.qloo === 'live' ? 'Taste graph — live' : `Taste graph — offline${status?.qlooNote ? ` · ${cleanErr(status.qlooNote)}` : ''}`} />
       <Led mode={status?.localgen?.ok ? 'on' : 'off'} label={`GEN ${status?.localgen?.ok ? 'OK' : 'STBY'}`}
         title="Local image engine" />
     </div>

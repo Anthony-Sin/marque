@@ -53,10 +53,20 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-createRoot(document.getElementById('root')).render(
+// HMR-safe mount — a dev hot-edit re-evaluates this module; a second
+// createRoot on the same node crashes into the ErrorBoundary mid-session.
+// Cache the root globally and let render() update it on re-eval. In prod
+// import.meta.hot is undefined and this is just a normal mount.
+let root = globalThis.__marqueRoot;
+if (!root) {
+  root = createRoot(document.getElementById('root'));
+  globalThis.__marqueRoot = root;
+}
+root.render(
   <BrowserRouter>
     <ErrorBoundary>
       <App />
     </ErrorBoundary>
   </BrowserRouter>
 );
+if (import.meta.hot) import.meta.hot.accept();

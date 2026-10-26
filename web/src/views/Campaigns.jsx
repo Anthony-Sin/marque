@@ -9,7 +9,7 @@ import CreativeEditor from '../components/CreativeEditor.jsx';
 import EvidenceDrawer from '../components/EvidenceDrawer.jsx';
 import Modal from '../components/Modal.jsx';
 import { QlooBadge, SignalChips } from '../components/Qloo.jsx';
-import { chanLabel } from '../labels.js';
+import { chanLabel, cleanErr } from '../labels.js';
 import './studio.css';
 
 const EXPECTED_CREATIVES = 4; // fallback skeleton count — the campaign record's own `expected` wins when present
@@ -478,7 +478,7 @@ export default function Campaigns() {
       const { creative: next } = await api.regenCreativeImage(cr.id, undefined, rrProvider(cr));
       applyCreative(open.id, next);
       ok = rrOk(next);
-      if (!ok) say(`Re-render failed — ${next?.imageError || 'renderer returned a placeholder'}`);
+      if (!ok) say(`Re-render failed — ${cleanErr(next?.imageError, 120) || 'renderer returned a placeholder'}`);
     } catch (e) { say(e.message); }
     setRrMap((m) => ({ ...m, [cr.id]: ok ? 'done' : 'fail' }));
   };
@@ -701,7 +701,7 @@ export default function Campaigns() {
               {!creatives.length && !pendingSkels && (
                 <div className="empty">
                   {open.genStatus === 'error' ? (
-                    <p>Generation failed — {open.genError || 'all providers errored'}. Hit Regenerate to retry.</p>
+                    <p title={open.genError || undefined}>Generation failed — {String(open.genErrorHuman || 'every render engine failed').replace(/\.$/, '')}. Hit Regenerate to retry.</p>
                   ) : (
                     <p>No creatives yet — generation may still be running.</p>
                   )}

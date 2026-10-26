@@ -140,7 +140,11 @@ export async function renderCreativePNG(creative, profile, campaign, aspect = '1
     ]);
   } catch { /* fall back to system faces */ }
 
-  const kicker = st.kicker && creative.angle ? ({ 'product-led': 'Product', lifestyle: 'Lifestyle', offer: 'Offer', 'social-proof': 'Community' })[creative.angle] || 'Featured' : '';
+  // beat label first (same map as CreativeOverlay's kicker) — the export
+  // should show the same persuasion-family tag the live overlay renders
+  const BEAT_KICKER = { price: 'Value', convenience: 'Made easy', identity: 'For you', occasion: 'The moment', proof: 'Receipts', comparison: 'The swap', ritual: 'Daily ritual', problem: 'The fix', novelty: 'New drop' };
+  const beatKicker = creative.beat ? (BEAT_KICKER[creative.beat] || (/^[a-z][a-z-]{2,19}$/i.test(creative.beat) ? creative.beat.replace(/(^|-)([a-z])/gi, (_m, p, c) => (p === '-' ? ' ' : '') + c.toUpperCase()) : '')) : '';
+  const kicker = st.kicker && creative.angle ? (beatKicker || ({ 'product-led': 'Product', lifestyle: 'Lifestyle', offer: 'Offer', 'social-proof': 'Community' })[creative.angle] || 'Featured') : '';
   const rawHead = creative.headline || '';
   const headline = st.upper ? rawHead.toUpperCase() : rawHead;
   const body = creative.body || '';

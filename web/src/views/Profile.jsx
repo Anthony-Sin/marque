@@ -376,7 +376,11 @@ export default function ProfilePage() {
           <section className="card hud cp-panel">
             <div className="zone-head">
               <span className="z-id">IMG</span>Brand library
-              <span className="z-tag">{(p.images || []).length} image{(p.images || []).length === 1 ? '' : 's'} · slot 1 = key</span>
+              <span className="z-tag">
+                {(p.images || []).length
+                  ? `${p.images.length} image${p.images.length === 1 ? '' : 's'} · slot 1 = key`
+                  : 'empty'}
+              </span>
             </div>
             <div className="cp-panel-body">
               {!(p.images || []).length && (

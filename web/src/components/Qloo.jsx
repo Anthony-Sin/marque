@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Icon from './Icon.jsx';
-import { epLabel } from '../labels.js';
+import { epLabel, cleanErr } from '../labels.js';
 
 // <QlooBadge mode="live"|"partial"|"error"|"off" label="…" /> — the everywhere-visible taste marker.
 // No simulated/demo modes: calls are live or they failed visibly. A badge only
@@ -50,6 +50,17 @@ export function TastePanel({ bundle, compact }) {
   if (!bundle) return null;
   const mode = bundle.mode === 'live' ? 'live' : bundle.mode === 'partial' ? 'partial' : 'error';
   const cat = (t) => t.replace('urn:entity:', '').replace('_', ' ');
+  // params → a readable arg line — seed id lists collapse to counts so no
+  // urn:entity:/UUID internals print verbatim
+  const callArgsLine = (c) => Object.entries(c.params || {}).map(([k, v]) => {
+    const s = String(v);
+    if (/^signal\.interests\.(entities|tags)$/.test(k)) {
+      const n = s.split(',').filter(Boolean).length;
+      return `${n} ${k.endsWith('tags') ? 'tag' : 'entity'} seed${n === 1 ? '' : 's'}`;
+    }
+    if (k === 'filter.type') return `type ${cat(s)}`;
+    return `${k.replace(/^filter\./, '')}=${s.replace(/urn:entity:[\w:-]+/g, 'entity').slice(0, 40)}`;
+  }).join(' · ');
   return (
     <div className="card pad taste-panel">
       <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -110,9 +121,9 @@ export function TastePanel({ bundle, compact }) {
             <div className="mt8 small muted" style={{ fontFamily: 'monospace', fontSize: 11 }}>
               {bundle.calls.map((c, i) => (
                 <div key={i} style={{ padding: '3px 0', borderBottom: '1px solid var(--line-soft)' }}>
-                  {epLabel(c.endpoint)} · {Object.entries(c.params || {}).map(([k, v]) => `${k}=${String(v).slice(0, 40)}`).join(' ')}
+                  {epLabel(c.endpoint)} · {callArgsLine(c)}
                   {c.n != null && <span style={{ color: 'var(--lime)' }}> → {c.n} results</span>}
-                  {!!c.mode && c.mode !== 'live' && <span style={{ color: 'var(--rose, #e88)' }} title={c.error || ''}> · {c.mode}{c.error ? ` — ${String(c.error).slice(0, 60)}` : ''}</span>}
+                  {!!c.mode && c.mode !== 'live' && <span style={{ color: 'var(--rose, #e88)' }} title={c.error || ''}> · {c.mode}{c.error ? ` — ${cleanErr(c.error)}` : ''}</span>}
                   {!!c.tookMs && <span className="muted"> · {c.tookMs}ms</span>}
                 </div>
               ))}
