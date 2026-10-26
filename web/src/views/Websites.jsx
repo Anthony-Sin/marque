@@ -221,14 +221,17 @@ export default function Websites() {
                   <div className="section-label" style={{ margin: '0 0 6px' }}>What to steal</div>
                   {impSteals.map((n, i) => (
                     <div className="imp-steal" key={i}>
-                      <b>What to steal from {n.brand}</b>
+                      <b><i className="imp-steal-n">{String(i + 1).padStart(2, '0')}</i>{n.brand}</b>
                       <span>{n.steal}</span>
                     </div>
                   ))}
+                  {!!impComps.length && (
+                    <div className="imp-note" style={{ textAlign: 'left' }}>Benchmarked against: {impComps.join(', ')}</div>
+                  )}
                 </div>
               )}
 
-              {!!impComps.length && (
+              {!impSteals.length && !!impComps.length && (
                 <div className="imp-note">Benchmarked against: {impComps.join(', ')}</div>
               )}
             </>

@@ -178,9 +178,11 @@ await check('image resize 404s cleanly on unknown id', async () => {
   return `404 {"error":"${r.body.error}"}`;
 });
 
-await check('refs drop local from image provider chain', async () => {
+await check('refs requests reach the local img2img engine', async () => {
   // stub-level: kill every provider endpoint via fetch + dead localgen URL,
   // then read the attempted-provider list out of the thrown error. No network.
+  // Contract (post-img2img): refs no longer drop local — local forwards the
+  // reference to /generate as `image` (img2img) and leads the chain.
   const realFetch = globalThis.fetch;
   const oldUrl = ENV.localgenUrl;
   const oldMode = ENV.localgenProvider;
@@ -193,14 +195,9 @@ await check('refs drop local from image provider chain', async () => {
       .catch((e) => e);
     const eRefs = await attempt({ refs: [{ path: '/assets/smoke-missing.png' }], aspectRatio: '1:1' });
     if (!eRefs) throw new Error('refs call unexpectedly succeeded under stub');
-    if (/\blocal\(/i.test(eRefs.message)) throw new Error(`local attempted despite refs: ${eRefs.message.slice(0, 200)}`);
-    if (!/gemini\(/i.test(eRefs.message)) throw new Error(`ref-capable providers not attempted: ${eRefs.message.slice(0, 200)}`);
-    // control: without refs the same mode leads with local — proves the drop
-    // above is the refs filter, not a broken local install
-    const eCtrl = await attempt({ aspectRatio: '1:1' });
-    if (!eCtrl || !/failed — local\(/i.test(eCtrl.message)) throw new Error(`control chain didn't lead with local: ${String(eCtrl?.message).slice(0, 200)}`);
+    if (!/local\(/i.test(eRefs.message)) throw new Error(`local skipped despite img2img refs support: ${eRefs.message.slice(0, 200)}`);
     const tried = (eRefs.message.match(/(local|gemini|pollinations)\(/gi) || []).join(' ');
-    return `refs chain attempted: ${tried} (no local)`;
+    return `refs chain attempted: ${tried} (local img2img leads)`;
   } finally {
     globalThis.fetch = realFetch;
     ENV.localgenUrl = oldUrl;

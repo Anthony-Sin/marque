@@ -4,7 +4,7 @@ import { api } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
-import { isRaster, MediaFallback } from '../components/Composer.jsx';
+import { isRaster, MediaFallback, thumb } from '../components/Composer.jsx';
 import { chanLabel } from '../labels.js';
 import './dashboard.css';
 
@@ -102,14 +102,17 @@ export default function Dashboard() {
         setWork(recent.map((c) => {
           const f = full.find((x) => x.id === c.id) || {};
           const crs = f.creatives || [];
-          const shots = crs.filter((cr) => isRaster(creativeImg(cr))).map(creativeImg);
+          // each thumb keeps its creative's caption — the strip reads as four
+          // distinct renders, not four copies of the campaign title
+          const shots = crs.filter((cr) => isRaster(creativeImg(cr)))
+            .map((cr) => ({ src: creativeImg(cr), cap: cr.headline || cr.angle || '' }));
           return {
             ...c,
             boardId: c.boardId || f.boardId || null,
             title: c.title || f.brief?.title || 'Untitled campaign',
             strategyTitle: c.strategyTitle || f.strategyTitle || '',
             channel: (f.brief?.channels || [])[0] || '',
-            img: shots[0] || '',
+            img: shots[0]?.src || '',
             thumbs: shots.slice(0, 4),
             grade: Math.max(0, ...crs.map((cr) => +cr.grade || 0)),
           };
@@ -288,13 +291,13 @@ export default function Dashboard() {
                     {!!planWork.length && (
                       <div className="dash-plan-work" onClick={(e) => e.stopPropagation()}>
                         {planWork
-                          .flatMap((c) => (c.thumbs?.length ? c.thumbs : [c.img]).filter(Boolean)
-                            .map((src) => ({ src, c })))
+                          .flatMap((c) => (c.thumbs?.length ? c.thumbs : [{ src: c.img, cap: '' }]).filter((t) => t.src)
+                            .map((t) => ({ src: t.src, cap: t.cap, c })))
                           .slice(0, 5)
-                          .map(({ src, c }, i) => (
-                            <Link key={`${c.id}:${i}`} to={`/campaigns?open=${c.id}`} className="dash-pw" title={c.title}>
+                          .map(({ src, cap, c }, i) => (
+                            <Link key={`${c.id}:${i}`} to={`/campaigns?open=${c.id}`} className="dash-pw" title={cap || c.title}>
                               {!badImg[`${c.id}:${i}`] ? (
-                                <img src={src} alt="" loading="lazy"
+                                <img src={thumb(src, 160)} alt="" loading="lazy"
                                   onError={() => setBadImg((m) => ({ ...m, [`${c.id}:${i}`]: true }))} />
                               ) : (
                                 <MediaFallback className="dash-pw-fb" seed={c.title} channel={c.channel} />
@@ -340,7 +343,7 @@ export default function Dashboard() {
                     <Link key={c.id} to={`/campaigns?open=${c.id}`} className="card dash-work-card">
                       {showImg ? (
                         <span className="dash-work-media">
-                          <img src={c.img} alt="" loading="lazy"
+                          <img src={thumb(c.img, 480)} alt="" loading="lazy"
                             onError={() => setBadImg((m) => ({ ...m, [c.id]: true }))} />
                         </span>
                       ) : (

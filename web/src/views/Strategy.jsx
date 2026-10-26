@@ -312,7 +312,7 @@ const cleanAsk = (raw) => (String(raw || '').split('→')[0]
   .trim() || 'your product').slice(0, 60);
 
 // honesty helper — 'live' only claims when every call was live
-const qlooVerb = (mode) => (mode === 'live' ? 'Qloo says' : 'the taste model says');
+const qlooVerb = (mode) => (mode === 'live' ? 'the taste read says' : 'the taste model says');
 
 // stable identity for an example card — survives re-pulls ordering shifts
 const exKey = (e) => e.url || e.embed || `${e.platform || 'web'}:${e.title || ''}`;
@@ -637,7 +637,8 @@ export default function Strategy() {
       prompt: sub?.prompt || '',
       productId: sub?.productId || '',
       exampleRefs,
-      auto: true,
+      // no auto-run — Campaigns stages this as a prefilled brief waiting on one
+      // confirm click, so arriving there never burns a real render unseen
       output,
     };
     if (output === 'site' || output === 'book') {
@@ -667,7 +668,7 @@ export default function Strategy() {
     try {
       sessionStorage.setItem('strategyHandoff', JSON.stringify(handoff));
     } catch { /* storage unavailable — Campaigns just won't prefill */ }
-    say?.(`"${s.title}" → producing ${PRODUCE_OUTPUTS.find((o) => o.id === output)?.label.toLowerCase() || 'output'}`);
+    say?.(`"${s.title}" staged — review the brief in Campaigns, one click produces`);
     nav('/campaigns');
   };
 
@@ -740,7 +741,7 @@ export default function Strategy() {
 
   // provenance line under the signals — built from real board.evidence fields
   const provBits = [];
-  if (ev.qlooMode && ev.qlooMode !== 'none') provBits.push('Qloo taste graph');
+  if (ev.qlooMode && ev.qlooMode !== 'none') provBits.push('audience graph');
   if (calls.length) provBits.push(`${calls.length} call${calls.length === 1 ? '' : 's'}`);
   if (ev.qlooMode && ev.qlooMode !== 'none') provBits.push(`${ev.qlooMode} data`);
   if (ev.source) provBits.push(ev.source === 'tensor' ? 'Marque strategy model' : 'rule-based strategy model');
@@ -1050,7 +1051,7 @@ export default function Strategy() {
               {res?.antiStrategies ? 'scoring what we ruled out…'
                 : res?.strategies ? 'ranking ruled-out tactics…'
                 : res?.audienceRead ? (sthink ? 'model is reasoning…' : 'model is drafting strategies…')
-                : 'pulling Qloo taste data + reading the site…'}
+                : 'pulling taste data + reading the site…'}
             </div>
           )}
 
@@ -1158,7 +1159,7 @@ export default function Strategy() {
                             return (
                               <li key={i} className="stg-fill" style={{ '--fo': `${190 + i * 55}ms` }}>
                                 {s}
-                                {!!facet && <span className="stg-sig-src" title={`Qloo taste graph · ${facet} entities`}>qloo:{facet}</span>}
+                                {!!facet && <span className="stg-sig-src" title={`audience graph · ${facet} entities`}>taste:{facet}</span>}
                               </li>
                             );
                           })}
@@ -1301,7 +1302,7 @@ export default function Strategy() {
                                 const ent = q?.entity || q;
                                 const aff = q?.affinity;
                                 return (
-                                  <span key={qi} className="stg-ent" title={typeof aff === 'number' ? `${ent} — Qloo taste-graph correlation ${aff.toFixed(2)} (0–1, higher = stronger pull)` : 'Qloo signal'}>
+                                  <span key={qi} className="stg-ent" title={typeof aff === 'number' ? `${ent} — taste-graph correlation ${aff.toFixed(2)} (0–1, higher = stronger pull)` : 'taste signal'}>
                                     <Icon name="qloo" size={9} />{ent}{typeof aff === 'number' && <i>{aff.toFixed(2)}</i>}
                                   </span>
                                 );
@@ -1429,7 +1430,7 @@ export default function Strategy() {
                             const ha = (full.qlooSignals || []).find((q) => q.entity === full.heroSignal)?.affinity;
                             return (
                               <span className="stg-hero-sig"
-                                title={`${full.heroSignal} — hero signal${typeof ha === 'number' ? ` · Qloo taste-graph correlation ${ha.toFixed(2)}` : ''}`}>
+                                title={`${full.heroSignal} — hero signal${typeof ha === 'number' ? ` · taste-graph correlation ${ha.toFixed(2)}` : ''}`}>
                                 <Icon name="qloo" />{full.heroSignal}{typeof ha === 'number' && <i>{ha.toFixed(2)}</i>}
                               </span>
                             );
@@ -1528,7 +1529,7 @@ export default function Strategy() {
                         <span className="stg-prov" title="Where this evidence came from">
                           <Icon name="qloo" size={10} />
                           <span>
-                            Qloo {detEv.qlooMode || 'none'} · {detCalls.length} call{detCalls.length === 1 ? '' : 's'}
+                            taste read · {detEv.qlooMode || 'none'} · {detCalls.length} call{detCalls.length === 1 ? '' : 's'}
                             {!!detSources.length && ` · ${detSources.join(' ')}`}
                           </span>
                         </span>
@@ -1538,7 +1539,7 @@ export default function Strategy() {
                         <div className="stg-qgroups">
                           {entGroups.map((g) => (
                             <div className="stg-qgroup" key={g.type}>
-                              <span className="stg-qtype">qloo affinity · {g.type}</span>
+                              <span className="stg-qtype">taste affinity · {g.type}</span>
                               {g.rows.map((r) => (
                                 <span className="stg-qrow" key={r.name}>
                                   <span className="stg-qname">{r.name}</span>

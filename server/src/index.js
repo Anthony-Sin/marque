@@ -7,7 +7,7 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 const execFileP = promisify(execFile);
-import { PORT, ASSETS_DIR, WEB_DIST, ENV, DATA_DIR, MOCKUPS_DIR } from './config.js';
+import { PORT, ASSETS_DIR, WEB_DIST, ENV, DATA_DIR, MOCKUPS_DIR, ROOT } from './config.js';
 import { tuning } from './tuning.js';
 import * as store from './services/store.js';
 import { chat, chatJSON, tensorConfigured } from './services/tensor.js';
@@ -21,7 +21,7 @@ import * as campaigns from './services/campaigns.js';
 import { agentChat } from './services/agent.js';
 import { generateStrategies } from './services/strategy.js';
 import { generateExamples } from './services/scout.js';
-import { generateWebsite, editWebsite, siteVersion, normalizeHTML } from './services/sites.js';
+import { generateWebsite, editWebsite, siteVersion, normalizeHTML, renderSiteHTML } from './services/sites.js';
 import { renderSiteVideo, siteVideoAvailable, resolveFfmpeg } from './services/sitevideo.js';
 import { buildBook, htmlBook } from './services/brandbook.js';
 
@@ -60,6 +60,48 @@ const h = (fn) => (req, res) => Promise.resolve(fn(req, res)).catch((e) => {
   res.status(/private|loopback|link-local|metadata/i.test(msg) ? 400 : 500).json({ error: msg });
 });
 const ok = (res, body) => res.json(body);
+
+// ---------- image thumbnails ----------
+// GET /assets/thumb/<file>?w=480 — on-demand downscale of a data/assets raster,
+// cached to data/assets/.thumbs/<file>-<w>.<jpg|png>. No sharp/jimp in deps, so
+// the resize shells out to PIL in the gen venv (offline, ~100ms cold, then a
+// plain file serve). JPEG for opaque art; alpha sources stay PNG so
+// transparency survives. Never upscales; w clamps to [64,2048].
+const THUMB_DIR = path.join(ASSETS_DIR, '.thumbs');
+const THUMB_SCRIPT = path.join(ROOT, 'server', 'scripts', 'thumb.py');
+const THUMB_PY = process.env.MARQUE_PYTHON
+  || (fs.existsSync(path.join(ROOT, '.venv-gen/bin/python3')) ? path.join(ROOT, '.venv-gen/bin/python3') : 'python3');
+const sendThumbHeaders = (res) => {
+  res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+};
+app.get('/assets/thumb/:file', h(async (req, res) => {
+  // basename + whitelist — the route must never resolve outside ASSETS_DIR
+  const file = path.basename(String(req.params.file || ''));
+  if (!/\.(png|jpe?g|webp|gif)$/i.test(file) || !/^[A-Za-z0-9][\w.-]*$/.test(file)) {
+    return res.status(415).json({ error: 'thumbs are only rendered for raster images' });
+  }
+  const src = path.join(ASSETS_DIR, file);
+  if (!fs.existsSync(src)) return res.status(404).json({ error: 'asset not found' });
+  const w = Math.min(2048, Math.max(64, parseInt(req.query.w, 10) || 480));
+  const prefix = path.join(THUMB_DIR, `${file}-${w}`);
+  const srcMtime = fs.statSync(src).mtimeMs;
+  for (const ext of ['jpg', 'png']) {
+    const hit = `${prefix}.${ext}`;
+    if (fs.existsSync(hit) && fs.statSync(hit).mtimeMs >= srcMtime) {
+      sendThumbHeaders(res);
+      return res.sendFile(hit);
+    }
+  }
+  fs.mkdirSync(THUMB_DIR, { recursive: true });
+  const { stdout } = await execFileP(THUMB_PY, [THUMB_SCRIPT, src, prefix, String(w)], { timeout: 20000 });
+  const out = String(stdout || '').trim();
+  if (!out.startsWith(THUMB_DIR) || !fs.existsSync(out)) {
+    return res.status(502).json({ error: 'thumbnail render failed' });
+  }
+  sendThumbHeaders(res);
+  res.sendFile(out);
+}));
 
 // ---------- jobs ----------
 const jobs = new Map();
@@ -580,8 +622,11 @@ app.post('/api/campaigns/brief', h(async (req, res) => {
   ok(res, await campaigns.generateBrief(req.body || {}, brand.currentProfile()));
 }));
 app.post('/api/campaigns', h(async (req, res) => {
-  const { brief, productId, ingredients, aspectRatio, qlooSignals, notes, strategyId, strategyTitle, strategyIdx, boardId, provider, medium } = req.body || {};
+  const { brief, productId, ingredients, aspectRatio, qlooSignals, notes, strategyId, strategyTitle, strategyIdx, boardId, provider, medium, count } = req.body || {};
   if (!brief?.title) return res.status(400).json({ error: 'brief required' });
+  // caller-tunable set size — the console's 2/4/6 stepper; anything else falls
+  // back to the standard 4 so a stray value can't mint a 40-creative run
+  const nCreatives = [2, 4, 6].includes(+count) ? +count : 4;
   // Snapshot the source board's bundle only when the caller names it — the
   // board drives product context (resolveProductContext), so guessing it from
   // "signals were passed" contaminates the creative copy with the wrong brand.
@@ -607,6 +652,7 @@ app.post('/api/campaigns', h(async (req, res) => {
   if (existing) return ok(res, { campaign: existing, deduplicated: true });
   const campaign = {
     id: uid(), createdAt: now(), brief,
+    expected: nCreatives,           // set size — the UI's skeleton count while filling
     productId: productId || null,
     ingredients: ingredients || { images: [] },
     aspectRatio: ['1:1', '4:5', '9:16', '16:9'].includes(aspectRatio) ? aspectRatio : '1:1',
@@ -634,7 +680,7 @@ app.post('/api/campaigns', h(async (req, res) => {
   campaign.genStatus = 'running';
   const job = runJob('campaign', async (j) => {
     try {
-      const creatives = await campaigns.generateCreatives(campaign, profile, 4, (p) => { j.progress = p; });
+      const creatives = await campaigns.generateCreatives(campaign, profile, nCreatives, (p) => { j.progress = p; });
       const stored = find('campaigns', campaign.id) || campaign;
       stored.creatives = creatives;
       stored.genStatus = 'done';
@@ -653,6 +699,9 @@ app.post('/api/campaigns', h(async (req, res) => {
       throw e;
     }
   });
+  // persist the run handle — a client that reloads mid-generation re-attaches
+  // to this job id for live progress instead of dead-ending on "check again"
+  update('campaigns', campaign.id, { genStatus: 'running', jobId: job.id });
   ok(res, { campaign, job });
 }));
 app.get('/api/campaigns/:id', h(async (req, res) => {
@@ -1045,6 +1094,13 @@ app.get('/s/:slug', h(async (req, res) => {
   const w = list('websites').find((x) => x.publishedSlug === req.params.slug);
   const v = siteVersion(w);
   if (!v) return res.status(404).type('html').send(notPublished());
+  // renderer-native versions re-render from their snapshot at serve time so
+  // template polish reaches already-published pages; legacy docs serve stored
+  // html. A render fault must never 500 a live page — fall back to the bake.
+  if (v.site) {
+    try { return res.type('html').send(renderSiteHTML(v.site)); }
+    catch (e) { console.error(`[marque] site render /s/${req.params.slug} →`, e.message); }
+  }
   res.type('html').send(normalizeHTML(v.html)); // normalize covers docs stored before the fix
 }));
 

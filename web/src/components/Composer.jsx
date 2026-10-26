@@ -52,6 +52,15 @@ export function fmtDate(d) {
 // generated placeholders are saved as .svg and read as flat empty tiles.
 export const isRaster = (p) => !!p && !/\.svg(?:[?#]|$)/i.test(String(p));
 
+// local generated/scraped rasters → the server's on-demand thumb route
+// (resized + cached under data/assets/.thumbs). Remote/data/blob urls and
+// non-raster assets pass through untouched. Use for small render boxes only —
+// lightbox/editor/download keep the full-size source.
+export const thumb = (p, w = 480) =>
+  /^\/assets\/[\w.-]+\.(?:png|jpe?g|webp|gif)$/i.test(String(p || ''))
+    ? `/assets/thumb/${String(p).slice('/assets/'.length)}?w=${w}`
+    : p;
+
 // provider id → human label for badges + tooltips. The in-house GPU engine
 // reports as 'local-<model>' (e.g. 'local-sdxl-turbo' from the health check) —
 // that's the studio renderer, named honestly. Anything unmapped still gets a
@@ -278,7 +287,7 @@ export default function Composer({
                 {profileImages.filter((im) => im.path).map((im) => (
                   <button key={im.id || im.path} className={images.includes(im.path) ? 'sel' : ''}
                     title={im.caption || ''} onClick={() => toggleImg(im.path)}>
-                    <img src={im.path} alt={im.caption || 'asset'} />
+                    <img src={thumb(im.path, 160)} alt={im.caption || 'asset'} />
                   </button>
                 ))}
               </div>

@@ -5,7 +5,7 @@ import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
 import PublishBar from '../components/PublishBar.jsx';
 import { QlooBadge, TastePanel } from '../components/Qloo.jsx';
-import { postJson, useStages } from '../components/Composer.jsx';
+import { postJson, useStages, thumb } from '../components/Composer.jsx';
 import './studio.css';
 
 const MAX_IMGS = 7;
@@ -207,7 +207,7 @@ export default function BrandBook() {
                   <button key={im.id || im.path}
                     className={`pick-tile${(cover?.id || cover?.path) === (im.id || im.path) ? ' sel' : ''}`}
                     onClick={() => setCover({ id: im.id, path: im.path })}>
-                    <img src={im.path} alt={im.caption || ''} />
+                    <img src={thumb(im.path, 320)} alt={im.caption || ''} />
                     {im.caption && <span className="cap">{im.caption}</span>}
                   </button>
                 ))}
@@ -219,7 +219,7 @@ export default function BrandBook() {
                   Generate new
                 </button>
                 {cover && !(profile?.images || []).some((i) => (i.id || i.path) === (cover.id || cover.path)) && (
-                  <span className="pick-tile sel"><img src={cover.path} alt="cover" /><span className="cap">cover</span></span>
+                  <span className="pick-tile sel"><img src={thumb(cover.path, 320)} alt="cover" /><span className="cap">cover</span></span>
                 )}
               </div>
               {busy === 'gen-cover' && <div className="gen-note"><span className="spinner" />{coverNote}</div>}
@@ -243,7 +243,7 @@ export default function BrandBook() {
                     <button key={k}
                       className={`pick-tile${sel ? ' sel' : ''}`}
                       onClick={() => setPicked((p) => sel ? p.filter((x) => x !== k) : p.length < MAX_IMGS ? [...p, k] : p)}>
-                      <img src={im.path} alt={im.caption || ''} />
+                      <img src={thumb(im.path, 320)} alt={im.caption || ''} />
                     </button>
                   );
                 })}
@@ -305,7 +305,7 @@ export default function BrandBook() {
         <div className="book-page">
           {cur.id === 'cover' && (
             <div className="book-cover">
-              {coverSrc && <img src={coverSrc} alt="cover" />}
+              {coverSrc && <img src={thumb(coverSrc, 960)} alt="cover" />}
               <div className="cover-txt">
                 <div className="pg-label" style={{ color: 'var(--ink-3)' }}>Brand Book</div>
                 <h2 className="display">{profile?.name || 'Your brand'}</h2>
@@ -352,7 +352,7 @@ export default function BrandBook() {
             <div className="page-in">
               <div className="pg-label">Imagery · {bookImgs.length}</div>
               <div className="book-imgs">
-                {bookImgs.map((p, i) => <span key={i} className="media-tile"><img src={p} alt="" /></span>)}
+                {bookImgs.map((p, i) => <span key={i} className="media-tile"><img src={thumb(p, 560)} alt="" /></span>)}
                 {!bookImgs.length && (
                   <div className="empty" style={{ padding: '30px 10px', gridColumn: '1 / -1' }}>
                     <p>No imagery recorded on this book — images land here after onboarding scrapes your site.</p>
@@ -413,6 +413,6 @@ function bookHtml(profile, book) {
 <section><h2>Our story</h2><p style="max-width:560px">${esc(p.description)}</p><p class="muted">${esc(p.audience)}</p>${(p.values || []).map((v) => `<span class="tag">${esc(v)}</span>`).join('')}</section>
 <section><h2>Palette</h2>${colorList(p).map(({ label, hex }) => `<span class="sw" style="background:${esc(hex)};${lightHex(hex) ? 'color:#1a1a1a;text-shadow:0 1px 2px rgba(255,255,255,.4)' : ''}">${esc(label)} · ${esc(hex)}</span>`).join('')}${book?.paletteNote ? `<p class="muted">${esc(book.paletteNote)}</p>` : ''}</section>
 <section><h2>Typography</h2><p class="muted">Heading · ${esc(p.fonts?.heading)}</p><h1 style="font-size:34px">The quick brown fox</h1><p class="muted">Body · ${esc(p.fonts?.body)}</p><p style="font-family:system-ui">The quick brown fox jumps over the lazy dog.</p></section>
-<section><h2>Imagery</h2>${imgs.map((s) => `<img class="t" src="${s}">`).join('')}</section>
+<section><h2>Imagery</h2>${imgs.map((s) => `<img class="t" src="${thumb(s, 320)}">`).join('')}</section>
 </body></html>`;
 }

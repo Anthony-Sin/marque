@@ -43,6 +43,7 @@ async function post(url, body) {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(120000),
   });
   let data = null;
   try { data = await res.json(); } catch { /* fallthrough */ }
@@ -142,12 +143,12 @@ export async function genVideo(prompt, opts = {}) {
   const deadline = Date.now() + tuning('videoPollTimeoutMs');
   while (Date.now() < deadline) {
     await sleep(10000);
-    const st = await fetch(`${G}/${opName}?key=${nextKey()}`).then((r) => r.json());
+    const st = await fetch(`${G}/${opName}?key=${nextKey()}`, { signal: AbortSignal.timeout(20000) }).then((r) => r.json());
     if (st.error) throw new Error(`gemini video op: ${st.error.message || JSON.stringify(st.error).slice(0, 300)}`);
     if (!st.done) continue;
     const uri = st.response?.generateVideoResponse?.generatedSamples?.[0]?.video?.uri;
     if (!uri) throw new Error(`gemini video done but no uri (${JSON.stringify(st.response)?.slice(0, 300)})`);
-    let res = await fetch(uri, { headers: { 'x-goog-api-key': nextKey() } });
+    let res = await fetch(uri, { headers: { 'x-goog-api-key': nextKey() }, signal: AbortSignal.timeout(120000) });
     if (!res.ok) res = await fetch(uri + (uri.includes('?') ? '&' : '?') + `key=${nextKey()}`);
     if (!res.ok) throw new Error(`video download ${res.status}`);
     return saveAssetBuf(Buffer.from(await res.arrayBuffer()), 'mp4');

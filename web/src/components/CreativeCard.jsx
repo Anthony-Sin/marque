@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Icon from './Icon.jsx';
 import { api } from '../api.js';
-import { arCss, cleanNote, downloadAsset, fileExt, isRaster, MediaFallback, providerLabel } from './Composer.jsx';
+import { arCss, cleanNote, downloadAsset, fileExt, isRaster, MediaFallback, providerLabel, thumb } from './Composer.jsx';
 import CreativeOverlay from './CreativeOverlay.jsx';
 import { exportCreativePNG } from './creativeExport.js';
 import { chanLabel } from '../labels.js';
@@ -136,7 +136,7 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
       }}>
         {raster ? (
           <div className="co-host">
-            <img src={creative.imagePath} alt={creative.headline || 'creative'} loading="lazy" />
+            <img src={thumb(creative.imagePath, 560)} alt={creative.headline || 'creative'} loading="lazy" />
             {creative.cleanImage && <CreativeOverlay creative={creative} profile={profile} />}
           </div>
         ) : (

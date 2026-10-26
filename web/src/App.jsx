@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, createContext, useContext } from 'r
 import { Routes, Route, useNavigate, useLocation, Navigate, NavLink } from 'react-router-dom';
 import api from './api.js';
 import Icon, { Logo } from './components/Icon.jsx';
+import CommandPalette from './components/CommandPalette.jsx';
 import Onboarding from './views/Onboarding.jsx';
 import DashboardPage from './views/Dashboard.jsx';
 import StrategyPage from './views/Strategy.jsx';
@@ -21,7 +22,7 @@ const RAIL = [
   { to: '/websites', icon: 'site', label: 'sites', gate: true },
   { to: '/brandbook', icon: 'book', label: 'book', gate: true },
 ];
-function Rail() {
+function Rail({ onPalette }) {
   const { hasStrategy, status, boards, profile } = useApp();
   const live = status?.qloo === 'live';
   const gen = !!status?.localgen?.ok;
@@ -54,6 +55,9 @@ function Rail() {
           lights when the taste graph is actually live */}
       <div className="rail-foot"
         title={`${boards?.length || 0} plan${(boards?.length || 0) === 1 ? '' : 's'} · taste graph ${live ? 'live' : 'offline / demo'} · image engine ${gen ? 'ready' : 'standby'}`}>
+        {/* ⌘K hint chip — dim mono keycap; taps open the palette too */}
+        <button type="button" className="rail-kbd" onClick={onPalette}
+          title="Command palette — ⌘K / Ctrl-K, or / outside a field" aria-label="Open command palette">⌘K</button>
         <div className="rail-leds">
           {!!boards?.length && (
             <span className="rail-led"><i />{boards.length}&nbsp;PLAN{boards.length === 1 ? '' : 'S'}</span>
@@ -117,8 +121,27 @@ export default function App() {
   const [boards, setBoards] = useState([]);          // every plan/board summary, for switchers
   const [status, setStatus] = useState(null);
   const [toast, setToast] = useState(null);
+  const [palOpen, setPalOpen] = useState(false);   // ⌘K command palette
   const nav = useNavigate();
   const loc = useLocation();
+
+  // command-palette chords — ⌘K/Ctrl-K toggles anywhere; '/' opens when the
+  // keystroke isn't headed for a field (inputs, textareas, selects, contenteditable)
+  useEffect(() => {
+    const onKey = (e) => {
+      const t = e.target;
+      const typing = t?.tagName === 'INPUT' || t?.tagName === 'TEXTAREA' || t?.tagName === 'SELECT' || t?.isContentEditable;
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && String(e.key).toLowerCase() === 'k') {
+        e.preventDefault();
+        setPalOpen((o) => !o);
+      } else if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        setPalOpen(true);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   const refresh = async () => {
     try {
@@ -169,7 +192,7 @@ export default function App() {
   return (
     <Ctx.Provider value={ctx}>
       <div className={`shell${inApp && loc.pathname !== '/onboarding' ? '' : ' no-rail'}`}>
-        {inApp && loc.pathname !== '/onboarding' && <Rail />}
+        {inApp && loc.pathname !== '/onboarding' && <Rail onPalette={() => setPalOpen(true)} />}
         <div className="main">
           {profile === undefined ? (
             <div className="loading-wrap"><div className="spinner" /></div>
@@ -192,6 +215,9 @@ export default function App() {
           )}
         </div>
       </div>
+      {inApp && loc.pathname !== '/onboarding' && (
+        <CommandPalette open={palOpen} onClose={() => setPalOpen(false)} />
+      )}
       {toast && <div className="toast" role="status" aria-live="polite">{toast}</div>}
     </Ctx.Provider>
   );

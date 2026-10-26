@@ -408,6 +408,10 @@
 .imp-steal { padding: 10px 0; border-bottom: 1px solid var(--line-soft); display: flex; flex-direction: column; gap: 3px; }
 .imp-steal:last-child { border-bottom: none; }
 .imp-steal b { font-size: 13.5px; color: var(--ink-2); font-weight: 600; }
+.imp-steal-n {
+  font-family: var(--font-mono); font-style: normal; font-weight: 700;
+  font-size: 10px; color: var(--lime); letter-spacing: .1em; margin-right: 8px;
+}
 .imp-steal span { font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
 .imp-note { font-size: 11.5px; color: var(--ink-4); text-align: center; }
 
@@ -765,3 +769,28 @@
 
 /* provenance ledger anchors to the panel floor */
 .cp-prov .cp-dl:last-child { margin-top: auto; }
+
+/* staged-produce launch row — set-size stepper + honest ready line beside Produce */
+.cp-launch { flex-wrap: wrap; align-items: center; }
+.cp-count { display: inline-flex; align-items: center; gap: 5px; }
+.cp-count > b {
+  font-size: 10px; font-weight: 700; color: var(--ink-3);
+  text-transform: uppercase; letter-spacing: .09em; margin-right: 3px;
+}
+.cp-count-chip { padding: 4px 10px; font-size: 11px; min-width: 30px; }
+.cp-ready {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: var(--ink-3); white-space: nowrap;
+}
+.cp-ready::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--lime); box-shadow: 0 0 6px rgba(255, 176, 58, .8);
+}
+
+/* provenance — board notes the creatives were steered by */
+.cp-notes {
+  border: 1px dashed var(--line-soft); border-radius: 0; padding: 9px 12px;
+  font-size: 12px; color: var(--ink-3); line-height: 1.5;
+}
+.cp-notes .section-label { margin: 0 0 5px; }
+.cp-notes p { margin: 0; font-style: italic; }

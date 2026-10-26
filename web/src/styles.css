@@ -938,3 +938,105 @@ input:not([type=checkbox]):not([type=radio]), textarea, select { border-radius: 
 .main > .loading-wrap { flex: 1; min-height: 0; padding: 20px; }
 .main > .locked-wrap { flex: 1; min-height: 0; }
 .ob-wrap { flex: 1; min-height: 0; overflow-y: auto; justify-content: safe center; padding: 24px; }
+
+/* ==================== command palette (⌘K / Ctrl-K / /) ====================
+   HUD command strip — bracketed panel, mono labels, lime selection beam,
+   grouped results with counts. Mounted from App.jsx; logic lives in
+   components/CommandPalette.jsx. */
+
+/* dim mono keycap in the rail — also a tap target on narrow screens */
+.rail-kbd {
+  font-family: var(--font-mono); font-size: 8px; font-weight: 700;
+  letter-spacing: .06em; line-height: 1; padding: 4px 6px;
+  color: var(--ink-4); background: none;
+  border: 1px solid var(--line-soft); border-radius: 3px;
+  transition: color .15s, border-color .15s;
+}
+.rail-kbd:hover { color: var(--lime); border-color: rgba(255,176,58,.45); }
+.rail-kbd:focus-visible { outline: 1px solid var(--lime); outline-offset: 2px; }
+
+.ck-veil {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(3, 6, 5, .68);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 12dvh 16px 16px;
+}
+.ck {
+  width: min(600px, calc(100vw - 24px)); max-height: 68dvh;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: linear-gradient(180deg, var(--card-2), var(--card));
+  border: 1px solid var(--line); border-radius: 0;
+  box-shadow: var(--shadow), 0 0 0 1px rgba(0,0,0,.4);
+}
+.ck-inrow {
+  display: flex; align-items: center; gap: 10px; flex: none;
+  padding: 12px 14px; border-bottom: 1px solid var(--line-soft);
+}
+.ck-prompt { font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: var(--lime); flex: none; }
+.ck-in {
+  flex: 1; min-width: 0; background: none; border: none; outline: none;
+  color: var(--ink); font-family: var(--font-mono); font-size: 14px; letter-spacing: .02em;
+}
+.ck-count {
+  flex: none; font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--ink-4);
+}
+.ck-list { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 6px; }
+.ck-group-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 11px 14px 4px;
+  font-family: var(--font-mono); font-size: 8.5px; font-weight: 700;
+  letter-spacing: .22em; text-transform: uppercase; color: var(--ink-4);
+}
+.ck-gh-name::before { content: '// '; color: rgba(255,176,58,.55); }
+.ck-gh-n { color: var(--ink-4); font-size: 9px; letter-spacing: .1em; }
+.ck-item {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+  padding: 7px 14px; margin: 0; background: none; color: var(--ink-2);
+  border: none; border-left: 2px solid transparent; border-radius: 0;
+}
+.ck-item .ck-ic { display: inline-flex; flex: none; color: var(--ink-4); }
+.ck-item .ck-ic svg { width: 14px; height: 14px; }
+.ck-main { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 9px; }
+.ck-lbl {
+  font-family: var(--font-mono); font-size: 12.5px; font-weight: 600; letter-spacing: .01em;
+  color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ck-meta {
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .02em; color: var(--ink-4);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 10;
+}
+.ck-tag {
+  flex: none; font-family: var(--font-mono); font-size: 8px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; padding: 2px 6px;
+  color: var(--ink-4); border: 1px solid var(--line-soft); border-radius: 3px;
+}
+.ck-tag.active { color: var(--lime); border-color: rgba(255,176,58,.45); }
+.ck-tag.locked { color: var(--rose); border-color: rgba(240,138,120,.3); }
+.ck-enter { flex: none; font-family: var(--font-mono); font-size: 10px; color: var(--lime); opacity: 0; }
+.ck-item.on {
+  background: rgba(255,176,58,.08); border-left-color: var(--lime);
+  box-shadow: inset 0 0 22px rgba(255,176,58,.04);
+}
+.ck-item.on .ck-ic { color: var(--lime); }
+.ck-item.on .ck-lbl { color: var(--lime-2); }
+.ck-item.on .ck-enter { opacity: .9; }
+.ck-empty {
+  padding: 24px 16px; text-align: center;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--ink-4);
+}
+.ck-foot {
+  flex: none; display: flex; gap: 14px; padding: 7px 14px;
+  border-top: 1px solid var(--line-soft);
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; color: var(--ink-4);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ck-veil { animation: fade-in .16s ease; }
+  .ck { animation: modal-in .18s ease; }
+}
+@media (max-width: 560px) {
+  .ck-veil { padding: 8dvh 10px 10px; }
+  .ck { max-height: 76dvh; }
+  .ck-meta { display: none; }  /* one clean column at handset width */
+}

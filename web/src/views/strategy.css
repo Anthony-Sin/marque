@@ -443,11 +443,15 @@
   color: var(--lime); background: rgba(255, 176, 58, .12);
   border: 1px solid rgba(255, 176, 58, .4); border-radius:0; padding: 2px 9px;
 }
-/* horizontal scroll strip — browse refs without the page growing forever */
+/* horizontal scroll strip — browse refs without the page growing forever.
+   The right edge fades so a card cut mid-glyph reads as a scroll cue, not a
+   hard slice; empty space fades invisibly when nothing overflows. */
 .stg-wild-grid {
   display: flex; gap: 12px; overflow-x: auto; overscroll-behavior-x: contain;
   scroll-snap-type: x proximity; padding-bottom: 8px; scrollbar-width: thin;
   align-items: flex-start;
+  -webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 52px), transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 52px), transparent 100%);
 }
 .stg-wx {
   position: relative; flex: 0 0 272px; max-width: 272px; scroll-snap-align: start;
@@ -590,7 +594,15 @@
 .stg-call-line .n { color: var(--lime); }
 
 /* ---------- /strategy/:idx — full-page detail ---------- */
-.stg-detailpage { margin-top: 28px; scroll-margin-top: 14px; animation: stgPanel .45s cubic-bezier(.22, .9, .24, 1) both; }
+/* the detail band can outgrow the fixed viewport — it scrolls inside its own
+   region (scrollbar cue = intentional) instead of .view slicing the card
+   mid-glyph at the window floor */
+.stg-detailpage {
+  margin-top: 28px; scroll-margin-top: 14px; animation: stgPanel .45s cubic-bezier(.22, .9, .24, 1) both;
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+}
+/* on small screens .view itself scrolls — don't nest a second scroller */
+@media (max-width: 720px) { .stg-detailpage { flex: none; overflow: visible; } }
 .stg-back { margin-bottom: 14px; }
 
 /* ---------- notes → campaign handoff ---------- */

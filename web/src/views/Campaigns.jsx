@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
-import Composer, { arCss, isRaster, MediaFallback, fmtDate } from '../components/Composer.jsx';
+import Composer, { arCss, isRaster, MediaFallback, fmtDate, thumb } from '../components/Composer.jsx';
 import CreativeCard from '../components/CreativeCard.jsx';
 import CreativeEditor from '../components/CreativeEditor.jsx';
 import EvidenceDrawer from '../components/EvidenceDrawer.jsx';
@@ -12,7 +12,8 @@ import { QlooBadge, SignalChips } from '../components/Qloo.jsx';
 import { chanLabel } from '../labels.js';
 import './studio.css';
 
-const EXPECTED_CREATIVES = 4; // server generates 4 per campaign — skeleton count while filling
+const EXPECTED_CREATIVES = 4; // fallback skeleton count — the campaign record's own `expected` wins when present
+const COUNT_STEPS = [2, 4, 6]; // honest set sizes the campaign pipeline accepts
 
 // Brief fields materialize one-by-one (fade+blur) once the response lands —
 // `mat` + `--i` drive the stagger. Skeleton bars show while it drafts.
@@ -49,8 +50,10 @@ export default function Campaigns() {
   const [deleting, setDeleting] = useState(null);  // campaign pending delete confirm
   const [handoff, setHandoff] = useState(null);      // {strategy, notes, prompt, productId, exampleRefs?, auto?, output?, strategyIdx?}
   const autoRan = useRef(false);                     // produce-flow auto-confirm fires once
+  const resumeDead = useRef(new Set());              // campaign ids whose in-flight run the server can no longer confirm
   const [liveAspect, setLiveAspect] = useState('4:5'); // composer's real pill state
   const [engine, setEngine] = useState('auto');        // campaign-level image engine override
+  const [creativeCount, setCreativeCount] = useState(EXPECTED_CREATIVES); // set size for the next run
 
   const reload = async () => {
     try { setCampaigns((await api.listCampaigns()).campaigns || []); }
@@ -107,20 +110,26 @@ export default function Campaigns() {
         boardId: data.boardId || undefined,
         strategyId: data.strategyId || data.strategy?.id || undefined,
       });
-      say(data.auto ? `Strategy loaded — producing ${({ ads: 'ad set', motion: 'motion ad', video: 'AI video' })[data.output] || 'output'}` : 'Strategy loaded — drafting your brief');
+      say(data.auto ? `Strategy loaded — producing ${({ ads: 'ad set', motion: 'motion ad', video: 'AI video' })[data.output] || 'output'}` : 'Strategy loaded — review the brief, then hit Produce');
     } catch { /* malformed stash — ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // produce flow: a handoff with auto:true doesn't wait for the confirm click —
-  // the moment the drafted brief lands it goes straight into generation and the
-  // user is deposited on the result
+  // produce flow: a handoff stages the prefilled brief for ONE confirm click —
+  // a real render run never fires just because the user arrived. Auto-confirm
+  // only on explicit opt-in: ?autorun=1 in the URL, or a handoff carrying
+  // auto:true. The param is consumed so a reload can't re-fire a paid run.
+  const autorun = new URLSearchParams(loc.search).get('autorun') === '1';
   useEffect(() => {
-    if (!handoff?.auto || !brief?.brief || autoRan.current || busy) return;
+    // freshHandoffRef = the handoff was consumed this mount — a restored draft
+    // can never auto-fire a real run even with ?autorun=1 still in the URL
+    const want = !!handoff && (handoff.auto === true || (autorun && freshHandoffRef.current));
+    if (!want || !brief?.brief || autoRan.current || busy) return;
     autoRan.current = true;
+    if (autorun) nav('/campaigns', { replace: true });
     confirmBrief();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [brief, handoff]);
+  }, [brief, handoff, autorun]);
 
   // a drafted-but-unconfirmed brief shouldn't vanish on navigation — stash it
   // and restore on return (a pending handoff always drafts fresh instead)
@@ -144,6 +153,43 @@ export default function Campaigns() {
       else sessionStorage.removeItem('marque.briefDraft');
     } catch { /* ignore */ }
   }, [brief]);
+
+  // auto-resume — reopening (or reloading into) a campaign whose render job is
+  // still in flight keeps the live feed instead of dead-ending on "check
+  // again". Re-attaches to the persisted job for real progress; records that
+  // predate jobId fall back to polling the campaign itself. confirmBrief's own
+  // poll owns the session run (making === openId), so resume only takes over
+  // when nothing local is driving.
+  useEffect(() => {
+    const c = (campaigns || []).find((x) => x.id === openId);
+    if (!openId || !c || c.genStatus !== 'running' || making === openId || resumeDead.current.has(c.id)) return undefined;
+    let dead = false;
+    const finish = () => { if (!dead) { setJobProg(null); reload(); } };
+    if (c.jobId) {
+      pollJob(c.jobId, { onTick: (j) => { if (!dead) setJobProg(j.progress || null); } })
+        .then(finish)
+        .catch((e) => {
+          // the job is gone (server restart) — stop auto-polling; the manual
+          // Check-again button remains for a genuinely stuck record
+          if (e?.status === 404) resumeDead.current.add(c.id);
+          finish();
+        });
+      return () => { dead = true; };
+    }
+    let ticks = 0;
+    const t = setInterval(async () => {
+      try {
+        const { campaign: fresh } = await api.getCampaign(openId);
+        if (dead) return;
+        if (!fresh || fresh.genStatus !== 'running' || (fresh.creatives || []).length || ++ticks > 240) {
+          clearInterval(t);
+          if (fresh?.genStatus === 'running' && !(fresh.creatives || []).length) resumeDead.current.add(c.id);
+          finish();
+        }
+      } catch { /* transient — next tick retries */ }
+    }, 2500);
+    return () => { dead = true; clearInterval(t); };
+  }, [openId, campaigns, making]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const open = (campaigns || []).find((c) => c.id === openId) || null;
 
@@ -187,7 +233,7 @@ export default function Campaigns() {
           {c.creatives.slice(0, 4).map((cr) => (
             <span key={cr.id} className="media-tile">
               {isRaster(cr.imagePath) ? (
-                <img src={cr.imagePath} alt="" loading="lazy" />
+                <img src={thumb(cr.imagePath, 200)} alt="" loading="lazy" />
               ) : (
                 <MediaFallback
                   seed={c.brief?.title || cr.headline}
@@ -258,6 +304,7 @@ export default function Campaigns() {
         boardId: handoff?.boardId || undefined,
         provider: engine !== 'auto' ? engine : undefined,
         medium: handoff?.output === 'video' ? 'video' : undefined,
+        count: creativeCount,
       });
       if (campaign?.id) {
         setMaking(campaign.id);
@@ -292,7 +339,12 @@ export default function Campaigns() {
       }
       setBrief(null);
       setHandoff(null);
-      say(handoff?.output === 'motion' ? 'Motion ad ready' : handoff?.output === 'video' ? 'AI video units ready' : 'Campaign ready');
+      // deduped re-confirm can return a run that's still in flight — say so
+      // instead of claiming "ready" over a filling grid (resume poll carries it)
+      const stillRunning = campaign?.genStatus === 'running';
+      say(stillRunning
+        ? 'Generation in flight — creatives land in the campaign as they render'
+        : handoff?.output === 'motion' ? 'Motion ad ready' : handoff?.output === 'video' ? 'AI video units ready' : 'Campaign ready');
     } catch (e) { say(e.message); }
     setMaking('');
     setBusy(false); setPhase('idle');
@@ -354,7 +406,13 @@ export default function Campaigns() {
   // ---------- detail: the final result ----------
   if (open) {
     const creatives = open.creatives || [];
-    const pendingSkels = making === open.id ? Math.max(0, EXPECTED_CREATIVES - creatives.length) : 0;
+    // in-flight = this session's run OR a run the server still reports running
+    // (reloaded mid-generation — the resume effect above drives the live poll).
+    // A record the server can no longer confirm (lost job) drops back to the
+    // manual empty state instead of shimmering forever.
+    const filling = making === open.id || (open.genStatus === 'running' && !resumeDead.current.has(open.id));
+    const expected = open.expected || EXPECTED_CREATIVES;
+    const pendingSkels = filling ? Math.max(0, expected - creatives.length) : 0;
     const snap = open.strategySnapshot || null;
     const palKeys = Object.entries(profile?.colors || {}).filter(([, v]) => /^#|rgb/.test(String(v))).slice(0, 6);
     const hasProv = !!(snap || open.strategyTitle || palKeys.length > 0);
@@ -427,6 +485,13 @@ export default function Campaigns() {
                     ))}
                   </div>
                 )}
+                {/* board notes — the steering text the creatives were written against */}
+                {!!open.notes && (
+                  <div className="cp-notes">
+                    <div className="section-label">Board notes</div>
+                    <p>“{open.notes}”</p>
+                  </div>
+                )}
                 {/* ledger — the honest facts on record for this campaign */}
                 <div className="cp-dl">
                   {open.createdAt && <div className="cp-dl-row"><span>Created</span><b>{fmtDate(open.createdAt)}</b></div>}
@@ -435,7 +500,20 @@ export default function Campaigns() {
                     <div className="cp-dl-row"><span>Channels</span><b>{open.brief.channels.map(chanLabel).join(' · ')}</b></div>
                   )}
                   <div className="cp-dl-row"><span>Format</span><b>{open.aspectRatio || '1:1'}{open.medium === 'video' ? ' · video-first' : ''}</b></div>
-                  <div className="cp-dl-row"><span>Creatives</span><b>{creatives.length}</b></div>
+                  <div className="cp-dl-row"><span>Creatives</span><b>{creatives.length}{open.expected && open.expected !== creatives.length ? ` of ${open.expected} planned` : ''}</b></div>
+                  {!!creatives.length && (() => {
+                    const mix = {};
+                    for (const cr of creatives) mix[cr.medium || 'image'] = (mix[cr.medium || 'image'] || 0) + 1;
+                    return (
+                      <div className="cp-dl-row"><span>Mix</span><b>{Object.entries(mix).map(([m, n]) => `${n} ${m}`).join(' · ')}</b></div>
+                    );
+                  })()}
+                  {(() => {
+                    const g = creatives.map((cr) => +cr.grade || 0).filter(Boolean);
+                    return g.length ? (
+                      <div className="cp-dl-row"><span>Grade</span><b>★ {(g.reduce((a, b) => a + b, 0) / g.length).toFixed(1)} avg</b></div>
+                    ) : null;
+                  })()}
                   {!!open.evidence?.calls?.length && (
                     <div className="cp-dl-row"><span>Evidence</span><b>{open.evidence.calls.length} audience calls on record</b></div>
                   )}
@@ -616,10 +694,26 @@ export default function Campaigns() {
               </span>
             </div>
           )}
-          <div className="row mt16 mat" style={{ '--i': 7, justifyContent: 'flex-end', gap: 10 }}>
+          <div className="row mt16 mat cp-launch" style={{ '--i': 7, justifyContent: 'flex-end', gap: 10 }}>
+            {/* set-size stepper — drives the `count` field on POST /campaigns;
+                the skeleton grid + Ready line track whatever is picked */}
+            <span className="cp-count" role="group" aria-label="Creatives to generate" title="Set size for this run">
+              <b>Creatives</b>
+              {COUNT_STEPS.map((n) => (
+                <button key={n} type="button"
+                  className={`starter-chip eng cp-count-chip${creativeCount === n ? ' on' : ''}`}
+                  onClick={() => setCreativeCount(n)}>{n}</button>
+              ))}
+            </span>
+            <span className="cp-ready">
+              Ready — {creativeCount} creative{creativeCount === 1 ? '' : 's'}
+              {handoff?.output === 'motion' ? ' + hero animation' : ''}{handoff?.output === 'video' ? ' · video-first' : ''}
+              {' '}· est {creativeCount * 22.5 >= 120 ? `~${Math.round(creativeCount * 22.5 / 60)}m` : `~${Math.round(creativeCount * 22.5)}s`}
+            </span>
+            <span className="grow" />
             <button className="btn ghost" onClick={() => { setBrief(null); setHandoff(null); setPhase('idle'); }}>Discard</button>
             <button className="btn lime" disabled={busy} onClick={confirmBrief}>
-              <Icon name="check" /> Confirm — generate creatives
+              <Icon name="check" /> Produce — {creativeCount} creative{creativeCount === 1 ? '' : 's'}
             </button>
           </div>
         </div>

@@ -1,0 +1,212 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liquid Death — Murder your thirst.</title>
+<meta name="description" content="We parked a deadlift platform outside the loudest venues in the country. Pull a triple, earn an ice-cold tallboy."><meta property="og:title" content="Liquid Death"><meta property="og:description" content="We parked a deadlift platform outside the loudest venues in the country. Pull a triple, earn an ice-cold tallboy."><meta property="og:image" content="/assets/2d0c1581-48e1-4682-a5f7-3046aacece43.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#111111;--ink:#f4f4f2;--mut:#6c6c6b;--line:#d0d0ce;--sf:#1b1b1b;--acc:#f3c518;--acc-ink:#181410;--band:#f4f4f2;--band-ink:#181410;--band-mut:#a09f9c;--band-line:#56534f;--fd:'Oswald',Georgia,'Times New Roman',serif;--fb:'Inter',system-ui,-apple-system,'Segoe UI',Arial,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:5.5rem}
+body{background:var(--bg);color:var(--ink);font:400 1rem/1.7 var(--fb);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+img{display:block;max-width:100%}
+a{color:inherit}
+h1,h2,h3{font-family:var(--fd);font-weight:500;line-height:1.05;letter-spacing:-.015em}
+::selection{background:var(--acc);color:var(--acc-ink)}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:clamp(1.25rem,4vw,3.5rem)}
+.kick{display:flex;align-items:center;gap:.85rem;font:600 .7rem/1.2 var(--fb);letter-spacing:.3em;text-transform:uppercase;color:var(--mut);flex-wrap:wrap}
+.kick b{color:var(--acc);font-weight:600;letter-spacing:.2em;white-space:nowrap}
+.kick.center{justify-content:center}
+.kick.onband{color:var(--band-mut)}
+.kick.onband b{color:var(--band-ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.6rem;background:var(--acc);color:var(--acc-ink);text-decoration:none;font:600 .73rem/1 var(--fb);letter-spacing:.22em;text-transform:uppercase;padding:1.05rem 1.75rem;border-radius:2px;transition:opacity .2s,transform .2s;white-space:nowrap}
+.btn:hover{opacity:.87;transform:translateY(-1px)}
+.btn-sm{padding:.8rem 1.2rem;font-size:.68rem}
+.band .btn{background:var(--band-ink);color:var(--band)}
+.arr{display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;font:600 .74rem/1 var(--fb);letter-spacing:.2em;text-transform:uppercase;color:var(--ink);border-bottom:1px solid var(--acc);padding-bottom:.4rem}
+.arr i{font-style:normal;color:var(--acc)}
+.arr:hover{color:var(--acc)}
+.top{position:sticky;top:0;z-index:60;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.top .wrap{display:flex;align-items:center;gap:1.5rem;min-height:4.3rem}
+.mark{font-family:var(--fd);font-size:1.2rem;letter-spacing:.01em;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
+.tnav{display:flex;gap:1.8rem;margin-left:auto;align-items:center}
+.tnav a{font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;text-decoration:none;color:var(--mut);padding-block:.5rem}
+.tnav a:hover{color:var(--ink)}
+.mnav{display:none;position:relative;margin-left:auto}
+.mnav summary{list-style:none;cursor:pointer;font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;padding:.6rem 0;color:var(--ink)}
+.mnav summary::-webkit-details-marker{display:none}
+.mnav nav{position:absolute;right:0;top:calc(100% + .6rem);background:var(--bg);border:1px solid var(--line);min-width:13rem;box-shadow:0 18px 40px rgba(0,0,0,.14)}
+.mnav nav a{display:block;padding:.95rem 1.15rem;border-top:1px solid var(--line);text-decoration:none;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase}
+.mnav nav a:first-child{border-top:0}
+.hero{padding-block:clamp(3.5rem,8vw,7.5rem) clamp(4rem,8vw,7rem)}
+.hero .grid{display:grid;grid-template-columns:1.08fr .92fr;gap:clamp(2.5rem,6vw,5.5rem);align-items:center}
+.hero.solo{text-align:center}
+.hero.solo .h-copy{max-width:56rem;margin:0 auto}
+.hero h1{font-size:clamp(2.6rem,6.6vw,5.4rem);line-height:1.0;letter-spacing:-.02em;margin-top:1.7rem}
+.hero.solo h1{margin-inline:auto}
+.lede{font-size:clamp(1.03rem,1.5vw,1.28rem);line-height:1.65;color:var(--mut);max-width:33em;margin-top:1.5rem}
+.hero.solo .lede{margin-inline:auto}
+.acts{display:flex;align-items:center;gap:1.6rem;margin-top:2.5rem;flex-wrap:wrap}
+.hero.solo .acts{justify-content:center}
+figure{margin:0}
+.h-img img{width:100%;aspect-ratio:4/5;object-fit:cover}
+figcaption{display:flex;justify-content:space-between;gap:1rem;border-top:1px solid var(--line);margin-top:.9rem;padding-top:.75rem;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.strip{border-block:1px solid var(--line);padding-block:1.1rem}
+.strip .row{display:flex;align-items:center;justify-content:center;gap:1.6rem;flex-wrap:wrap}
+.strip span{font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mut);white-space:nowrap}
+.strip i{color:var(--acc);font-style:normal}
+.sec{padding-block:clamp(4.5rem,9vw,8.5rem)}
+.sec + .sec, .sec + .band, .band + .sec{border-top:0}
+.s-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(2.5rem,7vw,7rem);align-items:start}
+h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
+.s-body>p{margin-top:1.1em;max-width:44em}
+.s-body>p.first{font-size:clamp(1.15rem,1.8vw,1.4rem);line-height:1.6;color:var(--ink);margin-top:0}
+.s-img{margin-bottom:2.2rem}
+.s-img img{width:100%;aspect-ratio:4/3;object-fit:cover}
+.steps{list-style:none;margin-top:2.8rem;border-top:1px solid var(--line)}
+.steps li{display:grid;grid-template-columns:3.4rem 1fr;gap:1.2rem;padding:1.55rem 0;border-bottom:1px solid var(--line)}
+.steps .n{font-family:var(--fd);font-size:1.05rem;color:var(--acc);padding-top:.25rem}
+.steps h3{font-size:1.3rem;letter-spacing:-.01em}
+.steps p{color:var(--mut);font-size:.95rem;max-width:44em;margin-top:.4rem}
+.phead{display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;margin-bottom:clamp(2.4rem,5vw,3.8rem)}
+.phead .sub{max-width:23rem;color:var(--mut);font-size:.95rem;line-height:1.6;padding-bottom:.3rem}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(15.5rem,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.pcell{background:var(--bg);padding:1.35rem;display:flex;flex-direction:column;gap:.85rem}
+.ph{width:100%;aspect-ratio:4/5;object-fit:cover}
+.tile{aspect-ratio:4/5;background:var(--sf);display:grid;place-items:center;font-family:var(--fd);font-size:2.8rem;color:var(--mut)}
+.pcell h3{font-size:1.28rem;line-height:1.15}
+.pd{color:var(--mut);font-size:.92rem;line-height:1.6}
+.pfoot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:.85rem;min-height:2.4rem}
+.price{font-size:.74rem;letter-spacing:.2em;text-transform:uppercase}
+.arr2{color:var(--acc);font-size:1.05rem;line-height:1}
+.g-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(1.2rem,3.5vw,3rem)}
+.g-grid figure:nth-child(even){margin-top:clamp(1.6rem,5vw,4.5rem)}
+.g-grid img{width:100%;aspect-ratio:4/5;object-fit:cover}
+.g-grid figure.wide{grid-column:1/-1;margin-top:0}
+.g-grid figure.wide img{aspect-ratio:16/9}
+.band{background:var(--band);color:var(--band-ink)}
+.band .wrap{padding-block:clamp(4.5rem,9vw,8rem)}
+.band h2{color:var(--band-ink)}
+.b-lede{color:var(--band-mut);max-width:40em;margin-top:1.2rem;font-size:clamp(1rem,1.4vw,1.15rem)}
+.idx{list-style:none;margin-top:clamp(2.2rem,4vw,3.5rem);border-top:1px solid var(--band-line)}
+.idx li{display:flex;align-items:baseline;gap:1.6rem;padding:1.3rem 0;border-bottom:1px solid var(--band-line)}
+.idx .n{font-size:.74rem;letter-spacing:.22em;color:var(--band-mut);min-width:2.8rem}
+.idx .nm{font-family:var(--fd);font-size:clamp(1.5rem,3.4vw,2.7rem);line-height:1.08}
+.cta{text-align:center;background:var(--sf);border-block:1px solid var(--line)}
+.cta .wrap{padding-block:clamp(4.5rem,10vw,8rem)}
+.cta h2{font-size:clamp(2.3rem,5.6vw,4.3rem);margin-top:0}
+.cta.band{border-block:0}
+.cta p{color:var(--mut);max-width:36em;margin:1.3rem auto 0}
+.cta.band p{color:var(--band-mut)}
+.cta .acts{justify-content:center}
+.foot{border-top:1px solid var(--line)}
+.foot .wrap{padding-block:clamp(3.5rem,7vw,5.5rem) 1.6rem}
+.fgrid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:clamp(2rem,5vw,4rem)}
+.fmark{font-family:var(--fd);font-size:clamp(1.9rem,3.4vw,2.9rem);line-height:1.05;letter-spacing:-.015em}
+.fnote{color:var(--mut);font-size:.92rem;max-width:26em;margin-top:1.1rem}
+.fcol h4{font:600 .68rem/1 var(--fb);letter-spacing:.28em;text-transform:uppercase;color:var(--mut);margin-bottom:1.05rem}
+.fcol a{display:block;text-decoration:none;padding:.38rem 0;font-size:.95rem}
+.fcol a:hover{color:var(--acc)}
+.fbase{display:flex;justify-content:space-between;gap:.8rem;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:clamp(2.5rem,5vw,4rem);padding-top:1.3rem;font-size:.73rem;letter-spacing:.14em;color:var(--mut)}
+@media (max-width:980px){
+  .hero .grid{grid-template-columns:1fr}
+  .h-img{max-width:34rem}
+  .s-grid{grid-template-columns:1fr}
+  .fgrid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:840px){
+  .tnav{display:none}
+  .mnav{display:block}
+  .top .wrap{min-height:3.9rem}
+}
+@media (max-width:640px){
+  .phead{flex-direction:column;align-items:flex-start;gap:1rem}
+  .g-grid{grid-template-columns:1fr}
+  .g-grid figure:nth-child(even){margin-top:0}
+  .fgrid{grid-template-columns:1fr}
+  .mark{max-width:56vw}
+  .idx li{gap:1rem}
+  .steps li{grid-template-columns:2.6rem 1fr}
+}
+</style></head>
+<body id="top">
+<header class="top"><div class="wrap">
+  <a class="mark" href="#top">Liquid Death</a>
+  <nav class="tnav"><a href="#story">Story</a><a href="#products">Catalog</a><a href="#gallery">Gallery</a><a href="#taste">Taste</a></nav>
+  <a class="btn btn-sm" href="https://liquiddeath.com">Shop cans</a><details class="mnav"><summary>Menu</summary><nav><a href="#story">Story</a><a href="#products">Catalog</a><a href="#gallery">Gallery</a><a href="#taste">Taste</a><a href="#cta">Contact</a></nav></details>
+</div></header>
+<main>
+
+  <header class="hero split"><div class="wrap grid">
+    <div class="h-copy">
+      <div class="kick "><span>Heavy Metal Heavy Lifting</span></div>
+      <h1>Murder your thirst while you crush your PR</h1>
+      <p class="lede">We parked a deadlift platform outside the loudest venues in the country. Pull a triple, earn an ice-cold tallboy.</p>
+      <div class="acts"><a class="btn" href="https://liquiddeath.com">Find the platform</a><a class="arr" href="#story">The challenge <i>→</i></a></div>
+    </div>
+    <figure class="h-img"><img src="/assets/2d0c1581-48e1-4682-a5f7-3046aacece43.png" alt="Liquid Death tallboy" loading="lazy"><figcaption><span>Liquid Death tallboy</span></figcaption></figure>
+  </div></header>
+  <div class="strip"><div class="wrap row"><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span></div></div>
+
+  <section id="story" class="sec"><div class="wrap s-grid">
+    <div class="s-head"><div class="kick "><b>Nº 01</b><span>The challenge</span></div><h2>Mosh-pit conditioning, judged in kilograms</h2></div>
+    <div class="s-body">
+      
+      <p class="first">Aggressive live-venue energy meets raw gym culture. Step up to the barbell before the headliner hits the stage — lift heavy, hydrate harder.</p><p>Every rep is judged by a certified powerlifting ref and a very uncertified crowd.</p>
+      <ol class="steps"><li><span class="n">01</span><div><h3>Step up to the bar</h3><p>Find the pop-up platform parked outside the venue doors.</p></div></li><li><span class="n">02</span><div><h3>Deadlift for free water</h3><p>Pull a heavy triple in front of the pit — no mercy, no excuses.</p></div></li><li><span class="n">03</span><div><h3>Murder your thirst</h3><p>Slam a king can of mountain water, death to plastic forever.</p></div></li></ol>
+    </div>
+  </div></section>
+
+  <section id="products" class="sec"><div class="wrap">
+    <div class="phead"><div><div class="kick "><b>Nº 02</b><span>The arsenal</span></div><h2>Hydration arsenal</h2></div><p class="sub">Mountain water, sparkling and iced tea — all in infinitely recyclable aluminum.</p></div>
+    <div class="pgrid">
+      <article class="pcell">
+        <img class="ph" src="/assets/2d0c1581-48e1-4682-a5f7-3046aacece43.png" alt="Mountain Water" loading="lazy">
+        <h3>Mountain Water</h3>
+        <p class="pd">Pure alpine water in a king-sized tallboy can.</p>
+        <div class="pfoot"><span class="price">$15.99 / 12-pack</span><span class="arr2">→</span></div>
+      </article>
+      <article class="pcell">
+        <div class="tile">02</div>
+        <h3>Severed Lime</h3>
+        <p class="pd">Sparkling water with a vicious squeeze of real lime.</p>
+        <div class="pfoot"><span class="price">$15.99 / 12-pack</span><span class="arr2">→</span></div>
+      </article>
+      <article class="pcell">
+        <div class="tile">03</div>
+        <h3>Grim Leafer</h3>
+        <p class="pd">Iced tea and lemonade brewed to end thirst permanently.</p>
+        <div class="pfoot"><span class="price">$17.99 / 12-pack</span><span class="arr2">→</span></div>
+      </article>
+    </div>
+  </div></section>
+
+  <section id="gallery" class="sec"><div class="wrap">
+    <div class="phead"><div><div class="kick "><b>Nº 03</b><span>In the pit</span></div><h2>Proof of lift</h2></div></div>
+    <div class="g-grid n4">
+      <figure class=""><img src="/assets/03c83788-66e2-48f3-83b3-7a777c019ce6.jpg" alt="Creative — venue pop-up" loading="lazy"><figcaption><span>Fig. 01</span><span>Creative — venue pop-up</span></figcaption></figure>
+      <figure class=""><img src="/assets/040822e7-b6ed-4705-b1a2-8a649e4502e9.jpg" alt="Creative — barbell drop" loading="lazy"><figcaption><span>Fig. 02</span><span>Creative — barbell drop</span></figcaption></figure>
+      <figure class=""><img src="/assets/04e04df0-3617-4216-b959-e5a12c88197a.jpg" alt="Creative — crowd ice bath" loading="lazy"><figcaption><span>Fig. 03</span><span>Creative — crowd ice bath</span></figcaption></figure>
+      <figure class=""><img src="/assets/04fb27d5-addd-4723-9e71-1eba8caece3a.jpg" alt="Creative — deadlift triple" loading="lazy"><figcaption><span>Fig. 04</span><span>Creative — deadlift triple</span></figcaption></figure>
+    </div>
+  </div></section>
+
+  <section id="taste" class="band"><div class="wrap">
+    <div class="kick onband"><b>Nº 04</b><span>Taste signature</span></div>
+    <h2>Loved by fans of</h2>
+    <p class="b-lede">The measured cultural overlap of our loudest believers.</p>
+    <ol class="idx"><li><span class="n">01</span><span class="nm">Slayer</span></li><li><span class="n">02</span><span class="nm">CrossFit</span></li><li><span class="n">03</span><span class="nm">Tony Hawk</span></li><li><span class="n">04</span><span class="nm">Converge</span></li><li><span class="n">05</span><span class="nm">Monster Energy</span></li></ol>
+  </div></section>
+
+  <section id="cta" class="cta "><div class="wrap">
+    <h2>Death to plastic.</h2>
+    <p>Every case sold pulls plastic out of circulation for good.</p>
+    <div class="acts"><a class="btn" href="https://liquiddeath.com">Shop Liquid Death</a></div>
+  </div></section>
+</main>
+<footer class="foot"><div class="wrap">
+  <div class="fgrid">
+    <div><div class="fmark">Liquid Death</div><p class="fnote">Mountain water for the violent hydration of the masses.</p></div>
+    <div class="fcol"><h4>Index</h4><a href="#story">Story</a><a href="#products">Catalog</a><a href="#gallery">Gallery</a><a href="#taste">Taste</a></div><div class="fcol"><h4>Elsewhere</h4><a href="https://liquiddeath.com" rel="noopener">Official site</a></div>
+  </div>
+  <div class="fbase"><span>© 2026 Liquid Death</span><span>Site by Marque</span></div>
+</div></footer>
+</body></html>
