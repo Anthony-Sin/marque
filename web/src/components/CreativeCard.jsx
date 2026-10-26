@@ -132,23 +132,7 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
 
   return (
     <div className={`card creative-card${promote ? ' promoting' : ''}`} style={{ '--ar': arCss(aspect) }}>
-      <div className="cc-media" role="button" tabIndex={0}
-        aria-label={onEdit ? `Edit ${creative.headline || 'creative'}` : video ? `Play ${creative.headline || 'creative'} animation` : `Preview ${creative.headline || 'creative'} media`}
-        onKeyDown={(e) => {
-          // keyboard activation lives on the media well itself — keys bubbled
-          // up from veil buttons / the promote panel belong to those controls
-          if (e.target !== e.currentTarget) return;
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            if (onEdit) onEdit(creative); else setZoom(true);
-          }
-        }}
-        onClick={(e) => {
-        if (e.target.closest('.veil-btn') || e.target.closest('.promote-panel')) return;
-        if (COARSE) { setPinned((p) => !p); return; }
-        // desktop: click the card → open the editor (zoom lives on the veil button)
-        if (onEdit) onEdit(creative); else setZoom(true);
-      }}>
+      <div className="cc-media">
         {raster ? (
           <div className="co-host">
             <img src={thumb(creative.imagePath, 560)} alt={creative.headline || 'creative'} loading="lazy" />
@@ -161,6 +145,15 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
             monogram={profile?.name || campaign?.brief?.title}
           />
         )}
+        {/* the media well's activation is a REAL button layered under the
+            badges/veil/promote (z1 < their z2/z3/z6) — nesting controls inside
+            a role=button would make them presentational to screen readers */}
+        <button type="button" className="cc-hit"
+          aria-label={onEdit ? `Edit ${creative.headline || 'creative'}` : video ? `Play ${creative.headline || 'creative'} animation` : `Preview ${creative.headline || 'creative'} media`}
+          onClick={() => {
+            if (COARSE) { setPinned((p) => !p); return; }
+            if (onEdit) onEdit(creative); else setZoom(true);
+          }} />
         {video && (
           <button type="button" className="badge-v" onClick={(e) => { e.stopPropagation(); setZoom(true); }}
             title={creative.videoProvider ? `Watch — made with ${providerLabel(creative.videoProvider)}${creative.videoNote ? ` · ${cleanNote(creative.videoNote)}` : ''}` : 'Watch the animated version'}>

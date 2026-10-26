@@ -279,15 +279,7 @@ export default function Dashboard() {
               const showGhost = !planWork.length && !moodTiles.length && moods[b.id] !== undefined;
               return (
                 <div key={b.id || b.title} className={`card dash-plan${active ? ' on' : ''}`}
-                  role="button" tabIndex={0}
-                  onClick={() => open(b)}
-                  onKeyDown={(e) => {
-                    // only the card itself activates — Enter/Space bubbled up
-                    // from a child (rename/delete buttons, work links) belongs
-                    // to that child, not to the card's "open plan" shortcut
-                    if (e.target !== e.currentTarget) return;
-                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(b); }
-                  }}>
+                  onClick={() => open(b)}>
                   <div className="dash-plan-top">
                     {renaming === b.id ? (
                       <input
@@ -304,7 +296,18 @@ export default function Dashboard() {
                         onBlur={() => setRenaming(null)}
                       />
                     ) : (
-                      <h4>{b.title || 'Strategy board'}{active && <span className="dash-plan-live">active</span>}</h4>
+                      <h4>
+                        {/* the keyboard path into the plan — the card itself stays
+                            a mouse affordance; role=button on the card would make
+                            the rename input, icon buttons and work links below
+                            presentational to screen readers */}
+                        <button type="button" className="dash-plan-open"
+                          title={`Open ${b.title || 'plan'}`}
+                          onClick={(e) => { e.stopPropagation(); open(b); }}>
+                          {b.title || 'Strategy board'}
+                        </button>
+                        {active && <span className="dash-plan-live">active</span>}
+                      </h4>
                     )}
                     {!!b.id && renaming !== b.id && (
                       <span className="dash-plan-acts" onClick={(e) => e.stopPropagation()}>

@@ -62,9 +62,11 @@
 .stg-chipbar-ic { color: var(--lime); display: inline-flex; flex: none; }
 .stg-chipbar-prompt {
   flex: 1 1 150px; min-width: 150px; font-family: var(--font-serif); font-style: italic;
-  font-size: 15px; color: var(--ink-2);
+  font-size: 15px; color: var(--ink-2); text-align: left; cursor: pointer;
+  background: none; border: 0; padding: 0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.stg-chipbar-prompt:focus-visible { outline: 1.5px solid var(--lime); outline-offset: 3px; border-radius: 2px; }
 .stg-tag {
   display: inline-flex; align-items: center; gap: 5px; flex: none; max-width: 210px;
   font-size: 11px; font-weight: 600; color: var(--lime);
@@ -493,7 +495,8 @@
 /* selectable reference cards — click toggles them into the campaign handoff */
 .stg-wx.pickable { cursor: pointer; }
 .stg-wx.pickable:hover { transform: translateY(-3px); border-color: var(--line); box-shadow: var(--shadow); }
-.stg-wx.pickable:focus-visible { outline: 2px solid rgba(255, 176, 58, .7); outline-offset: 2px; }
+/* card-level ring when its real control (the check chip) is focused */
+.stg-wx.pickable:has(.stg-wx-check:focus-visible) { outline: 2px solid rgba(255, 176, 58, .7); outline-offset: 2px; }
 /* .pickable.sel must out-specify .pickable:hover or the ring vanishes under the cursor */
 .stg-wx.pickable.sel {
   border-color: var(--lime); transform: translateY(-3px);
@@ -502,11 +505,13 @@
 .stg-wx.pickable.sel:hover { border-color: var(--lime); box-shadow: 0 0 0 1.5px var(--lime), 0 12px 28px rgba(0, 0, 0, .4); }
 .stg-wx-check {
   position: absolute; top: 9px; right: 9px; z-index: 2;
-  width: 22px; height: 22px; border-radius: 50%;
+  width: 22px; height: 22px; border-radius: 50%; padding: 0; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
+  font: inherit; /* was a span — the chip is now the real toggle control */
   background: rgba(10, 12, 6, .45); border: 1.5px solid rgba(255, 255, 255, .4);
   color: transparent; transition: border-color .18s, background .18s;
 }
+.stg-wx-check:focus-visible { outline: 2px solid rgba(255, 176, 58, .8); outline-offset: 2px; }
 .stg-wx.pickable:hover .stg-wx-check { border-color: rgba(255, 176, 58, .8); }
 .stg-wx-check.on {
   background: var(--lime); border-color: var(--lime); color: var(--lime-ink);

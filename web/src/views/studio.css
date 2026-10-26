@@ -98,9 +98,14 @@
 .creative-card { container-type: inline-size; }
 /* image well — holds the veil action bar + promote fold above the .meta row */
 .creative-card .cc-media { position: relative; }
-/* keyboard target — role=button tabindex=0; ring stays inside the card's
-   overflow:hidden edge */
-.creative-card .cc-media:focus-visible { outline: 2px solid var(--lime); outline-offset: -2px; }
+/* the media well's activation target — a real button covering the image,
+   stacked under badges (z2), the veil bar (z3) and the promote kit (z6) so
+   every control stays a sibling, never a nested interactive */
+.creative-card .cc-hit {
+  position: absolute; inset: 0; z-index: 1;
+  background: transparent; border: 0; padding: 0; cursor: pointer;
+}
+.creative-card .cc-hit:focus-visible { outline: 2px solid var(--lime); outline-offset: -2px; }
 .creative-card .cc-media > .media-fallback { aspect-ratio: var(--ar, 1/1); height: auto; }
 .cc-skel-media { display: block; width: 100%; aspect-ratio: var(--ar, 1/1); border-radius: 0; }
 .creative-card .media-fallback .mf-mono { font-size: 52px; }

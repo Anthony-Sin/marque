@@ -380,15 +380,8 @@ function WildCard({ e, i, sel, onToggle }) {
 
   return (
     <div className={`stg-wx pickable${open ? ' open' : ''}${sel ? ' sel' : ''}`} style={{ '--i': i }}
-      role="button" tabIndex={0} aria-pressed={!!sel}
       title={sel ? 'Selected — will feed the campaign' : 'Select as a campaign reference'}
-      onClick={onToggle}
-      onKeyDown={(ev) => {
-        // same rule as .dash-plan: keys bubbled up from the inner play button
-        // or the out-link belong to them, not to the card's select toggle
-        if (ev.target !== ev.currentTarget) return;
-        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); onToggle?.(); }
-      }}>
+      onClick={onToggle}>
       {!!img && !imgDead && <span className="stg-wx-media"><img src={img} alt="" loading="lazy" onError={() => setImgDead(true)} /></span>}
       <span className="stg-wx-body stg-fill">
         <span className="stg-wx-plat">
@@ -414,9 +407,13 @@ function WildCard({ e, i, sel, onToggle }) {
           )}
         </span>
       </span>
-      <span className={`stg-wx-check${sel ? ' on' : ''}`} aria-hidden="true">
+      <button type="button" role="checkbox" aria-checked={!!sel}
+        className={`stg-wx-check${sel ? ' on' : ''}`}
+        title={sel ? 'Selected — will feed the campaign' : 'Select as a campaign reference'}
+        aria-label={sel ? `Remove ${e.title || 'example'} from the campaign references` : `Select ${e.title || 'example'} as a campaign reference`}
+        onClick={(ev) => { ev.stopPropagation(); onToggle?.(); }}>
         <Icon name="check" size={11} sw={2.8} />
-      </span>
+      </button>
       {/* the media fold — opens beneath the card, in-app */}
       {open && (
         <span className="stg-wx-fold" onClick={(ev) => ev.stopPropagation()}>
@@ -1354,10 +1351,8 @@ export default function Strategy() {
             <div className="stg-topline-cell"><Wayfind /></div>
             <div className="stg-topline-cell stg-topline-mid">
           {(busy || res) && (
-            <div className={`stg-chipbar${editingPrompt ? ' editing' : ''}`} role="button" tabIndex={editingPrompt ? -1 : 0}
-              title="Click to modify this prompt"
-              onClick={() => { if (!editingPrompt && !busy) { setEditPrompt(sub?.prompt || ''); setEditingPrompt(true); } }}
-              onKeyDown={(e) => { if (e.target !== e.currentTarget) return; if (e.key === 'Enter' && !editingPrompt && !busy) { setEditPrompt(sub?.prompt || ''); setEditingPrompt(true); } }}>
+            <div className={`stg-chipbar${editingPrompt ? ' editing' : ''}`}
+              onClick={() => { if (!editingPrompt && !busy) { setEditPrompt(sub?.prompt || ''); setEditingPrompt(true); } }}>
               <span className="stg-chipbar-ic"><Icon name="sparkle" size={14} /></span>
               {editingPrompt ? (
                 <input className="stg-chipbar-edit" autoFocus value={editPrompt}
@@ -1371,9 +1366,11 @@ export default function Strategy() {
                   }}
                   onBlur={() => setEditingPrompt(false)} />
               ) : (
-                <span className="stg-chipbar-prompt" title={sub?.prompt || sub?.url}>
+                <button type="button" className="stg-chipbar-prompt"
+                  title={`Click to modify — ${sub?.prompt || sub?.url}`}
+                  onClick={(e) => { e.stopPropagation(); if (!busy) { setEditPrompt(sub?.prompt || ''); setEditingPrompt(true); } }}>
                   {sub?.prompt || sub?.url || 'strategy board'}
-                </span>
+                </button>
               )}
               {!editingPrompt && !!subProduct && <span className="stg-tag"><Icon name="bag" size={11} />{subProduct.name}</span>}
               {!editingPrompt && !!subHost && <span className="stg-tag"><Icon name="globe" size={11} />{subHost}</span>}
