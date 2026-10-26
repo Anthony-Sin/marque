@@ -32,21 +32,27 @@ export default function VersionTabs({ versions = [], activeId, onPick, onRegener
         <span className="cap">{busy ? 'Working…' : 'Regenerate'}</span>
       </button>
       {versions.map((v, i) => (
-        <button
+        <div
           key={v.id || i}
           className={`ver-tab${(v.id || i) === activeId ? ' on' : ''}`}
-          onClick={() => onPick?.(v.id || i)}
-          title={v.prompt || `Version ${i + 1}`}
         >
-          <span className="thumb">
+          {/* hit layer keeps the live preview iframe out of <button> content */}
+          <button
+            type="button"
+            className="ver-tab-hit"
+            onClick={() => onPick?.(v.id || i)}
+            title={v.prompt || `Version ${i + 1}`}
+            aria-label={`Version ${i + 1}${v.createdAt ? `, ${fmtDate(v.createdAt)}` : ''}`}
+          />
+          <span className="thumb" aria-hidden="true">
             {v.html ? (
               <LazyFrame html={v.html} title={`v${i + 1}`} />
             ) : (
               <Icon name="site" size={26} />
             )}
           </span>
-          <span className="cap">V{i + 1}{v.createdAt ? ` · ${fmtDate(v.createdAt)}` : ''}</span>
-        </button>
+          <span className="cap" aria-hidden="true">V{i + 1}{v.createdAt ? ` · ${fmtDate(v.createdAt)}` : ''}</span>
+        </div>
       ))}
     </div>
   );

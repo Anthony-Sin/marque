@@ -1360,8 +1360,9 @@ export default function Strategy() {
                   onChange={(e) => setEditPrompt(e.target.value)}
                   onKeyDown={(e) => {
                     e.stopPropagation();
+                    const back = () => requestAnimationFrame(() => document.querySelector('.stg-chipbar-prompt')?.focus({ preventScroll: true }));
                     if (e.key === 'Enter' && editPrompt.trim()) { setEditingPrompt(false); generate(editPrompt.trim()); }
-                    if (e.key === 'Escape') setEditingPrompt(false);
+                    if (e.key === 'Escape') { setEditingPrompt(false); back(); }
                   }}
                   onBlur={() => setEditingPrompt(false)} />
               ) : (
@@ -1398,8 +1399,11 @@ export default function Strategy() {
                     value={renameVal}
                     onChange={(e) => setRenameVal(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') commitRename();
-                      if (e.key === 'Escape') setRenaming(false);
+                      // the rename trigger (.stg-plan-edit) remounts when the
+                      // input unmounts — rAF so focus lands on the new node
+                      const back = () => requestAnimationFrame(() => document.querySelector('.stg-plan-edit')?.focus({ preventScroll: true }));
+                      if (e.key === 'Enter') { commitRename(); back(); }
+                      if (e.key === 'Escape') { setRenaming(false); back(); }
                     }}
                     onBlur={() => setRenaming(false)}
                   />

@@ -290,8 +290,14 @@ export default function Dashboard() {
                         onChange={(e) => setRenameVal(e.target.value)}
                         onKeyDown={(e) => {
                           e.stopPropagation();
-                          if (e.key === 'Enter') commitRename(b);
-                          if (e.key === 'Escape') setRenaming(null);
+                          // on an explicit exit hand focus back to the card's
+                          // open button — it remounts as the input unmounts, so
+                          // rAF to grab the fresh node (blur stays silent: a
+                          // stray click elsewhere shouldn't yank focus back)
+                          const card = e.currentTarget.closest('.dash-plan');
+                          const back = () => requestAnimationFrame(() => card?.querySelector('.dash-plan-open')?.focus({ preventScroll: true }));
+                          if (e.key === 'Enter') { commitRename(b); back(); }
+                          if (e.key === 'Escape') { setRenaming(null); back(); }
                         }}
                         onBlur={() => setRenaming(null)}
                       />
