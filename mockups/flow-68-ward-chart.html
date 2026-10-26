@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque General — Ward Chart</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23EFF4F2'/%3E%3Crect x='26' y='12' width='12' height='40' fill='%23157A6E'/%3E%3Crect x='12' y='26' width='40' height='12' fill='%23157A6E'/%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#FDFEFD;--ink:#22303E;--mut:#7B8894;--green:#157A6E;--red:#C0392B;
+  --line:#D8E0DE;--board:#E3E9E7;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--board) repeating-linear-gradient(45deg,rgba(21,122,110,.03) 0 12px,transparent 12px 24px);
+  color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(21,122,110,.2)}
+a{color:var(--green);text-decoration:none;border-bottom:1px solid var(--green)}
+a:hover{color:var(--ink);border-color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--green);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+.desk{max-width:1020px;margin:0 auto 80px;padding:0 clamp(10px,2.4vw,22px)}
+
+/* clipboard */
+.clip{max-width:150px;height:34px;margin:0 auto;background:linear-gradient(#9AA6AB,#6E7A80);
+  border-radius:0 0 10px 10px;position:relative;z-index:3;box-shadow:0 4px 8px rgba(0,0,0,.2)}
+.clip::after{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);width:26px;height:10px;
+  border-radius:5px;background:#3E484D}
+.chart{
+  margin-top:-6px;background:var(--paper);border:1px solid var(--line);border-radius:4px;
+  box-shadow:0 12px 30px rgba(34,48,62,.14);overflow:hidden;
+}
+.band{background:var(--green);color:#fff;padding:12px clamp(14px,3.6vw,30px);
+  display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.band .h1{font-size:clamp(15px,3vw,20px);font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.band .h1 span{color:#BFE3DD}
+.band .ward{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#CFEAE5;text-align:right}
+.sheet{padding:clamp(14px,3.4vw,26px) clamp(14px,3.6vw,30px);border-bottom:1px solid var(--line)}
+.sheet:last-child{border-bottom:none}
+.sh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.sh .no{font-family:var(--mono);font-size:9.5px;color:#fff;background:var(--ink);padding:2.5px 8px;letter-spacing:.14em}
+.sh h2{font-size:clamp(14px,2.8vw,18px);font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--ink)}
+.sh .sub{margin-left:auto;font-size:10.5px;color:var(--mut);font-style:italic}
+.bc{height:26px;width:150px;margin-left:auto;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 7px,transparent 7px 9px,var(--ink) 9px 10px,transparent 10px 14px);
+  align-self:center}
+@media(max-width:560px){.bc{display:none}}
+
+/* admit */
+.admit{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 24px}
+@media(max-width:680px){.admit{grid-template-columns:1fr}}
+.f{border-bottom:1px solid var(--line);padding-bottom:6px;min-width:0}
+.f .k{font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--green);font-weight:800}
+.f .v{font-size:14.5px;margin-top:2px;overflow-wrap:anywhere}
+.f .v.big{font-size:clamp(18px,3.4vw,24px);font-weight:800}
+
+/* vitals */
+.vitals{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(14px,3vw,28px)}
+@media(max-width:760px){.vitals{grid-template-columns:1fr}}
+table.vt{width:100%;border-collapse:collapse;font-size:12.5px}
+.vt th{font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--mut);text-align:left;
+  padding:5px 8px;border-bottom:2px solid var(--ink)}
+.vt td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.vt td.m{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--green);white-space:nowrap}
+.vt tr:hover td{background:rgba(21,122,110,.05)}
+.readbox{border:1.5px solid var(--ink);padding:12px 14px;background:#fff;position:relative}
+.readbox .tag{position:absolute;top:-9px;left:12px;background:var(--ink);color:#fff;font-size:8.5px;
+  letter-spacing:.22em;text-transform:uppercase;padding:2px 8px}
+.readbox .big{font-size:clamp(20px,3.6vw,27px);font-weight:800}
+.readbox .conf{display:flex;align-items:center;gap:10px;margin-top:6px}
+.readbox .conf .pct{font-size:19px;font-weight:800;color:var(--green)}
+.readbox .conf .gb{flex:1;max-width:160px;height:9px;border:1.5px solid var(--ink);background:#fff}
+.readbox .conf .gb i{display:block;height:100%;background:var(--green)}
+.pillrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.pillrow span{font-size:11px;border:1.5px solid var(--green);color:var(--green);border-radius:20px;padding:1px 10px}
+ul.notes{list-style:none;font-size:12px}
+ul.notes li{padding:3.5px 0;border-bottom:1px dotted var(--line)}
+ul.notes li b{color:var(--green)}
+
+/* treatment grid */
+.tx{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:960px){.tx{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.tx{grid-template-columns:1fr}}
+.txcard{border:1.5px solid var(--line);border-top:4px solid var(--green);background:#fff;padding:12px 14px;
+  display:flex;flex-direction:column;gap:8px;transition:box-shadow .15s ease,transform .15s ease}
+.txcard:hover{box-shadow:0 6px 16px rgba(34,48,62,.12);transform:translateY(-2px)}
+.txcard.star{border-top-color:var(--red)}
+.txcard .ord{font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);font-weight:800}
+.txcard .ord b{color:var(--red)}
+.txcard h3{font-size:clamp(15px,2.6vw,18px);font-weight:800;line-height:1.2}
+.txcard .dx{font-size:11.5px;font-style:italic;color:var(--mut)}
+.txcard .eff{display:flex;align-items:baseline;gap:8px}
+.txcard .eff b{font-size:22px;font-weight:800;color:var(--green);font-family:var(--mono)}
+.txcard .eff span{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+.txcard .rx{font-size:11px;border-top:1px dashed var(--line);padding-top:6px}
+.txcard .rx .ln{display:flex;justify-content:space-between;gap:8px;padding:2px 0}
+.txcard .rx .ln b{color:var(--ink)}
+.txcard .rx .ln .d{font-family:var(--mono);color:var(--green);font-weight:700;white-space:nowrap}
+.txcard .rx .ln i{display:block;font-size:9.5px;color:var(--mut);font-style:italic}
+.txcard .cov{margin-top:auto;font-size:11px;border-top:1px solid var(--line);padding-top:6px}
+.txcard .cov b{font-size:14px}
+.txcard .cov i{display:block;color:var(--mut);font-size:10px}
+.txcard .se{font-size:10.5px;color:var(--red);font-style:italic}
+.txcard .se b{font-style:normal;font-size:7.5px;letter-spacing:.2em;display:block;text-transform:uppercase}
+
+/* contraindicated */
+.allergy{border:2px solid var(--red);background:repeating-linear-gradient(-45deg,rgba(192,57,43,.06) 0 12px,transparent 12px 24px)}
+.allergy .sh h2{color:var(--red)}
+.allergy .sh .no{background:var(--red)}
+.contra{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:640px){.contra{grid-template-columns:1fr}}
+.cx{display:flex;gap:12px;align-items:flex-start;background:#fff;border:1px solid var(--line);padding:10px 12px}
+.cx .xb{flex:0 0 auto;width:26px;height:26px;border:2px solid var(--red);color:var(--red);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;line-height:1}
+.cx h4{font-size:13.5px;font-weight:800}
+.cx h4 s{text-decoration-color:var(--red)}
+.cx .ch{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+.cx .why{font-size:11.5px;color:var(--mut);font-style:italic;margin-top:2px}
+
+/* prescription pad */
+.rxpad{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(16px,3.4vw,30px)}
+@media(max-width:780px){.rxpad{grid-template-columns:1fr}}
+.pad{background:#fff;border:1px solid var(--line);padding:16px 18px;position:relative;
+  background-image:repeating-linear-gradient(0deg,transparent 0 24px,rgba(21,122,110,.08) 24px 25px)}
+.pad .rxs{font-size:34px;font-weight:800;color:var(--green);font-family:Georgia,serif;line-height:1}
+.pad h3{font-size:clamp(20px,4vw,29px);font-weight:800;line-height:1.15;margin-top:2px}
+.pad .body{font-size:13px;margin-top:8px}
+.pad dl{display:grid;grid-template-columns:104px 1fr;gap:4px 14px;margin-top:12px;font-size:12.5px}
+.pad dt{font-size:8px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--green);padding-top:4px}
+.pad dd{border-bottom:1px solid var(--line);padding-bottom:6px}
+.pad .km{font-weight:800;font-size:14.5px}
+.pad .sig{margin-top:10px;font-family:Georgia,serif;font-style:italic;font-size:15px;color:var(--ink);
+  border-top:1px solid var(--line);padding-top:8px}
+.samples{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:430px){.samples{grid-template-columns:1fr}}
+.samp{border:1px solid var(--line);background:#fff;padding:6px 6px 0;box-shadow:1px 2px 0 rgba(0,0,0,.08);
+  transition:transform .15s ease}
+.samp:hover{transform:translateY(-2px)}
+.samp .iw{aspect-ratio:4/3;overflow:hidden;background:var(--board)}
+.samp .iw img{width:100%;height:100%;object-fit:cover}
+.samp figcaption{padding:6px 2px}
+.samp .h{font-size:11.5px;line-height:1.35;font-weight:600}
+.samp .p{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-top:2px}
+.samp .p b{border:1px solid var(--green);padding:0 5px;border-radius:8px}
+
+/* formulary swatches */
+.formu{display:flex;flex-wrap:wrap;gap:14px}
+.med{width:104px;text-align:center}
+.med .bt{height:56px;border:1.5px solid var(--ink);background:#fff;padding:6px;position:relative}
+.med .bt i{display:block;height:100%;border-radius:2px}
+.med .bt::after{content:"Rx";position:absolute;top:2px;right:4px;font-size:8px;font-weight:800;color:rgba(34,48,62,.4)}
+.med .n{font-size:11.5px;font-weight:700;margin-top:6px}
+.med .hx{font-size:9px;font-family:var(--mono);color:var(--mut)}
+
+/* lab orders */
+.lab{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(14px,3vw,26px)}
+@media(max-width:780px){.lab{grid-template-columns:1fr}}
+.lab table{width:100%;border-collapse:collapse;font-size:11.5px}
+.lab th{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);text-align:left;padding:4px 6px;border-bottom:2px solid var(--ink)}
+.lab td{padding:6px;border-bottom:1px solid var(--line);font-size:11px;vertical-align:top}
+.lab td.mono{font-family:var(--mono);font-size:10px}
+.lab .stat{display:inline-block;font-size:8px;letter-spacing:.14em;border:1px solid var(--green);color:var(--green);padding:0 5px;text-transform:uppercase}
+.res{border:1.5px solid var(--ink);background:#fff;padding:12px 16px}
+.res h4{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--green);margin-bottom:8px}
+.res .dv{font-weight:800;text-transform:uppercase;font-size:11.5px;border-bottom:1.5px solid var(--ink);padding:6px 0 2px;color:var(--ink)}
+.res .rw{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:3.5px 0;border-bottom:1px dotted var(--line)}
+.res .rw:last-child{border-bottom:none}
+.res .rw .v{font-family:var(--mono);font-size:10.5px;color:var(--green);font-weight:700}
+
+/* discharge */
+.nextrow{display:flex;flex-wrap:wrap;gap:10px}
+.nextrow button{border:1.5px solid var(--green);background:#fff;color:var(--green);padding:9px 18px;
+  font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.1em;
+  transition:background .12s ease,color .12s ease,transform .12s ease}
+.nextrow button:hover{background:var(--green);color:#fff}
+.nextrow button:active{transform:translateY(2px)}
+.nextrow .sub{width:100%;font-style:italic;color:var(--mut);font-size:11.5px}
+.alsoc{margin-top:12px;font-size:11.5px;color:var(--mut)}
+.alsoc b{font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--green);display:block;margin-bottom:4px}
+.alsoc span{display:inline-block;margin-right:14px;font-style:italic;border-bottom:1px dotted var(--mut)}
+.foot{text-align:center;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--mut);margin-top:26px}
+.empty{background:#fff;padding:40px;text-align:center;font-style:italic;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="desk">
+  <div style="height:20px"></div>
+  <div class="clip"></div>
+  <div class="chart">
+    <header class="band">
+      <div class="h1">Marque General <span>· Ward Round</span></div>
+      <div class="ward" id="band-ward">—</div>
+    </header>
+    <main id="app"></main>
+    <div class="sheet"><div class="foot" id="foot"></div></div>
+  </div>
+</div>
+<script src="./data.js"></script>
+<script src="./media-data.js"></script>
+<script src="./dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'./'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dshort=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase()}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Crème Fraîche',h:'#F3E6CE'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Espresso Bean',h:'#4E362B'}
+];
+const CREAT=[3,4,9,11].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dshort(B.createdAt||B.fetchedAt);
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+const prompt=((B.sub&&B.sub.prompt)||B.title||'').trim();
+
+document.getElementById('band-ward').innerHTML='WARD Z · BED 04<br>'+DATE;
+document.getElementById('foot').textContent='MARQUE GENERAL · CHART № '+String(B.id||'—').slice(0,8).toUpperCase()+' · ATTENDING: THE MARQUE DESK';
+
+const M=document.getElementById('app');
+const sec=(no,title,sub,inner,cls)=>{if(!inner)return;
+  M.appendChild(el('<div class="sheet'+(cls?' '+cls:'')+'"><div class="sh"><span class="no">'+esc(no)+'</span><h2>'+esc(title)+'</h2><span class="bc"></span><span class="sub">'+esc(sub)+'</span></div>'+inner+'</div>'))};
+
+/* admission */
+sec('ADM','Admission Note','chief complaint, stated verbatim',
+'<div class="admit">'+
+'<div class="f"><div class="k">Patient presents with</div><div class="v big">“'+esc(prompt)+'”</div></div>'+
+'<div class="f"><div class="k">Referred by (URL)</div><div class="v">'+(U?'<a href="'+esc(U)+'">'+esc(U)+'</a>':'—')+'</div></div>'+
+'<div class="f"><div class="k">History taken from</div><div class="v">'+esc((B.urlContext&&B.urlContext.title)||'—')+'</div></div>'+
+'<div class="f" style="grid-column:1/-1"><div class="k">Presenting history</div><div class="v">'+esc((B.urlContext&&B.urlContext.description)||'')+'</div></div>'+
+'</div>');
+
+/* vitals = audience */
+if(AR&&AR.lean){
+  sec('OBS','Observation Chart','vitals recorded at triage — stable',
+  '<div class="vitals"><div><table class="vt"><tr><th>Vital</th><th>Reading</th><th>Note</th></tr>'+
+  (AR.mediaHabits||[]).map(h=>'<tr><td><b>'+esc(h.channel)+'</b></td><td class="m">active</td><td>'+esc(h.note)+'</td></tr>').join('')+
+  (AR.lean.signals||[]).map((s,i)=>'<tr><td>reflex '+(i+1)+'</td><td class="m">present</td><td>'+esc(s)+'</td></tr>').join('')+
+  '</table></div>'+
+  '<div class="readbox"><span class="tag">Diagnosis</span><div class="big">'+esc(AR.lean.label)+'</div>'+
+  '<div class="conf"><span class="pct">'+Math.round((AR.lean.confidence||0)*100)+'%</span><span class="gb"><i style="width:'+Math.round((AR.lean.confidence||0)*100)+'%"></i></span><span style="font-size:9px;color:var(--mut)">diagnostic<br>certainty</span></div>'+
+  '<div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);margin-top:10px">Responds to</div>'+
+  '<div class="pillrow">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div>'+
+  '</div>');
+}
+
+/* treatment options = strategies */
+if(strats.length){
+  sec('TX','Treatment Options A–D','attending initials each course — select one',
+  '<div class="tx">'+strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    return '<div class="txcard'+(i===sel?' star':'')+'"><div class="ord">Course '+('ABCD'[i]||i)+(i===sel?' — <b>recommended</b>':'')+'</div>'+
+    '<h3>'+esc(s.title)+'</h3><div class="dx">indicated for: '+esc(s.angle||'')+'</div>'+
+    '<div class="eff"><b>'+f2(fit)+'</b><span>efficacy<br>index</span></div>'+
+    '<div class="rx">'+(s.channels||[]).map(c=>'<div class="ln"><span>'+esc(c.name)+'<i>'+esc(c.why||'')+'</i></span><span class="d">'+f2(c.fit)+'</span></div>').join('')+
+    '<div class="ln"><span>formats</span><span>'+(s.formats||[]).map(f=>esc(f)).join(' · ')+'</span></div></div>'+
+    '<div class="cov">Projected coverage — <b>'+views(s.reach&&s.reach.estViews)+'</b><i>'+esc(s.reach&&s.reach.basis||'')+'</i></div>'+
+    (s.watchouts&&s.watchouts[0]?'<div class="se"><b>Adverse effects</b>'+esc(s.watchouts[0])+'</div>':'')+
+    '</div>';
+  }).join('')+'</div>');
+}
+
+/* contraindicated = anti */
+if(anti.length){
+  sec('ALLG','Contraindicated','do not administer — allergy band red',
+  '<div class="contra">'+anti.map(a=>'<div class="cx"><span class="xb">×</span><div>'+
+  '<div class="ch">route: '+esc(a.channel)+'</div><h4><s>'+esc(a.title)+'</s></h4>'+
+  '<div class="why">reaction on file — '+esc(a.whyNot)+'</div></div></div>').join('')+'</div>',
+  'allergy');
+}
+
+/* prescription = brief + samples */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('Rx','Prescription Pad','dispense as written — no substitutions',
+  '<div class="rxpad"><div class="pad"><div class="rxs">℞</div>'+
+  (br?'<h3>'+esc(br.title)+'</h3><div class="body">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Prescribed for</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Directions</dt><dd class="km">“'+esc(br.keyMessage)+'” — repeat as needed</dd>'+
+  '<dt>Compound</dt><dd>'+esc(selS.title)+' ('+esc(selS.angle||'')+'), derived from '+esc(selS.heroSignal||'—')+'</dd></dl>'
+  :'<div class="body">Pad blank.</div>')+
+  '<div class="sig">— Marque Desk, attending</div></div>'+
+  '<div><div style="font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);margin-bottom:8px">Samples dispensed — 4 units</div>'+
+  '<div class="samples">'+CREAT.map(m=>'<figure class="samp"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">mfr. <b>'+esc(m.provider)+'</b></div></figcaption></figure>').join('')+'</div></div></div>');
+}
+
+/* formulary = palette */
+sec('FRM','Formulary','five compounds stocked on this ward',
+  '<div class="formu">'+PALETTE.map(s=>'<div class="med"><div class="bt"><i style="background:'+s.h+'"></i></div><div class="n">'+esc(s.n)+'</div><div class="hx">'+s.h.toUpperCase()+'</div></div>').join('')+'</div>');
+
+/* lab requisitions = qloo */
+if(calls.length||affs.length){
+  sec('LAB','Lab Requisitions','all bloodwork via Qloo Diagnostics — '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' mode',
+  '<div class="lab"><div><table><tr><th>Req № / endpoint</th><th>Drawn</th><th>Turnaround</th><th>Panels</th><th>Status</th></tr>'+
+  calls.map((c,i)=>'<tr><td><b>Q-'+(1000+i)+'</b> '+esc(c.endpoint)+'<br><span class="mono">'+esc(Object.keys(c.params||{}).length)+' fields ordered</span></td>'+
+  '<td class="mono">'+esc((c.at||'').slice(11,19))+'Z</td><td class="mono">'+esc(c.tookMs)+' ms</td><td class="mono">n='+esc(c.n)+'</td><td><span class="stat">'+esc(c.mode)+'</span></td></tr>').join('')+'</table>'+
+  '<p style="font-size:11px;color:var(--mut);font-style:italic;margin-top:10px">All '+calls.length+' requisitions signed by the attending and cleared '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' through Qloo Diagnostics. Results filed to chart, not impressions.</p></div>'+
+  '<div class="res"><h4>Panel results — affinity titres</h4>'+affs.map(g=>'<div class="dv">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+  g.entities.slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('')+'</div></div>');
+}
+
+/* discharge = next outputs */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('DIS','Discharge Orders','patient leaves with the following',
+  '<div class="nextrow">'+['Follow-up storyboard','Outpatient landing page','Repeat script: video spot','Referral: media plan'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  '<div class="sub">Take twice daily with content — refill available at the Marque desk.</div></div>'+
+  (others.length?'<div class="alsoc"><b>Other patients on this ward</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':''));
+
+if(!M.children.length)M.appendChild(el('<div class="sheet"><div class="empty">Chart not found — data.js was never admitted.</div></div>'));
+})();
+</script>
+</body>
+</html>

@@ -586,3 +586,44 @@
 }
 .res-next .btn .spinner { width: 12px; height: 12px; }
 .menu-empty { font-size: 12px; color: var(--ink-4); padding: 8px 10px; }
+
+/* ══ fit-to-screen pass — audit → fixes → steals in one 1080p viewport ══ */
+.imp-wrap { max-width: 1280px; gap: 12px; padding: 0 26px; }
+.imp-ask { padding: 16px 20px; }
+.imp-ask h3 { font-size: 22px; }
+.imp-ask p { margin: 0 0 10px; }
+.imp-sug { padding: 13px 15px; gap: 6px; }
+.imp-fix { font-size: 13.5px; }
+.imp-why {
+  font-size: 12px; line-height: 1.4;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.imp-steal { padding: 7px 0; }
+.imp-steal span {
+  font-size: 12px; line-height: 1.4;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.imp-sug { padding: 11px 14px; gap: 5px; }
+.imp-why { -webkit-line-clamp: 2; }
+.card.pad:has(.imp-steal) { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 20px; }
+.card.pad:has(.imp-steal) .section-label { grid-column: 1 / -1; }
+.card.pad:has(.imp-steal) .imp-steal { border-bottom: none; }
+.imp-soc { padding: 5px 12px; font-size: 11.5px; }
+.imp-fix { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.imp-wrap .card.pad:has(.imp-soc), .imp-wrap .card.pad:has(.imp-steal) { padding: 12px 16px; }
+.imp-wrap .card.pad:has(.imp-soc) { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.imp-wrap .card.pad:has(.imp-soc) .section-label { margin: 0 !important; }
+.imp-wrap .card.pad:has(.imp-steal) { gap: 0 22px; }
+.imp-soc-card { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 10px 16px !important; }
+.imp-soc-card .section-label { margin: 0 !important; flex: none; }
+.imp-steal-card { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0 22px; padding: 12px 16px !important; }
+.imp-steal-card .section-label { grid-column: 1 / -1; }
+.imp-steal-card .imp-steal { border-bottom: none; }
+.imp-wrap { gap: 10px; }
+.imp-ask { padding: 13px 16px; }
+.imp-ask h3 { font-size: 20px; }
+.imp-ask p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: none; }
+.imp-wrap > div > .section-label { margin-top: 8px; }
+.imp-wrap .grid.c2 { grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); }
+.imp-sug-top { flex-wrap: wrap; row-gap: 4px; }
+.imp-badges { margin-left: auto; }

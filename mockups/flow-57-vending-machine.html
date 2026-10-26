@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque Vend-O-Mat — Campaign Dispenser</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23262A31'/%3E%3Crect x='10' y='10' width='28' height='44' fill='%23353B45'/%3E%3Crect x='44' y='10' width='10' height='30' fill='%23F4A83C'/%3E%3Crect x='14' y='40' width='20' height='8' fill='%23F4A83C'/%3E%3C/svg%3E">
+<style>
+:root{
+  --floor:#0E1013;
+  --body:#262A31;
+  --body2:#1D2127;
+  --glass:#10131A;
+  --edge:#3A404B;
+  --amber:#F4A83C;
+  --txt:#E9E6DF;
+  --mut:#8B9099;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--floor);
+  background-image:
+    radial-gradient(ellipse at 50% -10%,rgba(244,168,60,.07),transparent 50%),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 1px,transparent 1px 56px),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.02) 0 1px,transparent 1px 56px);
+  color:var(--txt);font-family:var(--sans);font-size:14px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;min-height:100vh;
+}
+::selection{background:rgba(244,168,60,.3)}
+a{color:var(--amber);text-decoration:none;border-bottom:1.5px solid rgba(244,168,60,.5)}
+a:hover{color:#FFD08A}
+a:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+
+.machine{
+  max-width:1120px;margin:30px auto 64px;
+  background:linear-gradient(160deg,#2C3038,#22262D 60%);
+  border:2px solid #101318;border-radius:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),inset 0 -6px 18px rgba(0,0,0,.4),0 30px 70px rgba(0,0,0,.6);
+  overflow:hidden;
+}
+/* marquee */
+.mq{
+  background:linear-gradient(180deg,#31363F,#232730);border-bottom:3px solid #101318;
+  padding:clamp(14px,2.6vw,24px) clamp(16px,3vw,30px);text-align:center;position:relative;
+}
+.mq::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:repeating-linear-gradient(90deg,var(--amber) 0 26px,transparent 26px 40px)}
+.mq .brand{font-family:var(--mono);font-weight:700;letter-spacing:.42em;font-size:clamp(15px,3vw,24px);color:var(--amber);text-transform:uppercase;text-shadow:0 0 22px rgba(244,168,60,.55)}
+.mq .tag{font-size:11px;letter-spacing:.3em;color:var(--mut);text-transform:uppercase;margin-top:6px}
+.mq .ask{
+  margin:14px auto 0;max-width:660px;background:#171B21;border:1.5px solid var(--edge);
+  border-radius:6px;padding:10px 16px;font-size:clamp(14px,2vw,17px);font-weight:600;
+}
+.mq .ask .st{color:var(--mut);font-size:10px;letter-spacing:.2em;display:block;margin-bottom:3px;text-transform:uppercase}
+.mq .url{font-family:var(--mono);font-size:10.5px;margin-top:8px;color:var(--mut);overflow-wrap:anywhere}
+.mq .src{font-size:11.5px;color:var(--mut);font-style:italic;margin-top:4px}
+
+.cabinet{display:grid;grid-template-columns:1fr 292px;gap:0}
+@media(max-width:860px){.cabinet{grid-template-columns:1fr}}
+
+/* ------- glass front ------- */
+.glass{
+  background:
+    linear-gradient(115deg,rgba(255,255,255,.055) 0%,rgba(255,255,255,.015) 28%,transparent 30%),
+    var(--glass);
+  border-right:3px solid #101318;
+  padding:clamp(14px,2.4vw,22px) clamp(12px,2.4vw,20px);
+  display:flex;flex-direction:column;gap:clamp(14px,2.2vw,22px);
+}
+@media(max-width:860px){.glass{border-right:none;border-bottom:3px solid #101318}}
+.shelf{position:relative;padding-bottom:22px}
+.shelf .srow{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(8px,1.6vw,14px);align-items:end}
+@media(max-width:560px){.shelf .srow{grid-template-columns:repeat(2,1fr)}}
+.shelf .rail{
+  position:absolute;left:0;right:0;bottom:0;height:22px;
+  background:
+    repeating-linear-gradient(115deg,#4A505B 0 3px,#20242B 3px 11px),
+    linear-gradient(#161A20,#161A20);
+  border-radius:4px 4px 0 0;box-shadow:0 4px 8px rgba(0,0,0,.5);
+}
+.shelf .rail::after{content:"";position:absolute;left:0;right:0;bottom:-5px;height:5px;background:#101318;border-radius:0 0 6px 6px}
+.shelf .slabel{position:absolute;left:0;bottom:26px;font-family:var(--mono);font-size:9px;letter-spacing:.3em;color:var(--mut);text-transform:uppercase}
+.shelf .srow{position:relative;padding-top:16px}
+
+.item{
+  background:linear-gradient(180deg,#F2EFE7,#E7E2D6);color:#1C1E24;border-radius:5px;
+  border:1.5px solid #0D0F13;overflow:hidden;position:relative;
+  transition:transform .16s ease,box-shadow .16s ease;
+}
+.item:hover{transform:translateY(-4px);box-shadow:0 8px 18px rgba(0,0,0,.5)}
+.item .itop{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:#1C1E24;color:#fff}
+.item .itop .code{font-family:var(--mono);font-weight:700;font-size:11px;color:var(--amber)}
+.item .itop .pr{font-family:var(--mono);font-size:10px}
+.item .ibody{padding:8px 9px 9px}
+.item h3{font-size:13px;font-weight:700;line-height:1.25}
+.item .ang{font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#6A6E77;margin:2px 0 6px}
+.item .fitb{height:5px;background:#DDD6C6;border:1px solid #B9B19D;border-radius:99px;overflow:hidden}
+.item .fitb i{display:block;height:100%;background:var(--amber)}
+.item .fitv{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:#6A6E77;margin-top:3px}
+.item .chs{margin-top:6px;font-size:9.5px;line-height:1.5;color:#41454E}
+.item .chs b{font-family:var(--mono)}
+.item .vend{margin-top:6px;font-size:10px;font-weight:700}
+.item .vend span{color:#6A6E77;font-weight:400}
+.item.sel{outline:3px solid var(--amber);outline-offset:2px}
+.item.sel::after{content:"PICK";position:absolute;top:26px;right:-24px;background:var(--amber);color:#16181D;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.18em;padding:2px 26px;transform:rotate(35deg)}
+.item .wo{font-size:9.5px;color:#8A5A12;margin-top:6px;font-style:italic;border-top:1px dashed #C9C0AC;padding-top:5px}
+
+/* empty coils — discontinued */
+.item.gone{background:transparent;border:1.5px dashed #3A404B;color:var(--mut);min-height:150px}
+.item.gone:hover{transform:none;box-shadow:none}
+.item.gone .itop{background:#16181D;color:#59606C}
+.item.gone .itop .code{color:#59606C}
+.item.gone .ibody{padding:10px}
+.item.gone h4{font-size:12px;text-decoration:line-through;text-decoration-color:var(--amber);color:#59606C}
+.item.gone .ch{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#59606C;margin:2px 0 6px}
+.item.gone p{font-size:10.5px;line-height:1.5;color:#59606C}
+.item.gone .tagout{display:inline-block;margin-top:7px;border:1.5px solid var(--amber);color:var(--amber);font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;padding:2px 7px;transform:rotate(-2deg)}
+
+/* audience — nutrition label */
+.facts{align-self:stretch;background:#F7F5EE;color:#141519;border:2.5px solid #141519;padding:10px 12px;font-family:Helvetica,Arial,sans-serif;position:relative;grid-column:1/-1}
+.facts h3{font-size:clamp(20px,3vw,26px);font-weight:900;letter-spacing:-.02em;border-bottom:8px solid #141519;padding-bottom:4px}
+.facts .sv{display:flex;justify-content:space-between;font-size:11px;border-bottom:4px solid #141519;padding:4px 0}
+.facts .dv{display:flex;justify-content:space-between;font-size:10.5px;padding:4px 0;font-weight:700}
+.facts .dv em{font-style:normal;font-weight:400}
+.facts .ln{border-top:1px solid #141519;display:flex;justify-content:space-between;gap:10px;padding:4px 0;font-size:10.5px}
+.facts .ln b{font-weight:800}
+.facts .ft{border-top:4px solid #141519;margin-top:6px;padding-top:5px;font-size:9px;line-height:1.5;color:#3A3D44}
+.facts .vb{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.facts .vb span{border:1.5px solid #141519;font-size:9px;font-weight:700;padding:1px 6px;text-transform:uppercase}
+.facts-wrap{position:relative;padding-bottom:22px}
+.facts-wrap .rail{position:absolute;left:0;right:0;bottom:0;height:22px;background:repeating-linear-gradient(115deg,#4A505B 0 3px,#20242B 3px 11px);border-radius:4px 4px 0 0}
+.facts-wrap .slabel{position:absolute;left:0;bottom:26px;font-family:var(--mono);font-size:9px;letter-spacing:.3em;color:var(--mut);text-transform:uppercase;z-index:2}
+
+/* ------- side column ------- */
+.side{background:linear-gradient(180deg,#242832,#1D2127);padding:clamp(14px,2.4vw,22px);display:flex;flex-direction:column;gap:16px}
+.lcd{
+  background:#0B0E12;border:2px solid #101318;border-radius:6px;padding:10px 14px;
+  font-family:var(--mono);font-size:12px;min-height:64px;color:#9FE8B0;
+  box-shadow:inset 0 0 18px rgba(0,0,0,.7);
+}
+.lcd .l1{font-size:9px;letter-spacing:.24em;color:#5E8A6B;text-transform:uppercase}
+.lcd .l2{font-size:13px;color:#CFF4D8;margin-top:4px;letter-spacing:.04em}
+.lcd .l3{font-size:10px;color:#5E8A6B;margin-top:3px}
+.keypad{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.keypad button{
+  background:linear-gradient(180deg,#3A404B,#2A2E36);border:1.5px solid #101318;border-radius:7px;
+  color:var(--txt);font-family:var(--mono);font-weight:700;font-size:15px;padding:12px 0;letter-spacing:.1em;
+  box-shadow:0 3px 0 #101318,inset 0 1px 0 rgba(255,255,255,.1);
+  transition:transform .08s ease,box-shadow .08s ease,background .12s;
+}
+.keypad button:hover{background:linear-gradient(180deg,#454B58,#31363F)}
+.keypad button:active{transform:translateY(3px);box-shadow:0 0 0 #101318}
+.keypad button.on{background:linear-gradient(180deg,var(--amber),#D8891E);color:#1A1408;border-color:#8A5A12;box-shadow:0 3px 0 #8A5A12}
+.coin{display:flex;align-items:center;gap:12px;border:1.5px solid var(--edge);border-radius:8px;padding:10px 14px;background:#171B21}
+.coin .slotr{width:8px;height:34px;background:#0B0E12;border:1.5px solid #3A404B;border-radius:4px}
+.coin .cl{font-size:10.5px;color:var(--mut);letter-spacing:.1em;text-transform:uppercase}
+.coin .cl b{display:block;font-size:12px;color:var(--txt);letter-spacing:.04em}
+.instr{border:1.5px solid var(--edge);border-radius:8px;padding:10px 14px;font-size:11.5px;color:var(--mut);background:#171B21}
+.instr b{color:var(--txt);display:block;font-size:10px;letter-spacing:.22em;text-transform:uppercase;margin-bottom:6px}
+.instr ol{margin-left:16px}
+.instr li{margin:3px 0}
+.serv{border:1.5px dashed var(--edge);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:9.5px;color:var(--mut);line-height:1.8}
+.serv b{color:var(--amber);letter-spacing:.14em;text-transform:uppercase}
+.serv .big{display:block;font-size:22px;color:var(--txt);letter-spacing:.04em;margin:2px 0}
+
+/* ------- tray ------- */
+.tray{border-top:3px solid #101318;background:linear-gradient(180deg,#15181D,#1B1F25);padding:clamp(16px,3vw,26px) clamp(16px,3vw,30px) clamp(20px,3vw,30px)}
+.tray .flap{
+  width:min(560px,88%);margin:0 auto 16px;background:#0B0E12;border:2px solid #0A0C10;border-radius:10px;
+  box-shadow:inset 0 10px 24px rgba(0,0,0,.85);padding:10px 18px;text-align:center;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.3em;color:#4A505B;text-transform:uppercase;
+}
+.tray h2{font-size:clamp(15px,2.2vw,19px);font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+.tray h2 em{font-style:normal;color:var(--amber)}
+.tray .now{font-size:11px;color:var(--mut);font-family:var(--mono);letter-spacing:.1em;margin-bottom:14px}
+.disp{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(14px,2.4vw,22px);align-items:start}
+@media(max-width:840px){.disp{grid-template-columns:1fr}}
+.briefcard{background:#F2EFE7;color:#1C1E24;border-radius:6px;padding:14px 16px;border:1.5px solid #0D0F13;position:relative}
+.briefcard::before{content:"";position:absolute;top:0;left:0;right:0;height:6px;background:var(--amber);border-radius:6px 6px 0 0}
+.briefcard .bk{font-family:var(--mono);font-size:9px;letter-spacing:.24em;color:#8A5A12;text-transform:uppercase}
+.briefcard h3{font-size:clamp(18px,2.6vw,24px);font-weight:800;margin:4px 0}
+.briefcard .lede{font-size:12.5px;font-style:italic;color:#41454E;margin-bottom:10px}
+.briefcard dl{display:grid;grid-template-columns:80px 1fr;gap:4px 12px;font-size:12.5px}
+.briefcard dt{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8A5A12;padding-top:3px}
+.briefcard dd{border-bottom:1px dashed #C9C0AC;padding-bottom:5px}
+.briefcard .km{font-weight:700}
+.cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:600px){.cgrid{grid-template-columns:repeat(2,1fr)}}
+.cit{background:#F2EFE7;color:#1C1E24;border:1.5px solid #0D0F13;border-radius:5px;overflow:hidden;transition:transform .15s ease}
+.cit:hover{transform:translateY(-3px)}
+.cit .iw{aspect-ratio:4/3;overflow:hidden;border-bottom:1.5px solid #0D0F13}
+.cit .iw img{width:100%;height:100%;object-fit:cover}
+.cit figcaption{padding:7px 9px 8px}
+.cit .h{font-size:11px;font-weight:700;line-height:1.3}
+.cit .p{display:inline-block;margin-top:4px;font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;border:1.4px solid #8A5A12;color:#8A5A12;padding:1px 6px;text-transform:uppercase;border-radius:3px}
+.cit .p.gm{border-color:#B45A1E;color:#B45A1E}
+
+/* under-machine service hatch */
+.hatch{
+  max-width:1120px;margin:18px auto 0;padding:0 6px;
+  display:grid;grid-template-columns:1.2fr .8fr;gap:clamp(14px,2.4vw,22px);
+}
+@media(max-width:840px){.hatch{grid-template-columns:1fr}}
+.hatch .plate{background:#171B21;border:1.5px solid var(--edge);border-radius:10px;padding:16px 18px}
+.hatch h4{font-family:var(--mono);font-size:10px;letter-spacing:.28em;color:var(--amber);text-transform:uppercase;margin-bottom:10px}
+.hatch .mem{font-size:12px;color:var(--mut);margin-bottom:10px}
+.hatch .mem b{color:var(--txt)}
+.clog{font-family:var(--mono);font-size:10px;color:#9AA0AA}
+.clog .lr{display:grid;grid-template-columns:70px 1fr;gap:3px 10px;padding:5px 0;border-bottom:1px dashed #262B33}
+.clog .lr b{color:var(--amber)}
+.clog .pm{grid-column:2;color:#59606C;font-size:9px;overflow-wrap:anywhere}
+.clog .me{grid-column:2;display:flex;gap:12px;color:#59606C;font-size:9px}
+.mani2 .rw{display:grid;grid-template-columns:92px 1fr auto;gap:8px;align-items:center;font-size:11.5px;padding:4px 0;border-bottom:1px dashed #262B33}
+.mani2 .tp{font-family:var(--mono);font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:.1em}
+.mani2 .v{font-family:var(--mono);font-size:10px;color:var(--amber)}
+.mani2 .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--txt)}
+.mani2 .g{margin-top:8px;font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--mut);text-transform:uppercase}
+
+.flavor{max-width:1120px;margin:18px auto 0;padding:0 6px}
+.flavor .plate{background:#171B21;border:1.5px solid var(--edge);border-radius:10px;padding:16px 18px}
+.flavor h4{font-family:var(--mono);font-size:10px;letter-spacing:.28em;color:var(--amber);text-transform:uppercase;margin-bottom:12px}
+.syr{display:flex;flex-wrap:wrap;gap:14px}
+.syr .s{text-align:center;width:104px}
+.syr .b{height:44px;border-radius:5px;border:1.5px solid #0D0F13;position:relative;overflow:hidden}
+.syr .b::after{content:"";position:absolute;left:0;right:0;top:0;height:8px;background:rgba(255,255,255,.28)}
+.syr .n{font-size:11px;font-weight:600;margin-top:6px}
+.syr .hx{font-family:var(--mono);font-size:8.5px;color:var(--mut)}
+
+.next{max-width:1120px;margin:18px auto 40px;padding:0 6px 10px}
+.next .plate{background:#171B21;border:1.5px solid var(--edge);border-radius:10px;padding:16px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.next .cap{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--mut);text-transform:uppercase}
+.next button{
+  background:transparent;border:1.5px solid var(--amber);color:var(--amber);border-radius:6px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.1em;padding:9px 16px;text-transform:uppercase;
+  transition:background .12s,color .12s,transform .1s;
+}
+.next button:hover{background:var(--amber);color:#1A1408}
+.next button:active{transform:translateY(2px)}
+.foot{max-width:1120px;margin:0 auto 50px;padding:0 8px;font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:#4A505B;text-transform:uppercase;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.empty{padding:50px;text-align:center;color:var(--mut);font-style:italic}
+</style>
+</head>
+<body>
+<div class="machine">
+  <div class="mq">
+    <div class="brand">VEND-O-MAT</div>
+    <div class="tag">Marque Route Co. · dispenses one campaign per coin</div>
+    <div class="ask"><span class="st">Today's order on the marquee</span><span id="s-ask"></span></div>
+    <div class="url" id="s-url"></div>
+    <div class="src" id="s-src"></div>
+  </div>
+  <div class="cabinet">
+    <div class="glass" id="glass"></div>
+    <div class="side">
+      <div class="lcd" id="lcd">
+        <div class="l1">Selection display</div>
+        <div class="l2" id="lcd-main">MAKE A SELECTION</div>
+        <div class="l3" id="lcd-sub">press A1 – A4 · restocked nightly</div>
+      </div>
+      <div class="keypad" id="pad"></div>
+      <div class="coin"><span class="slotr"></span><span class="cl"><b>Exact change appreciated</b>coins of curiosity only</span></div>
+      <div class="instr"><b>How to vend</b><ol><li>Read the audience label on shelf B.</li><li>Key a route code from shelf A.</li><li>Collect your campaign from the tray below.</li></ol></div>
+      <div class="serv" id="serv"></div>
+    </div>
+  </div>
+  <div class="tray">
+    <div class="flap">Collect here — mind the flap</div>
+    <h2>The <em>Tray</em></h2>
+    <div class="now" id="tray-now"></div>
+    <div class="disp">
+      <div class="briefcard" id="brief"></div>
+      <div class="cgrid" id="creat"></div>
+    </div>
+  </div>
+</div>
+<div class="hatch">
+  <div class="plate" id="hatch-log"></div>
+  <div class="plate mani2" id="hatch-afi"></div>
+</div>
+<div class="flavor"><div class="plate"><h4>House Syrup Register — Flavors of the Season</h4><div class="syr" id="syr"></div></div></div>
+<div class="next"><div class="plate"><span class="cap">Next items off the line</span><span id="chips" style="display:contents"></span></div></div>
+<div class="foot" id="foot"></div>
+<script src="./data.js"></script>
+<script src="./media-data.js"></script>
+<script src="./dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'./'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const dt=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}).toUpperCase()}catch(e){return '—'}};
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Electric Amber',h:'#F4A83C'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Machine Slate',h:'#262A31'}
+];
+const CREAT=[0,6,9,11].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dt(B.createdAt||B.fetchedAt);
+let sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,0);
+if(sel==null||sel<0)sel=0;
+
+document.getElementById('s-ask').textContent=((B.sub&&B.sub.prompt)||B.title||'');
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+document.getElementById('s-url').innerHTML=U?'restocked nightly from: <a href="'+esc(U)+'">'+esc(U)+'</a>':'';
+document.getElementById('s-src').textContent=(B.urlContext&&B.urlContext.title)?('Supplier: '+B.urlContext.title+' — '+(B.urlContext.description||'').slice(0,80)+'…'):'';
+
+/* ---- shelf A: strategies ---- */
+const glass=document.getElementById('glass');
+let shelfA='';
+if(strats.length){
+  shelfA='<div class="shelf"><span class="slabel">Shelf A · campaign routes — four coils, fully stocked</span><div class="srow">'+
+  strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    return '<div class="item" data-i="'+i+'"><div class="itop"><span class="code">A'+(i+1)+'</span><span class="pr">fit '+f2(fit)+'</span></div>'+
+    '<div class="ibody"><h3>'+esc(s.title)+'</h3><div class="ang">'+esc(s.angle||'')+' · '+esc(s.heroSignal||'')+'</div>'+
+    '<div class="fitb"><i style="width:'+Math.round(fit*100)+'%"></i></div><div class="fitv"><span>AUDIENCE FIT</span><span>'+f2(fit)+'</span></div>'+
+    '<div class="chs">'+(s.channels||[]).map(c=>'<b>'+esc(c.name)+'</b> '+f2(c.fit)+' ('+esc(c.why||'')+')').join('<br>')+'</div>'+
+    '<div class="vend">'+views(s.reach&&s.reach.estViews)+' <span>per vend · '+(s.formats||[]).map(esc).join(', ')+'</span></div>'+
+    ((s.watchouts&&s.watchouts[0])?'<div class="wo">allergen note: '+esc(s.watchouts[0])+'</div>':'')+
+    '</div></div>';
+  }).join('')+'</div><div class="rail"></div></div>';
+}
+
+/* ---- shelf B: audience facts ---- */
+let shelfB='';
+if(AR&&AR.lean){
+  shelfB='<div class="facts-wrap"><span class="slabel">Shelf B · audience declaration — read before selecting</span><div class="facts" style="padding-top:20px">'+
+  '<h3>Audience Facts</h3>'+
+  '<div class="sv"><span>Serving size: one scroll</span><span>Servings per crowd: all of them</span></div>'+
+  '<div class="dv"><span>Lean of record <em>'+esc(AR.lean.label)+'</em></span><span>'+Math.round((AR.lean.confidence||0)*100)+'% DV</span></div>'+
+  (AR.lean.signals||[]).map(s=>'<div class="ln"><span>'+esc(s)+'</span><b>†</b></div>').join('')+
+  (AR.mediaHabits||[]).map(h=>'<div class="ln"><span><b>'+esc(h.channel)+'</b> — '+esc(h.note)+'</span><b>daily</b></div>').join('')+
+  '<div class="ft">† Signals observed via the Qloo affinity pantry. Percent daily values are based on a 2,000-impression diet. Your daily scroll may be higher or lower depending on your taste.</div>'+
+  '<div class="vb">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div><div class="rail"></div></div>';
+}
+
+/* ---- shelf C: discontinued ---- */
+let shelfC='';
+if(anti.length){
+  shelfC='<div class="shelf"><span class="slabel">Shelf C · discontinued lines — coils left empty as a warning</span><div class="srow">'+
+  anti.map((a,i)=>'<div class="item gone"><div class="itop"><span class="code">C'+(i+1)+'</span><span class="pr">VOID</span></div>'+
+    '<div class="ibody"><h4>'+esc(a.title)+'</h4><div class="ch">'+esc(a.channel)+'</div><p>'+esc(a.whyNot)+'</p><span class="tagout">DO NOT RESTOCK</span></div></div>').join('')+
+  '</div><div class="rail"></div></div>';
+}
+glass.innerHTML=shelfA+shelfB+shelfC||'<div class="empty">Machine is empty — data.js never stocked the coils.</div>';
+
+/* ---- keypad ---- */
+const pad=document.getElementById('pad');
+pad.innerHTML=strats.map((s,i)=>'<button type="button" data-i="'+i+'">A'+(i+1)+'</button>').join('');
+function vend(i){
+  sel=i;
+  pad.querySelectorAll('button').forEach(b=>b.classList.toggle('on',+b.dataset.i===i));
+  glass.querySelectorAll('.item[data-i]').forEach(d=>d.classList.toggle('sel',+d.dataset.i===i));
+  const s=strats[i];
+  document.getElementById('lcd-main').textContent='VENDING A'+(i+1)+' — '+(s?s.title.toUpperCase():'—');
+  document.getElementById('lcd-sub').textContent='est. '+views(s&&s.reach&&s.reach.estViews)+' · fit '+f2(s&&s.audienceFit&&s.audienceFit.score)+' · clunk';
+  renderBrief();
+}
+function renderBrief(){
+  const s=strats[sel];const br=s&&s.brief;
+  const elb=document.getElementById('brief');
+  if(!s){elb.innerHTML='<div class="bk">Tray is empty</div>';return}
+  elb.innerHTML='<div class="bk">Vended brief · route A'+(sel+1)+'</div>'+
+  (br?'<h3>'+esc(br.title)+'</h3><div class="lede">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Audience</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Key message</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Hero signal</dt><dd>'+esc(s.heroSignal||'—')+'</dd></dl>':'<div class="lede">This coil has no printed brief.</div>');
+  document.getElementById('tray-now').textContent='DISPENSED: A'+(sel+1)+' · '+String(s.title||'').toUpperCase()+' · '+views(s.reach&&s.reach.estViews)+' REACH · '+f2(s.audienceFit&&s.audienceFit.score)+' FIT';
+}
+pad.addEventListener('click',e=>{const b=e.target.closest('button');if(b)vend(+b.dataset.i)});
+glass.addEventListener('click',e=>{const d=e.target.closest('.item[data-i]');if(d)vend(+d.dataset.i)});
+
+/* creatives */
+document.getElementById('creat').innerHTML=CREAT.map((m,i)=>
+  '<figure class="cit"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><span class="p'+(m.provider==='gemini'?' gm':'')+'">'+esc(m.provider)+'</span></figcaption></figure>').join('');
+
+/* service sticker + hatch */
+document.getElementById('serv').innerHTML='<b>SERVICE RECORD</b><span class="big">'+calls.length+' calls · '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live').toUpperCase()+'</span>QLOO ROUTE CO. — restock log below · unit MARQUE-'+String(B.id||'—').slice(0,8).toUpperCase()+' · '+DATE;
+document.getElementById('hatch-log').innerHTML='<h4>Service hatch — Qloo restock log</h4><p class="mem">This machine was restocked by <b>'+calls.length+' live Qloo calls</b>. Every call is witnessed in the hatch log; nothing vends that wasn\'t stocked.</p><div class="clog">'+
+  calls.map(c=>'<div class="lr"><b>'+esc(c.endpoint)+'</b><span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,30)).join(' · '))+'</span><span class="me"><span>'+esc((c.at||'').slice(11,19))+'Z</span><span>'+esc(c.tookMs)+'ms</span><span>n='+esc(c.n)+'</span><span>'+esc(c.mode)+'</span></span></div>').join('')+'</div>';
+document.getElementById('hatch-afi').innerHTML='<h4>Restock manifest — affinities</h4>'+
+  affs.map(g=>'<div class="g">'+esc(g.type.replace('urn:entity:',''))+'</div>'+
+    g.entities.slice(0,4).map(e=>'<div class="rw"><span class="tp">'+esc(g.type.replace('urn:entity:',''))+'</span><span class="nm">'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('');
+
+/* syrups */
+document.getElementById('syr').innerHTML=PALETTE.map(s=>
+  '<div class="s"><div class="b" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="hx">SYRUP '+s.h.toUpperCase()+'</div></div>').join('');
+
+/* chips */
+document.getElementById('chips').innerHTML=['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button type="button">'+esc(x)+'</button>').join('');
+document.getElementById('foot').innerHTML='<span>UNIT MARQUE-'+String(B.id||'—').slice(0,8).toUpperCase()+' · INSTALLED '+DATE+'</span><span>IF THIS MACHINE TAKES YOUR COIN, CALL '+String(calls.length)+'-QLOO-LIVE</span>';
+vend(sel);
+})();
+</script>
+</body>
+</html>

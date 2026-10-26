@@ -3,10 +3,15 @@
 // imagery via Wikimedia Commons. Honest source labels on every card.
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { existsSync } from 'node:fs';
 import { chatJSON } from './tensor.js';
 
 const run = promisify(execFile);
-const YTDLP = process.env.YTDLP || '/home/ANT/.gridscan/venv/bin/yt-dlp';
+// env first, then the pipx/PATH install, then the legacy venv path — a dead
+// absolute path made every media lane throw ENOENT
+const YTDLP = process.env.YTDLP
+  || (existsSync('/home/ANT/.local/bin/yt-dlp') ? '/home/ANT/.local/bin/yt-dlp' : null)
+  || '/home/ANT/.gridscan/venv/bin/yt-dlp';
 const UA = { 'User-Agent': 'marque/1.0 (hackathon demo; contact: local)' };
 
 async function ytdlp(args, timeout = 40000) {
@@ -486,7 +491,7 @@ export async function generateExamples({ strategy, profile, product = null, audi
           `note = one line: why this example proves the tactic works for this audience.`,
         ].filter(Boolean).join('\n'),
       },
-    ], { maxTokens: 2600 });
+    ], { maxTokens: 2600, timeoutMs: 30000 });
     hunts = j.hunts;
   } catch { /* deterministic fallback below */ }
 
@@ -602,10 +607,18 @@ export async function generateExamples({ strategy, profile, product = null, audi
       }
     } catch { return null; }
   });
-  const perHunt = await Promise.all(jobs);
+  // hunt deadline — lanes resolve into perHunt as they land; a lane still
+  // scraping past the window just contributes nothing (its subprocess dies on
+  // its own timeout) instead of holding the whole pull open
+  const HUNT_DEADLINE = 55000;
+  const perHunt = new Array(jobs.length).fill(null);
+  await Promise.race([
+    Promise.all(jobs.map(async (j, i) => { perHunt[i] = await j; })),
+    new Promise((s) => setTimeout(s, HUNT_DEADLINE)),
+  ]);
   const resolved = perHunt.flat().filter(Boolean);
-  // a hunt that resolved zero real artifacts is marked failed — the UI lists
-  // it as "pull failed" instead of silently skipping the lane
+  // a hunt that resolved zero real artifacts (or blew the deadline) is marked
+  // failed — the UI lists it as "pull failed" instead of silently skipping
   huntList.forEach((h, i) => { if (!(perHunt[i] || []).length) h.failed = true; });
   if (process.env.SCOUT_DEBUG) console.error('[scout] hunts:', hunts.map((h) => `${h.platform}:${h.query}`), '→ resolved:', resolved.length, resolved.map((e) => `${e.platform}:${String(e.title).slice(0, 40)}`));
 

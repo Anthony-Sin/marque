@@ -198,7 +198,7 @@ export default function Websites() {
             Audit of {imp.url || 'your site'}{imp.at ? ` · from ${fmtDate(imp.at)}` : ''}
           </div>
           {(!!impSocials.length || !!impMissing.length) && (
-            <div className="card pad">
+            <div className="card pad imp-soc-card">
               <div className="section-label" style={{ margin: '0 0 12px' }}>Socials</div>
               <div className="chip-row">
                 {impSocials.map(([plat, href]) => (
@@ -237,7 +237,7 @@ export default function Websites() {
           )}
 
           {!!impSteals.length && (
-            <div className="card pad">
+            <div className="card pad imp-steal-card">
               <div className="section-label" style={{ margin: '0 0 6px' }}>What to steal</div>
               {impSteals.map((n, i) => (
                 <div className="imp-steal" key={i}>

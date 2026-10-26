@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MANIFEST — Nr.31 — Strategy → Campaign → Result</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23FBFBF8'/%3E%3Crect x='10' y='10' width='44' height='44' fill='%23E30613'/%3E%3C/svg%3E">
+<style>
+:root{
+  --paper:#FBFBF8;
+  --ink:#141412;
+  --ink2:#4c4b46;
+  --ink3:#9a988e;
+  --hair:#dcdad0;
+  --rule:#141412;
+  --red:#E30613;
+  --b:8px;
+  --helv:'Helvetica Neue',Helvetica,'Helvetica Now Text',Arial,'Liberation Sans',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--helv);
+  font-size:13.5px;
+  line-height:1.5;
+  font-variant-numeric:tabular-nums;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--red);color:#fff}
+a{color:var(--ink);text-decoration:none;border-bottom:2px solid var(--red)}
+a:hover{color:var(--red)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+button{font-family:var(--helv);cursor:pointer}
+img{display:block}
+
+/* ============ FRAME ============ */
+.frame{display:grid;grid-template-columns:calc(var(--b)*10) minmax(0,1fr);min-height:100vh}
+
+/* ---- left rail ---- */
+.rail{
+  border-right:2px solid var(--rule);
+  position:sticky;top:0;height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:calc(var(--b)*4) 0;
+}
+.rail .sq-big{width:calc(var(--b)*4);height:calc(var(--b)*4);background:var(--red)}
+.rail .vert{
+  writing-mode:vertical-rl;transform:rotate(180deg);
+  font-size:15px;font-weight:700;letter-spacing:.34em;text-transform:uppercase;
+  white-space:nowrap;
+}
+.rail .vert i{font-style:normal;color:var(--red)}
+.rail .idx{
+  writing-mode:vertical-rl;transform:rotate(180deg);
+  display:flex;gap:calc(var(--b)*2.5);font-size:10px;font-weight:700;letter-spacing:.2em;color:var(--ink3);
+}
+
+/* ---- main column ---- */
+.main{min-width:0}
+.mast{border-bottom:6px solid var(--rule);padding:calc(var(--b)*4) calc(var(--b)*5) calc(var(--b)*3)}
+.mast-top{display:flex;justify-content:space-between;align-items:flex-start;gap:calc(var(--b)*3);flex-wrap:wrap}
+.doc-id{font-size:10px;font-weight:700;letter-spacing:.3em;text-transform:uppercase}
+.doc-id i{display:inline-block;width:9px;height:9px;background:var(--red);margin-right:9px;vertical-align:-1px}
+.mast-meta{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink2);text-align:right;line-height:1.9}
+.mast-meta b{color:var(--ink)}
+.mast h1{
+  font-size:clamp(44px,7.4vw,104px);font-weight:700;line-height:.92;letter-spacing:-.035em;
+  margin-top:calc(var(--b)*4);text-transform:uppercase;
+}
+.mast h1 .r{color:var(--red)}
+.mast .lede{
+  display:grid;grid-template-columns:repeat(12,1fr);gap:0 calc(var(--b)*2);
+  margin-top:calc(var(--b)*3);
+}
+.mast .lede p{
+  grid-column:7/13;font-size:13px;color:var(--ink2);line-height:1.6;
+}
+.mast .lede p b{color:var(--ink)}
+
+/* ---- visible grid ruler ---- */
+.gridbar{border-bottom:1px solid var(--rule)}
+.gridbar .cols{display:grid;grid-template-columns:repeat(12,1fr);gap:0 calc(var(--b)*2);padding:0 calc(var(--b)*5)}
+.gridbar .cols i{height:calc(var(--b)*2);background:var(--ink);opacity:.12}
+.gridbar .cols i:nth-child(odd){opacity:.28}
+.gridbar .lbl{
+  display:flex;justify-content:space-between;padding:5px calc(var(--b)*5) 6px;
+  font-size:9px;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--ink3);
+}
+.gridbar .lbl b{color:var(--red)}
+
+/* ---- theses ---- */
+.th{
+  display:grid;grid-template-columns:calc(var(--b)*15) minmax(0,1fr) calc(var(--b)*11);
+  border-bottom:1px solid var(--hair);
+}
+.th+.th{border-top:1px solid var(--hair)}
+.th-num{
+  padding:calc(var(--b)*4) 0 calc(var(--b)*4) calc(var(--b)*5);
+  font-size:clamp(40px,4.6vw,64px);font-weight:700;letter-spacing:-.04em;line-height:1;
+}
+.th-num i{display:block;width:12px;height:12px;background:var(--red);margin-top:calc(var(--b)*1.5)}
+.th-body{padding:calc(var(--b)*4) calc(var(--b)*5) calc(var(--b)*4) 0;min-width:0}
+.th-ref{
+  padding:calc(var(--b)*4) calc(var(--b)*5) calc(var(--b)*4) 0;
+  font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);
+  text-align:right;line-height:2.1;
+}
+.th-ref .z{color:var(--red)}
+.th-state{
+  font-size:clamp(21px,2.9vw,34px);font-weight:700;line-height:1.04;letter-spacing:-.02em;
+  text-transform:uppercase;max-width:26ch;
+}
+.th-state em{font-style:normal;color:var(--red)}
+.th-state .plain{color:var(--ink3)}
+.th-sub{font-size:10px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--ink3);margin-top:calc(var(--b)*1.5)}
+.th-content{margin-top:calc(var(--b)*3.5)}
+.labl{font-size:9.5px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:var(--ink3)}
+.labl::before{content:"";display:inline-block;width:8px;height:8px;background:var(--red);margin-right:8px}
+
+/* two column split inside thesis */
+.split{display:grid;grid-template-columns:repeat(12,1fr);gap:0 calc(var(--b)*2)}
+.c4{grid-column:1/5}.c8{grid-column:5/13}
+.c6{grid-column:span 6}
+.rule-t{border-top:2px solid var(--rule);padding-top:calc(var(--b)*1.5)}
+
+/* the ask */
+.ask-big{font-size:clamp(26px,4vw,48px);font-weight:700;letter-spacing:-.025em;line-height:1.05}
+.ask-big .arr{color:var(--red)}
+.kv{display:grid;grid-template-columns:calc(var(--b)*11) 1fr;gap:6px calc(var(--b)*2);font-size:12px}
+.kv dt{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);padding-top:3px}
+.kv dd{min-width:0;overflow-wrap:anywhere}
+
+/* audience */
+.conf-row{display:flex;align-items:flex-end;gap:calc(var(--b)*2);border-bottom:2px solid var(--rule);padding-bottom:calc(var(--b)*2)}
+.conf{font-size:clamp(64px,7vw,104px);font-weight:700;letter-spacing:-.05em;line-height:.85;color:var(--red)}
+.conf-cap{font-size:10px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3);padding-bottom:calc(var(--b)*1.5)}
+.conf-cap b{display:block;color:var(--ink);font-size:15px;letter-spacing:.06em;text-transform:none;margin-top:3px}
+.sigline{display:grid;grid-template-columns:calc(var(--b)*4) 1fr;gap:calc(var(--b)*2);padding:7px 0;border-bottom:1px solid var(--hair);font-size:12.5px;color:var(--ink2)}
+.sigline b{color:var(--red);font-size:10px;letter-spacing:.1em}
+table.aln{width:100%;border-collapse:collapse;font-size:12px}
+table.aln th{font-size:9px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3);text-align:left;border-bottom:2px solid var(--rule);padding:0 calc(var(--b)*2) var(--b) 0}
+table.aln td{border-bottom:1px solid var(--hair);padding:8px calc(var(--b)*2) 8px 0;vertical-align:top}
+table.aln td:first-child{font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:11px;white-space:nowrap}
+.vw{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--hair);padding:6px 0;font-size:14px;font-weight:700;letter-spacing:-.01em}
+.vw small{font-size:9px;color:var(--ink3);letter-spacing:.2em;font-weight:700}
+.vw:last-child{border-bottom:2px solid var(--rule)}
+
+/* strategies */
+.strat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border:2px solid var(--rule)}
+.strat{
+  padding:calc(var(--b)*2) calc(var(--b)*2) calc(var(--b)*2.5);
+  border-right:1px solid var(--hair);position:relative;transition:background .15s;
+}
+.strat:last-child{border-right:none}
+.strat:hover{background:#f1f0e9}
+.strat .si{display:flex;justify-content:space-between;align-items:center;font-size:10px;font-weight:700;letter-spacing:.2em;color:var(--ink3)}
+.strat .si i{width:9px;height:9px;background:var(--ink);display:block}
+.strat h3{font-size:17px;font-weight:700;letter-spacing:-.01em;line-height:1.1;margin:calc(var(--b)*2) 0 2px}
+.strat .ang{font-size:9.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink2)}
+.strat .fit{font-size:clamp(38px,4vw,56px);font-weight:700;letter-spacing:-.045em;line-height:1;margin:calc(var(--b)*2.5) 0 calc(var(--b)*1.5)}
+.strat .fit span{font-size:.34em;color:var(--ink3);letter-spacing:0}
+.chan{border-top:1px solid var(--hair);padding-top:6px;margin-top:6px}
+.chan .r{display:flex;justify-content:space-between;font-size:11px}
+.chan .r b{font-weight:700}
+.chan .bar{height:3px;background:var(--hair);margin:4px 0 3px}
+.chan .bar i{display:block;height:100%;background:var(--ink)}
+.chan .why{font-size:9.5px;color:var(--ink3)}
+.fmt-line{font-size:10px;color:var(--ink2);border-top:1px solid var(--hair);padding-top:6px;margin-top:8px;letter-spacing:.04em}
+.rch{margin-top:calc(var(--b)*2);font-size:15px;font-weight:700;letter-spacing:-.01em}
+.rch small{display:block;font-size:9.5px;font-weight:400;color:var(--ink3);letter-spacing:0;margin-top:3px;line-height:1.45}
+.watch{margin-top:calc(var(--b)*1.5);font-size:10px;color:var(--ink2);border-left:3px solid var(--red);padding-left:8px;line-height:1.5}
+.strat.sel{background:var(--ink);color:var(--paper)}
+.strat.sel:hover{background:#232320}
+.strat.sel .si,.strat.sel .ang,.strat.sel .why,.strat.sel .fmt-line,.strat.sel .rch small,.strat.sel .watch{color:#b9b7ac}
+.strat.sel .si i{background:var(--red)}
+.strat.sel .fit{color:var(--red)}
+.strat.sel .fit span{color:#b9b7ac}
+.strat.sel .chan .bar{background:#3a3a34}
+.strat.sel .chan .bar i{background:var(--red)}
+.strat.sel .watch{border-left-color:var(--red);color:#d7d5ca}
+.strat.sel .chan{border-top-color:#3a3a34}
+.strat.sel .fmt-line{border-top-color:#3a3a34}
+.sel-tag{
+  position:absolute;top:calc(var(--b)*2);right:calc(var(--b)*2);
+  font-size:8.5px;font-weight:700;letter-spacing:.22em;color:var(--red);text-transform:uppercase;
+}
+
+/* ruled out */
+table.out-t{width:100%;border-collapse:collapse;font-size:12.5px}
+table.out-t th{font-size:9px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3);text-align:left;border-bottom:2px solid var(--rule);padding:0 calc(var(--b)*2) var(--b) 0}
+table.out-t td{border-bottom:1px solid var(--hair);padding:9px calc(var(--b)*2) 9px 0;vertical-align:top}
+table.out-t td.ttl{font-weight:700;white-space:nowrap}
+table.out-t td.ttl::before{content:"×";color:var(--red);font-weight:700;margin-right:9px}
+table.out-t td.ttl span{text-decoration:line-through;text-decoration-thickness:2px}
+.ch-tag{font-size:9px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--red);white-space:nowrap}
+
+/* output */
+.brief .bt{font-size:clamp(26px,3.2vw,42px);font-weight:700;letter-spacing:-.025em;line-height:1.03}
+.brief .bt::after{content:"";display:block;width:calc(var(--b)*6);height:calc(var(--b)*1);background:var(--red);margin-top:calc(var(--b)*2)}
+.brief p{font-size:12.5px;color:var(--ink2);margin-top:calc(var(--b)*2);line-height:1.65}
+.brief .km{font-size:16px;font-weight:700;color:var(--ink);border-left:6px solid var(--red);padding-left:calc(var(--b)*1.5)}
+.cre-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:calc(var(--b)*2)}
+.cre{border:1px solid var(--rule);background:var(--paper);transition:transform .18s,border-color .18s}
+.cre:hover{transform:translateY(-3px);border-color:var(--red)}
+.cre .iw{aspect-ratio:1;overflow:hidden;border-bottom:1px solid var(--rule)}
+.cre img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.cre:hover img{transform:scale(1.05)}
+.cre .cap{padding:calc(var(--b)) calc(var(--b)*1.5) calc(var(--b)*1.5);font-size:10px}
+.cre .cap .h{font-weight:700;display:block;line-height:1.3;min-height:2.6em}
+.cre .cap .p{display:flex;justify-content:space-between;margin-top:5px;color:var(--red);font-size:8.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
+
+/* palette */
+.pal-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border:2px solid var(--rule)}
+.pal{border-right:1px solid var(--hair);padding:calc(var(--b)*2)}
+.pal:last-child{border-right:none}
+.pal .sw{height:calc(var(--b)*9);border:1px solid var(--rule)}
+.pal .cov{height:4px;background:var(--hair);margin:calc(var(--b)*1.5) 0 var(--b)}
+.pal .cov i{display:block;height:100%;background:var(--red)}
+.pal .n{font-size:11.5px;font-weight:700}
+.pal .h{font-size:9px;letter-spacing:.14em;color:var(--ink3);margin-top:2px}
+
+/* provenance */
+table.plog{width:100%;border-collapse:collapse;font-size:11px}
+table.plog th{font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);text-align:left;border-bottom:2px solid var(--rule);padding:0 calc(var(--b)*2) var(--b) 0}
+table.plog td{border-bottom:1px solid var(--hair);padding:8px calc(var(--b)*2) 8px 0;vertical-align:top}
+table.plog .ep{font-weight:700}
+table.plog .pm{display:block;font-size:9px;color:var(--ink3);max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td.num,th.num{text-align:right;padding-right:0}
+.live{color:var(--red);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:9px}
+.aff{display:grid;grid-template-columns:calc(var(--b)*7) 1fr calc(var(--b)*7);gap:calc(var(--b)*1.5);align-items:baseline;padding:6px 0;border-bottom:1px solid var(--hair);font-size:12px}
+.aff .tp{font-size:8.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+.aff .nm{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aff .v{font-weight:700;color:var(--red);text-align:right}
+
+/* next */
+.next-row{display:flex;flex-wrap:wrap;gap:calc(var(--b)*2)}
+.nbtn{
+  border:2px solid var(--ink);background:var(--paper);
+  padding:calc(var(--b)*1.75) calc(var(--b)*3);
+  font-size:11.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:calc(var(--b)*1.5);transition:all .12s;
+}
+.nbtn i{width:9px;height:9px;background:var(--red);transition:background .12s}
+.nbtn:hover{background:var(--ink);color:var(--paper)}
+.nbtn:active{transform:translateY(2px)}
+
+footer.colophon{
+  padding:calc(var(--b)*3) calc(var(--b)*5);
+  display:flex;justify-content:space-between;gap:calc(var(--b)*2);flex-wrap:wrap;
+  font-size:9px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3);
+}
+footer.colophon i{display:inline-block;width:8px;height:8px;background:var(--red);margin-right:8px}
+
+/* ---------- responsive ---------- */
+@media(max-width:1060px){
+  .strat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .strat:nth-child(2){border-right:none}
+  .strat{border-bottom:1px solid var(--hair)}
+  .cre-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pal-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .pal{border-bottom:1px solid var(--hair)}
+}
+@media(max-width:760px){
+  .frame{grid-template-columns:1fr}
+  .rail{
+    position:static;height:auto;flex-direction:row;flex-wrap:wrap;gap:calc(var(--b)*1.5);
+    border-right:none;border-bottom:2px solid var(--rule);
+    padding:calc(var(--b)*2) calc(var(--b)*2);
+  }
+  .rail .vert{writing-mode:horizontal-tb;transform:none;font-size:10px;letter-spacing:.18em}
+  .rail .idx{display:none}
+  .rail .sq-big{width:calc(var(--b)*2);height:calc(var(--b)*2)}
+  .th{grid-template-columns:1fr}
+  .th-num{padding:calc(var(--b)*3) calc(var(--b)*2) 0;display:flex;align-items:center;gap:calc(var(--b)*1.5)}
+  .th-num i{margin-top:0}
+  .th-body{padding:calc(var(--b)*2) calc(var(--b)*2) calc(var(--b)*4)}
+  .th-ref{display:none}
+  .mast{padding:calc(var(--b)*3) calc(var(--b)*2) calc(var(--b)*3)}
+  .mast .lede p{grid-column:1/13}
+  .gridbar .cols,.gridbar .lbl{padding-left:calc(var(--b)*2);padding-right:calc(var(--b)*2)}
+  .c4,.c8{grid-column:1/13}
+  .c8{margin-top:calc(var(--b)*3)}
+  .c6{grid-column:1/13}
+  .cre-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  footer.colophon{padding:calc(var(--b)*3) calc(var(--b)*2)}
+  table.plog .pm{max-width:140px}
+  table.plog th,table.plog td{padding:8px 6px 8px 0}
+}
+@media(max-width:430px){
+  .strat-grid{grid-template-columns:1fr}
+  .strat{border-right:none}
+  .pal-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="frame">
+  <aside class="rail" aria-hidden="true">
+    <div class="sq-big"></div>
+    <div class="vert">Strategie <i>→</i> Kampagne <i>→</i> Ergebnis</div>
+    <div class="idx" id="rail-idx"></div>
+  </aside>
+
+  <main class="main">
+    <header class="mast">
+      <div class="mast-top">
+        <div class="doc-id"><i></i>MARQUE — MANIFEST NR. 31</div>
+        <div class="mast-meta" id="mast-meta"></div>
+      </div>
+      <h1>The Grid<br>Is the <span class="r">Message</span></h1>
+      <div class="lede"><p id="lede"></p></div>
+    </header>
+
+    <div class="gridbar" aria-hidden="true">
+      <div class="cols"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="lbl"><span>RASTER — 12 SPALTEN · STEG 16PX</span><span><b>■</b> BASISLINIE 8PT · ALLE WERTE TABELLARISCH</span></div>
+    </div>
+
+    <div id="theses"></div>
+
+    <footer class="colophon">
+      <span><i></i>MARQUE — EINE ARBEITSMETHODE IN ACHT THESEN</span>
+      <span id="colo-r">HELVETICA / RASTER 12·8 / QLOO LIVE</span>
+    </footer>
+  </main>
+</div>
+
+<script src="./data.js"></script>
+<script src="./media-data.js"></script>
+<script src="./dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'./'):'';
+const pct=x=>Math.round((x||0)*100);
+const ch=n=>(n==null||isNaN(n))?'0':Number(n).toLocaleString('de-CH'); /* swiss thousands separator */
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const hasData=Object.keys(B).length>0;
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE',cov:38},
+  {n:'Glaze Milk',h:'#F7F0E5',cov:26},
+  {n:'Barrier Cream',h:'#EDDFCE',cov:18},
+  {n:'Toasted Almond',h:'#B98A6F',cov:12},
+  {n:'Espresso Bean',h:'#4E362B',cov:6}
+];
+const CREAT=[4,5,0,1].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+
+/* rail index + masthead */
+document.getElementById('rail-idx').innerHTML=
+  ['01','02','03','04','05','06','07','08'].map(n=>'<span>'+n+'</span>').join('');
+document.getElementById('mast-meta').innerHTML=
+  'DOK <b>MQ-'+esc((B.id||'00000000').slice(0,8).toUpperCase())+'</b><br>'+
+  'DATUM <b>'+(B.createdAt?new Date(B.createdAt).toLocaleDateString('de-CH',{day:'2-digit',month:'2-digit',year:'numeric'}):'—')+'</b><br>'+
+  'NACHWEIS <b>'+calls.length+' QLOO-CALLS · LIVE</b>';
+document.getElementById('lede').innerHTML=hasData?
+  '<b>Arbeitsmethode.</b> A campaign is not inspired — it is constructed. Eight theses, one grid, every value derived from live evidence. Subject: <b>'+esc(B.title||'—')+'</b>.':
+  '<b>No board data.</b> Load ../data.js to populate this manifest.';
+
+const T=document.getElementById('theses');
+const th=(num,stmt,sub,ref,body)=>{
+  if(!body)return;
+  T.appendChild(el(
+    '<section class="th"><div class="th-num">'+num+'<i></i></div>'+
+    '<div class="th-body"><h2 class="th-state">'+stmt+'</h2><div class="th-sub">'+esc(sub)+'</div>'+
+    '<div class="th-content">'+body+'</div></div>'+
+    '<div class="th-ref">§'+num+'<br><span class="z">■</span> '+esc(ref)+'</div></section>'));
+};
+
+/* 01 — the ask */
+if(B.sub||B.urlContext){
+  const u=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url)||'';
+  const p=esc((B.sub&&B.sub.prompt)||B.title||'').replace(/→/g,'<span class="arr">→</span>');
+  th('01','A brand declares <em>its intent</em> <span class="plain">— nothing more.</span>','thesis — the ask','GRID 4–12 / INPUT',
+    '<div class="split"><div class="c8 rule-t"><p class="ask-big">'+p+'</p>'+
+    (u?'<p style="margin-top:calc(var(--b)*2);font-size:12px"><a href="'+esc(u)+'">'+esc(u)+'</a></p>':'')+'</div>'+
+    '<div class="c4 rule-t"><dl class="kv">'+
+    '<dt>Quelle</dt><dd>'+esc(B.urlContext&&B.urlContext.title||'—')+'</dd>'+
+    '<dt>Board</dt><dd>'+esc(B.id||'—')+'</dd>'+
+    '<dt>Kontext</dt><dd>'+esc(B.urlContext&&B.urlContext.description||'—')+'</dd></dl></div></div>');
+}
+
+/* 02 — audience */
+if(AR&&AR.lean){
+  th('02','The audience is <em>read</em> <span class="plain">— not guessed.</span>','thesis — audience read','COL 1–8 / LIVE',
+    '<div class="split"><div class="c6">'+
+      '<div class="conf-row"><div class="conf">'+pct(AR.lean.confidence)+'</div>'+
+      '<div class="conf-cap">LESE-KONFIDENZ / 100<b>'+esc(AR.lean.label||'—').toUpperCase()+'</b></div></div>'+
+      (AR.lean.signals||[]).map((s,i)=>'<div class="sigline"><b>0'+(i+1)+'</b><span>'+esc(s)+'</span></div>').join('')+
+    '</div><div class="c6">'+
+      '<div class="labl" style="margin-bottom:calc(var(--b)*2)">Mediengewohnheiten</div>'+
+      '<table class="aln"><thead><tr><th>Kanal</th><th>Signal</th></tr></thead><tbody>'+
+      (AR.mediaHabits||[]).map(h=>'<tr><td>'+esc(h.channel)+'</td><td>'+esc(h.note)+'</td></tr>').join('')+
+      '</tbody></table>'+
+      '<div class="labl" style="margin:calc(var(--b)*3) 0 calc(var(--b)*1.5)">Vibe-Wörter</div>'+
+      (AR.vibeWords||[]).map((w,i)=>'<div class="vw"><span>'+esc(w)+'</span><small>W-0'+(i+1)+'</small></div>').join('')+
+    '</div></div>');
+}
+
+/* 03 — strategies */
+if(strats.length){
+  th('03','Four paths. <em>One is built.</em>','thesis — strategy options','COL 1–12 / SCORED',
+    '<div class="strat-grid">'+strats.map((s,i)=>
+      '<article class="strat'+(i===sel?' sel':'')+'">'+(i===sel?'<span class="sel-tag">■ Ausgewählt</span>':'')+
+      '<div class="si"><span>'+String.fromCharCode(65+i)+' / '+esc((s.id||'').toUpperCase())+'</span><i></i></div>'+
+      '<h3>'+esc(s.title)+'</h3><div class="ang">'+esc(s.angle)+'</div>'+
+      '<div class="fit">'+pct(s.audienceFit&&s.audienceFit.score)+'<span>/100</span></div>'+
+      (s.channels||[]).map(c=>'<div class="chan"><div class="r"><span>'+esc(c.name)+'</span><b>'+pct(c.fit)+'%</b></div>'+
+        '<div class="bar"><i style="width:'+pct(c.fit)+'%"></i></div>'+
+        (c.why?'<div class="why">'+esc(c.why)+'</div>':'')+'</div>').join('')+
+      '<div class="fmt-line">'+esc((s.formats||[]).join(' · '))+'</div>'+
+      (s.reach?'<div class="rch">'+ch(s.reach.estViews)+'<small>est. views — '+esc(s.reach.basis||'')+'</small></div>':'')+
+      ((s.watchouts&&s.watchouts[0])?'<div class="watch">'+esc(s.watchouts[0])+'</div>':'')+
+      '</article>').join('')+
+    '</div>');
+}
+
+/* 04 — ruled out */
+const anti=B.antiStrategies||[];
+if(anti.length){
+  th('04','What is excluded <em>defines</em> <span class="plain">the work.</span>','thesis — ruled out','COL 1–12 / VOID',
+    '<table class="out-t"><thead><tr><th style="width:30%">Pfad</th><th style="width:14%">Kanal</th><th>Begründung</th></tr></thead><tbody>'+
+    anti.map(a=>'<tr><td class="ttl"><span>'+esc(a.title)+'</span></td><td><span class="ch-tag">'+esc(a.channel)+'</span></td><td>'+esc(a.whyNot)+'</td></tr>').join('')+
+    '</tbody></table>');
+}
+
+/* 05 — output */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  th('05','The result is <em>manufactured</em> <span class="plain">to spec.</span>','thesis — produced output','COL 1–12 / PROOF',
+    '<div class="split"><div class="c4 rule-t brief">'+
+    (br?'<div class="labl" style="margin-bottom:calc(var(--b)*1.5)">Kampagnen-Brief — '+esc((selS.id||'').toUpperCase())+'</div>'+
+    '<div class="bt">'+esc(br.title)+'</div>'+
+    '<p>'+esc(br.angle)+'</p>'+
+    '<p><span class="labl" style="letter-spacing:.22em">Publikum</span><br>'+esc(br.audience)+'</p>'+
+    '<p class="km">“'+esc(br.keyMessage)+'”</p>'+
+    '<p><span class="labl" style="letter-spacing:.22em">Abgeleitet von</span><br>'+esc(selS.title)+' — Heldensignal '+esc(selS.heroSignal||'—')+'</p>':'')+
+    '</div><div class="c8"><div class="cre-grid">'+
+    CREAT.map((m,i)=>'<figure class="cre"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+      '<figcaption class="cap"><span class="h">'+esc(m.head)+'</span><span class="p"><span>'+esc(m.provider)+'</span><span>'+String(i+1).padStart(2,'0')+'/04</span></span></figcaption></figure>').join('')+
+    '</div></div></div>');
+}
+
+/* 06 — palette */
+th('06','Colour is <em>measured</em><span class="plain">, never felt.</span>','thesis — palette','COL 1–12 / SPEC',
+  '<div class="pal-row">'+PALETTE.map((s,i)=>
+    '<div class="pal"><div class="sw" style="background:'+s.h+'"></div>'+
+    '<div class="cov"><i style="width:'+s.cov+'%"></i></div>'+
+    '<div class="n">'+esc(s.n)+'</div><div class="h">'+s.h.toUpperCase()+' · '+s.cov+'% FÄCHE</div></div>').join('')+
+  '</div>');
+
+/* 07 — provenance */
+const QB=B.qlooBundle;
+if(B.evidence||QB){
+  const affs=(QB&&QB.affinities)||[];
+  th('07','Every claim carries <em>a receipt.</em>','thesis — provenance','COL 1–12 / LOG',
+    '<div class="split"><div class="c8 rule-t">'+
+    '<table class="plog"><thead><tr><th>Endpunkt</th><th class="num">n</th><th class="num">ms</th><th class="num">Modus</th></tr></thead><tbody>'+
+    calls.map(c=>'<tr><td><span class="ep">'+esc(c.endpoint)+'</span><span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+kv[1]).join(' · '))+'</span></td>'+
+      '<td class="num">'+esc(c.n)+'</td><td class="num">'+esc(c.tookMs)+'</td><td class="num live">'+esc(c.mode)+'</td></tr>').join('')+
+    '</tbody></table>'+
+    '<p style="font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);margin-top:calc(var(--b)*2)">ABGERUFEN '+(B.fetchedAt?new Date(B.fetchedAt).toLocaleString('de-CH',{dateStyle:'medium',timeStyle:'short'}).toUpperCase():'—')+'</p></div>'+
+    '<div class="c4 rule-t"><div class="labl" style="margin-bottom:calc(var(--b)*1.5)">Top-Affinitäten</div>'+
+    affs.map(g=>g.entities.slice(0,3).map(e=>'<div class="aff"><span class="tp">'+esc(g.type.replace('urn:entity:',''))+'</span><span class="nm">'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('')+
+    '</div></div>');
+}
+
+/* 08 — next */
+th('08','The grid <em>continues.</em>','thesis — next outputs','COL 1–12 / FWD',
+  '<div class="next-row">'+
+  ['CAMPAIGN MICROSITE','BRANDBOOK PDF','VIDEO CUT','PERFORMANCE PLAN'].map(x=>'<button class="nbtn"><i></i>'+x+'</button>').join('')+
+  '</div>');
+})();
+</script>
+</body>
+</html>

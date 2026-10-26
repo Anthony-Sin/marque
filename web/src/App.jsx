@@ -13,17 +13,15 @@ import BrandBookPage from './views/BrandBook.jsx';
 export const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
 
-// Brand-mark top bar — the studio mark lives here so pages don't repeat it.
-// Section links live inside the Strategy workflow; routes still work directly.
-function TopNav() {
+// Floating brand mark — pinned top-right on every page, out of the layout
+// flow so it never cuts into content. Section links live inside the workflow.
+function BrandMark() {
   return (
-    <nav className="topnav">
-      <NavLink to="/dashboard" className="topnav-brand">
-        <Logo size={22} />
-        <span className="topnav-brand-name">Marque</span>
-        <span className="topnav-brand-tag">STUDIO</span>
-      </NavLink>
-    </nav>
+    <NavLink to="/dashboard" className="brandmark" title="Marque Studio — dashboard">
+      <Logo size={20} />
+      <span className="topnav-brand-name">Marque</span>
+      <span className="topnav-brand-tag">STUDIO</span>
+    </NavLink>
   );
 }
 
@@ -123,7 +121,7 @@ export default function App() {
   return (
     <Ctx.Provider value={ctx}>
       <div className="shell">
-        {inApp && loc.pathname !== '/onboarding' && <TopNav />}
+        {inApp && loc.pathname !== '/onboarding' && <BrandMark />}
         <div className="main">
           {profile === undefined ? (
             <div className="loading-wrap"><div className="spinner" /></div>

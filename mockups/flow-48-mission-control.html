@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARQUE-1 · Mission Operations Plan</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='29' fill='%23F0EADA' stroke='%2333414C' stroke-width='4'/%3E%3Cpolygon points='32,12 38,34 32,30 26,34' fill='%23D9531E'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#232B31;
+  --cream:#F0EADA;
+  --cream-2:#E6DEC9;
+  --ink:#33414C;
+  --dim:#71808B;
+  --hair:#C4BBA6;
+  --org:#D9531E;
+  --go:#3E7A4E;
+  --cond:'Barlow Condensed','Helvetica Neue',Arial,sans-serif;
+  --sans:'Helvetica Neue',Helvetica,Arial,system-ui,sans-serif;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--desk);
+  background-image:radial-gradient(ellipse 70% 45% at 50% 0%,rgba(217,83,30,.06),transparent 60%);
+  color:var(--ink);font-family:var(--sans);font-size:13.5px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(217,83,30,.28)}
+a{color:var(--org);text-decoration:none;border-bottom:1px dotted var(--org)}
+a:hover{color:var(--ink);border-color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--org);outline-offset:3px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+svg{display:block}
+
+.binder{
+  max-width:1120px;margin:26px auto 64px;background:var(--cream);
+  box-shadow:0 30px 80px rgba(0,0,0,.55);position:relative;
+  border-left:44px solid var(--cream-2);
+  padding:clamp(16px,3vw,38px) clamp(16px,3.4vw,44px) clamp(16px,3vw,38px) clamp(12px,2.4vw,30px);
+}
+.binder::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:44px;pointer-events:none;
+  background-image:radial-gradient(circle 7px at 22px 60px,#141A1E 6px,#B9AF97 7px,#B9AF97 9px,transparent 10px);
+  background-size:44px 130px;
+}
+.sysgrid{position:relative}
+.sysgrid::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;
+  background-image:repeating-linear-gradient(0deg,var(--ink) 0 1px,transparent 1px 56px),repeating-linear-gradient(90deg,var(--ink) 0 1px,transparent 1px 56px);
+}
+.in{position:relative;z-index:1}
+
+/* ===== cover block ===== */
+.cover{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:clamp(14px,3vw,30px);align-items:center;border-bottom:3px solid var(--ink);padding-bottom:20px}
+.patch{width:clamp(96px,14vw,140px);flex-shrink:0}
+.cover .agency{font-family:var(--cond);font-weight:600;font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--dim)}
+.cover h1{font-family:var(--cond);font-weight:700;font-size:clamp(30px,5.6vw,56px);letter-spacing:.02em;line-height:1;text-transform:uppercase;margin:4px 0 6px}
+.cover h1 em{font-style:normal;color:var(--org)}
+.cover .ask{font-size:clamp(14px,2vw,17px);font-weight:600;max-width:520px}
+.cover .ask em{font-style:normal;color:var(--org)}
+.cover .url{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:8px;overflow-wrap:anywhere}
+.cover .src{font-size:11px;color:var(--dim);font-style:italic;margin-top:4px;max-width:520px}
+.cover .blk{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);text-align:right;line-height:2}
+.cover .blk b{display:block;color:var(--ink);font-size:12px}
+
+/* ===== sections ===== */
+.sec{margin-top:26px}
+.sec-h{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  border-bottom:2px solid var(--ink);padding-bottom:7px;margin-bottom:16px;
+}
+.sec-h .no{font-family:var(--cond);font-weight:700;font-size:11px;background:var(--ink);color:var(--cream);padding:3px 10px;letter-spacing:.22em}
+.sec-h h2{font-family:var(--cond);font-weight:700;font-size:clamp(19px,3vw,26px);letter-spacing:.1em;text-transform:uppercase}
+.sec-h .st{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+
+/* crew profile */
+.crew{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr) minmax(0,.9fr);gap:0;border:2px solid var(--ink);background:#fff}
+.crew>div{padding:16px 20px;border-right:1px dashed var(--hair)}
+.crew>div:last-child{border-right:none}
+.crew .lbl{font-family:var(--mono);font-size:8.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:8px}
+.crew .lean{font-family:var(--cond);font-weight:700;font-size:clamp(26px,4vw,38px);line-height:.95;text-transform:uppercase;letter-spacing:.02em}
+.crew .conf{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin:8px 0 10px}
+.crew .gauge{height:120px;width:12px;border:1.5px solid var(--ink);position:relative;display:inline-block;margin-right:14px;vertical-align:top;background:repeating-linear-gradient(180deg,transparent 0 11px,rgba(51,65,76,.14) 11px 12px)}
+.crew .gauge i{position:absolute;left:2px;right:2px;bottom:2px;background:var(--org)}
+.crew ul{list-style:none;display:inline-block;max-width:calc(100% - 36px);vertical-align:top}
+.crew li{font-size:12px;padding:5px 0;border-bottom:1px dotted var(--hair)}
+.crew li::before{content:"» ";color:var(--org)}
+.crew .hab{display:grid;grid-template-columns:86px 1fr;gap:3px 12px;font-size:12px;padding:6px 0;border-bottom:1px dotted var(--hair)}
+.crew .hab:last-child{border-bottom:none}
+.crew .hab b{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--org);padding-top:2px}
+.crew .vibes{display:flex;flex-wrap:wrap;gap:7px}
+.crew .vibes span{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;border:1.5px solid var(--ink);padding:2px 9px;background:var(--cream)}
+
+/* phases — go/no-go boards */
+.phases{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.phase{border:2px solid var(--ink);background:#fff}
+.phase .ph{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--cream);padding:8px 14px}
+.phase .ph .pno{font-family:var(--cond);font-weight:700;font-size:16px;letter-spacing:.14em;color:var(--org)}
+.phase .ph h3{font-family:var(--cond);font-weight:700;font-size:19px;letter-spacing:.1em;text-transform:uppercase;flex:1;min-width:0}
+.phase .ph .fit{font-family:var(--mono);font-size:10px;letter-spacing:.14em;white-space:nowrap}
+.phase .bd{padding:14px 16px}
+.phase .ang{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--org);margin-bottom:10px}
+.board{width:100%;border-collapse:collapse;font-size:11.5px}
+.board th{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);text-align:left;border-bottom:1.5px solid var(--ink);padding:4px 3px}
+.board td{padding:6px 3px;border-bottom:1px dotted var(--hair);vertical-align:top}
+.board .lamp{display:inline-block;width:13px;height:13px;border-radius:50%;border:1.5px solid var(--ink);vertical-align:-2px;margin-right:8px;background:var(--go)}
+.board .go{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--go);font-weight:700}
+.board .cb{display:inline-block;width:58px;height:8px;border:1.5px solid var(--ink);vertical-align:0;margin-right:7px;padding:1px}
+.board .cb i{display:block;height:100%;background:var(--org)}
+.board .fv{font-family:var(--mono);font-size:10px}
+.board .why{display:block;font-size:10px;color:var(--dim);font-style:italic}
+.phase .fmt{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.phase .fmt span{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;border:1.5px solid var(--ink);padding:2px 8px}
+.phase .rng{border-top:1.5px solid var(--ink);padding-top:9px;font-size:11.5px}
+.phase .rng b{font-family:var(--cond);font-size:19px;letter-spacing:.05em}
+.phase .rng small{display:block;color:var(--dim);font-size:10px;font-style:italic;margin-top:2px}
+.phase .fdn{margin-top:10px;border-left:3px solid var(--org);padding:5px 0 5px 10px;font-size:11px;color:var(--ink)}
+.phase .fdn b{font-family:var(--mono);font-size:8px;letter-spacing:.2em;display:block;color:var(--org)}
+.phase.sel{outline:3px solid var(--org);outline-offset:2px}
+.phase .selmark{position:absolute}
+
+/* scrubbed */
+.scrubs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.scrub{border:2px solid var(--ink);background:var(--cream-2);padding:12px 16px;display:grid;grid-template-columns:86px 1fr;gap:14px;align-items:start;position:relative;overflow:hidden}
+.scrub .nogo{font-family:var(--cond);font-weight:700;color:#fff;background:var(--org);text-align:center;font-size:15px;letter-spacing:.12em;padding:8px 4px;transform:rotate(-3deg)}
+.scrub b{font-family:var(--cond);font-size:16px;letter-spacing:.08em;text-transform:uppercase;text-decoration:line-through;text-decoration-color:var(--org)}
+.scrub .chan{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-left:8px}
+.scrub p{font-size:11px;color:var(--dim);font-style:italic;margin-top:3px}
+
+/* objective + recon */
+.obj{display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.5fr);gap:0;border:2px solid var(--ink);background:#fff}
+.obj .brief{padding:18px 20px;border-right:1px dashed var(--hair)}
+.obj .brief .dir{font-family:var(--mono);font-size:8.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--dim)}
+.obj .brief h3{font-family:var(--cond);font-weight:700;font-size:clamp(21px,3vw,30px);letter-spacing:.06em;text-transform:uppercase;line-height:1;margin:8px 0}
+.obj .brief .ba{color:var(--org);font-size:11.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px}
+.obj .brief dl{display:grid;grid-template-columns:80px 1fr;gap:8px 14px;font-size:12px}
+.obj .brief dt{font-family:var(--mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);padding-top:3px}
+.obj .brief dd.msg{font-weight:700;font-size:13.5px}
+.obj .tally{margin-top:18px}
+.recon{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.rec{padding:12px;border-right:1px dashed var(--hair);border-bottom:1px dashed var(--hair)}
+.rec:nth-child(2n){border-right:none}
+.rec:nth-last-child(-n+2){border-bottom:none}
+.rec .film{
+  position:relative;background:var(--ink);padding:12px 6px;
+}
+.rec .film::before,.rec .film::after{
+  content:"";position:absolute;top:0;bottom:0;width:14px;
+  background-image:radial-gradient(circle 2.6px at 7px 9px,var(--cream) 2.4px,transparent 2.8px);
+  background-size:14px 16px;background-repeat:repeat-y;
+}
+.rec .film::before{left:0}.rec .film::after{right:0}
+.rec .film div{overflow:hidden}
+.rec img{width:100%;aspect-ratio:4/3;object-fit:cover;filter:contrast(1.04) saturate(.94)}
+.rec figcaption{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-top:8px;font-size:10.5px}
+.rec .h{min-width:0;overflow-wrap:anywhere}
+.rec .p{font-family:var(--mono);font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;border:1.5px solid var(--ink);padding:1px 7px;white-space:nowrap}
+
+/* materials spec */
+.mats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px}
+.mat{border:1.5px solid var(--ink);background:#fff;padding:8px;text-align:center}
+.mat .sw{height:56px;border:1.5px solid var(--ink)}
+.mat .n{font-family:var(--cond);font-weight:600;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin-top:8px}
+.mat .h{font-family:var(--mono);font-size:8.5px;color:var(--dim);letter-spacing:.08em}
+
+/* capcom transcript */
+.capcom{background:#fff;border:2px solid var(--ink)}
+.capcom .th{background:var(--ink);color:var(--cream);font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;padding:6px 14px;display:flex;justify-content:space-between}
+.capcom .log{padding:12px 16px;font-family:var(--mono);font-size:11px;line-height:1.9;max-height:none}
+.capcom .line{display:grid;grid-template-columns:74px 60px 1fr;gap:8px}
+.capcom .t{color:var(--dim)}
+.capcom .who{font-weight:700;color:var(--org)}
+.capcom .who.hou{color:var(--ink)}
+.capcom .msg{overflow-wrap:anywhere}
+.capcom .ok{color:var(--go);font-weight:700}
+.capcom pre{margin:0}
+.acq{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0;border:2px solid var(--ink);border-top:none;background:#fff}
+.acq>div{padding:14px 18px}
+.acq .l{border-right:1px dashed var(--hair)}
+.sig .g{font-family:var(--mono);font-size:9px;letter-spacing:.26em;text-transform:uppercase;border-bottom:1.5px solid var(--ink);padding-bottom:4px;margin:12px 0 5px;color:var(--org)}
+.sig .g:first-child{margin-top:0}
+.sig .row{display:flex;align-items:center;gap:10px;font-size:11.5px;padding:4px 0;border-bottom:1px dotted var(--hair)}
+.sig .row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sig .row .cb{width:58px;height:8px;border:1.5px solid var(--ink);padding:1px}
+.sig .row .cb i{display:block;height:100%;background:var(--org)}
+.sig .row .v{font-family:var(--mono);font-size:9.5px}
+.acqnote{padding:14px 18px;font-size:11.5px;font-style:italic;color:var(--dim)}
+.acqnote b{font-variant:small-caps;font-style:normal;letter-spacing:.08em}
+
+/* extensions */
+.exts{display:flex;flex-wrap:wrap;gap:14px}
+.ext{
+  font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.16em;text-transform:uppercase;
+  background:#fff;border:2px solid var(--ink);padding:10px 22px;box-shadow:4px 4px 0 rgba(51,65,76,.25);transition:.13s;
+}
+.ext:hover{border-color:var(--org);color:var(--org);box-shadow:4px 4px 0 rgba(217,83,30,.3)}
+.ext:active{transform:translate(3px,3px);box-shadow:1px 1px 0 rgba(51,65,76,.25)}
+
+.foot{margin-top:26px;border-top:3px solid var(--ink);padding-top:10px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim)}
+.empty{border:2px dashed var(--ink);padding:44px;text-align:center;font-style:italic;margin-top:24px;background:#fff}
+
+@media(max-width:920px){
+  .cover{grid-template-columns:auto 1fr}
+  .cover .blk{grid-column:1/-1;text-align:left}
+  .crew{grid-template-columns:1fr}
+  .crew>div{border-right:none;border-bottom:1px dashed var(--hair)}
+  .crew>div:last-child{border-bottom:none}
+  .phases,.scrubs{grid-template-columns:1fr}
+  .obj{grid-template-columns:1fr}
+  .obj .brief{border-right:none;border-bottom:1px dashed var(--hair)}
+  .acq{grid-template-columns:1fr}
+  .acq .l{border-right:none;border-bottom:1px dashed var(--hair)}
+  .mats{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .cover{grid-template-columns:1fr}
+  .binder{border-left-width:26px}
+  .binder::before{width:26px;background-image:radial-gradient(circle 5px at 13px 60px,#141A1E 4.5px,#B9AF97 5px,#B9AF97 7px,transparent 8px);background-size:26px 110px}
+  .recon{grid-template-columns:1fr}
+  .rec{border-right:none!important;border-bottom:1px dashed var(--hair)!important}
+  .rec:last-child{border-bottom:none!important}
+  .mats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .capcom .line{grid-template-columns:56px 50px 1fr}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="binder"><div class="sysgrid"><div class="in">
+  <header class="cover">
+    <svg class="patch" viewBox="0 0 140 140" id="patch"></svg>
+    <div>
+      <div class="agency">NATIONAL STRATEGY &amp; CREATIVE ADMINISTRATION · MARQUE</div>
+      <h1>MISSION <em>MARQUE-1</em></h1>
+      <p class="ask" id="c-ask">—</p>
+      <p class="url" id="c-url"></p>
+      <p class="src" id="c-src"></p>
+    </div>
+    <div class="blk">DOCUMENT<b>MOP-<span id="c-no">—</span></b>REVISION<b>A · FINAL</b>LAUNCH WINDOW<b id="c-date">—</b></div>
+  </header>
+  <main id="app"></main>
+  <footer class="foot"><span>MARQUE FLIGHT OPERATIONS · MANNED STRATEGY CENTER</span><span id="f-t">—</span></footer>
+</div></div></div>
+
+<script src="./data.js"></script>
+<script src="./media-data.js"></script>
+<script src="./dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'./'):'';
+const pct=x=>Math.round((x||0)*100);
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE'},{n:'Glaze Milk',h:'#F7F0E5'},{n:'Barrier Cream',h:'#EDDFCE'},
+  {n:'Toasted Almond',h:'#B98A6F'},{n:'Espresso Bean',h:'#4E362B'}
+];
+const CREAT=[5,6,0,11].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+
+/* mission patch */
+document.getElementById('patch').innerHTML=
+'<circle cx="70" cy="70" r="67" fill="#33414C" stroke="#F0EADA" stroke-width="3"/>'+
+'<circle cx="70" cy="70" r="54" fill="#F0EADA"/>'+
+'<circle cx="94" cy="50" r="20" fill="#D9531E"/>'+
+'<g stroke="#33414C" stroke-width="2" fill="none"><circle cx="46" cy="88" r="16"/></g>'+
+'<polygon points="44,34 52,74 44,68 36,74" fill="#33414C"/>'+
+'<path d="M30 96 q40 -18 78 -30" stroke="#33414C" stroke-width="2" fill="none" stroke-dasharray="1 0"/>'+
+'<g fill="#33414C"><circle cx="36" cy="52" r="1.6"/><circle cx="110" cy="86" r="1.6"/><circle cx="58" cy="30" r="1.4"/><circle cx="102" cy="100" r="1.4"/></g>'+
+'<path id="pt" d="M22 86 a50 50 0 0 1 96 -34" fill="none"/>'+
+'<text font-family="ui-monospace,Menlo,monospace" font-size="10.5" letter-spacing="3.4" fill="#F0EADA"><textPath href="#pt">MARQUE-1 · PEPTIDE</textPath></text>'+
+'<text x="70" y="118" text-anchor="middle" font-family="ui-monospace,Menlo,monospace" font-size="8.5" letter-spacing="3" fill="#33414C">GEN Z</text>';
+
+document.getElementById('c-ask').innerHTML='Flight directive: “'+esc((B.sub&&B.sub.prompt)||B.title||'').replace(/→/g,' <em>→</em>')+'”';
+document.getElementById('c-url').innerHTML=((B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url))?
+  'Ground survey: <a href="'+esc((B.sub&&B.sub.url)||B.urlContext.url)+'">'+esc((B.sub&&B.sub.url)||B.urlContext.url)+'</a>':'';
+document.getElementById('c-src').textContent=(B.urlContext&&B.urlContext.title)?(B.urlContext.title+' — '+B.urlContext.description):'';
+document.getElementById('c-no').textContent=(B.id||'—').slice(0,4).toUpperCase();
+document.getElementById('c-date').textContent=B.createdAt?new Date(B.createdAt).toISOString().slice(0,10):'—';
+document.getElementById('f-t').textContent=calls.length+' CAPCOM PASSES · '+(B.qlooBundle&&B.qlooBundle.mode||'—').toUpperCase()+' LINK';
+
+const M=document.getElementById('app');
+const sec=(no,title,st,body)=>{
+  if(!body)return;
+  M.appendChild(el('<section class="sec"><div class="sec-h"><span class="no">'+esc(no)+'</span><h2>'+esc(title)+'</h2><span class="st">'+esc(st)+'</span></div>'+body+'</section>'));
+};
+
+/* SEC 1 — crew profile */
+if(AR&&AR.lean){
+  sec('SEC 1','CREW PROFILE — AUDIENCE SURVEY','debrief of the target population',
+    '<div class="crew">'+
+    '<div><span class="lbl">Classification</span><div class="lean">'+esc(AR.lean.label||'—')+'</div>'+
+    '<div class="conf">telemetry confidence '+pct(AR.lean.confidence)+'%</div>'+
+    '<span class="gauge"><i style="height:'+pct(AR.lean.confidence)+'%"></i></span>'+
+    '<ul>'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></div>'+
+    '<div><span class="lbl">Stations monitored</span>'+(AR.mediaHabits||[]).map(h=>'<div class="hab"><b>'+esc(h.channel)+'</b><span>'+esc(h.note)+'</span></div>').join('')+'</div>'+
+    '<div><span class="lbl">Call signs logged</span><div class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div>'+
+    '</div>');
+}
+
+/* SEC 2 — flight phases */
+if(strats.length){
+  sec('SEC 2','FLIGHT PHASES — GO / NO-GO POLL','four trajectories evaluated',
+    '<div class="phases">'+strats.map((s,i)=>
+      '<article class="phase'+(i===sel?' sel':'')+'"><div class="ph"><span class="pno">P-0'+(i+1)+'</span><h3>'+esc(s.title)+'</h3><span class="fit">'+(i===sel?'● PRIMARY':'')+' '+f2(s.audienceFit&&s.audienceFit.score)+'</span></div>'+
+      '<div class="bd"><div class="ang">'+esc(s.angle)+'</div>'+
+      '<table class="board"><thead><tr><th>Station</th><th>Status</th><th>Read</th></tr></thead><tbody>'+
+      (s.channels||[]).map(c=>'<tr><td style="text-transform:uppercase;font-weight:700;font-size:10.5px">'+esc(c.name)+'</td>'+
+        '<td><span class="lamp"></span><span class="go">GO</span></td>'+
+        '<td><span class="cb"><i style="width:'+pct(c.fit)+'%"></i></span><span class="fv">'+f2(c.fit)+'</span><span class="why">per '+esc(c.why||'—')+'</span></td></tr>').join('')+
+      '</tbody></table>'+
+      '<div class="fmt">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join('')+'</div>'+
+      '<div class="rng">Signal range: <b>'+views(s.reach&&s.reach.estViews)+'</b><small>'+esc(s.reach&&s.reach.basis||'')+'</small></div>'+
+      ((s.watchouts&&s.watchouts[0])?'<div class="fdn"><b>FLIGHT DIRECTOR NOTE</b>'+esc(s.watchouts[0])+'</div>':'')+
+      '</div></article>').join('')+'</div>');
+}
+
+/* SEC 3 — scrubbed */
+if(anti.length){
+  sec('SEC 3','SCRUBBED MANEUVERS','hardware not flight-rated',
+    '<div class="scrubs">'+anti.map(a=>'<div class="scrub"><span class="nogo">NO-GO</span><div><b>'+esc(a.title)+'</b><span class="chan">'+esc(a.channel)+'</span><p>'+esc(a.whyNot)+'</p></div></div>').join('')+'</div>');
+}
+
+/* SEC 4 — objective + recon film */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('SEC 4','MISSION OBJECTIVE & PHOTO RECON','phase P-0'+(sel!=null?sel+1:'—')+' committed',
+    '<div class="obj"><div class="brief"><div class="dir">— FLIGHT DIRECTIVE '+ (sel!=null?'FD-0'+(sel+1):'—') +' —</div>'+
+    (br?'<h3>'+esc(br.title)+'</h3><p class="ba">'+esc(br.angle)+'</p>'+
+    '<dl><dt>Crew target</dt><dd>'+esc(br.audience)+'</dd>'+
+    '<dt>Objective</dt><dd class="msg">“'+esc(br.keyMessage)+'”</dd>'+
+    '<dt>Beacon</dt><dd>'+esc(selS.heroSignal||'—')+'</dd></dl>':'<p class="ba">no directive filed</p>')+
+    '<div class="tally"><span style="display:inline-block;border:3px double var(--go);color:var(--go);font-family:var(--cond);font-weight:700;letter-spacing:.3em;padding:6px 16px;transform:rotate(-3deg);font-size:13px">GO FOR BURN</span></div>'+
+    '</div>'+
+    '<div class="recon">'+CREAT.map((m,i)=>
+      '<figure class="rec"><div class="film"><div><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div></div>'+
+      '<figcaption><span class="h">FRAME '+(i+1)+' — '+esc(m.head)+'</span><span class="p">'+esc(m.provider)+'</span></figcaption></figure>').join('')+
+    '</div></div>');
+}
+
+/* SEC 5 — materials spec */
+sec('SEC 5','MATERIALS SPECIFICATION','pigments cleared for flight',
+  '<div class="mats">'+PALETTE.map((s,i)=>
+    '<div class="mat"><div class="sw" style="background:'+s.h+'"></div><div class="n">'+esc(s.n)+'</div><div class="h">MIL-'+String(1000+i)+' · '+s.h.toUpperCase()+'</div></div>').join('')+
+  '</div>');
+
+/* SEC 6 — capcom transcript + signal acquisition */
+if(B.evidence||affs.length){
+  const tline=c=>{
+    const t=c.at?new Date(c.at).toISOString().slice(11,19):'--:--:--';
+    const params=Object.entries(c.params||{}).map(kv=>kv[0]+'='+String(kv[1]).slice(0,22)).join(' ');
+    return '<div class="line"><span class="t">'+esc(t)+'Z</span><span class="who hou">HOUSTON</span><span class="msg">req '+esc(c.endpoint)+' '+esc(params)+'</span></div>'+
+           '<div class="line"><span class="t">'+esc(t)+'Z</span><span class="who">QLOO&nbsp;&nbsp;&nbsp;</span><span class="msg"><span class="ok">COPY</span> — n='+esc(c.n)+' · '+esc(c.tookMs)+'ms · '+esc(c.mode)+'</span></div>';
+  };
+  sec('SEC 6','CAPCOM TRANSCRIPT — PROVENANCE','all signal passes logged',
+    '<p style="font-size:12px;margin-bottom:14px;max-width:640px"><b style="font-variant:small-caps;letter-spacing:.08em">FLIGHT NOTE.</b> This transcript covers <b>'+calls.length+' passes</b> over the Qloo deep-space network, all in <b>'+(B.qlooBundle&&B.qlooBundle.mode?B.qlooBundle.mode.toUpperCase():'—')+' mode</b>. Voice loop held for the record.</p>'+
+    '<div class="capcom"><div class="th"><span>VOICE LOOP · DSN-QLOO</span><span>'+(B.fetchedAt?new Date(B.fetchedAt).toISOString().slice(0,10):'—')+'</span></div>'+
+    '<div class="log">'+calls.map(tline).join('')+
+    '<div class="line"><span class="t">'+esc(calls.length?new Date(calls[calls.length-1].at).toISOString().slice(11,19):'--:--:--')+'Z</span><span class="who">MARQUE&nbsp;</span><span class="msg">SIGNAL LOCK — ALL PASSES NOMINAL</span></div></div></div>'+
+    '<div class="acq"><div class="l"><div class="sec-h" style="border-bottom:1.5px solid var(--ink)"><h2 style="font-size:15px">Signal Acquisition</h2><span class="st">top locks</span></div>'+
+    '<div class="acqnote"><b>Telemetry:</b> '+(B.evidence&&B.evidence.signals||[]).slice(0,7).map(esc).join(' · ')+'</div></div>'+
+    '<div class="sig">'+affs.map(g=>'<div class="g">band · '+esc(g.type.replace('urn:entity:',''))+'</div>'+
+      g.entities.slice(0,4).map(e=>'<div class="row"><span class="nm">'+esc(e.name)+'</span><span class="cb"><i style="width:'+pct(e.affinity)+'%"></i></span><span class="v">'+e.affinity.toFixed(2)+'</span></div>').join('')).join('')+
+    '</div></div>');
+}
+
+/* SEC 7 — extensions */
+sec('SEC 7','MISSION EXTENSIONS','authorize follow-on hardware',
+  '<div class="exts">'+['Campaign microsite','Brandbook PDF','Video cut','Performance plan'].map(x=>'<button class="ext">'+x+'</button>').join('')+'</div>');
+
+if(!M.children.length)M.appendChild(el('<div class="empty">LOSS OF SIGNAL — data.js failed to load. Mission scrubbed.</div>'));
+})();
+</script>
+</body>
+</html>

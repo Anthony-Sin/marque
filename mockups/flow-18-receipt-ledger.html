@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARQUE LEDGER — flow/18 · itemized campaign receipt</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23fbf9f2'/%3E%3Cpath d='M5 8h22M5 13h22M5 18h22M5 23h14' stroke='%2320201c' stroke-width='1.6'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --desk:#d3cdbd;
+  --desk2:#c4beac;
+  --paper:#fbf9f2;
+  --ink:#22201a;
+  --dim:#6f695a;
+  --faint:#a39c8a;
+  --red:#b83324;
+  --mono:"IBM Plex Mono",ui-monospace,"Courier New",monospace;
+  --ease:cubic-bezier(.22,.72,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  color:var(--ink);
+  font:400 12.5px/1.62 var(--mono);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;overflow-x:hidden;
+  background:
+    radial-gradient(900px 500px at 50% -10%,rgba(255,255,255,.5),transparent 60%),
+    repeating-linear-gradient(0deg,rgba(0,0,0,.014) 0 2px,transparent 2px 4px),
+    var(--desk);
+}
+::selection{background:var(--ink);color:var(--paper)}
+a{color:var(--ink)}
+
+/* ---------- receipt shell ---------- */
+.receipt{position:relative;max-width:560px;margin:44px auto 60px}
+.teeth{height:11px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='11'%3E%3Cpath d='M0 0 L8 11 L16 0 Z' fill='%23fbf9f2'/%3E%3C/svg%3E") repeat-x;background-size:16px 11px}
+.teeth.top{transform:scaleY(-1)}
+.roll{position:relative;background:var(--paper);padding:26px 34px 30px;
+  box-shadow:0 30px 60px -18px rgba(40,36,26,.45),0 2px 8px rgba(40,36,26,.18)}
+/* tractor-feed punched holes, both edges */
+.roll::before,.roll::after{
+  content:"";position:absolute;top:0;bottom:0;width:18px;
+  background:radial-gradient(circle 3.4px at 9px 14px,var(--desk2) 96%,transparent) 0 0/18px 30px repeat-y;
+}
+.roll::before{left:4px}
+.roll::after{right:4px}
+.roll .inner{position:relative;z-index:1}
+/* faint print texture on paper */
+.roll .inner::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;
+  background:repeating-linear-gradient(0deg,var(--ink) 0 1px,transparent 1px 3px)}
+
+/* ---------- receipt typography ---------- */
+.c{text-align:center}
+.hd{font-weight:600;font-size:16px;letter-spacing:.18em}
+.hd2{font-size:11px;letter-spacing:.24em;color:var(--dim)}
+.rule{border-top:1px dashed var(--faint);margin:14px 0}
+.rule2{border-top:2px solid var(--ink);margin:14px 0}
+.rule3{border-top:3px double var(--ink);margin:16px 0}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:2.5px 0}
+.row .l{color:var(--dim);flex:none}
+.row .dots{flex:1;border-bottom:1px dotted var(--faint);transform:translateY(-3px);min-width:14px}
+.row .v{text-align:right}
+.row .v b{font-weight:600}
+.indent{padding-left:16px}
+.indent2{padding-left:30px}
+.dim{color:var(--dim)}
+.small{font-size:10.5px}
+.tiny{font-size:9px;color:var(--faint);letter-spacing:.1em}
+.sec-t{font-weight:600;font-size:12.5px;letter-spacing:.3em;text-align:center;margin:4px 0 10px}
+.sec-t::before,.sec-t::after{content:"* * *";color:var(--faint);font-weight:400;font-size:9px;letter-spacing:.2em;vertical-align:2px}
+.sec-t::before{margin-right:10px}.sec-t::after{margin-left:10px}
+
+/* lean block */
+.leanbox{border:1.5px solid var(--ink);padding:12px 14px;margin:10px 0;text-align:center}
+.leanbox .lb{font-size:17px;font-weight:600;letter-spacing:.1em}
+.leanbox .cf{font-size:10.5px;color:var(--dim);margin-top:3px}
+.leanbar{height:7px;border:1px solid var(--ink);margin:10px 0 4px;position:relative}
+.leanbar i{position:absolute;inset:0;background:repeating-linear-gradient(90deg,var(--ink) 0 3px,transparent 3px 4px)}
+.sigline{padding:3px 0 3px 14px;position:relative}
+.sigline::before{content:"-";position:absolute;left:0;color:var(--dim)}
+.habline{display:flex;justify-content:space-between;gap:12px;padding:3.5px 0;border-bottom:1px dotted var(--faint)}
+.habline:last-child{border-bottom:0}
+.habline .ch{font-weight:600}
+.habline .nt{color:var(--dim);text-align:right;font-size:11.5px}
+.vibewrap{margin-top:9px;line-height:2}
+.vibewrap span{border:1px solid var(--ink);padding:2px 9px;margin-right:6px;white-space:nowrap;display:inline-block;margin-bottom:5px;transition:all .15s}
+.vibewrap span:hover{background:var(--ink);color:var(--paper)}
+
+/* strategies as ledger items */
+.item{padding:9px 0;border-bottom:1px dashed var(--faint)}
+.item:last-child{border-bottom:0}
+.item .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.item .nm{font-weight:600;font-size:13px}
+.item .nm small{color:var(--dim);font-weight:400;letter-spacing:.06em}
+.item .pr{font-weight:600;white-space:nowrap}
+.item .pr small{display:block;font-size:8.5px;color:var(--faint);font-weight:400;text-align:right;letter-spacing:.16em}
+.item .sub{padding:4px 0 2px 16px;color:var(--dim);font-size:11.5px}
+.item .sub .rt{float:right;color:var(--ink)}
+.item .watch{padding:3px 0 0 16px;font-size:10.5px;color:var(--faint);font-style:italic}
+.item:hover{background:rgba(34,32,26,.03)}
+
+/* void */
+.void-h{color:var(--red);text-align:center;font-weight:600;letter-spacing:.28em;font-size:11.5px;margin-bottom:6px}
+.vrow{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:6px 0;border-bottom:1px dashed var(--faint)}
+.vrow:last-child{border-bottom:0}
+.vrow .t{font-weight:600;color:var(--red);text-decoration:line-through;text-decoration-thickness:1.5px}
+.vrow .c{color:var(--faint);font-size:10px;letter-spacing:.2em;flex:none}
+.vrow .w{font-size:10.5px;color:var(--dim);width:100%}
+.vrow{flex-wrap:wrap}
+
+/* output */
+.briefbox{border:1.5px solid var(--ink);padding:14px 16px;margin:8px 0;position:relative}
+.briefbox::before{content:"";position:absolute;inset:3px;border:1px dashed var(--faint);pointer-events:none}
+.briefbox .bt{font-weight:600;font-size:15px;text-align:center;letter-spacing:.08em}
+.briefbox .ba{text-align:center;font-size:11px;color:var(--dim);margin:4px 0 12px}
+.briefbox .kv{display:flex;gap:10px;padding:3.5px 0;font-size:11.5px}
+.briefbox .kv .k{flex:none;width:82px;color:var(--faint);letter-spacing:.12em;font-size:9.5px;padding-top:2px}
+.briefbox .km{border-top:1px solid var(--ink);margin-top:10px;padding-top:10px;text-align:center;font-weight:600;font-size:13px}
+.cre-row{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px dashed var(--faint)}
+.cre-row:last-child{border-bottom:0}
+.cre-row .th{flex:none;width:52px;height:52px;border:1px solid var(--ink);overflow:hidden;position:relative}
+.cre-row .th img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.12) brightness(1.04)}
+.cre-row .tx{flex:1;min-width:0}
+.cre-row .tx .h{font-size:11.5px;line-height:1.4}
+.cre-row .tx .p{font-size:9.5px;color:var(--faint);letter-spacing:.14em;margin-top:3px;text-transform:uppercase}
+.pal-line{display:flex;gap:14px;padding:6px 0;flex-wrap:wrap}
+.pal-sw{display:flex;align-items:center;gap:7px;font-size:10.5px}
+.pal-sw i{width:22px;height:22px;border:1px solid var(--ink);display:inline-block}
+
+/* evidence table */
+.evt{width:100%;border-collapse:collapse;font-size:10.5px}
+.evt th{text-align:left;font-weight:600;letter-spacing:.14em;font-size:9px;color:var(--dim);padding:6px 4px;border-bottom:1.5px solid var(--ink)}
+.evt td{padding:6px 4px;border-bottom:1px dotted var(--faint);vertical-align:top}
+.evt tr:hover td{background:rgba(34,32,26,.035)}
+.evt .ms,.evt .n{text-align:right}
+.evt .md{text-align:right;color:var(--dim)}
+.evt .pm{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dim);font-size:9.5px}
+.totals{border:2px solid var(--ink);margin-top:14px;padding:10px 14px}
+.totals .row .v{font-weight:600}
+.totals .row.big{font-size:14px;border-top:1px dashed var(--faint);padding-top:8px;margin-top:6px}
+.paid{text-align:center;letter-spacing:.34em;font-weight:600;font-size:11px;margin-top:10px}
+.affline{display:flex;justify-content:space-between;gap:10px;padding:3px 0;font-size:11.5px}
+.affline .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.affline .nm i{font-style:normal;color:var(--faint);font-size:9px;letter-spacing:.14em;margin-right:8px}
+.affline .v{font-weight:600}
+.affsep{border-bottom:1px dotted var(--faint);margin:7px 0}
+
+/* next */
+.nxtline{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:9px 4px;border-bottom:1px dashed var(--faint);cursor:pointer;transition:background .15s}
+.nxtline:last-child{border-bottom:0}
+.nxtline:hover{background:rgba(34,32,26,.05)}
+.nxtline .cb{flex:none}
+.nxtline .nm{flex:1;font-weight:600;letter-spacing:.08em}
+.nxtline .st{color:var(--faint);font-size:10px;letter-spacing:.16em}
+
+/* barcode */
+.barcode{margin:22px auto 8px;width:230px;height:52px;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 4px,var(--ink) 4px 7px,transparent 7px 9px,var(--ink) 9px 10px,transparent 10px 15px,var(--ink) 15px 18px,transparent 18px 20px);
+  -webkit-mask-image:linear-gradient(90deg,#000 0 96%,transparent 96%);mask-image:linear-gradient(90deg,#000 0 96%,transparent 96%)}
+.bnum{text-align:center;font-size:10.5px;letter-spacing:.4em}
+
+.foot{text-align:center;font-size:9.5px;letter-spacing:.24em;color:var(--dim);margin-top:34px}
+
+@media (max-width:600px){
+  .receipt{margin:26px 12px 44px}
+  .roll{padding:20px 26px 24px}
+  .roll::before,.roll::after{width:14px;background-size:14px 28px}
+  .roll::before{left:2px}.roll::after{right:2px}
+  .evt .pm{max-width:110px}
+  .habline{flex-wrap:wrap}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="receipt">
+  <div class="teeth top"></div>
+  <div class="roll"><div class="inner" id="inner">
+    <div class="c hd">MARQUE STRATEGY WORKS</div>
+    <div class="c hd2">CAMPAIGN PIPELINE — ITEMIZED RECEIPT</div>
+    <div class="rule"></div>
+    <div id="ord"></div>
+    <div class="rule2"></div>
+    <div id="ask"></div>
+    <div class="rule"></div>
+    <div class="sec-t">AUDIENCE</div>
+    <div id="aud"></div>
+    <div class="rule"></div>
+    <div class="sec-t">STRATEGIES</div>
+    <div id="strats"></div>
+    <div class="rule"></div>
+    <div id="anti"></div>
+    <div class="rule"></div>
+    <div class="sec-t">OUTPUT</div>
+    <div id="brief"></div>
+    <div id="cres"></div>
+    <div class="rule"></div>
+    <div id="pal"></div>
+    <div class="rule"></div>
+    <div class="sec-t">EVIDENCE</div>
+    <div style="overflow-x:auto"><table class="evt" id="calls"></table></div>
+    <div id="totals"></div>
+    <div class="rule"></div>
+    <div id="affs"></div>
+    <div class="rule"></div>
+    <div class="sec-t">REORDER</div>
+    <div id="next"></div>
+    <div class="rule3"></div>
+    <div class="barcode"></div>
+    <div class="bnum" id="bnum"></div>
+    <div class="c small dim" style="margin-top:12px">*** THANK YOU — EVIDENCE ATTACHED ***</div>
+  </div></div>
+  <div class="teeth"></div>
+  <div class="foot">MARQUE LEDGER / FLOW-18 · PRINTED FROM LIVE BOARD DATA</div>
+</div>
+
+<script src="./data.js"></script>
+<script src="./media-data.js"></script>
+<script src="./dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const commas=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,",");
+const pct2=x=>(x||0).toFixed(2);
+const B=(window.DATA&&window.DATA.board)||null;
+const pool=(((window.MEDIA||{}).pool)||[]).map(m=>({img:String(m.img||"").replace(/^\.\//,"../"),head:m.head||"",provider:m.provider||""})).filter(m=>m.img);
+const PICKS=[0,1,4,5].map(i=>pool[i]).filter(Boolean);
+const PALETTE=[["Glaze Pink","#EAB6AC"],["Vanilla Cream","#F6EEE5"],["Toasted Almond","#9C6B4F"],["Deep Espresso","#3E2A20"]];
+const NEXT=[["Website","LANDING PAGE"],["Brandbook","IDENTITY KIT"],["Video","15S CUT"]];
+const el=id=>document.getElementById(id);
+if(!B){el("inner").innerHTML='<p class="c" style="padding:60px 0">** NO BOARD DATA ON TAPE **</p>';return;}
+
+const sub=B.sub||{},url=B.urlContext||{},ar=B.audienceRead||{lean:{},mediaHabits:[],vibeWords:[]},
+      strats=B.strategies||[],anti=B.antiStrategies||[],ev=B.evidence||{calls:[]},
+      affs=(B.qlooBundle||{}).affinities||[];
+const lean=ar.lean||{},calls=ev.calls||[];
+const stamp=(B.createdAt||"").replace("T"," ").slice(0,16);
+
+el("ord").innerHTML=
+  '<div class="row"><span class="l">ORDER</span><span class="dots"></span><span class="v">'+esc((B.id||"").slice(0,13))+'</span></div>'+
+  '<div class="row"><span class="l">PRINTED</span><span class="dots"></span><span class="v">'+esc(stamp)+' UTC</span></div>'+
+  '<div class="row"><span class="l">REGISTER</span><span class="dots"></span><span class="v">QLOO · '+esc(ev.qlooMode||"—").toUpperCase()+'</span></div>';
+
+el("ask").innerHTML=
+  '<div class="row"><span class="l">ASK</span><span class="dots"></span></div>'+
+  '<div class="indent" style="font-weight:600;font-size:14px">'+esc(sub.prompt||B.title)+'</div>'+
+  '<div class="row" style="margin-top:6px"><span class="l">SRC</span><span class="dots"></span></div>'+
+  '<div class="indent"><a href="'+esc(url.url||sub.url||"#")+'">'+esc(url.url||sub.url||"")+'</a><div class="small dim">'+esc(url.title||"")+'</div></div>';
+
+/* audience */
+el("aud").innerHTML=
+  '<div class="leanbox"><div class="lb">'+esc(lean.label||"—")+'</div><div class="cf">CONFIDENCE '+Math.round((lean.confidence||0)*100)+'%</div>'+
+  '<div class="leanbar"><i style="width:'+Math.round((lean.confidence||0)*100)+'%"></i></div></div>'+
+  (lean.signals||[]).map(s=>'<div class="sigline small">'+esc(s)+'</div>').join("")+
+  '<div style="margin-top:12px" class="tiny">MEDIA HABITS</div>'+
+  (ar.mediaHabits||[]).map(h=>'<div class="habline"><span class="ch">'+esc(h.channel)+'</span><span class="nt">'+esc(h.note)+'</span></div>').join("")+
+  '<div class="tiny" style="margin-top:10px">VIBE</div><div class="vibewrap">'+(ar.vibeWords||[]).map(v=>'<span>'+esc(v)+'</span>').join("")+'</div>';
+
+/* strategies as priced items */
+el("strats").innerHTML=strats.map((s,i)=>{
+  const chans=(s.channels||[]).map(c=>'<div class="sub">'+esc(c.name)+' @ '+pct2(c.fit)+'<span class="rt">'+esc(c.why||"")+'</span></div>').join("");
+  const fmts=(s.formats||[]).join(" + ");
+  return '<div class="item">'+
+    '<div class="top"><span class="nm">'+esc(s.id||("ST"+(i+1)))+' '+esc(s.title)+' <small>'+esc(s.angle)+'</small></span>'+
+    '<span class="pr">'+commas((s.reach||{}).estViews||0)+'<small>EST VIEWS</small></span></div>'+
+    '<div class="sub">audience fit<span class="rt">'+pct2(s.audienceFit?s.audienceFit.score:0)+'</span></div>'+
+    chans+
+    '<div class="sub">hero signal<span class="rt">'+esc(s.heroSignal||"—")+'</span></div>'+
+    '<div class="sub">formats<span class="rt">'+esc(fmts)+'</span></div>'+
+    '<div class="watch">NOTE: '+esc((s.watchouts||[])[0]||"")+'</div></div>';
+}).join("");
+
+/* void items */
+el("anti").innerHTML='<div class="void-h">*** VOIDED LINES — CHANNEL FIT FLOOR ***</div>'+
+  anti.map(a=>'<div class="vrow"><span class="t">'+esc(a.title)+'</span><span class="c">'+esc(a.channel)+'</span><span class="w">'+esc(a.whyNot)+'</span></div>').join("");
+
+/* output */
+const sel=strats[0]||{},br=sel.brief||{};
+el("brief").innerHTML='<div class="briefbox">'+
+  '<div class="tiny" style="margin-bottom:8px">PICK-UP SLIP · FROM LINE '+esc(sel.id||"")+'</div>'+
+  '<div class="bt">'+esc(br.title||"—")+'</div><div class="ba">'+esc(br.angle||"")+'</div>'+
+  '<div class="kv"><span class="k">AUDIENCE</span><span>'+esc(br.audience||"")+'</span></div>'+
+  '<div class="km">“'+esc(br.keyMessage||"")+'”</div></div>';
+el("cres").innerHTML='<div class="tiny" style="margin:8px 0 2px">PRINTED CREATIVES ×'+PICKS.length+'</div>'+
+  PICKS.map(m=>'<div class="cre-row"><span class="th"><img src="'+esc(m.img)+'" alt="'+esc(m.head)+'" onerror="this.closest(\'.cre-row\').style.display=\'none\'"></span>'+
+  '<span class="tx"><span class="h">'+esc(m.head)+'</span><div class="p">'+esc(m.provider||"gen")+'</div></span></div>').join("");
+
+/* palette */
+el("pal").innerHTML='<div class="row"><span class="l">BRAND PALETTE</span><span class="dots"></span><span class="v">'+PALETTE.length+' SW</span></div>'+
+  '<div class="pal-line">'+PALETTE.map(p=>'<span class="pal-sw"><i style="background:'+p[1]+'"></i><span>'+p[0]+'<br><span class="tiny">'+p[1]+'</span></span></span>').join("")+'</div>';
+
+/* evidence */
+el("calls").innerHTML='<tr><th>#</th><th>Endpoint</th><th>Params</th><th class="ms">ms</th><th class="n">n</th><th class="md">mode</th></tr>'+
+  calls.map((c,i)=>{
+    const pm=Object.entries(c.params||{}).map(([k,v])=>k+"="+v).join(" ");
+    return '<tr><td class="dim">'+(i+1)+'</td><td>'+esc(c.endpoint)+'</td><td class="pm" title="'+esc(pm)+'">'+esc(pm)+'</td><td class="ms">'+commas(c.tookMs||0)+'</td><td class="n">'+esc(c.n)+'</td><td class="md">'+esc(c.mode)+'</td></tr>';
+  }).join("");
+const totMs=calls.reduce((a,c)=>a+(c.tookMs||0),0);
+el("totals").innerHTML='<div class="totals">'+
+  '<div class="row"><span class="l">CALLS</span><span class="dots"></span><span class="v">'+calls.length+'</span></div>'+
+  '<div class="row"><span class="l">SIGNALS</span><span class="dots"></span><span class="v">'+(ev.signals||[]).length+'</span></div>'+
+  '<div class="row big"><span class="l">TOTAL TIME</span><span class="dots"></span><span class="v">'+commas(totMs)+' ms</span></div></div>'+
+  '<div class="paid">PAID IN FULL · '+esc(ev.qlooMode||"—").toUpperCase()+' MODE</div>';
+
+/* affinities */
+el("affs").innerHTML='<div class="row"><span class="l">TOP AFFINITIES</span><span class="dots"></span><span class="v">QLOO</span></div>'+
+  affs.map(g=>{
+    const lbl=String(g.type||"").replace("urn:entity:","").toUpperCase();
+    const top=(g.entities||[]).slice(0,3);
+    return '<div class="tiny" style="margin:8px 0 2px">'+esc(lbl)+'</div>'+top.map(e=>
+      '<div class="affline"><span class="nm">'+esc(e.name)+'</span><span class="v">'+pct2(e.affinity)+'</span></div>'
+    ).join("");
+  }).join('<div class="affsep"></div>');
+
+/* next */
+el("next").innerHTML=NEXT.map(n=>'<div class="nxtline"><span class="cb">[ ]</span><span class="nm">'+esc(n[0].toUpperCase())+'</span><span class="st">'+esc(n[1])+' · QUEUED</span></div>').join("");
+
+el("bnum").textContent="*"+(B.id||"").slice(0,8).toUpperCase()+"*";
+})();
+</script>
+</body>
+</html>

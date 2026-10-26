@@ -517,7 +517,7 @@ export default function Strategy() {
     const url = siteUrl.trim() || findUrl(raw);
     if ((!p && !url) || busy) return;
     if (text) setPrompt(p);
-    setBusy(true); setErr(''); setNotes(''); setEx({}); setStok(''); setSthink('');
+    setBusy(true); setErr(''); setNotes(''); setEx({}); setWildHint(''); setStok(''); setSthink('');
     // stream the build — each stage lands and its section starts typing in
     // while the next is still generating. Falls back to the one-shot call.
     try {
@@ -564,7 +564,7 @@ export default function Strategy() {
 
   // pill click → collapse back to the composer (ctx board stays → app stays unlocked)
   const reset = () => {
-    setResL(null); setErr(''); setNotes(''); setEx({}); setRenaming(false);
+    setResL(null); setErr(''); setNotes(''); setEx({}); setWildHint(''); setRenaming(false);
     setPrompt(''); setSiteUrl('');   // composer starts empty — no leftover text
     if (isDetail) nav('/strategy');
   };
@@ -583,9 +583,10 @@ export default function Strategy() {
     } catch (e) { say?.(e.message || 'rename failed'); }
   };
 
-  // manual pull of real-world examples — only fires on button click, steered by
-  // the hint input. Results are cached per board+strategy+hint so re-visiting a
-  // card or re-typing a used hint restores instead of re-scraping.
+  // pull of real-world examples — auto-fires when a card opens (steered by the
+  // strategy text, see below) and re-fires on button/Enter with the user's own
+  // steer. Results are cached per board+strategy+hint so re-visiting a card or
+  // re-typing a used hint restores instead of re-scraping.
   const loadExamples = async (s, hint = '', force = false) => {
     if (!s) return;
     const scope = wildScope(s);
@@ -784,16 +785,37 @@ export default function Strategy() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [detKey]);
 
+  // one continuous page: picking a card keeps the board on top and scrolls
+  // the detail section into view below it (no route swap, no second screen)
+  const detailRef = useRef(null);
+  useEffect(() => {
+    if (isDetail && cur) detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detKey]);
+
   // fresh card → fresh notes + fresh pull steer
   useEffect(() => { setNotes(''); setWildHint(''); }, [sel]);
 
-  // reference pulls are strictly on-demand (Pull references button / Enter) —
-  // opening a card must not fire network scrapes. Session cache still restores
-  // previously pulled results on revisit.
+  // auto-pull: opening a card hunts real-world references immediately — the
+  // strategy's own title steers the hunt, and the steer input is prefilled
+  // with it so the influence is visible (editing + Enter re-pulls). Fires once
+  // per card scope; the examples cache makes revisits instant.
+  const autoPullRef = useRef(new Set());
+  useEffect(() => {
+    if (!isDetail || !cur || !full || !curScope) return;
+    if (ex[curScope] || autoPullRef.current.has(curScope)) return;
+    autoPullRef.current.add(curScope);
+    const steer = (wildHint || '').trim() || (full.title || '');
+    setWildHint((h) => (h.trim() ? h : (full.title || '')));
+    loadExamples(full, steer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDetail, curScope, full]);
+
   const pullAnim = useRef(null);
   const [pullPhase, setPullPhase] = useState(0);
   useEffect(() => {
     if (exState?.status === 'loading') {
+      setPullPhase(0);
       pullAnim.current = setInterval(() => setPullPhase((p) => p + 1), 900);
       return () => clearInterval(pullAnim.current);
     }
@@ -902,10 +924,10 @@ export default function Strategy() {
   );
 
   return (
-    <div className="section stg-wrap">
-      <Wayfind />
+    <div className={`section stg-wrap${isDetail && cur ? ' detail-open' : ''}`}>
       {!profile ? (
         <>
+          <Wayfind />
           {pageHead}
           <div className="card stg-nudge">
             <h3 className="display">First, your brand</h3>
@@ -920,8 +942,11 @@ export default function Strategy() {
         </>
       ) : (
         <>
-          {/* ---- collapsed prompt pill — click the text to edit it inline,
-                Enter regenerates from the modified prompt ---- */}
+          {/* ---- top line: wayfind + collapsed prompt pill on ONE row — the
+                pill stays page-centered, the back link rides the left cell ---- */}
+          <div className="stg-topline">
+            <div className="stg-topline-cell"><Wayfind /></div>
+            <div className="stg-topline-cell stg-topline-mid">
           {(busy || res) && (
             <div className={`stg-chipbar${editingPrompt ? ' editing' : ''}`} role="button" tabIndex={editingPrompt ? -1 : 0}
               title="Click to modify this prompt"
@@ -955,6 +980,9 @@ export default function Strategy() {
               )}
             </div>
           )}
+            </div>
+            <div className="stg-topline-cell" aria-hidden="true" />
+          </div>
 
           {/* ---- plans row — switch between every generated strategy board ---- */}
           {res && !busy && (
@@ -1100,7 +1128,7 @@ export default function Strategy() {
             </div>
           )}
 
-          {res && !isDetail && (res.audienceRead || res.strategies || !busy) && (
+          {res && (res.audienceRead || res.strategies || !busy) && (
             <>
               <div className="stg-board">
                 {/* ---- audience read ---- */}
@@ -1146,7 +1174,7 @@ export default function Strategy() {
                   )}
 
                   {!!read.mediaHabits?.length && (
-                    <div className="stg-fill" style={{ '--fo': '380ms' }}>
+                    <div className="stg-fill stg-aud-habits" style={{ '--fo': '380ms' }}>
                       <span className="stg-ml">Taste drivers</span>
                       <div className="stg-habits" style={{ marginTop: 8 }}>
                         {read.mediaHabits.map((h, i) => (
@@ -1159,7 +1187,7 @@ export default function Strategy() {
                     </div>
                   )}
                   {!!read.vibeWords?.length && (
-                    <div className="stg-fill" style={{ '--fo': '540ms' }}>
+                    <div className="stg-fill stg-aud-vibes" style={{ '--fo': '540ms' }}>
                       <span className="stg-ml">Taste anchors</span>
                       <div className="stg-chiprow" style={{ marginTop: 7 }}>
                         {read.vibeWords.map((w, i) => (
@@ -1170,7 +1198,7 @@ export default function Strategy() {
                   )}
 
                   {/* ---- data sources — where the board's evidence came from ---- */}
-                  <div className="stg-fill" style={{ '--fo': '650ms' }}>
+                  <div className="stg-fill stg-aud-srcs" style={{ '--fo': '650ms' }}>
                     <span className="stg-ml">Data sources</span>
                     <div className="stg-srcs" style={{ marginTop: 7 }}>
                       {!!ev.qlooMode && ev.qlooMode !== 'none' && (
@@ -1328,8 +1356,7 @@ export default function Strategy() {
           {/* ---- /strategy/:idx — full-page strategy detail. The slim card can't
                 fill this in: skeleton + ghost drafting until boardStrategy lands ---- */}
           {res && !busy && isDetail && cur && (
-            <div className="stg-detailpage">
-              <Link className="btn ghost sm stg-back" to="/strategy">← all strategies</Link>
+            <div className="stg-detailpage" ref={detailRef}>
               {detState?.status === 'error' ? (
                 <div className="card stg-err">
                   <span className="lead"><Icon name="x" size={16} /> Couldn't load this strategy</span>
@@ -1342,7 +1369,9 @@ export default function Strategy() {
               <section className="card stg-tile stg-detail" key={full.id || sel}>
                 <div className="stg-detail-top">
                   <div className="stg-strat-id">
-                    <span className="stg-idx">STRATEGY {String(sel + 1).padStart(2, '0')} · CAMPAIGN BOARD</span>
+                    <span className="stg-idx">STRATEGY {String(sel + 1).padStart(2, '0')} · CAMPAIGN BOARD
+                      <Link className="stg-back" to="/strategy">← all strategies</Link>
+                    </span>
                     <Typed as="h3" className="display" text={full.title || ''} cps={40} />
                     {!!full.angle && <p className="stg-angle"><Typed text={full.angle} delay={220} cps={70} /></p>}
                     {!!full.audienceFit?.notes?.length && (
@@ -1359,7 +1388,7 @@ export default function Strategy() {
                   <Ring value={full.audienceFit?.score} label="audience fit" />
                 </div>
 
-                <div className="stg-detail-cols">
+                <div className={`stg-detail-cols${(entGroups.length || detEv.qlooEvidence?.length) ? '' : ' no-q'}`}>
                   <div className="stg-detail-left">
                     {!!full.brief && (
                       <div className="stg-brief">
@@ -1411,6 +1440,39 @@ export default function Strategy() {
                         ))}</ul>
                       </div>
                     )}
+
+                    {/* ---- what the site scrape gave THIS strategy too — inside
+                          the left column so it doesn't add a row below ---- */}
+                    {!!detState?.urlContext && !detState.urlContext.scrapeFailed &&
+                      (detState.urlContext.colors?.length || detState.urlContext.fonts?.length || detState.urlContext.title) && (
+                      <div className="stg-site">
+                        <span className="stg-ml">Read from {host(detState.urlContext.url)}</span>
+                        <div className="stg-site-row">
+                          {!!detState.urlContext.image && (
+                            <img className="stg-site-img" src={detState.urlContext.image} alt=""
+                              onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                          )}
+                          <div className="stg-site-info">
+                            {!!detState.urlContext.title && <b className="stg-site-title">{detState.urlContext.title}</b>}
+                            {!!detState.urlContext.description && (
+                              <span className="stg-site-desc">{String(detState.urlContext.description).slice(0, 140)}</span>
+                            )}
+                            <span className="stg-site-meta">
+                              {!!detState.urlContext.colors?.length && (
+                                <span className="stg-site-colors" title="Brand colors scraped from the site">
+                                  {detState.urlContext.colors.slice(0, 5).map((c) => (
+                                    <i key={c.hex || c} style={{ background: c.hex || c }} title={c.hex || c} />
+                                  ))}
+                                </span>
+                              )}
+                              {!!detState.urlContext.fonts?.length && (
+                                <span className="stg-site-fonts">{detState.urlContext.fonts.slice(0, 3).join(' · ')}</span>
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="stg-detail-right">
@@ -1448,100 +1510,68 @@ export default function Strategy() {
                       </div>
                     </div>
                   </div>
+
+                  {/* ---- Qloo read — the actual taste-graph evidence under this
+                        strategy; sits as the third column so the board stays
+                        one screen ---- */}
+                  {(!!entGroups.length || !!detEv.qlooEvidence?.length) && (
+                    <div className="stg-qread">
+                      <div className="stg-tile-head">
+                        <span className="stg-ml">Qloo read</span>
+                        <span className="stg-prov" title="Where this evidence came from">
+                          <Icon name="qloo" size={10} />
+                          <span>
+                            Qloo {detEv.qlooMode || 'none'} · {detCalls.length} call{detCalls.length === 1 ? '' : 's'}
+                            {!!detSources.length && ` · ${detSources.join(' ')}`}
+                          </span>
+                        </span>
+                      </div>
+
+                      {!!entGroups.length && (
+                        <div className="stg-qgroups">
+                          {entGroups.map((g) => (
+                            <div className="stg-qgroup" key={g.type}>
+                              <span className="stg-qtype">qloo affinity · {g.type}</span>
+                              {g.rows.map((r) => (
+                                <span className="stg-qrow" key={r.name}>
+                                  <span className="stg-qname">{r.name}</span>
+                                  <span className="stg-qbar"><i style={{ width: `${pct(r.affinity)}%` }} /></span>
+                                  <span className="stg-qaff">{r.affinity.toFixed(2)}</span>
+                                </span>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {!!detEv.qlooEvidence?.length && (
+                        <div className="stg-qev">
+                          {detEv.qlooEvidence.map((row, i) => (
+                            <div className="stg-qev-row" key={i}>
+                              <span className="stg-qev-lbl">{row.label}</span>
+                              <span className="stg-qev-detail">{row.detail}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {(!!qTop.length || !!qChans.length) && (
+                        <p className="stg-qwhy">
+                          <Typed cps={70} delay={550} text={
+                            `Why this fits: ${prodName}'s audience over-indexes on ` +
+                            qTop.map((r) => `${r.name}${typeof r.affinity === 'number' ? ` (${r.affinity.toFixed(2)})` : ''}`).join(', ').replace(/, ([^,]+)$/, ' and $1') +
+                            (qChans.length ? ` — so this play favors ${qChans.join(' + ')}, the channels where that pull already lives.` : '.')
+                          } />
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {/* ---- what the site scrape gave THIS strategy too — the detail
-                      fetch carries urlContext now; same block as the board ---- */}
-                {!!detState?.urlContext && !detState.urlContext.scrapeFailed &&
-                  (detState.urlContext.colors?.length || detState.urlContext.fonts?.length || detState.urlContext.title) && (
-                  <div className="stg-site">
-                    <span className="stg-ml">Read from {host(detState.urlContext.url)}</span>
-                    <div className="stg-site-row">
-                      {!!detState.urlContext.image && (
-                        <img className="stg-site-img" src={detState.urlContext.image} alt=""
-                          onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                      )}
-                      <div className="stg-site-info">
-                        {!!detState.urlContext.title && <b className="stg-site-title">{detState.urlContext.title}</b>}
-                        {!!detState.urlContext.description && (
-                          <span className="stg-site-desc">{String(detState.urlContext.description).slice(0, 140)}</span>
-                        )}
-                        <span className="stg-site-meta">
-                          {!!detState.urlContext.colors?.length && (
-                            <span className="stg-site-colors" title="Brand colors scraped from the site">
-                              {detState.urlContext.colors.slice(0, 5).map((c) => (
-                                <i key={c.hex || c} style={{ background: c.hex || c }} title={c.hex || c} />
-                              ))}
-                            </span>
-                          )}
-                          {!!detState.urlContext.fonts?.length && (
-                            <span className="stg-site-fonts">{detState.urlContext.fonts.slice(0, 3).join(' · ')}</span>
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* ---- Qloo read — the actual taste-graph evidence under this
-                      strategy. Entity rows grouped by type, affinities visible,
-                      provenance in plain sight — no accordions. ---- */}
-                {(!!entGroups.length || !!detEv.qlooEvidence?.length) && (
-                  <div className="stg-qread">
-                    <div className="stg-tile-head">
-                      <span className="stg-ml">Qloo read — the taste data under this call</span>
-                      <span className="stg-prov" title="Where this evidence came from">
-                        <Icon name="qloo" size={10} />
-                        <span>
-                          Qloo {detEv.qlooMode || 'none'} · {detCalls.length} call{detCalls.length === 1 ? '' : 's'}
-                          {!!detSources.length && ` · sources: ${detSources.join(' ')}`}
-                        </span>
-                      </span>
-                    </div>
-
-                    {!!entGroups.length && (
-                      <div className="stg-qgroups">
-                        {entGroups.map((g) => (
-                          <div className="stg-qgroup" key={g.type}>
-                            <span className="stg-qtype">qloo affinity · {g.type}</span>
-                            {g.rows.map((r) => (
-                              <span className="stg-qrow" key={r.name}>
-                                <span className="stg-qname">{r.name}</span>
-                                <span className="stg-qbar"><i style={{ width: `${pct(r.affinity)}%` }} /></span>
-                                <span className="stg-qaff">{r.affinity.toFixed(2)}</span>
-                              </span>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {!!detEv.qlooEvidence?.length && (
-                      <div className="stg-qev">
-                        {detEv.qlooEvidence.map((row, i) => (
-                          <div className="stg-qev-row" key={i}>
-                            <span className="stg-qev-lbl">{row.label}</span>
-                            <span className="stg-qev-detail">{row.detail}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {(!!qTop.length || !!qChans.length) && (
-                      <p className="stg-qwhy">
-                        <Typed cps={70} delay={550} text={
-                          `Why this fits: ${prodName}'s audience over-indexes on ` +
-                          qTop.map((r) => `${r.name}${typeof r.affinity === 'number' ? ` (${r.affinity.toFixed(2)})` : ''}`).join(', ').replace(/, ([^,]+)$/, ' and $1') +
-                          (qChans.length ? ` — so this play favors ${qChans.join(' + ')}, the channels where that pull already lives.` : '.')
-                        } />
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* ---- in the wild: manual, steerable pull of real examples;
-                        click cards to select references that ride into the
-                        campaign handoff ---- */}
+                {/* ---- in the wild: auto-pulls real examples when the card
+                        opens (steered by the strategy title); the bar re-pulls
+                        with a custom steer. Click cards to select references
+                        that ride into the campaign handoff ---- */}
                 <div className="stg-wild">
                   <div className="stg-wild-head">
                     <span className="stg-ml">{!wildList.length ? 'In the wild — reference pulls'
@@ -1572,7 +1602,7 @@ export default function Strategy() {
                     </span>
                   </div>
 
-                  {/* steer + trigger — nothing pulls until the button is hit */}
+                  {/* steer + trigger — auto-pulled on open; edit to re-steer */}
                   <div className="stg-pull">
                     <input
                       className="stg-pull-hint"
@@ -1644,7 +1674,7 @@ export default function Strategy() {
                 <div className="stg-handoff">
                   <textarea
                     className="stg-notes"
-                    rows={3}
+                    rows={2}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Notes for this run — tone, must-haves, things to avoid…"

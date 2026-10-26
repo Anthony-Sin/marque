@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marque Hardware — Campaign Pegboard, Aisle 3</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%237A5A38'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%23523B24'/%3E%3Ccircle cx='32' cy='16' r='4' fill='%23523B24'/%3E%3Ccircle cx='48' cy='16' r='4' fill='%23523B24'/%3E%3Ccircle cx='16' cy='32' r='4' fill='%23523B24'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%23523B24'/%3E%3Ccircle cx='48' cy='32' r='4' fill='%23523B24'/%3E%3Crect x='20' y='44' width='24' height='10' rx='2' fill='%23F0A018'/%3E%3C/svg%3E">
+<style>
+:root{
+  --board:#8A6844;--board-dk:#6F5334;--hole:#523B24;
+  --card:#F5EEDC;--card2:#EAE0C6;--ink:#2B2018;--mut:#6B5B45;
+  --amber:#F0A018;--amber-dk:#B87800;--line:#C4B391;
+  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--board-dk) radial-gradient(circle at 50% 0,rgba(255,220,150,.12),transparent 60%);
+  color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(240,160,24,.5)}
+a{color:var(--ink);text-decoration:none;border-bottom:2px solid var(--amber);word-break:break-word}
+a:hover{color:#000;border-color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+button{font:inherit;cursor:pointer;color:inherit}
+img{display:block;max-width:100%}
+.wall{
+  max-width:1040px;margin:0 auto 80px;padding:0 clamp(10px,2.6vw,24px);
+}
+/* the pegboard surface every section sits on */
+.board{
+  border:6px solid var(--board-dk);border-radius:12px;
+  background:
+    radial-gradient(circle,var(--hole) 2.6px,transparent 3.4px) 11px 11px/26px 26px,
+    linear-gradient(165deg,#956F48,var(--board));
+  box-shadow:0 18px 44px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.18);
+  padding:clamp(14px,3vw,30px);
+}
+
+/* store sign */
+.sign{margin-top:26px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+  background:var(--card);border:3px solid var(--ink);border-radius:6px;
+  box-shadow:0 8px 0 var(--board-dk),0 16px 30px rgba(0,0,0,.4);
+  padding:14px clamp(14px,3.6vw,30px)}
+.sign h1{font-size:clamp(22px,5.4vw,38px);font-weight:800;letter-spacing:.02em;text-transform:uppercase;line-height:1}
+.sign h1 em{font-style:normal;color:var(--amber-dk)}
+.sign .aisle{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;text-align:right;color:var(--mut)}
+.sign .aisle b{display:block;font-size:15px;color:var(--ink);letter-spacing:.04em}
+
+section{margin-top:26px}
+.sect-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 4px 10px}
+.sect-h .bx{font-family:var(--mono);font-size:10px;letter-spacing:.16em;background:var(--ink);color:var(--amber);padding:3px 9px;text-transform:uppercase;border-radius:3px}
+.sect-h h2{font-size:clamp(17px,3.6vw,24px);font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--card);text-shadow:0 2px 3px rgba(0,0,0,.4)}
+.sect-h .sub{margin-left:auto;font-size:12px;color:var(--card2);font-style:italic;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+
+/* generic hang-card: punched hole + wire hook */
+.hang{position:relative;background:var(--card);border:2px solid var(--ink);border-radius:6px;
+  box-shadow:0 10px 22px rgba(0,0,0,.35);padding:16px clamp(14px,2.8vw,24px) 14px}
+.hang::before{content:"";position:absolute;top:9px;left:50%;transform:translateX(-50%);
+  width:34px;height:13px;border-radius:8px;background:var(--board-dk);
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.4)}
+.hang::after{content:"";position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+  width:4px;height:12px;background:#3d3d3d;border-radius:2px}
+.hang .in{margin-top:12px}
+
+/* job ticket = the ask */
+.ticket{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(12px,3vw,26px)}
+@media(max-width:640px){.ticket{grid-template-columns:1fr}}
+.ticket .ord{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+.ticket h3{font-size:clamp(20px,4.6vw,30px);font-weight:800;line-height:1.12;text-transform:uppercase;letter-spacing:.02em;margin-top:2px;padding-right:86px}
+.ticket .stamp{position:absolute;right:14px;top:26px;transform:rotate(6deg);
+  border:2.5px solid var(--amber-dk);color:var(--amber-dk);font-family:var(--mono);font-size:10px;
+  letter-spacing:.2em;padding:3px 10px;border-radius:3px;text-transform:uppercase}
+.ticket dl{display:grid;grid-template-columns:78px 1fr;gap:3px 12px;font-size:13px;margin-top:6px}
+.ticket dt{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);padding-top:3px}
+.ticket dd{border-bottom:1px dashed var(--line);padding-bottom:5px}
+.perf{margin-top:10px;border-top:2px dashed var(--line);padding-top:8px;font-family:var(--mono);font-size:11px;color:var(--mut)}
+
+/* customer tag + tape = audience */
+.read{display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(12px,3vw,26px);align-items:start}
+@media(max-width:680px){.read{grid-template-columns:1fr}}
+.read .lbl{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber-dk);font-weight:700}
+.read .lean{font-size:clamp(24px,5vw,36px);font-weight:800;text-transform:uppercase;line-height:1.05}
+.tape{margin-top:10px;position:relative;height:34px;background:repeating-linear-gradient(90deg,#F3D06B 0 12px,#EBC558 12px 13px);
+  border:2px solid var(--ink);border-radius:3px;overflow:hidden}
+.tape::before{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(90deg,transparent 0 11px,rgba(0,0,0,.55) 11px 12px);clip-path:polygon(0 0,100% 0,100% 42%,0 42%)}
+.tape i{position:absolute;top:0;bottom:0;background:var(--amber);border-right:3px solid var(--ink);display:block}
+.tape b{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:12px;color:var(--ink)}
+.read .sig{margin-top:8px;font-size:12.5px;color:var(--mut)}
+.habits{display:grid;gap:8px}
+.habit{display:flex;gap:10px;align-items:baseline;border-bottom:1px dashed var(--line);padding-bottom:7px}
+.habit .ch{flex:0 0 auto;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;background:var(--ink);color:var(--card);padding:2px 8px;border-radius:2px}
+.habit .nt{font-size:13px}
+.vibes{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.vibes span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1.5px solid var(--mut);color:var(--mut);padding:1px 10px;border-radius:3px}
+
+/* tools = strategies: 2x2 rack of hanging packs */
+.rack{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(12px,2.6vw,20px)}
+@media(max-width:640px){.rack{grid-template-columns:1fr}}
+.tool{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start}
+.tool .icon{width:56px;height:56px;flex:0 0 auto}
+.tool .nm{font-size:clamp(16px,3.4vw,21px);font-weight:800;text-transform:uppercase;line-height:1.1;letter-spacing:.02em}
+.tool .spec{font-size:12px;color:var(--mut);font-style:italic;margin-top:1px}
+.tool .row{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:11.5px}
+.tool .row .ch{font-family:var(--mono);letter-spacing:.06em}
+.tool .row .ch b{color:var(--amber-dk)}
+.tool .row .ch i{font-style:italic;color:var(--mut)}
+.tool .row .ch i::before{content:"— "}
+.fitline{display:flex;align-items:center;gap:8px;margin-top:9px}
+.fitline .bar{flex:1;height:9px;background:var(--card2);border:1.5px solid var(--ink);border-radius:4px;overflow:hidden}
+.fitline .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--amber-dk),var(--amber))}
+.fitline b{font-family:var(--mono);font-size:13px}
+.pick{position:absolute;right:12px;top:22px;transform:rotate(5deg);background:var(--amber);color:var(--ink);
+  font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;padding:3px 9px;border:2px solid var(--ink);border-radius:2px;font-weight:700;z-index:1}
+.tool .foot{margin-top:9px;padding-top:8px;border-top:1.5px dashed var(--line);display:flex;flex-wrap:wrap;gap:3px 16px;font-size:11.5px}
+.tool .foot .fmt{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+.tool .foot .rch{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.tool .foot .rch b{color:var(--amber-dk);font-size:13px}
+.tool .foot .warn{flex-basis:100%;font-size:11.5px;font-style:italic;color:var(--mut)}
+.tool .foot .warn::before{content:"▲ ";font-style:normal;color:var(--amber-dk)}
+
+/* clearance bin = ruled out */
+.bin{border:2px dashed var(--card2);border-radius:8px;padding:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:12px;background:rgba(0,0,0,.14)}
+@media(max-width:640px){.bin{grid-template-columns:1fr}}
+.ret{background:var(--card);border:2px solid var(--mut);border-radius:6px;padding:10px 14px;position:relative;opacity:.88}
+.ret::after{content:"NOT STOCKED";position:absolute;top:8px;right:10px;transform:rotate(5deg);
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:var(--amber-dk);border:1.5px solid var(--amber-dk);padding:1px 7px;border-radius:2px}
+.ret .ch{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+.ret h4{font-size:15px;font-weight:800;text-transform:uppercase}
+.ret h4 s{text-decoration-color:var(--amber-dk);text-decoration-thickness:2.5px}
+.ret .why{font-size:12px;font-style:italic;color:var(--mut);margin-top:4px;line-height:1.45}
+
+/* job card + sample rail = brief & creatives */
+.jobwrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(14px,3vw,26px);align-items:start}
+@media(max-width:760px){.jobwrap{grid-template-columns:1fr}}
+.jobcard .sal{font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--amber-dk);font-weight:700}
+.jobcard h3{font-size:clamp(20px,4.4vw,28px);font-weight:800;text-transform:uppercase;line-height:1.05}
+.jobcard .ang{font-size:13px;margin-top:5px;color:var(--mut);font-style:italic}
+.jobcard dl{display:grid;grid-template-columns:92px 1fr;gap:4px 12px;margin-top:11px;font-size:13px}
+.jobcard dt{font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--mut);padding-top:4px}
+.jobcard dd{border-bottom:1px solid var(--line);padding-bottom:6px}
+.jobcard .km{font-weight:800;font-size:15px}
+.jobcard .clip{margin-top:12px;height:10px;background:repeating-linear-gradient(90deg,var(--ink) 0 8px,transparent 8px 16px);opacity:.25}
+.samples{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:430px){.samples{grid-template-columns:1fr}}
+.samp{background:var(--card);border:2px solid var(--ink);border-radius:4px;padding:6px 6px 8px;transition:transform .14s ease}
+.samp:hover{transform:translateY(-3px) rotate(-.6deg)}
+.samp .iw{aspect-ratio:4/3;overflow:hidden;border:1.5px solid var(--line);background:var(--card2)}
+.samp img{width:100%;height:100%;object-fit:cover}
+.samp .h{font-size:12px;font-weight:600;line-height:1.3;margin-top:7px}
+.samp .p{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-top:3px}
+.samp .p b{border:1.5px solid var(--amber-dk);color:var(--amber-dk);padding:0 6px;border-radius:8px;font-weight:600}
+
+/* paint chips = palette */
+.chips{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+.chipset{background:var(--card);border:2px solid var(--ink);border-radius:4px;width:96px;overflow:hidden}
+.chipset .sw{height:34px;border-bottom:2px solid var(--card)}
+.chipset .sw:last-of-type{border-bottom:none}
+.chipset .n{font-family:var(--mono);font-size:9px;letter-spacing:.06em;padding:5px 7px 6px;text-transform:uppercase;line-height:1.35}
+.chipset .n b{display:block;font-size:10px}
+.chips .rail{width:100%;font-size:12px;font-style:italic;color:var(--card2);text-shadow:0 1px 2px rgba(0,0,0,.4)}
+
+/* stock check = qloo */
+.stock{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(12px,3vw,26px)}
+@media(max-width:760px){.stock{grid-template-columns:1fr}}
+.till{background:#FBF6E6;border:2px solid var(--ink);border-radius:4px;padding:12px 16px;font-family:var(--mono);font-size:11.5px}
+.till table{width:100%;border-collapse:collapse}
+.till th{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut);text-align:left;padding:3px 6px;border-bottom:2px solid var(--line)}
+.till td{padding:6px;border-bottom:1px dashed var(--line);vertical-align:top}
+.till .ok{display:inline-block;font-size:8.5px;letter-spacing:.14em;border:1.5px solid var(--amber-dk);color:var(--amber-dk);padding:0 5px;text-transform:uppercase}
+.till .note{margin-top:9px;font-size:10.5px;color:var(--mut);border-top:2px dashed var(--line);padding-top:8px}
+.sellers{border:2px solid var(--ink);background:var(--card);border-radius:6px;padding:12px 16px}
+.sellers h4{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber-dk);margin-bottom:6px}
+.sellers .dept{font-weight:800;text-transform:uppercase;font-size:12px;letter-spacing:.1em;border-bottom:1.5px solid var(--line);padding:6px 0 2px}
+.sellers .rw{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:3px 0;border-bottom:1px dotted var(--line)}
+.sellers .rw:last-child{border-bottom:none}
+.sellers .rw .v{font-family:var(--mono);font-size:11.5px;color:var(--mut)}
+
+/* order pads = next */
+.pads{display:flex;flex-wrap:wrap;gap:12px}
+.pads button{background:var(--card);border:2px solid var(--ink);border-radius:3px;padding:9px 16px 11px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+  box-shadow:0 4px 0 var(--board-dk);transition:transform .1s ease,box-shadow .1s ease}
+.pads button:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--board-dk)}
+.pads button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--board-dk)}
+.pads .sub{width:100%;font-style:italic;color:var(--card2);font-size:13px;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.alsoc{margin-top:12px;font-size:13px;color:var(--card2)}
+.alsoc b{font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:4px}
+.alsoc span{display:inline-block;margin-right:14px;font-style:italic;border-bottom:1px dotted var(--card2)}
+.foot{text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--card2);margin-top:30px;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.empty{background:var(--card);border:2px solid var(--ink);border-radius:6px;padding:40px;text-align:center;font-style:italic;color:var(--mut);margin-top:20px}
+</style>
+</head>
+<body>
+<div class="wall">
+  <header class="sign">
+    <h1>Marque <em>Hardware</em> · Campaign Supply</h1>
+    <div class="aisle" id="aisle">—</div>
+  </header>
+  <main id="app"></main>
+  <div class="foot" id="foot"></div>
+</div>
+<script src="./data.js"></script>
+<script src="./media-data.js"></script>
+<script src="./dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const DASH=window.DASH||{};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'./'):'';
+const f2=x=>(x||0).toFixed(2);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+const dshort=ts=>{try{return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase()}catch(e){return '—'}};
+
+const PALETTE=[
+  {n:'Safety Amber',h:'#F0A018'},{n:'Job Ticket',h:'#F5EEDC'},{n:'Masonite',h:'#8A6844'},
+  {n:'Shop Floor',h:'#523B24'},{n:'Pencil Mark',h:'#6B5B45'}
+];
+const CREAT=[5,2,9,12].map(i=>POOL[i]).filter(Boolean);
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||((s.reach&&s.reach.estViews)||0)>((strats[b].reach&&strats[b].reach.estViews)||0)?i:b,null);
+const calls=(B.evidence&&B.evidence.calls)||[];
+const AR=B.audienceRead;
+const anti=B.antiStrategies||[];
+const affs=(B.qlooBundle&&B.qlooBundle.affinities)||[];
+const DATE=dshort(B.createdAt||B.fetchedAt);
+const U=(B.sub&&B.sub.url)||(B.urlContext&&B.urlContext.url);
+const prompt=((B.sub&&B.sub.prompt)||B.title||'').trim();
+const ICONS=[
+ '<svg viewBox="0 0 56 56" class="icon"><path d="M14 40l22-22 8 8-22 22H14z" fill="var(--amber)" stroke="var(--ink)" stroke-width="2.4"/><rect x="34" y="8" width="14" height="10" rx="2" transform="rotate(45 34 8)" fill="var(--ink)"/></svg>',
+ '<svg viewBox="0 0 56 56" class="icon"><path d="M36 8a10 10 0 0 0-9 14L10 39a6 6 0 1 0 8 8l17-17a10 10 0 0 0 14-9l-7 3-4-4 3-7a10 10 0 0 0-5-5z" fill="var(--card)" stroke="var(--ink)" stroke-width="2.4"/></svg>',
+ '<svg viewBox="0 0 56 56" class="icon"><rect x="8" y="20" width="40" height="16" rx="2" fill="var(--amber)" stroke="var(--ink)" stroke-width="2.4"/><circle cx="28" cy="28" r="5" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/><rect x="12" y="26" width="8" height="4" fill="var(--card)" stroke="var(--ink)" stroke-width="1.4"/></svg>',
+ '<svg viewBox="0 0 56 56" class="icon"><rect x="24" y="6" width="7" height="28" rx="2" fill="var(--card)" stroke="var(--ink)" stroke-width="2.4"/><path d="M24 8l7-2M24 13l7-2M24 18l7-2" stroke="var(--ink)" stroke-width="1.6"/><rect x="19" y="34" width="17" height="16" rx="6" fill="var(--amber)" stroke="var(--ink)" stroke-width="2.4"/></svg>'];
+
+document.getElementById('aisle').innerHTML='AISLE 3 · BAY 03<br>WORK ORDER '+esc(String(B.id||'').slice(0,4).toUpperCase())+' · '+DATE;
+document.getElementById('foot').textContent='MARQUE HARDWARE · IF IT\'S NOT ON THE BOARD ASK AT THE TRADE COUNTER';
+
+const M=document.getElementById('app');
+const sec=(bx,title,sub,inner)=>{if(!inner)return;
+  M.appendChild(el('<section><div class="sect-h"><span class="bx">'+esc(bx)+'</span><h2>'+esc(title)+'</h2><span class="sub">'+esc(sub)+'</span></div><div class="board">'+inner+'</div></section>'))};
+
+/* work order = the ask */
+sec('W/O','Work Order — customer request','clip it up where everyone can see it',
+'<div class="hang ticket"><span class="stamp">Paid · to make</span><div class="in" style="display:contents">'+
+'<div><div class="ord">Order No. '+esc(String(B.id||'').slice(0,8).toUpperCase())+'</div>'+
+'<h3>'+esc(prompt)+'</h3>'+
+'<dl><dt>Materials</dt><dd>'+(strats.length?strats.length+'× strategy pack — '+strats.map(s=>esc(s.title)).join(', '):'—')+'</dd>'+
+'<dt>Finish</dt><dd>'+(CREAT.length?CREAT.length+'× creative samples · '+(B.evidence&&B.evidence.source?esc(B.evidence.source):'workshop'):'—')+'</dd></dl></div>'+
+'<div><dl><dt>Supplier</dt><dd>'+(U?'<a href="'+esc(U)+'">'+esc(U)+'</a>':'—')+'</dd>'+
+'<dt>Trade name</dt><dd>'+esc((B.urlContext&&B.urlContext.title)||'—')+'</dd>'+
+'<dt>Spec sheet</dt><dd>'+esc(((B.urlContext&&B.urlContext.description)||'').slice(0,140))+'</dd></dl></div>'+
+'<div class="perf" style="grid-column:1/-1">CUT LIST FILED '+DATE+' · COUNTERMAN: MARQUE · DO NOT TAKE DOWN UNTIL JOB IS SIGNED OFF</div>'+
+'</div></div>');
+
+/* customer tag = audience read */
+if(AR&&AR.lean){
+  const conf=Math.round((AR.lean.confidence||0)*100);
+  sec('TAG','The Regular — measured up','we\'ve served this one before; we keep their measurements',
+  '<div class="hang"><div class="in read"><div>'+
+  '<div class="lbl">Customer on file</div><div class="lean">'+esc(AR.lean.label)+'</div>'+
+  '<div class="tape"><i style="width:'+conf+'%"></i><b>'+conf+'% measured</b></div>'+
+  '<div class="sig"><b>Notes on the tag:</b> '+(AR.lean.signals||[]).map(s=>esc(s)).join(' · ')+'</div>'+
+  '<div class="vibes">'+(AR.vibeWords||[]).map(w=>'<span>'+esc(w)+'</span>').join('')+'</div></div>'+
+  '<div class="habits"><div class="lbl" style="margin-bottom:4px">Aisles they always walk</div>'+
+  (AR.mediaHabits||[]).map(h=>'<div class="habit"><span class="ch">'+esc(h.channel)+'</span><span class="nt">'+esc(h.note)+'</span></div>').join('')+
+  '</div></div></div>');
+}
+
+/* tool rack = strategies */
+if(strats.length){
+  sec('RACK','Tool Rack — four ways to do the job','each tool calibrated for the material; pick hangs front',
+  '<div class="rack">'+strats.map((s,i)=>{
+    const fit=(s.audienceFit&&s.audienceFit.score)||0;
+    return '<div class="hang"><div class="in tool">'+(i===sel?'<span class="pick">Staff pick</span>':'')+
+    '<div>'+ICONS[i%ICONS.length]+'</div><div>'+
+    '<div class="nm">'+esc(s.title)+'</div><div class="spec">'+esc(s.angle||'')+'</div>'+
+    '<div class="row">'+(s.channels||[]).map(c=>'<span class="ch"><b>'+esc(c.name)+'</b> '+f2(c.fit)+'<i>'+esc(c.why||'')+'</i></span>').join('')+'</div>'+
+    '<div class="fitline"><span class="bar"><i style="width:'+Math.round(fit*100)+'%"></i></span><b>'+f2(fit)+'</b></div>'+
+    '<div class="foot"><span class="fmt">USE '+(s.formats||[]).map(f=>esc(f)).join(' + ').toUpperCase()+'</span>'+
+    '<span class="rch">STOCK FCST <b>'+views(s.reach&&s.reach.estViews)+'</b></span>'+
+    (s.watchouts&&s.watchouts[0]?'<span class="warn">'+esc(s.watchouts[0])+'</span>':'')+
+    '</div></div></div></div>';
+  }).join('')+'</div>');
+}
+
+/* clearance bin = ruled out */
+if(anti.length){
+  sec('BIN','Clearance Bin — not for this job','returned goods; fine for someone, wrong for this customer',
+  '<div class="bin">'+anti.map(a=>'<div class="ret"><div class="ch">bin · '+esc(a.channel)+'</div>'+
+  '<h4><s>'+esc(a.title)+'</s></h4><div class="why">returns note — '+esc(a.whyNot)+'</div></div>').join('')+'</div>');
+}
+
+/* job card + samples = brief & creatives */
+const selS=sel!=null?strats[sel]:strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  sec('JOB','Job Card & Sample Rail','what the counterman wrote down, plus finish samples',
+  '<div class="jobwrap"><div class="hang jobcard"><div class="in">'+
+  (br?'<div class="sal">Job card · attached to '+esc(selS.title)+'</div><h3>'+esc(br.title)+'</h3>'+
+  '<div class="ang">'+esc(br.angle)+'</div>'+
+  '<dl><dt>Customer</dt><dd>'+esc(br.audience)+'</dd>'+
+  '<dt>Promise</dt><dd class="km">“'+esc(br.keyMessage)+'”</dd>'+
+  '<dt>Grade</dt><dd>spec signal '+esc(selS.heroSignal||'—')+' · calibrated '+f2((selS.audienceFit&&selS.audienceFit.score)||0)+'</dd></dl>'+
+  '<div class="clip"></div>'
+  :'<div class="ang">Card not written up yet.</div>')+
+  '</div></div>'+
+  '<div><div style="font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);margin-bottom:8px">Finish samples — check colour in daylight</div>'+
+  '<div class="samples">'+CREAT.map(m=>'<figure class="samp"><div class="iw"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+  '<figcaption><div class="h">'+esc(m.head)+'</div><div class="p">supplied by <b>'+esc(m.provider)+'</b></div></figcaption></figure>').join('')+'</div></div></div>');
+}
+
+/* paint chips = palette */
+sec('CHIPS','Paint Chip Rack','season colourway — take a strip, they\'re free',
+  '<div class="chips">'+PALETTE.map(s=>'<div class="chipset"><div class="sw" style="background:'+s.h+'"></div><div class="sw" style="background:'+s.h+';opacity:.55"></div><div class="sw" style="background:'+s.h+';opacity:.22"></div><div class="n"><b>'+esc(s.n)+'</b>'+s.h.toUpperCase()+'</div></div>').join('')+
+  '<div class="rail">Chips are mixed in-store; final colour may vary on the wall.</div></div>');
+
+/* stock check = qloo provenance */
+if(calls.length||affs.length){
+  sec('TILL','Stock Check — till roll','every look-up rung through at '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' prices, no guesses',
+  '<div class="stock"><div class="till"><table><tr><th>Lookup</th><th>Rung at</th><th>Took</th><th>Found</th><th>Fields</th></tr>'+
+  calls.map((c,i)=>'<tr><td><b>SKU-'+(i+1)+'</b> '+esc(c.endpoint)+'<br><span class="ok">'+esc(c.mode)+'</span></td>'+
+  '<td>'+esc((c.at||'').slice(11,19))+'Z</td><td>'+esc(c.tookMs)+' ms</td><td>n='+esc(c.n)+'</td><td>'+esc(Object.keys(c.params||{}).length)+'</td></tr>').join('')+'</table>'+
+  '<p class="note">'+(calls.length||0)+' lookups reconciled on the night stock-take · Qloo till · mode '+esc((B.qlooBundle&&B.qlooBundle.mode)||'live')+' — shelf counts match the roll.</p></div>'+
+  '<div class="sellers"><h4>Top sellers by department</h4>'+affs.map(g=>'<div class="dept">dept. '+esc(String(g.type).replace('urn:entity:',''))+'</div>'+
+  (g.entities||[]).slice(0,4).map(e=>'<div class="rw"><span>'+esc(e.name)+'</span><span class="v">idx '+(e.affinity||0).toFixed(2)+'</span></div>').join('')).join('')+'</div></div>');
+}
+
+/* order pads = next outputs */
+const others=(DASH.plans||[]).filter(p=>p.id!==B.id).slice(0,4);
+sec('PAD','Order Pads — tear one off','next job starts at the same counter',
+  '<div class="pads">'+['Special-order the ad spot','Draw up the landing page','Book the delivery run','Reorder — same again'].map(x=>'<button type="button">'+esc(x)+'</button>').join('')+
+  '<div class="sub">Tear a slip, hand it over, we\'ll ring when it lands.</div></div>'+
+  (others.length?'<div class="alsoc"><b>Also on the board</b>'+others.map(p=>'<span>'+esc(p.title)+'</span>').join('')+'</div>':''));
+
+if(!M.children.length)M.appendChild(el('<div class="empty">Board\'s bare — data.js never made it to the loading dock.</div>'));
+})();
+</script>
+</body>
+</html>

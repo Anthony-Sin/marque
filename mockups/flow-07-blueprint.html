@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MARQUE — Board Schematic · Rhode peptide lip tint → Gen Z</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230B3B73'/%3E%3Crect x='6' y='6' width='52' height='52' fill='none' stroke='%238FD8FF' stroke-width='2'/%3E%3Ctext x='32' y='44' font-family='monospace' font-size='34' font-weight='700' text-anchor='middle' fill='%238FD8FF'%3EM%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bp:#0B3B73;
+  --bp-deep:#082E5C;
+  --ink:#EAF6FF;
+  --ink-dim:#9CC3E4;
+  --line:rgba(143,216,255,.55);
+  --line-soft:rgba(143,216,255,.26);
+  --line-faint:rgba(143,216,255,.12);
+  --acc:#8FD8FF;
+  --acc-solid:#BEE8FF;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono","JetBrains Mono",Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bp-deep);
+  color:var(--ink);
+  font-family:var(--mono);
+  font-size:13px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(143,216,255,.35);color:#fff}
+a{color:var(--acc-solid);text-decoration:none;border-bottom:1px dashed var(--line)}
+a:hover,a:focus-visible{color:#fff;border-bottom-style:solid}
+a:focus-visible,button:focus-visible{outline:1px dashed var(--acc);outline-offset:3px}
+button{font-family:var(--mono);cursor:pointer}
+
+/* ============ SHEET + GRID ============ */
+.sheet{
+  position:relative;
+  margin:18px;
+  min-height:calc(100vh - 36px);
+  border:1px solid var(--line);
+  outline:1px solid var(--line-faint);
+  outline-offset:5px;
+  background:
+    linear-gradient(rgba(143,216,255,.075) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(143,216,255,.075) 1px,transparent 1px),
+    linear-gradient(rgba(143,216,255,.14) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(143,216,255,.14) 1px,transparent 1px),
+    var(--bp);
+  background-size:24px 24px,24px 24px,120px 120px,120px 120px;
+  padding:34px 34px 30px;
+}
+.sheet::before,.sheet::after{ /* corner registration marks */
+  content:"";position:absolute;width:14px;height:14px;border:1px solid var(--acc);
+}
+.sheet::before{top:-7px;left:-7px;border-right:none;border-bottom:none}
+.sheet::after{bottom:-7px;right:-7px;border-left:none;border-top:none}
+
+/* ============ SHEET HEAD / TITLE ============ */
+.sheet-head{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:flex-end;justify-content:space-between;border-bottom:2px solid var(--line);padding-bottom:18px}
+.dwg-id{font-size:10px;letter-spacing:.22em;color:var(--ink-dim);text-transform:uppercase}
+.sheet-head h1{
+  font-size:clamp(20px,3.4vw,34px);font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#fff;line-height:1.12;
+}
+.sheet-head h1 .thin{font-weight:400;color:var(--acc)}
+.sheet-meta{text-align:right;font-size:10px;letter-spacing:.14em;color:var(--ink-dim);text-transform:uppercase}
+.sheet-meta b{color:var(--acc-solid);font-weight:600}
+
+/* dimension annotation component */
+.dim{position:relative;height:26px;margin:6px 0 2px}
+.dim::before{content:"";position:absolute;left:0;right:0;top:12px;border-top:1px solid var(--acc)}
+.dim::after{content:"";position:absolute;left:0;right:0;top:8px;height:8px;border-left:1px solid var(--acc);border-right:1px solid var(--acc)}
+.dim span{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  background:var(--bp);padding:0 8px;font-size:10px;letter-spacing:.14em;color:var(--acc-solid);white-space:nowrap;
+}
+
+/* dashed callout label w/ leader */
+.callout{
+  display:inline-flex;align-items:center;gap:8px;font-size:10px;letter-spacing:.2em;
+  color:var(--acc-solid);text-transform:uppercase;
+}
+.callout::before{content:"";width:34px;border-top:1px dashed var(--acc)}
+.callout.down::before{width:0;border-top:none;border-left:1px dashed var(--acc);height:22px;align-self:flex-start;margin-top:-4px}
+
+/* ============ FIG BLOCKS ============ */
+.fig{margin-top:34px}
+.fig-tag{
+  display:flex;align-items:baseline;gap:14px;margin-bottom:14px;
+}
+.fig-tag .n{
+  font-size:11px;color:var(--acc);letter-spacing:.2em;border:1px solid var(--line);
+  padding:3px 8px;white-space:nowrap;
+}
+.fig-tag h2{font-size:14px;letter-spacing:.24em;text-transform:uppercase;color:#fff;font-weight:600}
+.fig-tag .note{font-size:10px;color:var(--ink-dim);letter-spacing:.1em}
+.fig-body{border:1px solid var(--line-soft);background:rgba(8,46,92,.35);position:relative}
+.fig-body::before{ /* dashed inner offset — drafting detail */
+  content:"";position:absolute;inset:5px;border:1px dashed var(--line-faint);pointer-events:none;
+}
+.fig-pad{padding:20px;position:relative}
+
+/* ---- FIG1 the ask ---- */
+.ask-wrap{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:0}
+.ask-cell{padding:22px;border-right:1px dashed var(--line-soft)}
+.ask-cell:last-child{border-right:none}
+.ask-prompt{font-size:clamp(17px,2.4vw,24px);color:#fff;line-height:1.35;letter-spacing:.02em}
+.ask-prompt em{font-style:normal;color:var(--acc);border-bottom:1px solid var(--acc)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:11.5px}
+.kv dt{color:var(--ink-dim);letter-spacing:.12em;text-transform:uppercase;font-size:10px;padding-top:2px}
+.kv dd{color:var(--ink)}
+.small{font-size:10.5px;color:var(--ink-dim)}
+
+/* ---- FIG2 audience ---- */
+.aud-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr)}
+.aud-cell{padding:20px;border-right:1px dashed var(--line-soft)}
+.aud-cell:last-child{border-right:none}
+.gauge{margin:14px 0 6px}
+.gauge .track{position:relative;height:10px;border:1px solid var(--acc)}
+.gauge .fill{position:absolute;inset:1px auto 1px 1px;background:repeating-linear-gradient(90deg,var(--acc) 0 6px,transparent 6px 8px)}
+.gauge .lbl{display:flex;justify-content:space-between;font-size:10px;font-variant-numeric:tabular-nums;color:var(--ink-dim);margin-top:5px;letter-spacing:.1em}
+.chiprow{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.chip{
+  border:1px solid var(--line);color:var(--acc-solid);padding:4px 9px;font-size:10.5px;
+  letter-spacing:.08em;transition:background .15s,color .15s;
+}
+.chip:hover{background:var(--acc);color:var(--bp-deep)}
+.habit{display:grid;grid-template-columns:84px 1fr;gap:4px 12px;padding:9px 0;border-bottom:1px dashed var(--line-faint);font-size:11.5px}
+.habit:last-child{border-bottom:none}
+.habit b{color:var(--acc);font-weight:600;letter-spacing:.14em;font-size:10px;text-transform:uppercase;padding-top:1px}
+.sig-list li{list-style:none;padding:4px 0 4px 16px;position:relative;font-size:11.5px;color:var(--ink)}
+.sig-list li::before{content:"—";position:absolute;left:0;color:var(--acc)}
+
+/* ---- FIG3 strategies ---- */
+.strat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.strat{
+  padding:18px 16px 16px;border-right:1px dashed var(--line-soft);position:relative;
+  transition:background .15s;
+}
+.strat:last-child{border-right:none}
+.strat:hover{background:rgba(143,216,255,.07)}
+.strat.selected{box-shadow:inset 0 0 0 1px var(--acc);background:rgba(143,216,255,.1)}
+.strat.selected::before{
+  content:"SELECTED PATH";position:absolute;top:8px;right:10px;font-size:8.5px;
+  letter-spacing:.2em;color:var(--bp-deep);background:var(--acc);padding:2px 6px;
+}
+.strat .id{font-size:10px;color:var(--ink-dim);letter-spacing:.2em}
+.strat h3{font-size:15px;color:#fff;letter-spacing:.05em;margin:4px 0 2px}
+.strat .angle{font-size:10px;color:var(--acc);letter-spacing:.16em;text-transform:uppercase}
+.fit-dial{display:flex;align-items:baseline;gap:6px;margin:12px 0 2px}
+.fit-dial .big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--acc-solid);line-height:1}
+.fit-dial .cap{font-size:9px;color:var(--ink-dim);letter-spacing:.18em;text-transform:uppercase}
+.chan{padding:6px 0;border-bottom:1px dashed var(--line-faint);font-size:11px}
+.chan:last-of-type{border-bottom:none}
+.chan .top{display:flex;justify-content:space-between;letter-spacing:.1em}
+.chan .bar{height:5px;border:1px solid var(--line);margin-top:4px;position:relative}
+.chan .bar i{position:absolute;inset:1px auto 1px 1px;background:var(--acc);display:block}
+.chan .why{font-size:9.5px;color:var(--ink-dim);margin-top:4px}
+.fmt{margin-top:10px;display:flex;flex-wrap:wrap;gap:5px}
+.fmt span{font-size:9px;border:1px dashed var(--line);padding:2px 6px;color:var(--ink-dim);letter-spacing:.08em}
+.reach-line{margin-top:12px;font-size:10.5px;color:var(--acc-solid);letter-spacing:.1em}
+.reach-line small{display:block;color:var(--ink-dim);font-size:9.5px;letter-spacing:.04em;margin-top:3px}
+.watch{margin-top:10px;font-size:9.5px;color:var(--ink-dim);border-left:2px solid var(--acc);padding-left:9px}
+.watch b{color:var(--acc);font-weight:600;letter-spacing:.16em;font-size:8.5px;display:block}
+
+/* ---- FIG4 rejected ---- */
+.reject-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.reject{
+  padding:16px;border-right:1px dashed var(--line-soft);position:relative;overflow:hidden;
+}
+.reject:last-child{border-right:none}
+.reject::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(45deg,transparent 0 9px,rgba(143,216,255,.06) 9px 10px);
+}
+.reject .stamp{
+  display:inline-block;border:1px dashed var(--acc);color:var(--acc);font-size:8.5px;
+  letter-spacing:.22em;padding:2px 7px;transform:rotate(-3deg);margin-bottom:10px;
+}
+.reject h4{font-size:13px;color:var(--ink);letter-spacing:.06em}
+.reject .chan-tag{font-size:9.5px;color:var(--ink-dim);letter-spacing:.16em;text-transform:uppercase;margin:2px 0 8px}
+.reject p{font-size:10.5px;color:var(--ink-dim);text-wrap:pretty}
+
+/* ---- FIG5 output ---- */
+.out-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.4fr)}
+.brief-cell{padding:20px;border-right:1px dashed var(--line-soft)}
+.brief-title{font-size:clamp(20px,2.6vw,30px);color:#fff;letter-spacing:.03em}
+.brief-angle{font-size:11px;color:var(--acc);margin:8px 0 16px;line-height:1.6;text-wrap:pretty}
+.cre-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:20px}
+.plate{
+  border:1px solid var(--line);background:var(--bp-deep);
+  transition:transform .18s,border-color .18s;
+}
+.plate:hover{transform:translateY(-3px);border-color:var(--acc)}
+.plate .imgwrap{
+  position:relative;aspect-ratio:1;background:#0A3568;overflow:hidden;
+  border-bottom:1px solid var(--line);
+}
+.plate img{
+  width:100%;height:100%;object-fit:cover;display:block;
+  filter:grayscale(1) contrast(1.15) brightness(.95);
+  mix-blend-mode:screen;opacity:.92;
+}
+.plate .imgwrap::after{
+  content:"";position:absolute;inset:0;border:6px solid rgba(11,59,115,.0);
+  background:linear-gradient(160deg,rgba(143,216,255,.12),transparent 40%);
+  pointer-events:none;
+}
+.plate .cap{padding:9px 10px}
+.plate .cap .h{font-size:10.5px;color:var(--ink);letter-spacing:.03em;min-height:2.6em}
+.plate .cap .p{font-size:8.5px;color:var(--acc);letter-spacing:.18em;text-transform:uppercase;margin-top:5px}
+
+/* ---- FIG6 palette ---- */
+.sw-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr))}
+.sw{padding:14px;border-right:1px dashed var(--line-soft)}
+.sw:last-child{border-right:none}
+.sw .box{height:64px;border:1px solid var(--line);position:relative}
+.sw .box::after{content:"";position:absolute;inset:4px;border:1px dashed rgba(11,59,115,.35)}
+.sw .nm{font-size:10.5px;color:var(--ink);margin-top:9px;letter-spacing:.06em}
+.sw .hex{font-size:9.5px;color:var(--ink-dim);letter-spacing:.14em}
+
+/* ---- FIG7 provenance ---- */
+.prov-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+.prov-cell{padding:20px;border-right:1px dashed var(--line-soft)}
+.prov-cell:last-child{border-right:none}
+table.log{width:100%;border-collapse:collapse;font-size:10.5px;font-variant-numeric:tabular-nums;table-layout:fixed}
+table.log th{
+  text-align:left;font-weight:400;color:var(--ink-dim);letter-spacing:.16em;text-transform:uppercase;
+  font-size:8.5px;border-bottom:1px solid var(--line);padding:0 8px 7px 0;
+}
+table.log td{border-bottom:1px dashed var(--line-faint);padding:7px 8px 7px 0;vertical-align:top;color:var(--ink)}
+table.log tr:last-child td{border-bottom:none}
+td .ep{color:var(--acc-solid)}
+td .pm{display:block;color:var(--ink-dim);font-size:9px;max-width:min(300px,46vw);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.live{
+  display:inline-flex;align-items:center;gap:5px;border:1px solid var(--acc);color:var(--acc);
+  font-size:8px;letter-spacing:.2em;padding:1px 6px;text-transform:uppercase;
+}
+.live::before{content:"";width:5px;height:5px;background:var(--acc);border-radius:50%;animation:blink 1.4s steps(2) infinite}
+@keyframes blink{50%{opacity:.2}}
+.aff-group{margin-bottom:14px}
+.aff-group .t{font-size:9px;letter-spacing:.2em;color:var(--acc);text-transform:uppercase;margin-bottom:7px}
+.aff{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;font-size:11px;padding:3px 0}
+.aff .bar{grid-column:1/-1;height:4px;border:1px solid var(--line-faint);position:relative}
+.aff .bar i{position:absolute;inset:1px auto 1px 1px;background:var(--acc);display:block}
+.aff .v{color:var(--acc-solid);font-size:10px;font-variant-numeric:tabular-nums}
+
+/* ---- FIG8 next ---- */
+.next-row{display:flex;flex-wrap:wrap;gap:12px;padding:20px}
+.nchip{
+  border:1px solid var(--acc);color:var(--acc-solid);background:none;padding:10px 18px;
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;display:inline-flex;gap:9px;align-items:center;
+  transition:background .15s,color .15s;
+}
+.nchip svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.5}
+.nchip:hover,.nchip:focus-visible{background:var(--acc);color:var(--bp-deep)}
+.nchip:active{transform:translateY(1px)}
+
+/* ---- title block ---- */
+.titleblock{
+  margin-top:34px;display:flex;justify-content:flex-end;overflow-x:auto;
+}
+.kv dd{word-break:break-word}
+.tb{border:1px solid var(--line);border-collapse:collapse;font-size:9.5px;letter-spacing:.08em}
+.tb td,.tb th{border:1px solid var(--line-soft);padding:5px 12px;text-align:left}
+.tb th{color:var(--ink-dim);font-weight:400;font-size:8px;letter-spacing:.2em;text-transform:uppercase}
+.tb td{color:var(--ink)}
+
+/* ---------- responsive ---------- */
+@media(max-width:1100px){
+  .strat-grid,.reject-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .strat:nth-child(2),.reject:nth-child(2){border-right:none}
+  .strat,.reject{border-bottom:1px dashed var(--line-soft)}
+  .cre-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sw-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .sw{border-bottom:1px dashed var(--line-soft)}
+  .prov-grid,.out-grid,.ask-wrap,.aud-grid{grid-template-columns:1fr}
+  .ask-cell,.aud-cell,.prov-cell,.brief-cell{border-right:none;border-bottom:1px dashed var(--line-soft)}
+  .aud-cell:last-child,.prov-cell:last-child{border-bottom:none}
+}
+@media(max-width:560px){
+  .sheet{margin:8px;padding:16px 14px}
+  .strat-grid,.reject-grid,.cre-grid,.sw-grid{grid-template-columns:1fr}
+  .strat,.reject,.sw{border-right:none}
+  .fig-pad{padding:14px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{animation:none!important;transition:none!important}
+}
+@media print{
+  body{background:#fff;color:#23456b}
+  html{scroll-behavior:auto}
+  *{box-shadow:none!important;text-shadow:none!important;animation:none!important}
+  .sheet{background:#fff;border-color:#3366aa;outline-color:#99bbdd;margin:0}
+  .fig-body,.plate,.plate .imgwrap{background:#fff}
+  .plate img{filter:none;mix-blend-mode:normal;opacity:1}
+  .sheet-head h1,.fig-tag h2,.ask-prompt,.strat h3,.brief-title{color:#0B3B73!important}
+  .kv dd,.sig-list li,.reject h4,.sw .nm,.plate .cap .h,table.log td,.tb td,.habit span,.reject p,.chan,.aff,.fit-dial .big{color:#23456b!important}
+  .dwg-id,.sheet-meta,.fig-tag .note,.kv dt,.chan .why,.gauge .lbl,.fit-dial .cap,.reach-line small,td .pm,.small,.watch,.sw .hex{color:#4a6b8f!important}
+  .dim span{background:#fff;color:#1d5a94}
+  a,.strat .angle,.brief-angle,.live,.nchip,.aff .v,.fig-tag .n,.plate .cap .p,td .ep,.aff-group .t,.watch b,.callout,.habit b,.reach-line,.sheet-meta b,.sheet-head h1 .thin{color:#1d5a94!important}
+  .nchip,.chip,.live,.fig-tag .n{border-color:#3366aa!important;background:#fff!important}
+  .strat.selected{box-shadow:inset 0 0 0 1px #3366aa;background:#f4f8fc}
+  .strat.selected::before{background:#1d5a94;color:#fff}
+  .fig{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="sheet" id="sheet">
+  <header class="sheet-head">
+    <div>
+      <div class="dwg-id">MARQUE · CAMPAIGN ASSEMBLY DRAWING · DWG NO. MQ-1023-RHO</div>
+      <h1 id="dwg-title">STRATEGY <span class="thin">→</span> CAMPAIGN <span class="thin">→</span> RESULT</h1>
+    </div>
+    <div class="sheet-meta" id="sheet-meta"></div>
+  </header>
+  <div id="figs"></div>
+  <div class="titleblock" id="tblock"></div>
+</div>
+
+<script src="./data.js"></script>
+<script src="./media-data.js"></script>
+<script src="./dash-data.js"></script>
+<script>
+(function(){
+"use strict";
+const B=(window.DATA&&window.DATA.board)||{};
+const POOL=(window.MEDIA&&window.MEDIA.pool)||[];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fix=p=>p?String(p).replace(/^\.\//,'./'):'';
+const pct=x=>Math.round((x||0)*100);
+const views=n=>n>=1e6?(n/1e6).toFixed(1).replace(/\.0$/,'')+'M':n>=1e3?Math.round(n/1e3)+'K':String(n||0);
+const el=h=>{const t=document.createElement('template');t.innerHTML=h.trim();return t.content.firstElementChild};
+
+const PALETTE=[
+  {n:'Peptide Blush',h:'#EFB7AE',role:'primary tint'},
+  {n:'Glaze Milk',h:'#F7F0E5',role:'base coat'},
+  {n:'Barrier Cream',h:'#EDDFCE',role:'secondary'},
+  {n:'Toasted Almond',h:'#B98A6F',role:'shadow tone'},
+  {n:'Espresso Bean',h:'#4E362B',role:'ink / liner'}
+];
+
+/* pick 4 creatives with provider variety */
+const CREAT=[0,2,4,6].map(i=>POOL[i]).filter(Boolean);
+/* selected strategy = highest estViews */
+const strats=B.strategies||[];
+const sel=strats.reduce((b,s,i)=>b===null||(s.reach&&s.reach.estViews)>(strats[b].reach&&strats[b].reach.estViews||0)?i:b,null);
+
+const F=document.getElementById('figs');
+const dim=(t)=>'<div class="dim"><span>'+esc(t)+'</span></div>';
+const fig=(n,title,note,body)=>{
+  const f=el('<section class="fig"><div class="fig-tag"><span class="n">FIG. '+n+'</span><h2>'+esc(title)+'</h2>'+(note?'<span class="note">'+esc(note)+'</span>':'')+'</div><div class="fig-body">'+body+'</div></section>');
+  return f;
+};
+
+/* ---------- header meta ---------- */
+document.getElementById('sheet-meta').innerHTML=
+  'SCALE 1:1 · LIVE DATA<br><b>QLOO '+(B.evidence&&B.evidence.calls?B.evidence.calls.length:0)+' CALLS</b> · '+(B.fetchedAt?new Date(B.fetchedAt).toISOString().slice(0,10):'—');
+
+/* ---------- FIG 1 — the ask ---------- */
+if(B.sub||B.urlContext){
+  const u=B.sub&&B.sub.url||(B.urlContext&&B.urlContext.url)||'';
+  F.appendChild(fig(1,'THE ASK','input specification',
+    '<div class="ask-wrap">'+
+      '<div class="ask-cell">'+
+        '<div class="callout">design brief // client input</div>'+
+        dim('PROMPT · L=1 LINE')+
+        '<p class="ask-prompt">'+esc((B.sub&&B.sub.prompt)||B.title||'')+'</p>'+
+        (u?'<p style="margin-top:14px"><a href="'+esc(u)+'" target="_blank" rel="noopener">'+esc(u)+'</a></p>':'')+
+      '</div>'+
+      '<div class="ask-cell">'+
+        '<div class="callout">resolved source</div>'+
+        dim('URL CONTEXT')+
+        '<dl class="kv">'+
+          '<dt>title</dt><dd>'+esc(B.urlContext&&B.urlContext.title||'—')+'</dd>'+
+          '<dt>board id</dt><dd class="small">'+esc(B.id||'—')+'</dd>'+
+          '<dt>desc</dt><dd class="small">'+esc(B.urlContext&&B.urlContext.description||'—')+'</dd>'+
+        '</dl>'+
+      '</div>'+
+    '</div>'));
+}
+
+/* ---------- FIG 2 — audience read ---------- */
+const AR=B.audienceRead;
+if(AR&&AR.lean){
+  F.appendChild(fig(2,'AUDIENCE READ','cross-section of target demographic',
+    '<div class="aud-grid">'+
+      '<div class="aud-cell">'+
+        '<div class="callout">dominant lean</div>'+
+        '<div class="fit-dial"><span class="big">'+esc(AR.lean.label||'—').toUpperCase()+'</span></div>'+
+        dim('CONFIDENCE '+pct(AR.lean.confidence)+'%')+
+        '<div class="gauge"><div class="track"><div class="fill" style="width:'+pct(AR.lean.confidence)+'%"></div></div><div class="lbl"><span>0.00</span><span>'+(AR.lean.confidence||0).toFixed(2)+'</span><span>1.00</span></div></div>'+
+        '<ul class="sig-list" style="margin-top:12px">'+(AR.lean.signals||[]).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul>'+
+      '</div>'+
+      '<div class="aud-cell">'+
+        '<div class="callout">media habits</div>'+
+        '<div style="margin-top:10px">'+(AR.mediaHabits||[]).map(h=>'<div class="habit"><b>'+esc(h.channel)+'</b><span>'+esc(h.note)+'</span></div>').join('')+'</div>'+
+      '</div>'+
+      '<div class="aud-cell">'+
+        '<div class="callout">vibe words</div>'+
+        dim('N='+(AR.vibeWords||[]).length+' TOKENS')+
+        '<div class="chiprow">'+(AR.vibeWords||[]).map(w=>'<span class="chip">'+esc(w)+'</span>').join('')+'</div>'+
+      '</div>'+
+    '</div>'));
+}
+
+/* ---------- FIG 3 — strategies ---------- */
+if(strats.length){
+  F.appendChild(fig(3,'STRATEGY OPTIONS','4 evaluated paths · all dims verified',
+    '<div class="strat-grid">'+strats.map((s,i)=>
+      '<article class="strat'+(i===sel?' selected':'')+'">'+
+        '<div class="id">'+esc(s.id||('ST'+(i+1)))+' · PATH '+String.fromCharCode(65+i)+'</div>'+
+        '<h3>'+esc(s.title)+'</h3><div class="angle">'+esc(s.angle)+'</div>'+
+        '<div class="fit-dial"><span class="big">'+pct(s.audienceFit&&s.audienceFit.score)+'</span><span class="cap">fit /<br>100</span></div>'+
+        dim('FIT '+pct(s.audienceFit&&s.audienceFit.score)+'% · '+(s.audienceFit&&s.audienceFit.notes&&s.audienceFit.notes[0]||'').toUpperCase())+
+        '<div style="margin-top:8px">'+(s.channels||[]).map(c=>
+          '<div class="chan"><div class="top"><span>'+esc(c.name).toUpperCase()+'</span><span>'+pct(c.fit)+'%</span></div>'+
+          '<div class="bar"><i style="width:'+pct(c.fit)+'%"></i></div>'+
+          (c.why?'<div class="why">signal: '+esc(c.why)+'</div>':'')+'</div>').join('')+
+        '</div>'+
+        '<div class="fmt">'+(s.formats||[]).map(f=>'<span>'+esc(f)+'</span>').join('')+'</div>'+
+        (s.reach?'<div class="reach-line">≈ '+views(s.reach.estViews)+' EST. VIEWS<small>'+esc(s.reach.basis||'')+'</small></div>':'')+
+        ((s.watchouts&&s.watchouts[0])?'<div class="watch"><b>TOLERANCE NOTE</b>'+esc(s.watchouts[0])+'</div>':'')+
+      '</article>').join('')+
+    '</div>'));
+}
+
+/* ---------- FIG 4 — rejected ---------- */
+const anti=B.antiStrategies||[];
+if(anti.length){
+  F.appendChild(fig(4,'RULED OUT','paths rejected at review — do not machine',
+    '<div class="reject-grid">'+anti.map(a=>
+      '<div class="reject"><span class="stamp">REJECTED</span>'+
+      '<h4>'+esc(a.title)+'</h4><div class="chan-tag">ch: '+esc(a.channel)+'</div>'+
+      '<p>'+esc(a.whyNot)+'</p></div>').join('')+
+    '</div>'));
+}
+
+/* ---------- FIG 5 — produced output ---------- */
+const selS=strats[sel]||strats[0];
+if(selS||CREAT.length){
+  const br=selS&&selS.brief;
+  F.appendChild(fig(5,'PRODUCED OUTPUT','cyanotype proofs · 1:1',
+    '<div class="out-grid">'+
+      (br?'<div class="brief-cell">'+
+        '<div class="callout">campaign brief // '+esc(selS.id||'')+'</div>'+
+        '<h3 class="brief-title" style="margin-top:10px">'+esc(br.title)+'</h3>'+
+        '<p class="brief-angle">'+esc(br.angle)+'</p>'+
+        dim('BRIEF SPEC')+
+        '<dl class="kv"><dt>audience</dt><dd class="small">'+esc(br.audience)+'</dd>'+
+        '<dt>key msg</dt><dd style="color:var(--acc-solid)">“'+esc(br.keyMessage)+'”</dd>'+
+        '<dt>hero sig</dt><dd>'+esc(selS.heroSignal||'—')+'</dd></dl>'+
+      '</div>':'<div class="brief-cell"></div>')+
+      '<div class="cre-grid">'+CREAT.map((m,i)=>
+        '<figure class="plate"><div class="imgwrap"><img src="'+esc(fix(m.img))+'" alt="'+esc(m.head)+'" onerror="this.closest(\'figure\').style.display=\'none\'"></div>'+
+        '<figcaption class="cap"><div class="h">'+esc(m.head)+'</div><div class="p">'+esc(m.provider)+' · proof '+String(i+1).padStart(2,'0')+'</div></figcaption></figure>').join('')+
+      '</div>'+
+    '</div>'));
+}
+
+/* ---------- FIG 6 — palette ---------- */
+F.appendChild(fig(6,'MATERIAL SPEC','brand palette · Rhode peptide series',
+  '<div class="sw-grid">'+PALETTE.map((s,i)=>
+    '<div class="sw"><div class="box" style="background:'+s.h+'"></div>'+
+    dim('SW-'+(i+1))+
+    '<div class="nm">'+esc(s.n)+'</div><div class="hex">'+s.h+' · '+esc(s.role)+'</div></div>').join('')+
+  '</div>'));
+
+/* ---------- FIG 7 — provenance ---------- */
+const EV=B.evidence, QB=B.qlooBundle;
+if(EV||QB){
+  const calls=(EV&&EV.calls)||[];
+  const affs=(QB&&QB.affinities)||[];
+  F.appendChild(fig(7,'PROVENANCE','Qloo evidence trail · bill of signals',
+    '<div class="prov-grid">'+
+      '<div class="prov-cell">'+
+        '<div class="callout">api call log</div>'+
+        dim(calls.length+' CALLS · '+(QB&&QB.mode?QB.mode.toUpperCase():'—')+' MODE')+
+        '<table class="log"><thead><tr><th>endpoint</th><th>n</th><th>ms</th><th>mode</th></tr></thead><tbody>'+
+        calls.map(c=>'<tr><td><span class="ep">'+esc(c.endpoint)+'</span><span class="pm">'+esc(Object.entries(c.params||{}).map(kv=>kv[0]+'='+kv[1]).join(' '))+'</span></td><td>'+esc(c.n)+'</td><td>'+esc(c.tookMs)+'</td><td><span class="live">'+esc(c.mode)+'</span></td></tr>').join('')+
+        '</tbody></table>'+
+        '<p class="small" style="margin-top:12px">fetched '+esc(B.fetchedAt?new Date(B.fetchedAt).toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'}):'—')+'</p>'+
+      '</div>'+
+      '<div class="prov-cell">'+
+        '<div class="callout">top affinities by type</div>'+
+        '<div style="margin-top:12px">'+affs.map(g=>{
+          const t=g.type.replace('urn:entity:','');
+          return '<div class="aff-group"><div class="t">'+esc(t)+'</div>'+
+            g.entities.slice(0,4).map(e=>'<div class="aff"><span>'+esc(e.name)+'</span><span class="v">'+e.affinity.toFixed(2)+'</span><div class="bar"><i style="width:'+pct(e.affinity)+'%"></i></div></div>').join('')+
+          '</div>'}).join('')+
+        '</div>'+
+      '</div>'+
+    '</div>'));
+}
+
+/* ---------- FIG 8 — next outputs ---------- */
+F.appendChild(fig(8,'NEXT OUTPUTS','available downstream assemblies',
+  '<div class="next-row">'+
+  [['M18 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M4 8h16','CAMPAIGN MICROSITE'],
+   ['M4 5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z M15 3v5h5 M8 12h8 M8 16h8','BRANDBOOK PDF'],
+   ['M4 5h16v14H4z M4 9h16 M9 13l5 3-5 3z','VIDEO CUT'],
+   ['M4 19V5 M4 15l5-4 4 3 7-6','PERFORMANCE PLAN']].map(x=>
+    '<button class="nchip"><svg viewBox="0 0 24 24"><path d="'+x[0]+'"/></svg>'+x[1]+'</button>').join('')+
+  '</div>'));
+
+/* ---------- title block ---------- */
+document.getElementById('tblock').innerHTML=
+ '<table class="tb"><tr><th>project</th><td>'+esc(B.title||'—')+'</td><th>date</th><td>'+(B.createdAt?new Date(B.createdAt).toISOString().slice(0,10):'—')+'</td></tr>'+
+ '<tr><th>drawn</th><td>MARQUE AUTOMATION</td><th>checked</th><td>QLOO LIVE × '+(B.evidence&&B.evidence.calls?B.evidence.calls.length:0)+'</td></tr>'+
+ '<tr><th>sheet</th><td>01 / 01</td><th>rev</th><td>A — ISSUED FOR REVIEW</td></tr></table>';
+})();
+</script>
+</body>
+</html>

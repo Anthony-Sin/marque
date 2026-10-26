@@ -19,6 +19,7 @@ export const DATA_DIR = path.resolve(ROOT, process.env.DATA_DIR || './data');
 export const ASSETS_DIR = path.join(DATA_DIR, 'assets');
 export const STATE_FILE = path.join(DATA_DIR, 'state.json');
 export const WEB_DIST = path.resolve(ROOT, 'web/dist');
+export const MOCKUPS_DIR = path.resolve(ROOT, 'mockups');
 
 export const ENV = {
   tensorBase: (process.env.TENSOR_BASE_URL || '').replace(/\/$/, ''),

@@ -7,7 +7,7 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 const execFileP = promisify(execFile);
-import { PORT, ASSETS_DIR, WEB_DIST, ENV, DATA_DIR } from './config.js';
+import { PORT, ASSETS_DIR, WEB_DIST, ENV, DATA_DIR, MOCKUPS_DIR } from './config.js';
 import { tuning } from './tuning.js';
 import * as store from './services/store.js';
 import { chat, chatJSON, tensorConfigured } from './services/tensor.js';
@@ -47,6 +47,7 @@ app.use('/assets', express.static(ASSETS_DIR, {
     res.setHeader('X-Content-Type-Options', 'nosniff');
   },
 }));
+app.use('/mockups', express.static(MOCKUPS_DIR));
 
 const h = (fn) => (req, res) => Promise.resolve(fn(req, res)).catch((e) => {
   console.error(`[marque] ${req.method} ${req.path} →`, e.message);
@@ -357,7 +358,12 @@ app.post('/api/strategy/examples', h(async (req, res) => {
   if (exCache.has(key)) return ok(res, exCache.get(key));
   const exBoard = (boardId && find('boards', boardId)) || resolveActiveBoard();
   const product = exBoard?.sub?.productId ? find('catalog', exBoard.sub.productId) : null;
-  const data = await generateExamples({ strategy, profile: brand.currentProfile(), audienceRead, product, hint, qlooBundle: exBoard?.qlooBundle });
+  // hard cap — the pull itself deadline-collects its hunts, but a stuck
+  // planner must never hold the request open
+  const data = await Promise.race([
+    generateExamples({ strategy, profile: brand.currentProfile(), audienceRead, product, hint, qlooBundle: exBoard?.qlooBundle }),
+    new Promise((_, rej) => setTimeout(() => rej(new Error('reference pull timed out — sources were slow. Hit Retry')), 90000)),
+  ]);
   if (exCache.size > tuning('exampleCacheSize')) exCache.clear();
   exCache.set(key, data);
   ok(res, data);

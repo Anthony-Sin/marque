@@ -14,6 +14,7 @@ export default defineConfig({
       // /strategy (blank page: modules proxied to Express → HTML not JS)
       '^/s(/|$)': 'http://localhost:8787',
       '^/b(/|$)': 'http://localhost:8787',
+      '^/mockups(/|$)': 'http://localhost:8787',
     },
   },
 });
