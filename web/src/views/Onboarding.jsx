@@ -43,7 +43,7 @@ function Led({ mode = 'off', label, title }) {
 
 // what the chat/copy backend calls itself in the UI — keyed on
 // status.agent.provider so a raw model id never reaches a tooltip
-const AGENT_KIND = { tensor: 'Chat brain', devin: 'Agent runtime' };
+const AGENT_KIND = { tensor: 'Chat brain', 'devin-cli': 'Agent runtime', devin: 'Agent runtime' };
 
 // The status cluster shown under the hero and in the chat head — agent link,
 // taste graph, image engine. Same vocabulary as the nav rail LEDs.
@@ -81,6 +81,7 @@ export default function Onboarding() {
   const [err, setErr] = useState('');
   const [stage, setStage] = useState(0);
   const [tplBusy, setTplBusy] = useState(null);
+  const [urlBad, setUrlBad] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
 
   useEffect(() => {
@@ -92,15 +93,26 @@ export default function Onboarding() {
     nav('/strategy');   // strategy board is the app's landing + unlocks the rest
   };
 
+  const normalizedUrl = (raw) => {
+    const u = raw.trim();
+    if (!u) return null;
+    try {
+      const parsed = new URL(/^https?:\/\//i.test(u) ? u : `https://${u}`);
+      return parsed.hostname.includes('.') ? parsed.href : null;
+    } catch { return null; }
+  };
+
   const build = async () => {
-    const u = url.trim();
-    if (!u) return say('Enter your website URL first');
+    const u = normalizedUrl(url);
+    if (!url.trim()) return say('Enter your website URL first');
+    if (!u) { setUrlBad(true); return say("That doesn't look like a website — try yourbusiness.com"); }
+    setUrlBad(false);
     setPhase('building');
     setErr('');
     setStage(0);
     const timer = setInterval(() => setStage((s) => (s < STAGES.length - 1 ? s + 1 : s)), 2600);
     try {
-      await api.buildProfile(/^https?:\/\//i.test(u) ? u : `https://${u}`, listing);
+      await api.buildProfile(u, listing);
       await finish();
     } catch (e) {
       setErr(e.message || 'build failed');
@@ -160,14 +172,16 @@ export default function Onboarding() {
             <div className="ob-url-row">
               <input
                 className="ob-url-input"
+                type="url"
                 value={url}
-                onChange={(e) => setUrl(e.target.value)}
+                onChange={(e) => { setUrl(e.target.value); setUrlBad(false); }}
                 onKeyDown={(e) => e.key === 'Enter' && build()}
                 placeholder="https://yourbusiness.com"
                 aria-label="Your website URL"
+                aria-invalid={urlBad || undefined}
                 autoFocus
               />
-              <button type="button" className="btn lime ob-build-btn" onClick={build}>
+              <button type="button" className="btn lime ob-build-btn" onClick={build} disabled={!url.trim()}>
                 <Icon name="sparkle" size={15} /> Generate profile
               </button>
             </div>
