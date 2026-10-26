@@ -764,6 +764,15 @@ export function normalizeHTML(html) {
     const tag = '<meta name="viewport" content="width=device-width, initial-scale=1">';
     out = /<head[^>]*>/i.test(out) ? out.replace(/<head[^>]*>/i, (m) => `${m}\n${tag}`) : `${tag}\n${out}`;
   }
+  if (!/<meta\s+property\s*=\s*["']og:title["']/i.test(out) && /<head[^>]*>/i.test(out)) {
+    const title = (out.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || '').trim();
+    const img = out.match(/<img[^>]*\ssrc\s*=\s*["']([^"']+)["']/i)?.[1];
+    if (title) {
+      const desc = title.split(/\s*[|—–-]\s*/).slice(1).join(' ').trim() || title;
+      const tags = `<meta name="description" content="${esc(desc)}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}">${img ? `<meta property="og:image" content="${esc(img)}">` : ''}`;
+      out = out.replace(/<head[^>]*>/i, (m) => `${m}\n${tags}`);
+    }
+  }
   return out;
 }
 
