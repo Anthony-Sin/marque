@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local image generation service for marque — stabilityai/sdxl-turbo on the GPU.
+"""Local image generation service for marque — SDXL-Lightning on the GPU.
 
 POST /generate {"prompt": str, "width": int, "height": int, "steps": int, "seed": int,
                 "negative": str, "upscale": 2,
@@ -8,7 +8,7 @@ GET  /health                                  ->  {"ok": true, "model": ..., "vr
 GET  /health?deep=1                           ->  + one real 256px 4-step gen; 503 if it fails
 CLI  --selftest                               ->  load, run the deep check once, print JSON, exit
 
-Runs offline from the HF cache (HF_HUB_OFFLINE=1). sdxl-turbo fp16 is ~7GB of
+Runs offline from the HF cache (HF_HUB_OFFLINE=1). SDXL fp16 is ~7GB of
 weights — too big to stay resident next to the desktop on an 8GB card — so the
 pipeline runs under CPU offload. LOCALGEN_OFFLOAD=auto (default) tries
 enable_model_cpu_offload first and falls back to enable_sequential_cpu_offload
@@ -25,10 +25,27 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 import torch
 from PIL import Image, ImageFilter
-from diffusers import AutoPipelineForText2Image, AutoPipelineForImage2Image
+from diffusers import (
+    AutoPipelineForText2Image,
+    AutoPipelineForImage2Image,
+    StableDiffusionXLPipeline,
+    EulerAncestralDiscreteScheduler,
+)
 
-MODEL = os.environ.get("LOCALGEN_MODEL", "stabilityai/sdxl-turbo")
-ap = argparse.ArgumentParser(description="local SDXL-Turbo image service")
+# ByteDance/SDXL-Lightning 4-step full checkpoint (UNet+VAE+text encoders in one
+# file) — noticeably sharper/more contrasted than sdxl-turbo at the same 4-step
+# budget. Component configs resolve offline from the prefetched
+# stabilityai/stable-diffusion-xl-base-1.0 cache snapshot.
+_LIGHTNING_CKPT = (
+    "/home/ANT/.cache/huggingface/hub/models--ByteDance--SDXL-Lightning/"
+    "snapshots/c9a24f48e1c025556787b0c58dd67a091ece2e44/"
+    "sdxl_lightning_4step.safetensors"
+)
+MODEL = os.environ.get(
+    "LOCALGEN_MODEL",
+    _LIGHTNING_CKPT if os.path.isfile(_LIGHTNING_CKPT) else "stabilityai/sdxl-turbo",
+)
+ap = argparse.ArgumentParser(description="local SDXL image service")
 ap.add_argument("--host", default=os.environ.get("LOCALGEN_HOST", "127.0.0.1"))
 ap.add_argument("--port", type=int, default=int(os.environ.get("LOCALGEN_PORT", "8807")))
 ap.add_argument("--selftest", action="store_true",
@@ -36,10 +53,14 @@ ap.add_argument("--selftest", action="store_true",
 ARGS = ap.parse_args()
 HOST, PORT = ARGS.host, ARGS.port
 OFFLOAD = os.environ.get("LOCALGEN_OFFLOAD", "auto").strip().lower()
-# sdxl-turbo is an ADD-distilled SDXL: guidance_scale 0, 1-4 inference steps,
-# 512px-native (512-768 is the detail sweet spot). Requests can go up to MAXPX.
+# Few-step distilled models (sdxl-turbo / sdxl-lightning / lcm) want
+# guidance_scale 0 and ~4 steps; full models (e.g. segmind/SSD-1B) want real
+# CFG (~7) and ~12 steps. Pick defaults from the model name, env overrides win.
+_FEW_STEP = any(k in MODEL.lower() for k in ("turbo", "lightning", "lcm"))
 BASE = int(os.environ.get("LOCALGEN_BASE", "512"))
-STEPS = int(os.environ.get("LOCALGEN_STEPS", "4"))
+STEPS = int(os.environ.get("LOCALGEN_STEPS", "4" if _FEW_STEP else "12"))
+GUIDANCE = float(os.environ.get("LOCALGEN_GUIDANCE", "0.0" if _FEW_STEP else "7.0"))
+MAXSTEPS = int(os.environ.get("LOCALGEN_MAXSTEPS", "12"))
 MAXPX = int(os.environ.get("LOCALGEN_MAXPX", "1024"))
 # img2img: /generate also accepts {"image": "/assets/x.png"|<base64|data-url>,
 # "strength": 0..1} — denoise amount (0.55 keeps subject+palette, repaints
@@ -51,9 +72,21 @@ NEG = "text, words, letters, typography, logo, watermark, caption, title, signat
 
 
 def build_pipe(mode):
-    p = AutoPipelineForText2Image.from_pretrained(
-        MODEL, torch_dtype=torch.float16, variant="fp16",
-    )
+    if os.path.isfile(MODEL):
+        # single-file checkpoint (full pipeline weights in one .safetensors);
+        # per-component configs + tokenizers come from the local HF cache.
+        p = StableDiffusionXLPipeline.from_single_file(
+            MODEL, torch_dtype=torch.float16, local_files_only=True,
+        )
+        if "lightning" in MODEL.lower():
+            # ByteDance recipe: euler-ancestral sampler, trailing timesteps.
+            p.scheduler = EulerAncestralDiscreteScheduler.from_config(
+                p.scheduler.config, timestep_spacing="trailing"
+            )
+    else:
+        p = AutoPipelineForText2Image.from_pretrained(
+            MODEL, torch_dtype=torch.float16, variant="fp16",
+        )
     p.set_progress_bar_config(disable=True)
     # keep VAE peak down on the 8GB card
     for meth in ("enable_vae_slicing", "enable_vae_tiling"):
@@ -78,7 +111,7 @@ def warmup(p, size):
         p(
             prompt="studio product photograph of a ceramic cup on a stone counter",
             width=size, height=size, num_inference_steps=1,
-            guidance_scale=0.0,
+            guidance_scale=GUIDANCE,
             generator=torch.Generator("cuda").manual_seed(0),
         ).images[0]
 
@@ -221,7 +254,7 @@ def _is_oom(e):
 def _run(prompt, w, h, n_steps, seed, negative, image, strength):
     gen_device = torch.Generator("cuda").manual_seed(seed) if seed is not None else None
     kw = dict(prompt=prompt, negative_prompt=negative or None,
-              num_inference_steps=n_steps, guidance_scale=0.0, generator=gen_device)
+              num_inference_steps=n_steps, guidance_scale=GUIDANCE, generator=gen_device)
     if image is not None:
         return get_i2i()(image=reframe_canvas(image, w, h), strength=strength, **kw).images[0]
     return pipe(width=w, height=h, **kw).images[0]
@@ -230,7 +263,7 @@ def _run(prompt, w, h, n_steps, seed, negative, image, strength):
 def gen(prompt, w, h, steps, seed, negative, upscale, image=None, strength=None):
     w, h = snap8(w), snap8(h)
     strength = max(0.05, min(0.95, float(strength if strength is not None else STRENGTH)))
-    n_steps = max(1, min(8, int(steps or STEPS)))
+    n_steps = max(1, min(MAXSTEPS, int(steps or STEPS)))
     out = None
     noise_try, oom_retried = 0, False
     while True:
@@ -274,7 +307,7 @@ def deep_check():
             img = pipe(
                 prompt="a single red circle centered on a white background",
                 width=256, height=256, num_inference_steps=4,
-                guidance_scale=0.0,
+                guidance_scale=GUIDANCE,
                 generator=torch.Generator("cuda").manual_seed(0),
             ).images[0]
     except Exception as e:
