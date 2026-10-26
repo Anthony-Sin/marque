@@ -7,7 +7,7 @@ import EvidenceDrawer from './EvidenceDrawer.jsx';
 import { downloadAsset, fileExt, useStages, providerLabel, cleanNote, isRaster } from './Composer.jsx';
 import CreativeOverlay, { OVERLAY_STYLES } from './CreativeOverlay.jsx';
 import { exportCreativePNG, renderCreativePNG } from './creativeExport.js';
-import { useOverlayFocus } from '../focus.js';
+import { useOverlayFocus, isTopOverlay } from '../focus.js';
 import { cleanErr } from '../labels.js';
 import '../views/studio.css';
 
@@ -72,7 +72,7 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
 
   // Escape closes the editor — but let the evidence drawer take the key first.
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape' && !evi) onClose?.(); };
+    const onKey = (e) => { if (e.key === 'Escape' && !evi && isTopOverlay(boxRef.current)) onClose?.(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose, evi]);

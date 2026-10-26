@@ -223,10 +223,10 @@
 @media (max-width: 880px) { .editor-grid { grid-template-columns: 1fr; } }
 
 /* ---------- evidence drawer ---------- */
-.drawer-veil { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 90; }
+.drawer-veil { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 305; }
 .drawer {
   position: fixed; top: 0; right: 0; bottom: 0; width: 410px; max-width: 94vw;
-  background: var(--bg-raise); border-left: 1px solid var(--line); z-index: 95;
+  background: var(--bg-raise); border-left: 1px solid var(--line); z-index: 310;
   padding: 22px; overflow-y: auto; box-shadow: var(--shadow);
   animation: slideIn .22s ease;
 }

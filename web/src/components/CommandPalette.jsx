@@ -211,7 +211,10 @@ export default function CommandPalette({ open, onClose }) {
           catch (e) { say?.(e.message || 'could not open that plan'); return; }
           nav(b.id ? `/strategy/${b.id}` : '/strategy');
         },
-        active ? 'active' : '');
+        active ? 'active' : '',
+        // activation flips the global active plan — arm it like other
+        // state changes; the already-active board stays pure navigation
+        (!active && b.id) ? { uid: `act-${b.id}`, confirm: `make “${(b.title || 'this plan').slice(0, 40)}” the active plan` } : null);
     });
 
     // the active plan's strategies — /strategy/<boardId>/<idx> keeps the link
@@ -448,7 +451,7 @@ export default function CommandPalette({ open, onClose }) {
             line: early === null ? 'audit done · Sites → Improve my site' : 'audit running · ~30s · ping when it lands',
             pending: early === null ? null : p.then((a) => `site audit ready · ${(a?.suggestions || []).length} fixes — Sites → Improve my site`),
           };
-        }, '');
+        }, '', { uid: 'site-audit', confirm: `run a live audit of ${auditUrl.replace(/^https?:\/\//, '').slice(0, 40)} · ~30s · lands on Sites → Improve` });
     }
 
     const gate = hasStrategy ? '' : 'locked';
@@ -674,6 +677,7 @@ export default function CommandPalette({ open, onClose }) {
                   {g.items.map((it) => (
                     <button key={it.id} type="button" role="option" aria-selected={it.gi === sel}
                       id={`ck-opt-${it.gi}`}
+                      tabIndex={-1}
                       className={`ck-item${it.gi === sel ? ' on' : ''}`}
                       onMouseEnter={() => setNavIdx(it.gi)}
                       onMouseDown={(e) => e.preventDefault()}

@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Icon from './Icon.jsx';
 import { api } from '../api.js';
-import { useOverlayFocus } from '../focus.js';
+import { useOverlayFocus, isTopOverlay } from '../focus.js';
 import { arCss, cleanNote, downloadAsset, fileExt, isRaster, MediaFallback, providerLabel, thumb } from './Composer.jsx';
 import CreativeOverlay from './CreativeOverlay.jsx';
 import { exportCreativePNG } from './creativeExport.js';
@@ -31,7 +31,7 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
 
   useEffect(() => {
     if (!zoom) return;
-    const onKey = (e) => { if (e.key === 'Escape') setZoom(false); };
+    const onKey = (e) => { if (e.key === 'Escape' && isTopOverlay(zoomRef.current)) setZoom(false); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [zoom]);

@@ -14,6 +14,10 @@ const FOCUSABLE = [
 // so a drawer over a modal doesn't fight the modal for the same keystroke.
 const stack = [];
 
+// Esc layering: a trapped overlay should only swallow Escape while it is the
+// topmost stack entry — otherwise two co-open overlays peel off one press.
+export const isTopOverlay = (root) => !!root && stack[stack.length - 1] === root;
+
 // Focus discipline for overlays (modals, drawers, lightboxes, the palette):
 // on open, stash the trigger and move focus inside (an explicit
 // [data-autofocus] wins, else the first focusable child — often the close

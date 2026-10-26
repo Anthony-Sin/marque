@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import Icon from './Icon.jsx';
-import { useOverlayFocus } from '../focus.js';
+import { useOverlayFocus, isTopOverlay } from '../focus.js';
 
 // <Modal title onClose footer narrow width>children</Modal>
 // veil + centered card; closes on veil click and Escape.
@@ -10,7 +10,7 @@ export default function Modal({ title, onClose, children, footer, narrow = false
   useOverlayFocus(boxRef);
 
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    const onKey = (e) => { if (e.key === 'Escape' && isTopOverlay(boxRef.current)) onClose?.(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);

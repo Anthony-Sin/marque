@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api, { pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
-import { useOverlayFocus } from '../focus.js';
+import { useOverlayFocus, isTopOverlay } from '../focus.js';
 import Icon from '../components/Icon.jsx';
 import { thumb, providerLabel, downloadAsset, fmtDate } from '../components/Composer.jsx';
 import { cleanErr } from '../labels.js';
@@ -211,7 +211,7 @@ export default function Photoshoot() {
   // Esc closes the detail like every other overlay
   useEffect(() => {
     if (!job) return undefined;
-    const onKey = (e) => { if (e.key === 'Escape') select(null); };
+    const onKey = (e) => { if (e.key === 'Escape' && isTopOverlay(detRef.current)) select(null); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [job]); // eslint-disable-line react-hooks/exhaustive-deps

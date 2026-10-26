@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../App.jsx';
-import { useOverlayFocus } from '../focus.js';
+import { useOverlayFocus, isTopOverlay } from '../focus.js';
 import Icon from '../components/Icon.jsx';
 import Wayfind from '../components/Wayfind.jsx';
 import { SignalChips } from '../components/Qloo.jsx';
@@ -591,7 +591,7 @@ function Moodboard({ board }) {
   // Escape closes the tile lightbox like every other overlay
   useEffect(() => {
     if (!zoom) return undefined;
-    const onKey = (e) => { if (e.key === 'Escape') setZoom(null); };
+    const onKey = (e) => { if (e.key === 'Escape' && isTopOverlay(zoomRef.current)) setZoom(null); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [zoom]);

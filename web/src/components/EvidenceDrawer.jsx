@@ -3,7 +3,7 @@ import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import { QlooBadge } from './Qloo.jsx';
 import { epLabel, cleanErr } from '../labels.js';
-import { useOverlayFocus } from '../focus.js';
+import { useOverlayFocus, isTopOverlay } from '../focus.js';
 import '../views/studio.css';
 import './evidence.css';
 
@@ -159,7 +159,7 @@ export default function EvidenceDrawer({ title = 'Taste evidence', signals = [],
     : (bundle?.mode === 'live' ? 'live' : bundle?.mode === 'partial' ? 'partial' : bundle ? 'error' : 'off');
 
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') onClose?.(); };
+    const onKey = (e) => { if (e.key === 'Escape' && isTopOverlay(boxRef.current)) onClose?.(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
