@@ -7,6 +7,9 @@ const FOCUSABLE = [
   'input:not([disabled])',
   'select:not([disabled])',
   'textarea:not([disabled])',
+  // <video controls> is a single tabbable unit (UA shadow-DOM controls) — trapped
+  // overlays (editor, card zoom) render motion previews; Tab must not skip them.
+  'video[controls]',
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
