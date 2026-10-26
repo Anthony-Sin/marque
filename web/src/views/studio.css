@@ -651,8 +651,23 @@
 .cp-bay .cp-panel-body { padding: 12px; }
 .cp-bay .creative-grid { min-height: 0; }
 .cp-list .cp-panel-body { gap: 14px; }
-.cp-list .grid.c2 { grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); }
-.cp-list .camp-group-label { margin-top: 4px; }
+/* the YOUR CAMPAIGNS column reads as a dense index — one card per row,
+   compact thumbs, group labels that stick while their section scrolls by */
+.cp-list .grid.c2 { grid-template-columns: 1fr; gap: 10px; }
+.cp-list .camp-card { padding: 13px 15px; gap: 5px; }
+.cp-list .camp-card h4 { font-size: 14px; }
+.cp-list .camp-card .thumbs { margin-top: 9px; }
+.cp-list .camp-card .thumbs .media-tile,
+.cp-list .camp-card .thumbs .more { width: 56px; height: 56px; }
+.cp-list .camp-card .foot { margin-top: 9px; }
+.cp-list .camp-group { margin-top: 0; }
+.cp-list .camp-group + .camp-group { margin-top: 8px; }
+.cp-list .camp-group-label {
+  position: sticky; top: -14px; z-index: 4;
+  margin: -14px -16px 4px; padding: 11px 16px 7px;
+  font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase;
+  background: var(--card-2); border-bottom: 1px solid var(--line-soft);
+}
 .res-pal { flex-wrap: wrap; }
 .res-next { margin-top: 10px; }
 .creative-grid { grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr)); }
@@ -686,10 +701,13 @@
 }
 .bb-foot .publish-bar { padding: 0; }
 
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
+  /* console folds to a single scroll column — composer first, list below */
   .cp-split, .cp-split.solo { display: flex; flex-direction: column; overflow-y: auto; }
   .cp-panel { flex: none; overflow: visible; }
   .cp-panel-body { overflow: visible; }
+}
+@media (max-width: 900px) {
   .site-view { overflow-y: auto; }
   .site-view .preview-frame { height: 60vh; flex: none; }
 }

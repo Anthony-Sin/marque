@@ -156,6 +156,7 @@ export default function BrandBook() {
       <div className="section view bb-view">
         <div className="view-head">
           <div className="vh-main">
+            <span className="vh-kicker">MARQUE / BOOK</span>
             <h1 className="display">Your Brand Book</h1>
             <p className="sub">A Brand Book generated from your Business Profile.</p>
           </div>
@@ -181,6 +182,7 @@ export default function BrandBook() {
       <div className="section view bb-view">
         <div className="view-head">
           <div className="vh-main">
+            <span className="vh-kicker">MARQUE / BOOK</span>
             <h1 className="display">Your Brand Book</h1>
             <p className="sub">A Brand Book generated from your Business Profile.</p>
           </div>
@@ -282,7 +284,8 @@ export default function BrandBook() {
     <div className="section view bb-view">
       <div className="view-head">
         <div className="vh-main">
-          <h1 className="display">Your Brand Book</h1>
+          <span className="vh-kicker">MARQUE / BOOK</span>
+            <h1 className="display">Your Brand Book</h1>
           <p className="sub">A Brand Book generated from your Business Profile.</p>
         </div>
         <div className="vh-side">

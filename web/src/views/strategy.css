@@ -61,7 +61,7 @@
 @keyframes stgChipIn { from { opacity: 0; transform: translateY(-10px) scale(.97); } }
 .stg-chipbar-ic { color: var(--lime); display: inline-flex; flex: none; }
 .stg-chipbar-prompt {
-  flex: 1 1 150px; min-width: 150px; font-family: var(--font-display); font-style: italic;
+  flex: 1 1 150px; min-width: 150px; font-family: var(--font-serif); font-style: italic;
   font-size: 15px; color: var(--ink-2);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
@@ -200,7 +200,10 @@
 .stg-strat-id { min-width: 0; flex: 1; }
 .stg-idx { font-size: 10px; font-weight: 800; letter-spacing: .16em; color: var(--ink-4); }
 .stg-strat-id h3 { margin: 5px 0 0; font-size: 25px; line-height: 1.12; }
-.stg-angle { margin: 7px 0 0; color: var(--ink-3); font-size: 13.5px; line-height: 1.5; max-width: 54ch; }
+.stg-angle {
+  margin: 7px 0 0; color: var(--ink-3); font-size: 13.5px; line-height: 1.5; max-width: 54ch;
+  font-family: var(--font-serif); font-style: italic;
+}
 .stg-fitnotes { font-size: 11.5px; color: var(--ink-4); line-height: 1.45; }
 
 /* ---------- channel fit — accordion rows (name + bar; open → why it fits) ---------- */
@@ -928,7 +931,12 @@
 .stg-pick { border: 1px solid var(--line-soft); background: var(--card-2); }
 .stg-pick:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0,0,0,.45); border-color: rgba(255,176,58,.4); }
 .stg-pick.sel { border-color: var(--lime); box-shadow: 0 0 0 1px var(--lime), 0 14px 34px rgba(0,0,0,.5); }
-.stg-pick-angle { color: var(--lime-2); background: rgba(255,176,58,.1); display: inline-block; padding: 1px 6px; width: fit-content; }
+/* angle lines get the faint amber highlighter wash + editorial serif italic */
+.stg-pick-angle {
+  color: var(--lime-2); background: rgba(255,176,58,.06); display: inline-block;
+  padding: 1px 6px; width: fit-content;
+  font-family: var(--font-serif); font-style: italic;
+}
 .stg-idx { color: var(--lime); font-family: var(--font-mono); }
 .stg-chipbar { border: 1px solid var(--line); background: var(--card); box-shadow: 0 6px 20px rgba(0,0,0,.4); }
 .stg-tag { border-color: rgba(255,176,58,.45); color: var(--lime); }
@@ -984,7 +992,21 @@
 .stg-chipbar { padding: 6px 8px 6px 14px; max-width: 940px; }
 .stg-plans { margin-top: 9px; }
 .stg-board { margin-top: 10px; gap: 10px; }
-.stg-tile { padding: 12px 14px; gap: 8px; }
+.stg-tile { padding: 12px 14px; gap: 8px; --tpx: 14px; --tpy: 12px; }
+/* sticky full-bleed heads — tile headers pin while their own panel scrolls
+   (padding vars track whatever the tile's padding is in each state) */
+.stg-tile > .stg-tile-head {
+  position: sticky; top: calc(-1 * var(--tpy)); z-index: 6;
+  margin: calc(-1 * var(--tpy)) calc(-1 * var(--tpx)) 0;
+  padding: var(--tpy) var(--tpx) 8px;
+  background: var(--card); border-bottom: 1px solid var(--line-soft);
+}
+/* the audience-read column inside the detail page scrolls too — pin its head
+   flush (the column itself has no padding, so no negative margins) */
+.stg-detail-cols .stg-tile-head {
+  position: sticky; top: 0; z-index: 6;
+  padding-bottom: 8px; background: var(--card);
+}
 .stg-lean { font-size: 20px; }
 .stg-heur { margin-top: 3px; }
 .stg-sigs { margin-top: 8px; gap: 5px; }
@@ -1188,7 +1210,7 @@
 .stg-wx-acts { margin-top: 2px; gap: 8px; }
 .stg-wild-grid { gap: 10px; padding-bottom: 4px; }
 .stg-detail-top { gap: 8px 14px; }
-.stg-wrap.detail-open .stg-picks { padding: 6px 12px; }
+.stg-wrap.detail-open .stg-picks { padding: 6px 12px; --tpy: 6px; --tpx: 12px; }
 .stg-wrap.detail-open .stg-pick { padding: 5px 10px; }
 .stg-detailpage { margin-top: 4px; }
 .stg-plans { margin-top: 5px; }

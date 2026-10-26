@@ -22,8 +22,18 @@ const RAIL = [
   { to: '/brandbook', icon: 'book', label: 'book', gate: true },
 ];
 function Rail() {
-  const { hasStrategy, status } = useApp();
+  const { hasStrategy, status, boards, profile } = useApp();
   const live = status?.qloo === 'live';
+  const gen = !!status?.localgen?.ok;
+  // ticking console clock — real time, mono, colon blinks once a second
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const ss = String(now.getSeconds()).padStart(2, '0');
   return (
     <nav className="rail" aria-label="Studio sections">
       <NavLink to="/dashboard" className="rail-brand" title="Marque Studio — dashboard">
@@ -40,9 +50,27 @@ function Rail() {
           </NavLink>
         ))}
       </div>
-      <div className="rail-foot" title={live ? 'Qloo taste graph — live' : 'Qloo — offline / demo'}>
-        <span className={`rail-lamp${live ? '' : ' off'}`} />
-        <span className="rl-lbl">{live ? 'qloo live' : 'qloo'}</span>
+      {/* status cluster — real counts + live lamps from ctx; the qloo lamp only
+          lights when the taste graph is actually live */}
+      <div className="rail-foot"
+        title={`${boards?.length || 0} plan${(boards?.length || 0) === 1 ? '' : 's'} · taste graph ${live ? 'live' : 'offline / demo'} · image engine ${gen ? 'ready' : 'standby'}`}>
+        <div className="rail-leds">
+          {!!boards?.length && (
+            <span className="rail-led"><i />{boards.length}&nbsp;PLAN{boards.length === 1 ? '' : 'S'}</span>
+          )}
+          <span className={`rail-led${live ? ' on' : ''}`} title={live ? 'Taste graph — live' : 'Taste graph — offline / demo'}>
+            <i />QLOO&nbsp;{live ? 'LIVE' : 'OFF'}
+          </span>
+          <span className={`rail-led${gen ? ' on' : ''}`} title="Local image engine">
+            <i />GEN&nbsp;{gen ? 'OK' : 'STBY'}
+          </span>
+          {!!profile?.name && profile.name !== 'Your Brand' && (
+            <span className="rail-led rail-led-brand" title="Active brand profile">
+              <i />{profile.name.toUpperCase().slice(0, 10)}
+            </span>
+          )}
+        </div>
+        <span className="rail-clock" title="console clock">{hh}:{mm}<i>:</i>{ss}</span>
       </div>
     </nav>
   );

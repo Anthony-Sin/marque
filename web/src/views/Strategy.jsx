@@ -915,6 +915,7 @@ export default function Strategy() {
 
   const pageHead = (
     <div className="page-head">
+      <span className="vh-kicker">MARQUE / STRATEGY</span>
       <h1 className="display">Strategy board</h1>
       <p className="sub">
         Say what you're trying to do — or paste a product/site URL — we read your audience's

@@ -5,21 +5,47 @@
 .section.dash-wrap { max-width: none; gap: 12px; }
 .dash-wrap { padding-top: 4px; }
 
-/* ---------- header: display title + greeting + live counts ---------- */
+/* ---------- header: kicker + title + greeting left, date + stat tiles right ---------- */
 .dash-head {
-  display: flex; align-items: baseline; gap: 16px; flex: none;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; flex: none;
   padding: 18px 4px 12px; border-bottom: 1px solid var(--line-soft); flex-wrap: wrap;
 }
+.dash-head-l { min-width: 0; }
 .dash-title { margin: 0; font-size: 30px; line-height: 1.04; }
 .dash-greet {
-  margin: 0; font-family: var(--font-display); font-style: italic;
+  margin: 2px 0 0; font-family: var(--font-serif); font-style: italic;
   font-size: 15px; color: var(--ink-3);
 }
-.dash-meta {
-  margin-left: auto; font-family: var(--font-mono); font-size: 10px;
-  letter-spacing: .14em; text-transform: uppercase; color: var(--ink-4);
-  border: 1px solid var(--line-soft); padding: 4px 11px; background: var(--card);
-  white-space: nowrap;
+.dash-head-r {
+  margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 7px;
+}
+.dash-date {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: .18em; text-transform: uppercase; color: var(--ink-4);
+}
+/* instrument stat tiles — big mono number over a caps label */
+.dash-stats { display: flex; align-items: stretch; gap: 8px; flex: none; }
+.dash-stat {
+  display: inline-flex; flex-direction: column; align-items: flex-end; justify-content: center;
+  padding: 6px 13px; min-width: 76px;
+  border: 1px solid var(--line-soft); background: var(--card);
+}
+.dash-stat b {
+  font-family: var(--font-mono); font-size: 18px; font-weight: 700; line-height: 1.1;
+  color: var(--ink); font-variant-numeric: tabular-nums;
+}
+.dash-stat i {
+  font-style: normal; font-family: var(--font-mono); font-size: 8px; font-weight: 700;
+  letter-spacing: .16em; text-transform: uppercase; color: var(--ink-4);
+}
+.dash-stat-board {
+  max-width: 260px; align-items: flex-start;
+  border-color: rgba(255, 176, 58, .45); background: rgba(255, 176, 58, .05);
+}
+.dash-stat-board i { color: var(--lime); }
+.dash-stat-board-t {
+  font-family: var(--font-body); font-size: 11.5px; font-weight: 600; line-height: 1.25;
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
 /* ---------- empty state ---------- */
@@ -43,23 +69,40 @@
   background: linear-gradient(180deg, var(--card-2), var(--card));
 }
 .dash-zone-body { flex: 1; min-height: 0; overflow-y: auto; padding: 13px 14px; }
-.dash-zone-body .grid { min-height: 100%; align-content: start; grid-auto-rows: minmax(160px, 1fr); }
+.dash-zone-body .grid { min-height: 100%; align-content: start; grid-auto-rows: minmax(160px, 1fr); counter-reset: plan; }
 
 /* ---------- plan cards ---------- */
 .dash-plan {
   padding: 15px 16px; display: flex; flex-direction: column; gap: 8px;
-  justify-content: space-between; /* sections spread — no mid-card void when stretched */
   cursor: pointer; text-align: left; color: var(--ink);
   background: var(--bg-raise); border: 1px solid var(--line-soft);
   transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  position: relative; counter-increment: plan;
 }
+/* folio number — every plan is an auto-numbered board entry; it yields the
+   top-right corner to the hover actions (fades when they appear) */
+.dash-plan::before {
+  content: counter(plan, decimal-leading-zero);
+  position: absolute; top: 14px; right: 15px;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: .14em; color: var(--ink-4); pointer-events: none;
+  transition: opacity .18s ease;
+}
+.dash-plan:hover::before, .dash-plan:focus-within::before { opacity: 0; }
+/* accent edge bar — grows up the left border on hover, stays lit when active */
+.dash-plan::after {
+  content: ''; position: absolute; left: -1px; top: 0; bottom: 0; width: 2px;
+  background: var(--lime); transform: scaleY(0); transform-origin: top;
+  transition: transform .22s ease; pointer-events: none;
+}
+.dash-plan:hover::after, .dash-plan.on::after, .dash-plan:focus-visible::after { transform: scaleY(1); }
 .dash-plan:hover {
   transform: translateY(-3px); border-color: rgba(255, 176, 58, .45);
   box-shadow: 0 8px 22px rgba(0, 0, 0, .42);
 }
 .dash-plan:focus-visible { outline: 1px solid var(--lime); outline-offset: 2px; }
 .dash-plan.on { border-color: rgba(255, 176, 58, .5); box-shadow: inset 0 0 0 1px rgba(255,176,58,.18); }
-.dash-plan-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.dash-plan-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding-right: 22px; }
 .dash-plan-top h4 { margin: 0; font-size: 15px; line-height: 1.3; flex: 1 1 auto; min-width: 0; overflow: hidden; overflow-wrap: anywhere; text-overflow: ellipsis; }
 .dash-plan-live {
   margin-left: 9px; font-family: var(--font-mono); font-size: 8px; font-weight: 700;
@@ -67,10 +110,15 @@
   border: 1px solid rgba(255,176,58,.5); border-radius:0; padding: 2px 7px;
   white-space: nowrap;
 }
-.dash-plan-acts { display: inline-flex; gap: 6px; flex: none; margin: -4px 0 0; }
-.dash-plan-acts .icon-btn { width: 28px; height: 28px; border-radius:0; background: transparent; }
+/* card actions stay hidden until hover/focus — the folio number holds the
+   corner meanwhile and hands it over when they fade in */
+.dash-plan-acts { display: inline-flex; gap: 6px; flex: none; margin: -4px -22px 0 0; }
+.dash-plan-acts .icon-btn { width: 28px; height: 28px; border-radius:0; background: transparent; opacity: 0; transition: opacity .18s ease, background .15s, color .15s; }
+.dash-plan:hover .dash-plan-acts .icon-btn,
+.dash-plan:focus-within .dash-plan-acts .icon-btn { opacity: 1; }
 .dash-plan-acts .icon-btn:hover { background: var(--card-3); }
 .dash-plan-acts .icon-btn.danger:hover { color: var(--rose); }
+@media (hover: none) { .dash-plan-acts .icon-btn { opacity: 1; } }
 .dash-plan-rename {
   flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--lime);
   color: var(--ink); border-radius:0; padding: 6px 10px; font-size: 14px; outline: none;
@@ -79,28 +127,58 @@
   font-family: var(--font-mono); font-size: 10px; color: var(--ink-4); letter-spacing: .04em;
 }
 .dash-plan-sub {
-  font-size: 12.5px; color: var(--ink-3); font-style: italic; line-height: 1.45;
+  font-family: var(--font-serif); font-size: 13px; color: var(--ink-3);
+  font-style: italic; line-height: 1.45;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-/* top-2 strategy titles peeking out of the plan */
+/* strategy titles read as a numbered ledger — real rows fill the card middle */
 .dash-plan-strats {
-  list-style: none; margin: 2px 0 0; padding: 8px 0 0;
-  border-top: 1px dashed var(--line-soft);
-  display: flex; flex-direction: column; gap: 4px;
+  list-style: none; margin: 2px 0 0; padding: 8px 0 0; flex: 1 1 auto;
+  border-top: 1px dashed var(--line-soft); align-content: flex-start;
+  display: flex; flex-direction: column; counter-reset: strat;
 }
 .dash-plan-strats li {
-  font-size: 12px; color: var(--ink-3); line-height: 1.35; padding-left: 14px;
-  position: relative; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-size: 12px; color: var(--ink-3); line-height: 1.35; padding: 5px 0;
+  border-bottom: 1px dashed var(--line-soft);
+  position: relative;
+  counter-increment: strat;
+  /* rows stretch into ruled bands — the ledger fills the card's middle */
+  flex: 1 1 0; display: flex; align-items: center; min-width: 0;
 }
+.dash-plan-strats li > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dash-plan-strats li:last-child { border-bottom: none; }
 .dash-plan-strats li::before {
-  content: ''; position: absolute; left: 2px; top: 7px; width: 5px; height: 5px;
-  border-radius: 50%; background: var(--lime); opacity: .75;
+  content: counter(strat, decimal-leading-zero);
+  flex: none; margin-right: 14px;
+  font-family: var(--font-mono); font-size: 8.5px; font-weight: 700;
+  letter-spacing: .08em; color: var(--lime);
 }
-.dash-plan-strats li.more { color: var(--ink-4); font-style: italic; padding-left: 14px; }
+.dash-plan-strats li.more { color: var(--ink-4); font-style: italic; }
 .dash-plan-strats li.more::before { display: none; }
+.dash-plan-strats li.more > span { margin-left: 27px; } /* aligns under the numbered titles */
 .dash-plan .chip-row { margin-top: 2px; }
+/* base cluster anchors to the card floor — work strip + stats + foot */
+.dash-plan-base { margin-top: auto; display: flex; flex-direction: column; }
 /* campaigns this plan produced — plain dark thumbs, no tape */
 .dash-plan-work { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; padding-top: 9px; }
+/* telemetry band — real per-plan counts between hairlines */
+.dash-plan-stats {
+  display: flex; margin-top: 10px;
+  border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
+}
+.dp-stat {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;
+  padding: 7px 0 6px;
+}
+.dp-stat + .dp-stat { border-left: 1px solid var(--line-soft); padding-left: 12px; }
+.dp-stat b {
+  font-family: var(--font-mono); font-size: 14px; font-weight: 700;
+  color: var(--ink); font-variant-numeric: tabular-nums; line-height: 1.2;
+}
+.dp-stat i {
+  font-style: normal; font-family: var(--font-mono); font-size: 7.5px; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--ink-4);
+}
 .dash-pw {
   position: relative; display: block; width: 62px; height: 62px; flex: none;
   background: var(--card-3); border: 1px solid var(--line); border-radius: 0;
@@ -125,16 +203,10 @@
 .dash-plan .chan-chip svg { color: var(--ink-4); }
 .dash-plan-foot {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  padding-top: 10px; border-top: 1px solid var(--line-soft);
-  /* no margin-top:auto — it would eat all free space before space-between spreads it */
+  padding-top: 9px;
 }
-.dash-reach {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 10.5px; font-weight: 700; color: var(--amber);
-  background: rgba(232, 200, 143, .07); border: 1px solid rgba(232, 200, 143, .3);
-  border-radius:0; padding: 3px 9px; white-space: nowrap;
-}
-.dash-reach svg { color: var(--amber); }
+/* the stats band's bottom rule already separates the foot — no double line */
+.dash-plan-stats + .dash-plan-foot { border-top: none; }
 .dash-plan-go {
   margin-left: auto; font-family: var(--font-mono); font-size: 9.5px; font-weight: 700;
   letter-spacing: .12em; text-transform: uppercase; color: var(--ink-4); transition: color .2s;
@@ -160,7 +232,9 @@
   -webkit-mask-image: linear-gradient(to right, #000 0 calc(100% - 46px), transparent 100%);
   mask-image: linear-gradient(to right, #000 0 calc(100% - 46px), transparent 100%);
 }
+.dash-zone-work .dash-work { counter-reset: plate; }
 .dash-work-card {
+  counter-increment: plate;
   overflow: hidden; padding: 0; display: flex; flex-direction: column;
   color: var(--ink); scroll-snap-align: start; background: var(--bg-raise);
   border-color: var(--line-soft);
@@ -177,6 +251,12 @@
 .dash-work-media.media-fallback .mf-mono { font-size: 34px; }
 .dash-work-media.media-fallback .mf-chan { left: 10px; bottom: 10px; font-size: 10.5px; }
 .dash-work-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 4px; }
+/* plate caption — "pl. 01" auto-numbers each work card */
+.dash-work-body::before {
+  content: 'pl. ' counter(plate, decimal-leading-zero);
+  font-family: var(--font-mono); font-size: 8.5px; font-weight: 700;
+  letter-spacing: .2em; text-transform: uppercase; color: var(--lime);
+}
 .dash-work-title {
   font-size: 13px; font-weight: 600; line-height: 1.3;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;

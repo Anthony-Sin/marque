@@ -169,25 +169,39 @@ export default function Dashboard() {
     return <div className="loading-wrap"><div className="spinner" /></div>;
   }
 
-  // top-2 strategy titles for a plan card — ctx board if it's active, else lazy fetch
+  // top-3 strategy titles for a plan card — ctx board if it's active, else lazy fetch
   const stratTitles = (b) => {
     const full = (board?.id === b.id ? board : null) || fullBoards[b.id];
-    return ((full?.strategies || []).map((s) => s.title).filter(Boolean).slice(0, 2).length
-      ? full.strategies.map((s) => s.title).filter(Boolean).slice(0, 2)
-      : (b.titles || []).slice(0, 2));
+    return ((full?.strategies || []).map((s) => s.title).filter(Boolean).slice(0, 3).length
+      ? full.strategies.map((s) => s.title).filter(Boolean).slice(0, 3)
+      : (b.titles || []).slice(0, 3));
   };
+
+  // long-form date for the deck header — the sheet's "issue date"
+  const today = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   const orphanWork = work.filter((c) => !boards.some((b) => b.id === c.boardId));
   return (
     <div className="section view dash-wrap">
-      {/* ---------- header — ops deck title + live counts ---------- */}
+      {/* ---------- header — route kicker + title left, date + stat tiles right ---------- */}
       <header className="dash-head">
-        <h1 className="display dash-title">Dashboard</h1>
-        <p className="dash-greet">What are we making today?</p>
-        <span className="dash-meta">
-          {boards.length} plan{boards.length === 1 ? '' : 's'}
-          {!!work.length && ` · ${work.length} campaign${work.length === 1 ? '' : 's'}`}
-        </span>
+        <div className="dash-head-l">
+          <span className="vh-kicker">MARQUE / DECK</span>
+          <h1 className="display dash-title">Dashboard</h1>
+          <p className="dash-greet">What are we making today?</p>
+        </div>
+        <div className="dash-head-r">
+          <span className="dash-date">{today}</span>
+          <div className="dash-stats">
+            <span className="dash-stat"><b>{boards.length}</b><i>plans</i></span>
+            {!!work.length && <span className="dash-stat"><b>{work.length}</b><i>campaigns</i></span>}
+            {!!board?.title && (
+              <span className="dash-stat dash-stat-board" title={`Active plan — ${board.title}`}>
+                <i>active plan</i><b className="dash-stat-board-t">{board.title}</b>
+              </span>
+            )}
+          </div>
+        </div>
       </header>
 
       {!boards.length ? (
@@ -207,7 +221,7 @@ export default function Dashboard() {
         <div className={`dash-deck${orphanWork.length ? '' : ' no-work'}`}>
           {/* ---------- your plans ---------- */}
           <section className="card hud dash-zone">
-            <div className="zone-head"><span className="z-id">P-01</span>Your plans<span className="z-tag">pick a board to open it</span></div>
+            <div className="zone-head"><span className="z-id">P-01</span>Your plans<span className="z-tag">{boards.length} BOARD{boards.length === 1 ? '' : 'S'}</span></div>
             <div className="dash-zone-body">
               <div className="grid c3">
             {boards.map((b) => {
@@ -251,15 +265,12 @@ export default function Dashboard() {
                       </span>
                     )}
                   </div>
-                  <div className="dash-plan-meta">
-                    {fmtDate(b.createdAt)}{b.createdAt && b.strategyCount != null ? ' · ' : ''}
-                    {b.strategyCount != null && `${b.strategyCount} strateg${b.strategyCount === 1 ? 'y' : 'ies'}`}
-                  </div>
+                  {!!b.createdAt && <div className="dash-plan-meta">{fmtDate(b.createdAt)}</div>}
                   {!!b.sub?.prompt && b.sub.prompt !== b.title && <div className="dash-plan-sub">“{b.sub.prompt}”</div>}
                   {!!titles.length && (
                     <ul className="dash-plan-strats">
-                      {titles.map((t) => <li key={t}>{t}</li>)}
-                      {extra > 0 && <li className="more">+{extra} more</li>}
+                      {titles.map((t) => <li key={t}><span>{t}</span></li>)}
+                      {extra > 0 && <li className="more"><span>+{extra} more</span></li>}
                     </ul>
                   )}
                   {!!(b.channels || []).length && (
@@ -271,34 +282,41 @@ export default function Dashboard() {
                       ))}
                     </div>
                   )}
-                  {!!planWork.length && (
-                    <div className="dash-plan-work" onClick={(e) => e.stopPropagation()}>
-                      {planWork
-                        .flatMap((c) => (c.thumbs?.length ? c.thumbs : [c.img]).filter(Boolean)
-                          .map((src) => ({ src, c })))
-                        .slice(0, 5)
-                        .map(({ src, c }, i) => (
-                          <Link key={`${c.id}:${i}`} to={`/campaigns?open=${c.id}`} className="dash-pw" title={c.title}>
-                            {!badImg[`${c.id}:${i}`] ? (
-                              <img src={src} alt="" loading="lazy"
-                                onError={() => setBadImg((m) => ({ ...m, [`${c.id}:${i}`]: true }))} />
-                            ) : (
-                              <MediaFallback className="dash-pw-fb" seed={c.title} channel={c.channel} />
-                            )}
-                          </Link>
-                        ))}
-                      <span className="dash-pw-n-static" title={`${planWork.length} campaign${planWork.length === 1 ? '' : 's'} from this plan`}>
-                        {planWork.length} campaign{planWork.length === 1 ? '' : 's'}
+                  {/* base cluster — work strip + instrument stats + foot all
+                      anchor to the card floor so the middle never reads dead */}
+                  <div className="dash-plan-base">
+                    {!!planWork.length && (
+                      <div className="dash-plan-work" onClick={(e) => e.stopPropagation()}>
+                        {planWork
+                          .flatMap((c) => (c.thumbs?.length ? c.thumbs : [c.img]).filter(Boolean)
+                            .map((src) => ({ src, c })))
+                          .slice(0, 5)
+                          .map(({ src, c }, i) => (
+                            <Link key={`${c.id}:${i}`} to={`/campaigns?open=${c.id}`} className="dash-pw" title={c.title}>
+                              {!badImg[`${c.id}:${i}`] ? (
+                                <img src={src} alt="" loading="lazy"
+                                  onError={() => setBadImg((m) => ({ ...m, [`${c.id}:${i}`]: true }))} />
+                              ) : (
+                                <MediaFallback className="dash-pw-fb" seed={c.title} channel={c.channel} />
+                              )}
+                            </Link>
+                          ))}
+                        <span className="dash-pw-n-static" title={`${planWork.length} campaign${planWork.length === 1 ? '' : 's'} from this plan`}>
+                          {planWork.length} campaign{planWork.length === 1 ? '' : 's'}
+                        </span>
+                      </div>
+                    )}
+                    {/* telemetry band — real per-plan counts, no filler */}
+                    <div className="dash-plan-stats">
+                      <span className="dp-stat"><b>{(b.strategyCount ?? titles.length) || '—'}</b><i>strategies</i></span>
+                      <span className="dp-stat"><b>{planWork.length}</b><i>campaigns</i></span>
+                      <span className="dp-stat" title={b.topReach ? 'estimated reach' : 'no reach estimate on record'}>
+                        <b>{b.topReach ? fmtViews(b.topReach) : '—'}</b><i>est views</i>
                       </span>
                     </div>
-                  )}
-                  <div className="dash-plan-foot">
-                    {!!b.topReach && (
-                      <span className="dash-reach" title="estimated reach">
-                        <Icon name="eye" size={11} />{fmtViews(b.topReach)} est. views
-                      </span>
-                    )}
-                    <span className="dash-plan-go">pick a strategy →</span>
+                    <div className="dash-plan-foot">
+                      <span className="dash-plan-go">pick a strategy →</span>
+                    </div>
                   </div>
                 </div>
               );
@@ -314,7 +332,7 @@ export default function Dashboard() {
           {/* ---------- other work — campaigns not tied to a shown plan ---------- */}
           {!!orphanWork.length && (
             <section className="card hud dash-zone dash-zone-work">
-              <div className="zone-head"><span className="z-id">P-02</span>Recent output<span className="z-tag">{orphanWork.length} campaign{orphanWork.length === 1 ? '' : 's'}</span></div>
+              <div className="zone-head"><span className="z-id">P-02</span>Recent output<span className="z-tag">{orphanWork.length} CAMPAIGN{orphanWork.length === 1 ? '' : 'S'}</span></div>
               <div className="dash-work">
                 {orphanWork.map((c) => {
                   const showImg = c.img && !badImg[c.id];

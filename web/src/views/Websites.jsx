@@ -431,6 +431,7 @@ export default function Websites() {
     <div className="section view ws-view">
       <div className="view-head">
         <div className="vh-main">
+          <span className="vh-kicker">MARQUE / SITES</span>
           <h1 className="display">Websites</h1>
           <p className="sub">Audit your live site against competitors — or generate a new one from your Business Profile.</p>
         </div>

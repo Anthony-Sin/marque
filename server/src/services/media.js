@@ -5,7 +5,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import path from 'node:path';
 import fs from 'node:fs';
-import { saveAssetBuf, assetAbs } from './store.js';
+import { saveAssetBuf, assetAbs, readAsset } from './store.js';
 import { genImage, genVideo } from './gemini.js';
 import { enrichPrompt, LOCALGEN_NEGATIVE } from './promptStyle.js';
 import { ENV } from '../config.js';
@@ -29,10 +29,26 @@ export async function localgenImage(prompt, opts = {}) {
   const { aspectRatio = '1:1', steps = 4, seed } = opts;
   const [w, h] = LOCAL_DIMS[aspectRatio] || LOCAL_DIMS['1:1'];
   const finalPrompt = enrichPrompt(prompt, { kind: opts.kind, palette: opts.palette, aspectRatio, enrich: opts.enrich });
+  // img2img: localgen runs a real ref pipeline — pass the first ref through as
+  // base64 so reframe/edit ops stay local instead of falling through to cloud.
+  const ref = (opts.refs || opts.images || [])[0];
+  let image;
+  if (ref) {
+    image = ref.data || ref.inline_data?.data || ref.inlineData?.data || null;
+    if (!image) {
+      const p = ref.path || ref.imagePath || (typeof ref === 'string' ? ref : null);
+      const a = p && readAsset(p);
+      if (!a) throw new Error(`localgen: reference not readable: ${p || 'inline ref'}`);
+      image = a.buf.toString('base64');
+    }
+  }
   const res = await fetch(`${ENV.localgenUrl}/generate`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ prompt: finalPrompt, width: w, height: h, steps, seed, upscale: 2, negative: LOCALGEN_NEGATIVE }),
+    body: JSON.stringify({
+      prompt: finalPrompt, width: w, height: h, steps, seed, upscale: 2, negative: LOCALGEN_NEGATIVE,
+      ...(image ? { image, strength: opts.strength ?? 0.55 } : {}),
+    }),
     signal: AbortSignal.timeout(120000),
   });
   if (!res.ok) {
@@ -106,23 +122,22 @@ export async function genImageResilient(prompt, opts = {}) {
   const mode = ENV.localgenProvider || 'off';
   const useLocal = mode !== 'off' && !!ENV.localgenUrl;
   const hasRefs = !!(opts.refs?.length || opts.images?.length);
-  const chain = (opts.provider && opts.provider !== 'auto'
+  const chain = opts.provider && opts.provider !== 'auto'
     ? [opts.provider]                                   // user-picked engine (e.g. "try gemini instead")
     : mode === 'local-only' ? ['local']
     : mode === 'local-first' && useLocal ? ['local', 'gemini', 'pollinations']
     : mode === 'fallback' && useLocal ? ['gemini', 'local', 'pollinations']
-    : ['gemini', 'pollinations'])
-    // local is pure txt2img — with a reference image it would return an
-    // unrelated generation; drop it from auto chains so the ref-capable
-    // provider actually does the reframe/edit the caller asked for.
-    .filter((p) => !(p === 'local' && hasRefs && opts.provider !== 'local'));
+    : ['gemini', 'pollinations'];
   const errs = [];
   for (const p of chain) {
     try {
       const path = p === 'local' ? await localgenImage(prompt, opts)
         : p === 'gemini' ? await genImage(prompt, opts)
         : await pollinationsImage(prompt, opts);
-      return { path, provider: p === 'local' ? await localProviderTag() : p, note: [p === 'local' && hasRefs ? 'reference image ignored — local engine is text-to-image only' : null, errs.length ? `after: ${errs.join(' | ')}` : null].filter(Boolean).join(' · ') || undefined };
+      // local does img2img and gemini takes refs — the ref is only ignored when
+      // the chain lands on pollinations (txt2img GET, can't accept images),
+      // which requires the local call to have errored first.
+      return { path, provider: p === 'local' ? await localProviderTag() : p, note: [hasRefs && p === 'pollinations' ? 'reference image ignored — pollinations is text-to-image only' : null, errs.length ? `after: ${errs.join(' | ')}` : null].filter(Boolean).join(' · ') || undefined };
     } catch (e) {
       errs.push(`${p}(${String(e.message || e).slice(0, 110)})`);
     }

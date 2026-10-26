@@ -187,3 +187,9 @@ LOW (noted, later):
 - e2e verified: regen creative → local-sdxl-turbo 1408x1760 in 5.9s; photoshoot batch 4/4 clean; honest 400/404s; gemini path works (928x1152, gray-band artifact seen once — watch).
 - Open: photoshoot/agent-edit under provider:'local' still ignores refs by design (note now attached); stale creatives still labeled local-sd-turbo (honest historical data); label text artifacts reduced not eliminated.
 - In-flight agents: graft-details (var-ops/edit best-of), post-merge QA, ffmpeg site-film fix, e2e user flow.
+### merge spot-checks @00:55
+- :8787 serves rebuilt dist — dark HUD live in prod too. Onboarding/brandbook/strategy-detail all render clean.
+- ISSUE: /strategy/0 @1366 — right column (audience profile panel) hard-clips at viewport edge; IN-THE-WILD rail cards cut mid-glyph — needs h-scroll affordance or padding fix.
+- ISSUE: rail-foot LED labels ("QLOO LIVE", clock) overflow the 66px icon rail — graft agent mid-edit on that block; recheck after it lands.
+- PERF: /assets pngs now 1.7-2.2MB (2x upscale) — book/dashboard thumbs load full-size; consider downscale thumbs later (perf lane).
+- Stale creatives all regen'd → local-sdxl-turbo (8/8 visible creatives on new model).

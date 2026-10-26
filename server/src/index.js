@@ -22,7 +22,7 @@ import { agentChat } from './services/agent.js';
 import { generateStrategies } from './services/strategy.js';
 import { generateExamples } from './services/scout.js';
 import { generateWebsite, editWebsite, siteVersion, normalizeHTML } from './services/sites.js';
-import { renderSiteVideo, siteVideoAvailable } from './services/sitevideo.js';
+import { renderSiteVideo, siteVideoAvailable, resolveFfmpeg } from './services/sitevideo.js';
 import { buildBook, htmlBook } from './services/brandbook.js';
 
 const { get, set, list, push, find, update, remove, uid, now } = store;
@@ -557,7 +557,7 @@ app.post('/api/campaigns/:id/demo-video', h(async (req, res) => {
         cr.videoPath = v.path; cr.videoState = 'done'; cr.videoProvider = v.provider; cr.videoDirection = 'site-demo'; if (v.note) cr.videoNote = v.note;
         // poster frame so the card shows the real site, not a branded fallback
         const poster = v.fsPath.replace(/\.mp4$/, '-poster.png');
-        try { await execFileP('ffmpeg', ['-y', '-v', 'error', '-ss', '0.5', '-i', v.fsPath, '-frames:v', '1', poster]); } catch { /* keep video-only */ }
+        try { await execFileP(resolveFfmpeg() || 'ffmpeg', ['-y', '-v', 'error', '-ss', '0.5', '-i', v.fsPath, '-frames:v', '1', poster]); } catch { /* keep video-only */ }
         if (fs.existsSync(poster)) { cr.imagePath = `/assets/${path.basename(poster)}`; store.registerImage(cr.imagePath, { source: 'site-capture-poster' }); }
         saveCampaign(stored);
       }

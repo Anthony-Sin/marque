@@ -365,6 +365,7 @@ export default function Campaigns() {
             <button className="btn ghost sm cp-back" onClick={() => show(null)}>
               ← All campaigns
             </button>
+            <span className="vh-kicker">MARQUE / OUTPUT</span>
             <h2 className="display">{open.brief?.title || 'Campaign'}</h2>
             {open.brief?.angle && <p className="sub">{open.brief.angle}</p>}
             {open.brief?.keyMessage && (
@@ -443,7 +444,7 @@ export default function Campaigns() {
             </section>
           )}
           <section className="card hud cp-panel cp-bay">
-            <div className="zone-head"><span className="z-id">CRE</span>Creatives<span className="z-tag">{creatives.length}</span></div>
+            <div className="zone-head"><span className="z-id">CRE</span>Creatives<span className="z-tag">{creatives.length} TOTAL</span></div>
             <div className="cp-panel-body">
               <div className="creative-grid">
                 {creatives.map((cr) => (
@@ -495,6 +496,7 @@ export default function Campaigns() {
     <div className="section view cp-view">
       <div className="view-head">
         <div className="vh-main">
+          <span className="vh-kicker">MARQUE / OUTPUT</span>
           <h1 className="display">Campaigns</h1>
           <p className="sub">Prompt a campaign or continue one below — brief first, creatives after.</p>
         </div>
@@ -634,7 +636,7 @@ export default function Campaigns() {
       </section>
 
       <section className="card hud cp-panel cp-list">
-        <div className="zone-head"><span className="z-id">OUT</span>Your campaigns<span className="z-tag">{nCamps}</span></div>
+        <div className="zone-head"><span className="z-id">OUT</span>Your campaigns<span className="z-tag">{nCamps} TOTAL</span></div>
         <div className="cp-panel-body">
       {campaigns === null ? (
         <div className="grid c2">
