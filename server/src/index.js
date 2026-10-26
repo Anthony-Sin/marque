@@ -859,7 +859,17 @@ app.post('/api/creatives/:id/regenerate-image', h(async (req, res) => {
     extra,
   ].filter(Boolean).join(' ');
   try {
-    const g = await genImageResilient(prompt, { aspectRatio: hit.campaign.aspectRatio, provider: ['local', 'gemini', 'pollinations'].includes(req.body?.provider) ? req.body.provider : undefined, refs: (profile?.images || []).slice(0, 1).map((i) => ({ path: i.path })) });
+    // caller may pin its own ref set; validated to /assets/ paths that exist.
+    // default stays the brand hero (profile.images[0]).
+    let refs = (profile?.images || []).slice(0, 1).map((i) => ({ path: i.path }));
+    if (Array.isArray(req.body?.refs)) {
+      const posted = req.body.refs
+        .map((r) => (typeof r === 'string' ? r : r?.path))
+        .filter((p) => typeof p === 'string' && /^\/assets\/[\w.-]+$/.test(p))
+        .map((p) => ({ path: p }));
+      if (posted.length) refs = posted.slice(0, 3);
+    }
+    const g = await genImageResilient(prompt, { aspectRatio: hit.campaign.aspectRatio, provider: ['local', 'gemini', 'pollinations'].includes(req.body?.provider) ? req.body.provider : undefined, refs });
     hit.creative.imagePath = g.path;
     hit.creative.imageProvider = g.provider;
     hit.creative.cleanImage = true;
