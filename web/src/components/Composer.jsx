@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import { scrubEngines, ENGINE_DEDUPE, cleanErr } from '../labels.js';
+import { anyOverlayOpen } from '../focus.js';
 import '../views/studio.css';
 
 export const ASPECTS = ['1:1', '4:5', '9:16', '16:9'];
@@ -201,7 +202,7 @@ export function KebabMenu({ items, icon = 'kebab' }) {
 function PillMenu({ icon, label, has, open, onToggle, children, wide }) {
   useEffect(() => {
     if (!open) return undefined;
-    const onKey = (e) => { if (e.key === 'Escape') onToggle?.(); };
+    const onKey = (e) => { if (e.key === 'Escape' && !anyOverlayOpen()) onToggle?.(); };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onToggle]);

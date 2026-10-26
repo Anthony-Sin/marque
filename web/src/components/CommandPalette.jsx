@@ -4,7 +4,7 @@ import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import EvidenceDrawer from './EvidenceDrawer.jsx';
-import { useOverlayFocus } from '../focus.js';
+import { useOverlayFocus, isTopOverlay } from '../focus.js';
 import { chanLabel } from '../labels.js';
 
 /* Tiny fuzzy scorer — no deps. Every query char must land in order
@@ -601,7 +601,13 @@ export default function CommandPalette({ open, onClose }) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e) => {
-      if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); onClose(); }
+      if (e.key === 'Escape') {
+        // only the palette's own Esc — if a layer ever mounts above it, the
+        // top of stack owns the key (stopPropagation can't shield document
+        // listeners registered on the same node anyway)
+        if (!isTopOverlay(boxRef.current)) return;
+        e.preventDefault(); e.stopPropagation(); onClose();
+      }
       else if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); disarm(); setNavIdx(flat.length ? (sel + 1) % flat.length : null); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); disarm(); setNavIdx(flat.length ? (sel - 1 + flat.length) % flat.length : null); }
       else if (e.key === 'Home') { e.preventDefault(); e.stopPropagation(); disarm(); setNavIdx(flat.length ? 0 : null); }
