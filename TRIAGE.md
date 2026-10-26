@@ -364,3 +364,13 @@ Counts: HIGH 3 · MED 7 · LOW 4
 - Dead code removed: Kebab.jsx + KebabMenu export (unused; KebabMenu's Esc predated the gates).
 - Fresh real audit on liquiddeath.com replaced the stale huel.com residue in the Improve tab (7 LD-on-brand fixes, correct IG/TikTok socials, honest 'No X Linked').
 - profile.source stays null — honest provenance (hand-restored profile wasn't scraped); audit accepts explicit URL by design.
+
+## Wave — serve-time share meta + keyboard sweep (~06:15 ET)
+- `normalizeHTML` now derives meta description + og:title/description/image
+  from the page's own <title>/first <img> when absent (LLM-edited published
+  HTML previously shipped zero share-preview meta). Fern site untouched —
+  its renderer-native version already emits og tags. (273b3c6)
+- Keyboard sweep verified: dashboard Tab order walks rail → ⌘K → per-card
+  controls with real BUTTON/A elements only; zero orphaned or dead stops.
+- document.title audit: app shell consistent; published surfaces get brand
+  titles (LD site, brand book).
