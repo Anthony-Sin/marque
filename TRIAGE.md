@@ -339,3 +339,9 @@ Counts: HIGH 3 · MED 7 · LOW 4
 - Onboarding hardening (7a624b7): normalizedUrl() gates build — garbage can't POST /profile/build (verified 0 requests on 'not a url at all' + Enter); type=url + aria-invalid + disabled-on-empty; AGENT_KIND gained 'devin-cli'.
 - Published-surface polish: LD site republished at /s/liquid-death (was site-51b4ce2d); sentinel 'Your Brand skincare' draft site deleted; hero image regenerated via free-mode photoshoot (barbell+chains+venue-bus, on-brand vs old studio-gear flat-lay) and swapped in via /edit route.
 - Smoke 27/27 green on merged tree (incl. raw gemini image — quota recovered); devin-cli fallback still carrying text layer honestly (agent.provider=devin-cli).
+
+### Demo path (09:00 handoff)
+- Cold open lands on Dashboard — LD flagship is ACTIVE plan (79b27472). If a late test lane drifts it again: `curl -X POST :8787/api/boards/79b27472-a6aa-4dba-8672-2c2567cb1bcf/activate`.
+- Walk: /dashboard → /strategy/<board> (moodboard rail, fit scores) → strategy detail (real hunts, ≤90s partial-honest) → /campaigns?open=229d419b (can-on-ice creatives, motion renders) → /shoots (6 real shoots) → /websites → /s/liquid-death + /s/fern-matcha published → /brandbook → /b/book-9d8ee960 published → /profile (LD coherent, taste-off honest).
+- Provider honesty: text brain = devin-cli (tensor key dead ~23h, auto-fallback); images = local SDXL-Turbo (:8807, watchdog-restart ~54s, deep-check ~10min); video = ffmpeg (veo deprecated upstream); Qloo = live. Status LEDs report all of it truthfully.
+- Known honest gaps: /brandbook Imagery page empty (book.images=[]); Olipop bare-board 404 by design; 'Acumin Pro' font CDN may 404 → Georgia fallback.
