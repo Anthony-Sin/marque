@@ -126,6 +126,8 @@ export default function CommandPalette({ open, onClose }) {
       'qloo signals affinity proof calls', () => setEvi(true));
     push('actions', 'layout', 'Dashboard', 'the deck — plans at a glance',
       'home deck overview', () => nav('/dashboard'));
+    push('actions', 'dna', 'Business profile', 'edit brand identity, palette, voice',
+      'profile brand dna palette voice settings', () => nav('/profile'));
     return out;
   }, [boards, board, extra, hasStrategy, nav, openBoard, say]);
 

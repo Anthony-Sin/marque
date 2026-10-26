@@ -149,7 +149,7 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
         {video && (
           <button type="button" className="badge-v" onClick={(e) => { e.stopPropagation(); setZoom(true); }}
             title={creative.videoProvider ? `Watch — made with ${providerLabel(creative.videoProvider)}${creative.videoNote ? ` · ${cleanNote(creative.videoNote)}` : ''}` : 'Watch the animated version'}>
-            <Icon name="play" size={10} sw={2.4} /> watch{creative.videoProvider ? ` · ${providerLabel(creative.videoProvider)}` : ''}
+            <Icon name="play" size={10} sw={2.4} /><span>watch{creative.videoProvider ? ` · ${providerLabel(creative.videoProvider)}` : ''}</span>
           </button>
         )}
         {!!creative.imageProvider && (

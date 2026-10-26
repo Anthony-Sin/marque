@@ -199,3 +199,8 @@ FLOW-TEST: real campaign produced e2e; findings → reload-during-gen no auto-re
 QA-POST-MERGE: systematic jargon bypass in merged views (engine chips Local/Gemini/Pollinations raw, QLOO AFFINITY headers, QLOO LIVE LED, epLabel+raw double-print) + mobile defects (390px affinity-table crush, ring label clip, header stats off-canvas).
 FUZZ: crash on /api/strategy/stream; proto-key bypass wipes profile (TEMPLATES['constructor'], PUBLISH_PLATFORMS); deep-nest DoS stored in profile; numeric slug → unreachable; DNS-rebind SSRF; id-overwrite via catalog PUT; error-middleware order leaks HTML stacks; photoshoot has no DELETE; jobs-map in-mem → stuck 'running' after restart.
 IN-FLIGHT: fixr3(flow+jargon views) · cmdk(done) · thumbs(done) · site-tpl · book-tpl · hardening(0bddb9dc) · fuzzer residue: __FUZZTEST__ photoshoot dc36b5b1 + ~20 orphan assets (no API to remove yet — hardening adds DELETE).
+### @01:37 — hygiene pass applied
+- Deleted fuzz photoshoot dc36b5b1 (+2 assets), dup campaign 7591bbd2 (+8 assets). ~172 orphan files (~100MB) + ~136 dead registry rows remain — needs an orphan sweep w/ picker-safety check first (ingredient picker may read registry).
+- Audit found: dead jobId handles persist on done records; boards[].moodboardJob not swept at boot; assetInUse() ignores moodboard tiles + lastStrategy; 'lastStrategy' is a stale 1.5k-line dup of a live board (legacy readers); genError prints raw if a failed campaign opens.
+- PROFILE = stub 'Your Brand' (source:null) — never onboarded for real; demo state.
+- VEO: this API key lists 60 models, zero veo → cloud video permanently unavailable; ffmpeg fallback is the honest motion path (motion-quality agent improving it).

@@ -199,9 +199,9 @@ export default function ProfilePage() {
           <p className="sub">The file every board, campaign, site and palette reads. Edit in place — Save writes only what changed.</p>
         </div>
         <div className="vh-side">
-          {!!bundle?.calls?.length && (
+          {!!bundle && (
             <button type="button" className="btn ghost sm" onClick={() => setEvi(true)}>
-              <Icon name="qloo" size={13} /> Evidence · {bundle.calls.length}
+              <Icon name="qloo" size={13} /> Evidence{bundle.calls?.length ? ` · ${bundle.calls.length}` : ''}
             </button>
           )}
           <Link
@@ -362,11 +362,9 @@ export default function ProfilePage() {
                       Enrich the identity fields and regenerate to retry.
                     </p>
                   )}
-                  {!!bundle.calls?.length && (
-                    <button type="button" className="btn ghost sm" style={{ alignSelf: 'flex-start' }} onClick={() => setEvi(true)}>
-                      <Icon name="qloo" size={13} /> Show evidence · {bundle.calls.length} calls
-                    </button>
-                  )}
+                  <button type="button" className="btn ghost sm" style={{ alignSelf: 'flex-start' }} onClick={() => setEvi(true)}>
+                    <Icon name="qloo" size={13} /> Show evidence{bundle.calls?.length ? ` · ${bundle.calls.length} calls` : ''}
+                  </button>
                 </>
               )}
             </div>

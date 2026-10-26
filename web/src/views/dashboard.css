@@ -283,6 +283,13 @@
   .dash-zone, .dash-zone-body { overflow: visible; }
   .dash-zone-work .dash-work { grid-auto-columns: minmax(200px, 72vw); }
 }
+@media (max-width: 640px) {
+  /* the stat row used to run off the right edge inside the fixed-viewport
+     pane — let it wrap under the title instead of clipping off-canvas */
+  .dash-head-r { width: 100%; align-items: flex-start; }
+  .dash-stats { flex-wrap: wrap; justify-content: flex-start; max-width: 100%; }
+  .dash-stat-board { max-width: 100%; }
+}
 @media (max-width: 430px) {
   .dash-head { padding-top: 14px; }
   .dash-title { font-size: 26px; }

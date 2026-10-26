@@ -59,10 +59,10 @@ export function TastePanel({ bundle, compact }) {
         <QlooBadge mode={mode} label="Audience data" />
       </div>
       <p className="muted small" style={{ margin: '6px 0 4px' }}>
-        What your audience also loves — correlations from Qloo's taste graph that ground every campaign we generate.
+        What your audience also loves — correlations from the taste graph that ground every campaign we generate.
       </p>
       <p className="muted small" style={{ margin: '0 0 12px', fontSize: 10.5 }}>
-        affinity = how strongly fans of your brand pull toward this entity (0–1, &gt;0.8 is a strong pull) · popularity = how big the entity is overall. High affinities cluster because Qloo ranks within your audience, not the whole world.
+        affinity = how strongly fans of your brand pull toward this entity (0–1, &gt;0.8 is a strong pull) · popularity = how big the entity is overall. High affinities cluster because the graph ranks within your audience, not the whole world.
       </p>
       {bundle.entity && (
         <div className="small muted mb8">matched entity: <b style={{ color: 'var(--ink)' }}>{bundle.entity.name}</b></div>
@@ -81,8 +81,8 @@ export function TastePanel({ bundle, compact }) {
               Taste data couldn't be reached — retry
             </div>
           )}
-          {(a.entities || []).slice(0, compact ? 3 : 5).map((e) => (
-            <div key={e.id || e.name} className="affin-row rich">
+          {(a.entities || []).slice(0, compact ? 3 : 5).map((e, ei) => (
+            <div key={e.id || `${e.name}-${ei}`} className="affin-row rich">
               {e.image
                 ? <img className="affin-thumb" src={e.image} alt="" loading="lazy" referrerPolicy="no-referrer" />
                 : <span className="affin-thumb ph">{(e.name || '?')[0]}</span>}
@@ -104,13 +104,13 @@ export function TastePanel({ bundle, compact }) {
       {!!bundle.calls?.length && (
         <div className="mt8">
           <button className="btn ghost sm" onClick={() => setShowCalls(!showCalls)}>
-            {showCalls ? 'hide' : 'show'} evidence · {bundle.calls.length} Qloo calls
+            {showCalls ? 'hide' : 'show'} evidence · {bundle.calls.length} audience calls
           </button>
           {showCalls && (
             <div className="mt8 small muted" style={{ fontFamily: 'monospace', fontSize: 11 }}>
               {bundle.calls.map((c, i) => (
                 <div key={i} style={{ padding: '3px 0', borderBottom: '1px solid var(--line-soft)' }}>
-                  {epLabel(c.endpoint)} <span className="muted">{c.endpoint}</span> · {Object.entries(c.params || {}).map(([k, v]) => `${k}=${String(v).slice(0, 40)}`).join(' ')}
+                  {epLabel(c.endpoint)} · {Object.entries(c.params || {}).map(([k, v]) => `${k}=${String(v).slice(0, 40)}`).join(' ')}
                   {c.n != null && <span style={{ color: 'var(--lime)' }}> → {c.n} results</span>}
                   {!!c.mode && c.mode !== 'live' && <span style={{ color: 'var(--rose, #e88)' }} title={c.error || ''}> · {c.mode}{c.error ? ` — ${String(c.error).slice(0, 60)}` : ''}</span>}
                   {!!c.tookMs && <span className="muted"> · {c.tookMs}ms</span>}

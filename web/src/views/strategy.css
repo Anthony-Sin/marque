@@ -1106,6 +1106,12 @@
 }
 .stg-detail .stg-ring { width: 78px; height: 78px; }
 .stg-detail .stg-ring-num b { font-size: 19px; }
+/* 'audience fit' is the longest ring label — let it stack two words inside the
+   ring instead of hard-clipping against the stroke */
+.stg-detail .stg-ring-num span {
+  font-size: 7px; letter-spacing: .05em; line-height: 1.2;
+  white-space: normal; text-align: center; max-width: 62px;
+}
 .stg-detail-cols { grid-template-columns: minmax(0, .8fr) minmax(0, 1fr) minmax(0, 1.15fr); gap: 18px; }
 .stg-detail-cols .stg-qread { border-top: none; padding-top: 0; gap: 7px; }
 .stg-detail-cols .stg-qgroups { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -1296,6 +1302,22 @@
   .stg-detail .stg-detail-cols { flex: none; min-height: auto; }
   .stg-detail-cols > * { min-height: 0; overflow: visible; }
   .stg-wrap.detail-open .stg-picks .stg-pick-grid { overflow: visible; }
+
+  /* phone: the 3-up detail cols crush to ~140px — channel-fit rows and the
+     re-pull bar can't breathe. Stack the cols and let the pull row take the
+     full row (its grid slot was squeezed under the wild header). */
+  .stg-detail-cols { grid-template-columns: 1fr; }
+  .stg-wild { grid-template-columns: 1fr; }
+  .stg-wild .stg-wild-head { grid-column: 1 / -1; }
+}
+
+/* audience-fit group tiles — 3-up only works on wide detail boards; below
+   900px the entity names overlap their bars */
+@media (min-width: 601px) and (max-width: 900px) {
+  .stg-detail-cols .stg-qgroups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .stg-detail-cols .stg-qgroups { grid-template-columns: 1fr; }
 }
 
 /* chip text wraps: anonymous flex items can't ellipsize, real spans can */

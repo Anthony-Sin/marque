@@ -73,9 +73,13 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15.5rem,22rem));width:fit-content;max-width:100%;border:1px solid var(--line);border-width:1px 0 0 1px}
 .pcell{background:var(--bg);padding:1.5rem;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:.85rem}
 .ph{width:100%;aspect-ratio:4/5;object-fit:cover}
-.pcell.tx{justify-content:flex-end;min-height:14rem;background:var(--sf)}
-.pcell.tx h3{font-size:1.55rem}
-.t-n{font-size:.72rem;letter-spacing:.24em;color:var(--mut);display:block;margin-bottom:auto;padding-bottom:1rem}
+.plist{list-style:none;border-top:1px solid var(--line)}
+.prow{display:flex;align-items:baseline;gap:1.6rem;padding:1.35rem 0;border-bottom:1px solid var(--line)}
+.prow .n{font-size:.74rem;letter-spacing:.22em;color:var(--acc);min-width:2.6rem}
+.prow .pr{flex:1;min-width:0}
+.prow h3{font-size:1.3rem}
+.prow .pd{margin-top:.3rem}
+.prow .price{white-space:nowrap}
 .pcell h3{font-size:1.28rem;line-height:1.15}
 .pd{color:var(--mut);font-size:.92rem;line-height:1.6}
 .pfoot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:.85rem;min-height:2.4rem}
@@ -91,11 +95,13 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 .band h2{color:var(--band-ink)}
 .b-lede{color:var(--band-mut);max-width:40em;margin-top:1.2rem;font-size:clamp(1rem,1.4vw,1.15rem)}
 .idx{list-style:none;margin-top:clamp(2.2rem,4vw,3.5rem);border-top:1px solid var(--band-line)}
+.idx .ihd{padding:.7rem 0 1.1rem;font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--band-mut)}
+.idx .ihd .sc i{display:none}
 .idx li{display:flex;align-items:baseline;gap:1.6rem;padding:1.3rem 0;border-bottom:1px solid var(--band-line)}
 .idx .n{font-size:.74rem;letter-spacing:.22em;color:var(--band-mut);min-width:2.8rem}
 .idx .nm{font-family:var(--fd);font-size:clamp(1.5rem,3.4vw,2.7rem);line-height:1.08}
 .idx .sc{margin-left:auto;display:flex;align-items:center;gap:.7rem;font-size:.82rem;letter-spacing:.08em;color:var(--band-mut);font-variant-numeric:tabular-nums}
-.idx .sc i{display:block;width:4.5rem;height:2px;background:var(--band-line)}
+.idx .sc i{display:block;width:clamp(4.5rem,10vw,8rem);height:3px;background:var(--band-line)}
 .idx .sc u{display:block;height:100%;background:var(--band-ink);opacity:.85}
 .idx .sc b{font-weight:600;min-width:2.2rem;text-align:right}
 .cta{text-align:center;background:var(--sf);border-block:1px solid var(--line)}
@@ -109,11 +115,16 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 .foot{border-top:1px solid var(--line)}
 .foot .wrap{padding-block:clamp(3.5rem,7vw,5.5rem) 1.6rem}
 .fgrid{display:grid;gap:clamp(2rem,5vw,4rem)}
-.fgrid.c0{grid-template-columns:1fr}
+.fgrid.c0{grid-template-columns:1fr;text-align:center}
+.fgrid.c0 .fnote{margin-inline:auto}
+.fgrid.c0 .ftone{justify-content:center}
 .fgrid.c1{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
 .fgrid.c2{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr)}
 .fmark{font-family:var(--fd);font-size:clamp(1.9rem,3.4vw,2.9rem);line-height:1.05;letter-spacing:-.015em}
 .fnote{color:var(--mut);font-size:.92rem;max-width:26em;margin-top:1.1rem}
+.ftone{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;margin-top:1.4rem}
+.ftone span{font-size:.68rem;letter-spacing:.26em;text-transform:uppercase;color:var(--mut)}
+.ftone i{color:var(--acc);font-style:normal}
 .fcol h4{font:600 .68rem/1 var(--fb);letter-spacing:.28em;text-transform:uppercase;color:var(--mut);margin-bottom:1.05rem}
 .fcol a{display:block;text-decoration:none;padding:.38rem 0;font-size:.95rem}
 .fcol a:hover{color:var(--acc)}
@@ -130,8 +141,10 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
   .top .wrap{min-height:3.9rem}
 }
 @media (max-width:640px){
-  .acts{flex-direction:column;align-items:stretch;gap:1rem}
-  .acts .btn,.acts .arr{justify-content:center;text-align:center}
+  .acts{flex-direction:column;align-items:flex-start;gap:1rem}
+  .hero.solo .acts,.cta .acts{align-items:center}
+  .idx .sc i{display:none}
+  figcaption{font-size:.78rem}
   .phead{flex-direction:column;align-items:flex-start;gap:1rem}
   .g-grid{grid-template-columns:1fr}
   .g-grid figure:nth-child(even){margin-top:0}
@@ -158,7 +171,7 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
     </div>
     
   </div></header>
-  <div class="strip"><div class="mq"><div class="mq-in"><span>Aggressive&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Heavy metal&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Satirical&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Unapologetic&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Loud</span><i>·</i><span>Aggressive&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Heavy metal&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Satirical&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Unapologetic&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Loud</span><i>·</i><span>Aggressive&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Heavy metal&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Satirical&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Unapologetic&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Loud</span><i>·</i><span>Aggressive&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Heavy metal&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Satirical&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Unapologetic&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Loud</span><i>·</i><span>Aggressive&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Heavy metal&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Satirical&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Unapologetic&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Loud</span><i>·</i><span>Aggressive&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Heavy metal&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Satirical&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Unapologetic&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Loud</span><i>·</i><span>Aggressive&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Heavy metal&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Satirical&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Unapologetic&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Loud</span><i>·</i><span>Aggressive&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Heavy metal&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Satirical&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Unapologetic&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Loud</span><i>·</i><span>Aggressive&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Heavy metal&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Satirical&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Unapologetic&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Loud</span><i>·</i><span>Aggressive&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Heavy metal&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Satirical&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Unapologetic&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Loud</span><i>·</i><span>Aggressive&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Heavy metal&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Satirical&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Unapologetic&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Loud</span><i>·</i><span>Aggressive&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Heavy metal&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Satirical&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Unapologetic&lt;/span&gt;&lt;i&gt;·&lt;/i&gt;&lt;span&gt;Loud</span><i>·</i></div></div></div>
+  <div class="strip"><div class="mq"><div class="mq-in"><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span><i>·</i><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span><i>·</i><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span><i>·</i><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span><i>·</i><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span><i>·</i><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span><i>·</i><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span><i>·</i><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span><i>·</i><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span><i>·</i><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span><i>·</i><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span><i>·</i><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span><i>·</i></div></div></div>
 
   <section id="story" class="sec"><div class="wrap s-grid">
     <div class="s-head"><div class="kick "><i></i><span>The challenge</span></div><h2>Mosh-pit conditioning, judged in kilograms</h2></div>
@@ -171,26 +184,12 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 
   <section id="products" class="sec"><div class="wrap">
     <div class="phead"><div><div class="kick "><i></i><span>The arsenal</span></div><h2>Hydration arsenal</h2></div><p class="sub">Mountain water, sparkling and iced tea — all in infinitely recyclable aluminum.</p></div>
-    <div class="pgrid">
-      <article class="pcell tx">
-        <span class="t-n">01</span>
-        <h3>Mountain Water</h3>
-        <p class="pd">Pure alpine water in a king-sized tallboy can.</p>
-        <div class="pfoot"><span class="price">$15.99 / 12-pack</span><span class="arr2">→</span></div>
-      </article>
-      <article class="pcell tx">
-        <span class="t-n">02</span>
-        <h3>Severed Lime</h3>
-        <p class="pd">Sparkling water with a vicious squeeze of real lime.</p>
-        <div class="pfoot"><span class="price">$15.99 / 12-pack</span><span class="arr2">→</span></div>
-      </article>
-      <article class="pcell tx">
-        <span class="t-n">03</span>
-        <h3>Grim Leafer</h3>
-        <p class="pd">Iced tea and lemonade brewed to end thirst permanently.</p>
-        <div class="pfoot"><span class="price">$17.99 / 12-pack</span><span class="arr2">→</span></div>
-      </article>
-    </div>
+    
+    <ol class="plist">
+      <li class="prow"><span class="n">01</span><div class="pr"><h3>Mountain Water</h3><p class="pd">Pure alpine water in a king-sized tallboy can.</p></div><span class="price">$15.99 / 12-pack</span><span class="arr2">→</span></li>
+      <li class="prow"><span class="n">02</span><div class="pr"><h3>Severed Lime</h3><p class="pd">Sparkling water with a vicious squeeze of real lime.</p></div><span class="price">$15.99 / 12-pack</span><span class="arr2">→</span></li>
+      <li class="prow"><span class="n">03</span><div class="pr"><h3>Grim Leafer</h3><p class="pd">Iced tea and lemonade brewed to end thirst permanently.</p></div><span class="price">$17.99 / 12-pack</span><span class="arr2">→</span></li>
+    </ol>
   </div></section>
 
 
@@ -198,7 +197,7 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
     <div class="kick onband"><i></i><span>Taste signature</span></div>
     <h2>Loved by fans of</h2>
     <p class="b-lede">The measured cultural overlap of our loudest believers.</p>
-    <ol class="idx"><li><span class="n">01</span><span class="nm">Slayer</span><span class="sc"><i><u style="width:94%"></u></i><b>94</b></span></li><li><span class="n">02</span><span class="nm">CrossFit</span><span class="sc"><i><u style="width:88%"></u></i><b>88</b></span></li><li><span class="n">03</span><span class="nm">Tony Hawk</span><span class="sc"><i><u style="width:85%"></u></i><b>85</b></span></li><li><span class="n">04</span><span class="nm">Converge</span><span class="sc"><i><u style="width:79%"></u></i><b>79</b></span></li><li><span class="n">05</span><span class="nm">Monster Energy</span><span class="sc"><i><u style="width:72%"></u></i><b>72</b></span></li></ol>
+    <ol class="idx"><li class="ihd"><span class="n"></span><span>Ranked affinity</span><span class="sc"><i></i><b>Score</b></span></li><li><span class="n">01</span><span class="nm">Slayer</span><span class="sc"><i><u style="width:94%"></u></i><b>94</b></span></li><li><span class="n">02</span><span class="nm">CrossFit</span><span class="sc"><i><u style="width:88%"></u></i><b>88</b></span></li><li><span class="n">03</span><span class="nm">Tony Hawk</span><span class="sc"><i><u style="width:85%"></u></i><b>85</b></span></li><li><span class="n">04</span><span class="nm">Converge</span><span class="sc"><i><u style="width:79%"></u></i><b>79</b></span></li><li><span class="n">05</span><span class="nm">Monster Energy</span><span class="sc"><i><u style="width:72%"></u></i><b>72</b></span></li></ol>
   </div></section>
 
   <section id="cta" class="cta "><div class="wrap">
@@ -209,7 +208,7 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 </main>
 <footer class="foot"><div class="wrap">
   <div class="fgrid c2">
-    <div><div class="fmark">Liquid Death</div><p class="fnote">Mountain water for the violent hydration of the masses.</p></div>
+    <div><div class="fmark">Liquid Death</div><p class="fnote">Mountain water for the violent hydration of the masses.</p><div class="ftone"><span>Aggressive</span><i>·</i><span>Heavy metal</span><i>·</i><span>Satirical</span><i>·</i><span>Unapologetic</span><i>·</i><span>Loud</span></div></div>
     <div class="fcol"><h4>Index</h4><a href="#story">Story</a><a href="#products">Catalog</a><a href="#taste">Taste</a></div><div class="fcol"><h4>Elsewhere</h4><a href="https://liquiddeath.com" rel="noopener">Official site</a></div>
   </div>
   <div class="fbase"><span>© 2026 Liquid Death</span><span>Site by Marque</span></div>

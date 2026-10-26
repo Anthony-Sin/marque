@@ -9,4 +9,4 @@ export const chanLabel = (n) => {
 
 // Qloo call endpoints → what the call actually did (raw path stays as detail)
 const EP_LABEL = { '/search': 'entity search', '/v2/tags': 'tag lookup', '/v2/insights': 'affinity insights' };
-export const epLabel = (ep) => EP_LABEL[ep] || String(ep || '').replace(/^\/(v\d+\/)?/, '') || 'qloo call';
+export const epLabel = (ep) => EP_LABEL[ep] || String(ep || '').replace(/^\/(v\d+\/)?/, '') || 'taste call';

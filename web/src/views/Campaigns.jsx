@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
-import Composer, { arCss, isRaster, MediaFallback, fmtDate, thumb } from '../components/Composer.jsx';
+import Composer, { arCss, isRaster, MediaFallback, fmtDate, providerLabel, thumb } from '../components/Composer.jsx';
 import CreativeCard from '../components/CreativeCard.jsx';
 import CreativeEditor from '../components/CreativeEditor.jsx';
 import EvidenceDrawer from '../components/EvidenceDrawer.jsx';
@@ -26,7 +26,7 @@ const BRIEF_SKEL_FIELDS = [
 ];
 
 export default function Campaigns() {
-  const { profile, say, status } = useApp();
+  const { profile, say, status, board } = useApp();
   const loc = useLocation();
   const nav = useNavigate();
   const [campaigns, setCampaigns] = useState(null);
@@ -193,6 +193,39 @@ export default function Campaigns() {
 
   const open = (campaigns || []).find((c) => c.id === openId) || null;
 
+  // live strategy titles — the campaign's stored strategyTitle goes stale when
+  // the source strategy is renamed or regenerated. Resolve the CURRENT title
+  // from the board record (ctx board when it's active; lazy fetch otherwise)
+  // and fall back to what the campaign recorded at creation.
+  const [stratBoards, setStratBoards] = useState({}); // boardId → full board
+  useEffect(() => {
+    const ids = [...new Set((campaigns || []).map((c) => c.boardId).filter(Boolean))]
+      .filter((id) => id !== board?.id && !stratBoards[id]);
+    if (!ids.length) return;
+    let dead = false;
+    Promise.allSettled(ids.map((id) => api.board(id))).then((rs) => {
+      if (dead) return;
+      setStratBoards((m) => {
+        const n = { ...m };
+        rs.forEach((r, i) => { if (r.status === 'fulfilled' && r.value?.board) n[ids[i]] = r.value.board; });
+        return n;
+      });
+    });
+    return () => { dead = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaigns, board?.id]);
+
+  const liveStratTitle = (c) => {
+    const b = (c.boardId && board?.id === c.boardId ? board : null) || stratBoards[c.boardId];
+    if (!b) return c.strategyTitle || '';
+    const s = (b.strategies || []).find((x) => x.id && x.id === c.strategyId);
+    if (s?.title) return s.title;
+    // board loaded, strategy gone (deleted or regenerated) — the stored label
+    // is stale, so name the group after the campaign itself
+    if (c.strategyId) return c.title || '';
+    return c.strategyTitle || '';
+  };
+
   // group "Your campaigns" by the strategy that spawned them (handoff metadata)
   const groups = useMemo(() => {
     const byStrat = new Map();  // key → { key, title, items }
@@ -200,11 +233,12 @@ export default function Campaigns() {
     for (const c of campaigns || []) {
       const key = `${c.boardId || ''}:${c.strategyId || c.strategyTitle || ''}`;
       if (key === ':') { other.push(c); continue; }
-      if (!byStrat.has(key)) byStrat.set(key, { key, title: c.strategyTitle || 'strategy', items: [] });
+      if (!byStrat.has(key)) byStrat.set(key, { key, title: liveStratTitle(c) || 'strategy', items: [] });
       byStrat.get(key).items.push(c);
     }
     return { strat: [...byStrat.values()], other };
-  }, [campaigns]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaigns, board, stratBoards]);
 
   const confirmDelete = async () => {
     const c = deleting;
@@ -466,7 +500,7 @@ export default function Campaigns() {
                     measured, and the palette every downstream artifact inherits */}
                 <div className="res-src">
                   {(snap?.title || open.strategyTitle) && (
-                    <span className="res-from"><Icon name="sparkle" size={11} /> from strategy <b>{snap?.title || open.strategyTitle}</b></span>
+                    <span className="res-from"><Icon name="sparkle" size={11} /> from strategy <b>{liveStratTitle(open) || snap?.title}</b></span>
                   )}
                   {typeof snap?.fit === 'number' && (
                     <span className="res-fit" title="audience-fit score from the strategy board">{Math.round(snap.fit * 100)} fit</span>
@@ -604,10 +638,10 @@ export default function Campaigns() {
           <div className="starter-row">
             <span className="starter-eng" title="Image engine for this campaign's creatives">
               <b>Engine</b>
-              {[['auto', 'Auto'], ['local', 'Local'], ['gemini', 'Gemini'], ['pollinations', 'Pollinations']].map(([id, label]) => (
+              {['auto', 'local', 'gemini', 'pollinations'].map((id) => (
                 <button key={id} type="button" className={`starter-chip eng${engine === id ? ' on' : ''}`}
-                  title={id === 'auto' ? 'Default chain — local first, escalate on failure' : `Force ${label} for all creatives in this campaign`}
-                  onClick={() => setEngine(id)}>{label}</button>
+                  title={id === 'auto' ? 'Default chain — studio render first, escalate on failure' : `Force ${providerLabel(id)} for all creatives in this campaign`}
+                  onClick={() => setEngine(id)}>{providerLabel(id)}</button>
               ))}
             </span>
             <b className="starter-lbl">Try</b>

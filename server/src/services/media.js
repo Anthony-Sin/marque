@@ -74,7 +74,9 @@ export async function localgenHealth() {
 // known (it doesn't change under a running process); while health is
 // unreachable nothing is cached and the label falls back to plain 'local'.
 let localProviderCached;
-async function localProviderTag() {
+// exported for moodboard.js — its tiles come straight from localgenImage so
+// they report the same honest provider label the resilient chain does
+export async function localProviderTag() {
   if (localProviderCached === undefined) {
     const h = await localgenHealth().catch(() => null);
     if (h?.ok && h.model) {
@@ -97,19 +99,71 @@ export async function pollinationsImage(prompt, { aspectRatio = '1:1' } = {}) {
   return saveAssetBuf(buf, 'jpg');
 }
 
-// ffmpeg ken-burns: still → 5s subtle zoom/pan MP4 (H.264, plays everywhere).
-export async function ffmpegAnimate(imageWebPath, { aspectRatio = '9:16', seconds = 5 } = {}) {
+// ffmpeg motion design: still → seconds-long MP4 (H.264, plays everywhere).
+// Every render picks a deterministic-but-varied camera move: eased ken-burns
+// (zero velocity at both ends, so it reads as a move, not a panning still),
+// a mild corner vignette for depth, and short head/tail fades so the clip
+// cuts like an edit. Drift is written as a fraction of the live crop slack
+// (iw-iw/zoom)/2, which is 0 at zoom=1 — the window can never leave frame.
+const MOTION_DECK = ['push-right', 'push-left', 'push-up', 'push-diag', 'pull', 'settle'];
+const MOTION_NAMED = [
+  [/pull|zoom.?out|pull.?back|reveal|\bwide/i, 'pull'],
+  [/settle|locked|tripod|\bland|\bhold/i, 'settle'],
+  [/orbit|arc|sweep|diagonal/i, 'push-diag'],
+  [/tilt|ris(e|ing)|upward|crane|pedestal/i, 'push-up'],
+  [/\bleft/i, 'push-left'],
+  [/\bright/i, 'push-right'],
+  [/push|punch|zoom.?in|macro|close.?up|detail/i, 'push'],
+];
+export async function ffmpegAnimate(imageWebPath, { aspectRatio = '9:16', seconds = 5, motion = '', seed } = {}) {
   const abs = assetAbs(imageWebPath);
   if (!abs || !fs.existsSync(abs)) throw new Error('ffmpeg: source image missing');
   const [w, h] = dimsFor(aspectRatio);
   const out = saveAssetBuf(Buffer.alloc(0), 'mp4'); // reserve name
   const outAbs = assetAbs(out);
   const fps = 30, frames = seconds * fps;
-  // zoompan: 1.0→1.08 zoom with slight drift; scale+crop to target ar
-  const vf = `scale=${w * 2}:${h * 2}:force_original_aspect_ratio=increase,crop=${w * 2}:${h * 2},zoompan=z='min(zoom+0.0006,1.10)':x='iw/2-(iw/zoom/2)+sin(on/40)*8':y='ih/2-(ih/zoom/2)':d=${frames}:s=${w}x${h}:fps=${fps},format=yuv420p`;
+  // 3x oversampled canvas — zoompan snaps crop coords to whole source px, so
+  // the bigger the canvas the smaller the visible step (1/3 output px here)
+  const K = 3, iw = w * K, ih = h * K;
+  // seeded by asset path (a uuid) → variety across creatives, repeatable on re-render
+  let hv = 0x811c9dc5;
+  for (const c of String(seed ?? `${imageWebPath}|${motion}`)) { hv ^= c.charCodeAt(0); hv = Math.imul(hv, 0x01000193); }
+  const rnd = () => { hv ^= hv << 13; hv ^= hv >>> 17; hv ^= hv << 5; return (hv >>> 0) / 4294967296; };
+  // the motion-direction text (devin-written or the static default) can name a
+  // camera move — honor it when it does; else draw from the seeded deck
+  let variant = MOTION_NAMED.find(([re]) => re.test(motion))?.[1]
+    || MOTION_DECK[Math.floor(rnd() * MOTION_DECK.length)];
+  if (variant === 'push') variant = MOTION_DECK[Math.floor(rnd() * 4)];
+  const t = `on/${frames}`;
+  const eio = `${t}*${t}*(3-2*${t})`;  // smoothstep ease-in-out
+  const eo = `1-pow(1-${t},4)`;        // quart ease-out — quick push, settles into a hold
+  const Z = 0.10 + rnd() * 0.04;       // zoom depth 10–14%
+  const P = () => 0.5 + rnd() * 0.3;   // drift amplitude, fraction of crop slack
+  const sgn = () => (rnd() < 0.5 ? -1 : 1);
+  const cx = '(iw-iw/zoom)/2', cy = '(ih-ih/zoom)/2';
+  let z, x = cx, y = cy;
+  if (variant === 'pull') {
+    const z0 = 1.12;
+    z = `${z0}-${(z0 - 1).toFixed(3)}*${eio}`;
+    x = `${cx}*(1+${(P() * sgn() * 0.6).toFixed(3)}*(1-${eio}))`; // recenters as it reveals
+  } else if (variant === 'settle') {
+    z = `1+${(Z + 0.02).toFixed(3)}*${eo}`;
+    x = `${cx}*(1+${(P() * sgn() * 0.5).toFixed(3)}*(${eo}-0.5))`;
+  } else {
+    z = `1+${Z.toFixed(3)}*${eio}`;
+    if (variant === 'push-right') x = `${cx}*(1+${P().toFixed(3)}*(${eio}-0.5))`;
+    else if (variant === 'push-left') x = `${cx}*(1-${P().toFixed(3)}*(${eio}-0.5))`;
+    else if (variant === 'push-up') y = `${cy}*(1-${P().toFixed(3)}*(${eio}-0.5))`;
+    else { // push-diag
+      x = `${cx}*(1+${(P() * sgn()).toFixed(3)}*(${eio}-0.5))`;
+      y = `${cy}*(1-${(P() * 0.6).toFixed(3)}*(${eio}-0.5))`;
+    }
+  }
+  const fadeIn = 0.3, fadeOut = 0.35;
+  const vf = `scale=${iw}:${ih}:force_original_aspect_ratio=increase,crop=${iw}:${ih},zoompan=z='${z}':x='${x}':y='${y}':d=${frames}:s=${w}x${h}:fps=${fps},vignette=angle=PI/6,fade=t=in:st=0:d=${fadeIn},fade=t=out:st=${(seconds - fadeOut).toFixed(2)}:d=${fadeOut},format=yuv420p`;
   await run('ffmpeg', ['-y', '-loop', '1', '-i', abs, '-vf', vf, '-t', String(seconds), '-c:v', 'libx264', '-preset', 'fast', '-crf', '23', '-movflags', '+faststart', '-pix_fmt', 'yuv420p', outAbs], { timeout: 120000 });
   if (!fs.existsSync(outAbs) || fs.statSync(outAbs).size < 5000) throw new Error('ffmpeg: render failed');
-  return out;
+  return { path: out, variant };
 }
 
 // --- resilient wrappers: try the paid models first, fall back honestly ---
@@ -147,14 +201,14 @@ export async function genImageResilient(prompt, opts = {}) {
   throw err;
 }
 
-// returns { path, provider: 'veo'|'ffmpeg' } — ffmpeg always succeeds given a still
+// returns { path, provider: 'veo'|'ffmpeg-render' } — ffmpeg always succeeds given a still
 export async function genVideoResilient(prompt, opts = {}) {
   try {
     return { path: await genVideo(prompt, opts), provider: 'veo' };
   } catch (e) {
     if (!opts.imagePath) throw e;
-    const path = await ffmpegAnimate(opts.imagePath, opts);
-    console.warn(`[media] veo failed, ffmpeg fallback used: ${String(e?.message || e).slice(0, 300)}`);
-    return { path, provider: 'ffmpeg-render', note: 'veo unavailable — animated locally with ffmpeg' };
+    const r = await ffmpegAnimate(opts.imagePath, { ...opts, motion: prompt });
+    console.warn(`[media] veo failed, ffmpeg fallback used (${r.variant}): ${String(e?.message || e).slice(0, 300)}`);
+    return { path: r.path, provider: 'ffmpeg-render', note: `veo unavailable — animated locally with ffmpeg (${r.variant})` };
   }
 }

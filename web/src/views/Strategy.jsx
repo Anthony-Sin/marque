@@ -1529,7 +1529,7 @@ export default function Strategy() {
                         <span className="stg-prov" title="Where this evidence came from">
                           <Icon name="qloo" size={10} />
                           <span>
-                            taste read · {detEv.qlooMode || 'none'} · {detCalls.length} call{detCalls.length === 1 ? '' : 's'}
+                            audience data · {detCalls.length} call{detCalls.length === 1 ? '' : 's'}
                             {!!detSources.length && ` · ${detSources.join(' ')}`}
                           </span>
                         </span>
@@ -1539,9 +1539,9 @@ export default function Strategy() {
                         <div className="stg-qgroups">
                           {entGroups.map((g) => (
                             <div className="stg-qgroup" key={g.type}>
-                              <span className="stg-qtype">taste affinity · {g.type}</span>
-                              {g.rows.map((r) => (
-                                <span className="stg-qrow" key={r.name}>
+                              <span className="stg-qtype">taste fit · {g.type}</span>
+                              {g.rows.map((r, ri) => (
+                                <span className="stg-qrow" key={`${r.name}-${ri}`}>
                                   <span className="stg-qname">{r.name}</span>
                                   <span className="stg-qbar"><i style={{ width: `${pct(r.affinity)}%` }} /></span>
                                   <span className="stg-qaff">{r.affinity.toFixed(2)}</span>
@@ -1668,7 +1668,7 @@ export default function Strategy() {
                     wildList.length ? (
                       <div className="stg-wild-grid" ref={wildGridRef}>
                         {wildList.map((e, i) => (
-                          <WildCard key={exKey(e) || i} e={e} i={i}
+                          <WildCard key={`${exKey(e) || 'ex'}-${i}`} e={e} i={i}
                             sel={curSel.has(exKey(e))} onToggle={() => toggleWild(e)} />
                         ))}
                       </div>

@@ -81,6 +81,22 @@ export function init() {
   for (const s of state.photoshoots || []) {
     if (s?.status === 'running') { s.status = 'error'; s.note = note; dirty = true; }
   }
+  // a moodboard job marker that outlived its in-memory job is dead work —
+  // the tiles it made are either already stored on `moodboard` or never
+  // landed; either way the marker must not dedupe a future POST onto a
+  // job id that no longer exists
+  for (const b of state.boards || []) {
+    if (b?.moodboardJob) { delete b.moodboardJob; b.moodboardError = note; dirty = true; }
+  }
+  // tiles a killed moodboard run left behind: registered with source
+  // 'moodboard' but referenced by no board's tile list — they can never be
+  // reached again, so release them instead of littering the asset dir
+  const mbRefs = new Set((state.boards || []).flatMap((b) => (b.moodboard?.tiles || []).map((t) => t?.path)));
+  for (const img of list('images')) {
+    if (img?.source === 'moodboard' && img.path && !mbRefs.has(img.path)) {
+      releaseAsset(img.path); dirty = true;
+    }
+  }
   if (dirty) persist();
 }
 
@@ -167,6 +183,9 @@ export function assetInUse(webPath) {
     for (const e of s.edits || []) if (ref(e?.imagePath)) return true;
   }
   for (const w of state.websites || []) if (ref(w?.demoVideo?.path)) return true;
+  for (const b of state.boards || []) {
+    for (const t of b.moodboard?.tiles || []) if (ref(t?.path)) return true;
+  }
   return false;
 }
 

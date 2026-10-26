@@ -24,6 +24,7 @@ import { generateExamples } from './services/scout.js';
 import { generateWebsite, editWebsite, siteVersion, normalizeHTML, renderSiteHTML } from './services/sites.js';
 import { renderSiteVideo, siteVideoAvailable, resolveFfmpeg } from './services/sitevideo.js';
 import { buildBook, htmlBook } from './services/brandbook.js';
+import { generateMoodboard } from './services/moodboard.js';
 
 const { get, set, list, push, find, update, remove, uid, now } = store;
 
@@ -484,7 +485,11 @@ app.patch('/api/boards/:id', h(async (req, res) => {
 app.delete('/api/boards/:id', h(async (req, res) => {
   const b = find('boards', req.params.id);
   if (!b) return res.status(404).json({ error: 'board not found' });
+  // the moodboard's tiles go with the board — releaseAsset unlinks only when
+  // nothing else refs them (a tile promoted into a campaign/shoot survives)
+  const tilePaths = (b.moodboard?.tiles || []).map((t) => t?.path).filter(Boolean);
   remove('boards', b.id);
+  const freedTiles = tilePaths.filter((p) => store.releaseAsset(p)).length;
   if (get('activeBoardId') === b.id) {
     const next = list('boards')
       .slice()
@@ -495,7 +500,53 @@ app.delete('/api/boards/:id', h(async (req, res) => {
   } else if (get('lastStrategy')?.id === b.id) {
     set('lastStrategy', find('boards', get('activeBoardId')));
   }
-  ok(res, { ok: true, activeBoardId: get('activeBoardId') });
+  ok(res, { ok: true, activeBoardId: get('activeBoardId'), freedAssets: freedTiles });
+}));
+
+// ---------- moodboard ----------
+// 3x3 grid of localgen tiles distilled from the board's own taste/audience
+// data — the fastest visual answer to "what does this audience look like".
+// Runs as a background job (9 sequential sdxl-turbo gens ≈ 45-60s); the
+// stored result lives on the board as `moodboard` (see moodboard.js).
+app.post('/api/boards/:id/moodboard', h(async (req, res) => {
+  const b = find('boards', req.params.id);
+  if (!b) return res.status(404).json({ error: 'board not found' });
+  // idempotent: a moodboard gen already in-flight for this board returns its
+  // own job — a retried POST must not queue a second 9-image run. The marker
+  // is validated against the live jobs map so a stale id can't block regen.
+  const inflight = b.moodboardJob?.jobId ? jobs.get(b.moodboardJob.jobId) : null;
+  if (inflight?.status === 'running') return ok(res, { job: inflight, boardId: b.id, deduplicated: true });
+  const tasteN = (b.qlooBundle?.affinities || []).reduce((n, a) => n + (a.entities || []).length, 0);
+  if (!(b.strategies || []).length && !tasteN) {
+    return res.status(400).json({ error: 'board has no strategies or taste data to distill — generate strategies first' });
+  }
+  if (!ENV.localgenUrl) return res.status(503).json({ error: 'local image generation is not configured' });
+  // everything above is synchronous — the job + marker land atomically
+  // before any await, so concurrent POSTs can't both pass the guard
+  const job = runJob('moodboard', async (j) => {
+    try {
+      return await generateMoodboard(b.id, (p) => { j.progress = p; });
+    } catch (e) {
+      const cur = find('boards', b.id);
+      if (cur) update('boards', b.id, { moodboardError: String(e.message || e).slice(0, 200) });
+      throw e;
+    } finally {
+      const cur = find('boards', b.id);
+      if (cur?.moodboardJob) update('boards', b.id, { moodboardJob: null });
+    }
+  });
+  update('boards', b.id, { moodboardJob: { jobId: job.id, startedAt: now() } });
+  ok(res, { job, boardId: b.id });
+}));
+app.get('/api/boards/:id/moodboard', h(async (req, res) => {
+  const b = find('boards', req.params.id);
+  if (!b) return res.status(404).json({ error: 'board not found' });
+  const inflight = b.moodboardJob?.jobId ? jobs.get(b.moodboardJob.jobId) : null;
+  const running = inflight?.status === 'running' ? inflight : null;
+  if (!b.moodboard?.tiles?.length) {
+    return res.status(404).json({ error: 'no moodboard yet — POST to generate one', ...(running ? { job: running } : {}) });
+  }
+  ok(res, { boardId: b.id, moodboard: b.moodboard, ...(running ? { job: running } : {}) });
 }));
 
 // ---------- dashboard ----------

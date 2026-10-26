@@ -35,7 +35,7 @@ export default function EvidenceDrawer({ title = 'Taste evidence', signals = [],
           <button className="icon-btn" onClick={onClose} aria-label="Close"><Icon name="x" size={16} /></button>
         </div>
         <p className="drawer-sub">
-          Real calls to Qloo's cultural taste graph that grounded this work — every type, every call, failures included.
+          Real calls to the audience taste graph that grounded this work — every type, every call, failures included.
         </p>
         <QlooBadge mode={badgeMode} />
 
@@ -92,10 +92,10 @@ export default function EvidenceDrawer({ title = 'Taste evidence', signals = [],
           </>
         )}
 
-        <div className="section-label">Evidence trail · {calls.length} Qloo calls</div>
+        <div className="section-label">Evidence trail · {calls.length} audience calls</div>
         {calls.length ? calls.map((c, i) => (
           <div key={i} className="call-line">
-            <b>{epLabel(c.endpoint)}</b> <span className="muted">{c.endpoint}</span>{' '}
+            <b>{epLabel(c.endpoint)}</b>{' '}
             {Object.entries(c.params || {}).map(([k, v]) => `${k}=${String(v).slice(0, 48)}`).join(' ')}
             {c.n != null && <span> → {c.n} results</span>}
             {c.tookMs != null && <span> · {c.tookMs}ms</span>}

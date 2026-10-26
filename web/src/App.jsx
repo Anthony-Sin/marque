@@ -65,7 +65,7 @@ function Rail({ onPalette }) {
             <span className="rail-led"><i />{boards.length}&nbsp;PLAN{boards.length === 1 ? '' : 'S'}</span>
           )}
           <span className={`rail-led${live ? ' on' : ''}`} title={live ? 'Taste graph — live' : 'Taste graph — offline / demo'}>
-            <i />QLOO&nbsp;{live ? 'LIVE' : 'OFF'}
+            <i />TASTE&nbsp;{live ? 'LIVE' : 'OFF'}
           </span>
           <span className={`rail-led${gen ? ' on' : ''}`} title="Local image engine">
             <i />GEN&nbsp;{gen ? 'OK' : 'STBY'}

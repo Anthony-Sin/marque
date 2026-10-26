@@ -66,10 +66,11 @@ export const thumb = (p, w = 480) =>
 // that's the studio renderer, named honestly. Anything unmapped still gets a
 // human label; a raw engine id never reaches the UI.
 const PROVIDER_LABELS = {
+  auto: 'auto',
   local: 'studio render',
   gemini: 'cloud render',
   imagen: 'cloud render',
-  pollinations: 'cloud render',
+  pollinations: 'web render',
   veo: 'video model',
   ffmpeg: 'motion render',
   'ffmpeg-render': 'motion render',

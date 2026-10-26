@@ -164,7 +164,7 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
             <input value={regenPrompt} onChange={(e) => setRegenPrompt(e.target.value)}
               placeholder="e.g. warmer light, outdoors" />
             <div className="ovl-styles" style={{ marginTop: 6 }}>
-              {[['auto', 'Engine: auto'], ['local', 'Local'], ['gemini', 'Gemini'], ['pollinations', 'Pollinations']].map(([id, name]) => {
+              {['auto', 'local', 'gemini', 'pollinations'].map((id) => {
                 // gate chips on engines we know are down — never offer a dead engine
                 const offline = id === 'local'
                   ? !!status && (status.localgen?.ok === false || !status.localgen?.configured)
@@ -172,12 +172,12 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
                 const tip = id === 'auto'
                   ? (cur.imageProvider ? `Last rendered by ${providerLabel(cur.imageProvider)}` : 'Default chain — picks the best available engine')
                   : offline ? (id === 'local' ? 'local engine offline' : 'cloud engine not configured')
-                  : `Force ${name} for the next regen`;
+                  : `Force ${providerLabel(id)} for the next regen`;
                 return (
                   <button key={id} type="button" disabled={offline}
                     className={`ovl-st${regenProvider === id ? ' on' : ''}`}
                     title={tip}
-                    onClick={() => !offline && setRegenProvider(id)}>{name}</button>
+                    onClick={() => !offline && setRegenProvider(id)}>{providerLabel(id)}</button>
                 );
               })}
             </div>

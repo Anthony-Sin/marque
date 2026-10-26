@@ -264,7 +264,7 @@ export function renderSiteHTML(site) {
   // estimate ~14px/char at this tracking and force an even repeat count
   const stripTxt = strip.join(' · ');
   const mqReps = Math.max(4, 2 * Math.ceil(300 / Math.max(stripTxt.length, 1)));
-  const mqRow = `<span>${esc(strip.join('</span><i>·</i><span>'))}</span><i>·</i>`.repeat(mqReps);
+  const mqRow = (strip.map((t) => `<span>${esc(t)}</span>`).join('<i>·</i>') + '<i>·</i>').repeat(mqReps);
 
   const story = content.story || {};
   const storyParas = (story.paras || []).filter(Boolean);
@@ -273,6 +273,10 @@ export function renderSiteHTML(site) {
   let storyImg = story.image && okImg(story.image) && story.image !== heroImg?.path ? pool.find((p) => p.path === story.image) || { path: story.image, caption: '' } : null;
   if (!storyImg && galleryImgs.length === 1) storyImg = galleryImgs.pop(); // lone leftover image earns a place in the story column
   const storyOn = !!(story.headline || storyParas.length || storyPoints.length || storyImg);
+  // catalog renders as photo cards + a ruled spec index for image-less items —
+  // two deliberate anatomies instead of fake placeholder art
+  const catImg = catalog.filter((it) => it.image && okImg(it.image));
+  const catTx = catalog.filter((it) => !(it.image && okImg(it.image)));
   const productsOn = catalog.length > 0 && content.products !== null; // an explicit products:null drops the shop even with a catalog on file
   const galleryOn = galleryImgs.length >= 2 && !!(content.gallery !== null);
   const taste = content.taste || null;
@@ -289,7 +293,7 @@ export function renderSiteHTML(site) {
   if (galleryOn) secs.push({ id: 'gallery', label: 'Gallery' });
   if (tasteOn) secs.push({ id: 'taste', label: 'Taste' });
   const navLinks = secs.map((s) => `<a href="#${s.id}">${esc(s.label)}</a>`).join('');
-  const ctaHref = links[0]?.href || (productsOn ? '#products' : '#top');
+  const ctaHref = links[0]?.href || (productsOn ? '#products' : (ctaOn ? '#cta' : '#top'));
   const heroGhost = hero.ctaAlt ? `<a class="arr" href="#${secs[0]?.id || 'cta'}">${esc(hero.ctaAlt)} <i>→</i></a>` : '';
   const navCta = content.navCta ? `<a class="btn btn-sm" href="${esc(ctaHref)}">${esc(content.navCta)}</a>` : '';
   const mnav = secs.length ? `<details class="mnav"><summary>Menu</summary><nav>${navLinks}${ctaOn ? '<a href="#cta">Contact</a>' : ''}</nav></details>` : '';
@@ -325,14 +329,17 @@ export function renderSiteHTML(site) {
   const productsHtml = productsOn ? `
   <section id="products" class="sec"><div class="wrap">
     <div class="phead"><div>${kick(content.products?.kicker)}${content.products?.headline ? `<h2>${esc(content.products.headline)}</h2>` : ''}</div>${content.products?.sub ? `<p class="sub">${esc(content.products.sub)}</p>` : ''}</div>
-    <div class="pgrid">${catalog.map((it, i) => `
-      <article class="pcell${it.image && okImg(it.image) ? '' : ' tx'}">
-        ${it.image && okImg(it.image) ? `<img class="ph" src="${esc(it.image)}" alt="${esc(it.name)}" loading="lazy">` : `<span class="t-n">${String(i + 1).padStart(2, '0')}</span>`}
+    ${catImg.length ? `<div class="pgrid">${catImg.map((it) => `
+      <article class="pcell">
+        <img class="ph" src="${esc(it.image)}" alt="${esc(it.name)}" loading="lazy">
         <h3>${esc(it.name)}</h3>
         ${it.description ? `<p class="pd">${esc(it.description)}</p>` : ''}
         <div class="pfoot"><span class="price">${esc(it.price != null && it.price !== '' ? it.price : '')}</span><span class="arr2">→</span></div>
       </article>`).join('')}
-    </div>
+    </div>` : ''}
+    ${catTx.length ? `<ol class="plist"${catImg.length ? ' style="margin-top:2.4rem"' : ''}>${catTx.map((it, i) => `
+      <li class="prow"><span class="n">${String(i + 1).padStart(2, '0')}</span><div class="pr"><h3>${esc(it.name)}</h3>${it.description ? `<p class="pd">${esc(it.description)}</p>` : ''}</div><span class="price">${esc(it.price != null && it.price !== '' ? it.price : '')}</span><span class="arr2">→</span></li>`).join('')}
+    </ol>` : ''}
   </div></section>` : '';
 
   const galleryHtml = galleryOn ? `
@@ -348,7 +355,7 @@ export function renderSiteHTML(site) {
     ${kick(taste.kicker, 'onband')}
     ${taste.headline ? `<h2>${esc(taste.headline)}</h2>` : ''}
     ${taste.blurb ? `<p class="b-lede">${esc(taste.blurb)}</p>` : ''}
-    <ol class="idx">${tasteNames.map((n, i) => { const sc = affScores.get(String(n).toLowerCase()); return `<li><span class="n">${String(i + 1).padStart(2, '0')}</span><span class="nm">${esc(n)}</span>${sc != null ? `<span class="sc"><i><u style="width:${Math.max(6, Math.min(100, Math.round(sc <= 1 ? sc * 100 : sc)))}%"></u></i><b>${Math.round(sc <= 1 ? sc * 100 : sc)}</b></span>` : ''}</li>`; }).join('')}</ol>
+    <ol class="idx"><li class="ihd"><span class="n"></span><span>Ranked affinity</span><span class="sc"><i></i><b>Score</b></span></li>${tasteNames.map((n, i) => { const sc = affScores.get(String(n).toLowerCase()); return `<li><span class="n">${String(i + 1).padStart(2, '0')}</span><span class="nm">${esc(n)}</span>${sc != null ? `<span class="sc"><i><u style="width:${Math.max(6, Math.min(100, Math.round(sc <= 1 ? sc * 100 : sc)))}%"></u></i><b>${Math.round(sc <= 1 ? sc * 100 : sc)}</b></span>` : `<span class="sc"></span>`}</li>`; }).join('')}</ol>
   </div></section>` : '';
 
   const ctaHtml = ctaOn ? `
@@ -439,9 +446,13 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15.5rem,22rem));width:fit-content;max-width:100%;border:1px solid var(--line);border-width:1px 0 0 1px}
 .pcell{background:var(--bg);padding:1.5rem;border-right:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:.85rem}
 .ph{width:100%;aspect-ratio:4/5;object-fit:cover}
-.pcell.tx{justify-content:flex-end;min-height:14rem;background:var(--sf)}
-.pcell.tx h3{font-size:1.55rem}
-.t-n{font-size:.72rem;letter-spacing:.24em;color:var(--mut);display:block;margin-bottom:auto;padding-bottom:1rem}
+.plist{list-style:none;border-top:1px solid var(--line)}
+.prow{display:flex;align-items:baseline;gap:1.6rem;padding:1.35rem 0;border-bottom:1px solid var(--line)}
+.prow .n{font-size:.74rem;letter-spacing:.22em;color:var(--acc);min-width:2.6rem}
+.prow .pr{flex:1;min-width:0}
+.prow h3{font-size:1.3rem}
+.prow .pd{margin-top:.3rem}
+.prow .price{white-space:nowrap}
 .pcell h3{font-size:1.28rem;line-height:1.15}
 .pd{color:var(--mut);font-size:.92rem;line-height:1.6}
 .pfoot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:.85rem;min-height:2.4rem}
@@ -457,11 +468,13 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 .band h2{color:var(--band-ink)}
 .b-lede{color:var(--band-mut);max-width:40em;margin-top:1.2rem;font-size:clamp(1rem,1.4vw,1.15rem)}
 .idx{list-style:none;margin-top:clamp(2.2rem,4vw,3.5rem);border-top:1px solid var(--band-line)}
+.idx .ihd{padding:.7rem 0 1.1rem;font-size:.66rem;letter-spacing:.26em;text-transform:uppercase;color:var(--band-mut)}
+.idx .ihd .sc i{display:none}
 .idx li{display:flex;align-items:baseline;gap:1.6rem;padding:1.3rem 0;border-bottom:1px solid var(--band-line)}
 .idx .n{font-size:.74rem;letter-spacing:.22em;color:var(--band-mut);min-width:2.8rem}
 .idx .nm{font-family:var(--fd);font-size:clamp(1.5rem,3.4vw,2.7rem);line-height:1.08}
 .idx .sc{margin-left:auto;display:flex;align-items:center;gap:.7rem;font-size:.82rem;letter-spacing:.08em;color:var(--band-mut);font-variant-numeric:tabular-nums}
-.idx .sc i{display:block;width:4.5rem;height:2px;background:var(--band-line)}
+.idx .sc i{display:block;width:clamp(4.5rem,10vw,8rem);height:3px;background:var(--band-line)}
 .idx .sc u{display:block;height:100%;background:var(--band-ink);opacity:.85}
 .idx .sc b{font-weight:600;min-width:2.2rem;text-align:right}
 .cta{text-align:center;background:var(--sf);border-block:1px solid var(--line)}
@@ -475,11 +488,16 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 .foot{border-top:1px solid var(--line)}
 .foot .wrap{padding-block:clamp(3.5rem,7vw,5.5rem) 1.6rem}
 .fgrid{display:grid;gap:clamp(2rem,5vw,4rem)}
-.fgrid.c0{grid-template-columns:1fr}
+.fgrid.c0{grid-template-columns:1fr;text-align:center}
+.fgrid.c0 .fnote{margin-inline:auto}
+.fgrid.c0 .ftone{justify-content:center}
 .fgrid.c1{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}
 .fgrid.c2{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr)}
 .fmark{font-family:var(--fd);font-size:clamp(1.9rem,3.4vw,2.9rem);line-height:1.05;letter-spacing:-.015em}
 .fnote{color:var(--mut);font-size:.92rem;max-width:26em;margin-top:1.1rem}
+.ftone{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;margin-top:1.4rem}
+.ftone span{font-size:.68rem;letter-spacing:.26em;text-transform:uppercase;color:var(--mut)}
+.ftone i{color:var(--acc);font-style:normal}
 .fcol h4{font:600 .68rem/1 var(--fb);letter-spacing:.28em;text-transform:uppercase;color:var(--mut);margin-bottom:1.05rem}
 .fcol a{display:block;text-decoration:none;padding:.38rem 0;font-size:.95rem}
 .fcol a:hover{color:var(--acc)}
@@ -496,8 +514,10 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
   .top .wrap{min-height:3.9rem}
 }
 @media (max-width:640px){
-  .acts{flex-direction:column;align-items:stretch;gap:1rem}
-  .acts .btn,.acts .arr{justify-content:center;text-align:center}
+  .acts{flex-direction:column;align-items:flex-start;gap:1rem}
+  .hero.solo .acts,.cta .acts{align-items:center}
+  .idx .sc i{display:none}
+  figcaption{font-size:.78rem}
   .phead{flex-direction:column;align-items:flex-start;gap:1rem}
   .g-grid{grid-template-columns:1fr}
   .g-grid figure:nth-child(even){margin-top:0}
@@ -523,7 +543,7 @@ ${ctaHtml}
 </main>
 <footer class="foot"><div class="wrap">
   <div class="fgrid c${fcols}">
-    <div><div class="fmark">${esc(name)}</div>${content.footer?.note || brand.tagline ? `<p class="fnote">${esc(content.footer?.note || brand.tagline)}</p>` : ''}</div>
+    <div><div class="fmark">${esc(name)}</div>${content.footer?.note || brand.tagline ? `<p class="fnote">${esc(content.footer?.note || brand.tagline)}</p>` : ''}${(brand.tone || []).length ? `<div class="ftone">${brand.tone.slice(0, 5).map((t) => `<span>${esc(t)}</span>`).join('<i>·</i>')}</div>` : ''}</div>
     ${indexCol}${footerLinks}
   </div>
   <div class="fbase"><span>© ${year} ${esc(name)}</span><span>Site by Marque</span></div>
