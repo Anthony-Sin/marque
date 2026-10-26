@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LIQUID DEATH — MURDER YOUR THIRST † DECK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a09; --ink:#f2efe4; --dim:#8f8c80; --line:#2b2b27;
+  --gold:#e9b01c; --oswald:'Oswald',sans-serif; --inter:'Inter',sans-serif;
+  --bar:48px; --rail:36px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scrollbar-width:none}
+::-webkit-scrollbar{display:none}
+::selection{background:var(--gold);color:#000}
+body{background:var(--bg);color:var(--ink);font-family:var(--inter);height:100vh;overflow:hidden}
+body::after{content:"";position:fixed;inset:0;z-index:90;pointer-events:none;opacity:.055;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ---------- TOP BAR ---------- */
+.bar{position:fixed;top:0;left:0;right:0;height:var(--bar);z-index:50;display:flex;align-items:center;
+  justify-content:space-between;padding:0 22px;border-bottom:1px solid var(--line);
+  background:rgba(10,10,9,.82);backdrop-filter:blur(10px)}
+.logo{font-family:var(--oswald);font-weight:700;font-size:19px;letter-spacing:.06em;text-decoration:none;color:var(--ink)}
+.logo b{color:var(--gold)}
+.nav{display:flex;gap:34px}
+.nav a{font:600 10.5px var(--inter);letter-spacing:.22em;text-transform:uppercase;color:var(--dim);
+  text-decoration:none;position:relative;padding:4px 0;transition:color .25s}
+.nav a i{font-style:normal;color:var(--gold);margin-right:6px;font-size:9px}
+.nav a:hover{color:var(--ink)}
+.nav a::after{content:"";position:absolute;left:0;bottom:-2px;width:0;height:1px;background:var(--gold);transition:width .3s}
+.nav a:hover::after{width:100%}
+.cta-mini{font:800 10px var(--inter);letter-spacing:.2em;text-transform:uppercase;color:#000;background:var(--gold);
+  border:1px solid var(--gold);padding:9px 18px;text-decoration:none;transition:.25s}
+.cta-mini:hover{background:transparent;color:var(--gold)}
+
+/* ---------- DECK ---------- */
+.deck{display:flex;height:100vh;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none}
+.panel{flex:0 0 100vw;width:100vw;height:100vh;scroll-snap-align:start;position:relative;overflow:hidden;
+  padding:calc(var(--bar) + 40px) 6vw calc(var(--rail) + 34px)}
+.ghost{position:absolute;font-family:var(--oswald);font-weight:700;text-transform:uppercase;line-height:.8;
+  color:transparent;-webkit-text-stroke:1.5px rgba(242,239,228,.11);pointer-events:none;user-select:none;z-index:0}
+.tag{font:600 10px var(--inter);letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+.tag::before{content:"";display:inline-block;width:26px;height:1px;background:var(--gold);vertical-align:middle;margin-right:12px}
+.rise{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1)}
+.panel.in .rise{opacity:1;transform:none}
+.panel.in .rise:nth-child(2){transition-delay:.07s}.panel.in .rise:nth-child(3){transition-delay:.14s}
+.panel.in .rise:nth-child(4){transition-delay:.21s}.panel.in .rise:nth-child(5){transition-delay:.28s}
+
+/* ---------- 01 HERO ---------- */
+.hero{display:flex;align-items:stretch;gap:4vw}
+.hero .ghost{font-size:34vw;right:-3vw;bottom:-9vw}
+.hero-l{flex:1.25;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.hero h1{font-family:var(--oswald);font-weight:700;text-transform:uppercase;line-height:.84;
+  font-size:clamp(76px,12.6vw,196px);letter-spacing:-.01em;margin:22px 0 26px}
+.hero h1 .o{color:transparent;-webkit-text-stroke:2px var(--ink)}
+.hero h1 .g{color:var(--gold)}
+.hero p{max-width:44ch;font-size:14.5px;line-height:1.65;color:var(--dim)}
+.hero p b{color:var(--ink)}
+.hero-cta{display:flex;gap:14px;margin-top:34px}
+.btn{font:800 11px var(--inter);letter-spacing:.2em;text-transform:uppercase;text-decoration:none;
+  padding:15px 26px;border:1px solid var(--ink);color:var(--ink);transition:.25s;cursor:pointer;background:none;white-space:nowrap}
+.btn.solid{background:var(--gold);border-color:var(--gold);color:#000}
+.btn.solid:hover{background:transparent;color:var(--gold)}
+.btn:not(.solid):hover{background:var(--ink);color:#000}
+.hero-r{flex:.85;display:flex;align-items:center;justify-content:flex-end}
+.frame{position:relative;width:min(30vw,400px);aspect-ratio:1408/1760;transform:rotate(1.5deg)}
+.frame::before{content:"";position:absolute;inset:-14px 14px 14px -14px;border:1px solid var(--gold);z-index:0}
+.frame img{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block;
+  filter:contrast(1.06) saturate(.92);box-shadow:0 30px 60px rgba(0,0,0,.6)}
+.frame figcaption{position:absolute;left:-14px;bottom:-30px;z-index:2;font:600 9.5px var(--inter);
+  letter-spacing:.28em;text-transform:uppercase;color:var(--dim)}
+.stamp{position:absolute;top:-26px;right:-18px;z-index:2;width:86px;height:86px;border:1px solid var(--gold);
+  border-radius:50%;display:grid;place-items:center;font:700 9px var(--inter);letter-spacing:.18em;
+  color:var(--gold);text-align:center;line-height:1.5;transform:rotate(-12deg);background:rgba(10,10,9,.7)}
+.strip{position:absolute;left:0;right:0;bottom:calc(var(--rail) + 6px);border-top:1px solid var(--line);
+  overflow:hidden;white-space:nowrap;padding:9px 0;z-index:2}
+.strip span{display:inline-block;font:700 11px var(--oswald);letter-spacing:.3em;text-transform:uppercase;
+  color:var(--dim);animation:mq 26s linear infinite}
+.strip b{color:var(--gold);font-weight:700;margin:0 18px}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+/* ---------- 02 STORY ---------- */
+.story{display:grid;grid-template-columns:1.1fr .9fr;gap:5vw;align-items:center}
+.story .ghost{font-size:26vw;left:-4vw;top:-6vw}
+.story h2{font-family:var(--oswald);font-weight:700;text-transform:uppercase;line-height:.88;
+  font-size:clamp(52px,6.8vw,110px);margin:20px 0 26px}
+.story h2 em{font-style:normal;color:transparent;-webkit-text-stroke:1.5px var(--gold)}
+.story .lead{font-size:15px;line-height:1.7;color:var(--dim);max-width:52ch}
+.story .lead b{color:var(--ink)}
+.steps{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.step{display:flex;align-items:baseline;gap:22px;padding:22px 6px;border-bottom:1px solid var(--line);transition:.3s;cursor:default}
+.step:hover{padding-left:20px;background:rgba(233,176,28,.05)}
+.step:hover .num{color:var(--gold)}
+.step .num{font:700 13px var(--oswald);color:var(--dim);letter-spacing:.1em;transition:.3s}
+.step h3{font:600 21px var(--oswald);text-transform:uppercase;letter-spacing:.03em}
+.step p{font-size:12px;color:var(--dim);line-height:1.55;margin-top:5px;max-width:40ch}
+.tour{margin-top:22px;font:700 10.5px var(--oswald);letter-spacing:.26em;text-transform:uppercase;
+  color:var(--gold);border:1px dashed rgba(233,176,28,.45);padding:13px 18px;text-align:center}
+
+/* ---------- 03 ARSENAL ---------- */
+.arsenal{display:flex;flex-direction:column;justify-content:center}
+.arsenal .ghost{font-size:24vw;right:-2vw;bottom:-7vw}
+.arsenal h2{font-family:var(--oswald);font-weight:700;text-transform:uppercase;font-size:clamp(46px,5.6vw,92px);
+  line-height:.9;margin:18px 0 8px}
+.arsenal .sub{font-size:13px;color:var(--dim);max-width:52ch;line-height:1.6;margin-bottom:36px}
+.cans{display:flex;gap:2vw;align-items:stretch;flex:1;min-height:0}
+.can-card{flex:1;border:1px solid var(--line);padding:26px 18px 22px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:22px;position:relative;transition:.35s;background:transparent;min-height:0}
+.can-card:hover{border-color:var(--gold);transform:translateY(-10px);background:rgba(233,176,28,.04)}
+.can-card .idx{position:absolute;top:12px;left:14px;font:600 9px var(--inter);letter-spacing:.25em;color:var(--dim)}
+.can{width:120px;height:296px;border-radius:14px 14px 10px 10px/30px 30px 8px 8px;position:relative;
+  box-shadow:inset -14px 0 22px rgba(0,0,0,.75),inset 8px 0 14px rgba(255,255,255,.08),0 22px 34px rgba(0,0,0,.55);
+  transition:transform .4s cubic-bezier(.16,1,.3,1);flex:none}
+.can-card:hover .can{transform:rotate(-4deg) translateY(-8px)}
+.can::before{content:"";position:absolute;top:4px;left:12%;right:12%;height:7px;border-radius:50%;
+  background:linear-gradient(90deg,#555,#cfcbc0,#555)}
+.can.silver{background:linear-gradient(105deg,#3f3f3c 0%,#8b8880 14%,#efece2 26%,#c9c5b9 40%,#6e6b64 62%,#232320 88%)}
+.can.black{background:linear-gradient(105deg,#0c0c0b 0%,#3a3a37 18%,#63615a 27%,#1c1c1a 45%,#080807 85%)}
+.can .lab{position:absolute;inset:30px 10px 12px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center}
+.can .brand{font:700 15px/1.1 var(--oswald);letter-spacing:.12em;text-transform:uppercase}
+.can.silver .brand{color:#111}.can.black .brand{color:var(--gold)}
+.can .dag{font:400 26px var(--inter);color:var(--gold)}
+.can.silver .dag{color:#111}
+.can .flav{font:600 9px var(--inter);letter-spacing:.14em;text-transform:uppercase;line-height:1.55}
+.can.silver .flav{color:#333;border-top:1px solid #111;padding-top:8px}
+.can.black .flav{color:var(--ink);border-top:1px solid var(--gold);padding-top:8px}
+.can .oz{font:500 7.5px var(--inter);letter-spacing:.22em;color:var(--dim)}
+.can.silver .oz{color:#555}
+.can-meta{text-align:center}
+.can-meta h3{font:600 19px var(--oswald);text-transform:uppercase;letter-spacing:.04em}
+.can-meta p{font-size:10.5px;color:var(--dim);letter-spacing:.08em;margin-top:5px;line-height:1.6}
+.grab{margin-top:14px;font:800 9px var(--inter);letter-spacing:.24em;text-transform:uppercase;color:var(--gold);
+  border:1px solid var(--gold);padding:8px 16px;opacity:0;transform:translateY(6px);transition:.3s;cursor:pointer;background:none}
+.can-card:hover .grab{opacity:1;transform:none}
+.grab:hover{background:var(--gold);color:#000}
+
+/* ---------- 04 AFFINITY ---------- */
+.affinity{display:grid;grid-template-columns:.95fr 1.05fr;gap:5vw;align-items:center}
+.affinity .ghost{font-size:26vw;left:-3vw;bottom:-8vw}
+.affinity h2{font-family:var(--oswald);font-weight:700;text-transform:uppercase;line-height:.88;
+  font-size:clamp(50px,6.4vw,104px);margin:20px 0 24px}
+.affinity h2 span{color:var(--gold)}
+.affinity .lead{font-size:14px;line-height:1.7;color:var(--dim);max-width:46ch}
+.stats{display:flex;gap:0;margin-top:34px;border:1px solid var(--line)}
+.stat{flex:1;padding:16px 18px;border-right:1px solid var(--line)}
+.stat:last-child{border-right:0}
+.stat b{font:700 30px var(--oswald);color:var(--gold);display:block;line-height:1}
+.stat s{text-decoration:none;font:600 9px var(--inter);letter-spacing:.22em;text-transform:uppercase;color:var(--dim);display:block;margin-top:7px}
+.fans{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.fan{display:flex;align-items:center;gap:24px;padding:24px 8px;border-bottom:1px solid var(--line);transition:.3s;cursor:default}
+.fan:hover{background:var(--gold);padding-left:26px}
+.fan .n{font:700 12px var(--oswald);color:var(--dim);letter-spacing:.15em;transition:.3s}
+.fan h3{font:700 clamp(28px,3.4vw,52px) var(--oswald);text-transform:uppercase;line-height:1;letter-spacing:.01em;transition:.3s}
+.fan .arw{margin-left:auto;font:400 24px var(--inter);color:var(--gold);opacity:0;transform:translateX(-10px);transition:.3s}
+.fan:hover .n,.fan:hover h3{color:#000}
+.fan:hover .arw{opacity:1;transform:none;color:#000}
+
+/* ---------- 05 END ---------- */
+.end{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.end .bgimg{position:absolute;inset:0;background:url("http://localhost:8787/assets/6ff2fab9-dd28-456e-a6ea-78552f9fe9c7.png") center/cover;
+  opacity:.13;filter:grayscale(1) contrast(1.2);z-index:0}
+.end>*{position:relative;z-index:1}
+.end h2{font-family:var(--oswald);font-weight:700;text-transform:uppercase;line-height:.84;
+  font-size:clamp(72px,11.5vw,180px);margin:22px 0 20px}
+.end h2 span{color:transparent;-webkit-text-stroke:2px var(--gold)}
+.end p{font-size:14px;color:var(--dim);line-height:1.65;max-width:50ch}
+.end .big-cta{margin-top:36px;font:800 13px var(--inter);letter-spacing:.24em;text-transform:uppercase;
+  color:#000;background:var(--gold);padding:20px 54px;text-decoration:none;transition:.25s;border:1px solid var(--gold)}
+.end .big-cta:hover{background:transparent;color:var(--gold)}
+.foot{position:absolute;left:0;right:0;bottom:var(--rail);border-top:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;padding:14px 6vw;font:600 9.5px var(--inter);
+  letter-spacing:.2em;text-transform:uppercase;color:var(--dim);z-index:2}
+.foot a{color:var(--dim);text-decoration:none;margin-left:26px;transition:.25s}
+.foot a:hover{color:var(--gold)}
+
+/* ---------- RAIL ---------- */
+.rail{position:fixed;left:0;right:0;bottom:0;height:var(--rail);z-index:50;display:flex;align-items:center;
+  gap:22px;padding:0 22px;border-top:1px solid var(--line);background:rgba(10,10,9,.82);backdrop-filter:blur(10px)}
+.rail .lbl{font:600 9.5px var(--inter);letter-spacing:.26em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+.rail .lbl b{color:var(--gold)}
+.track{flex:1;height:2px;background:var(--line);position:relative}
+.track i{position:absolute;left:0;top:0;bottom:0;background:var(--gold);width:0;transition:width .15s linear}
+.dots{display:flex;gap:14px}
+.dot{width:7px;height:7px;border:1px solid var(--dim);transform:rotate(45deg);cursor:pointer;transition:.25s;padding:0;background:none}
+.dot.on{background:var(--gold);border-color:var(--gold);transform:rotate(45deg) scale(1.25)}
+.dot:hover{border-color:var(--gold)}
+.hint{font:600 9.5px var(--inter);letter-spacing:.26em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+
+/* ---------- MOBILE ---------- */
+@media (max-width:720px){
+  body{height:auto;overflow-y:auto;overflow-x:hidden}
+  .deck{display:block;height:auto;overflow:visible;scroll-snap-type:none}
+  .panel{width:auto;height:auto;min-height:100svh;padding:calc(var(--bar) + 30px) 7vw 60px}
+  .nav,.hint{display:none}
+  .hero{flex-direction:column;gap:40px}
+  .hero h1{font-size:21vw}
+  .hero-r{justify-content:center}
+  .frame{width:min(78vw,360px)}
+  .story,.affinity{grid-template-columns:1fr;gap:44px}
+  .cans{flex-wrap:wrap}
+  .can-card{flex:1 1 44%}
+  .strip{position:static;margin-top:30px}
+  .foot{position:static;flex-wrap:wrap;gap:12px;margin-top:50px;padding:20px 0 0}
+  .rail{display:none}
+  .stats{flex-direction:column}.stat{border-right:0;border-bottom:1px solid var(--line)}
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <a class="logo" href="#" data-go="0">LIQUID<b>†</b>DEATH</a>
+  <nav class="nav">
+    <a href="#" data-go="1"><i>02</i>Ritual</a>
+    <a href="#" data-go="2"><i>03</i>Arsenal</a>
+    <a href="#" data-go="3"><i>04</i>Affinity</a>
+    <a href="#" data-go="4"><i>05</i>The Pit</a>
+  </nav>
+  <a class="cta-mini" href="#" data-go="4">Murder Your Thirst</a>
+</header>
+
+<main class="deck" id="deck">
+
+  <!-- 01 HERO -->
+  <section class="panel hero">
+    <div class="ghost">THIRST</div>
+    <div class="hero-l">
+      <span class="tag rise">LD·01 — Canned water for the damned</span>
+      <h1 class="rise"><span class="g">Murder</span><br><span class="o">Your</span><br>Thirst</h1>
+      <p class="rise"><b>Ice-cold mountain water in a tallboy can built for mosh pits.</b> Aggressive live-venue energy meets raw gym culture — pure hydration in endlessly recyclable aluminum. Death to plastic. Long live heavy metal.</p>
+      <div class="hero-cta rise">
+        <a class="btn solid" href="#" data-go="4">Join The Pit</a>
+        <a class="btn" href="#" data-go="2">Shop The Arsenal</a>
+      </div>
+    </div>
+    <div class="hero-r">
+      <figure class="frame">
+        <div class="stamp">100%<br>MOUNTAIN<br>WATER</div>
+        <img src="http://localhost:8787/assets/6ff2fab9-dd28-456e-a6ea-78552f9fe9c7.png" alt="Liquid Death — heavy metal heavy lifting">
+        <figcaption>FIG.01 — HEAVY METAL HEAVY LIFTING</figcaption>
+      </figure>
+    </div>
+    <div class="strip"><span>Death to plastic<b>†</b>Murder your thirst<b>†</b>Endlessly recyclable<b>†</b>King-size tallboy<b>†</b>Death to plastic<b>†</b>Murder your thirst<b>†</b>Endlessly recyclable<b>†</b>King-size tallboy<b>†</b></span></div>
+  </section>
+
+  <!-- 02 STORY -->
+  <section class="panel story">
+    <div class="ghost">SWEAT</div>
+    <div>
+      <span class="tag rise">LD·02 — The Ritual</span>
+      <h2 class="rise">Heavy Metal<br><em>Heavy Lifting</em></h2>
+      <p class="lead rise">Murder your thirst while you crush your personal best. We're pitting mosh-pit veterans against heavy lifters — <b>step up to the barbell outside iconic venues and skate lodges</b> to earn ice-cold canned water.</p>
+    </div>
+    <div class="steps">
+      <div class="step rise"><span class="num">01</span><div><h3>Step Up To The Bar</h3><p>Find our pop-up lifting platform stationed right outside the venue before the headliner hits the stage.</p></div></div>
+      <div class="step rise"><span class="num">02</span><div><h3>Deadlift For Free Water</h3><p>Pull a heavy triple. Rack the weight, show no mercy, and prove your mosh-pit conditioning.</p></div></div>
+      <div class="step rise"><span class="num">03</span><div><h3>Murder Your Thirst</h3><p>Slam an ice-cold king-size can of Liquid Death Mountain Water. Death to plastic, long live heavy metal.</p></div></div>
+      <div class="tour rise">POP-UP TOUR † 12 CITIES † SUMMER 2026 † BRING A BELT</div>
+    </div>
+  </section>
+
+  <!-- 03 ARSENAL -->
+  <section class="panel arsenal">
+    <div class="ghost">WEAPON</div>
+    <span class="tag rise">LD·03 — Hydration Arsenal</span>
+    <h2 class="rise">Choose Your Weapon</h2>
+    <p class="sub rise">100% mountain water from the Alps. Iced tea &amp; sparkling energy loaded with natural vitamins. Four tallboys, zero mercy.</p>
+    <div class="cans rise">
+      <div class="can-card"><span class="idx">A·01</span>
+        <div class="can silver"><div class="lab"><span class="brand">Liquid<br>Death</span><span class="dag">†</span><span class="flav">Mountain<br>Water</span><span class="oz">19.2 OZ † STILL</span></div></div>
+        <div class="can-meta"><h3>Mountain Water</h3><p>Pure alpine water in a cold<br>king-sized can</p><button class="grab">Grab a can</button></div>
+      </div>
+      <div class="can-card"><span class="idx">A·02</span>
+        <div class="can black"><div class="lab"><span class="brand">Liquid<br>Death</span><span class="dag">†</span><span class="flav">Severed<br>Lime</span><span class="oz">19.2 OZ † SPARKLING</span></div></div>
+        <div class="can-meta"><h3>Severed Lime</h3><p>Sparkling water with a killer<br>hit of natural lime</p><button class="grab">Grab a can</button></div>
+      </div>
+      <div class="can-card"><span class="idx">A·03</span>
+        <div class="can black"><div class="lab"><span class="brand">Liquid<br>Death</span><span class="dag">†</span><span class="flav">Grim<br>Leafer</span><span class="oz">19.2 OZ † ICED TEA</span></div></div>
+        <div class="can-meta"><h3>Grim Leafer</h3><p>Low-cal iced tea &amp; lemonade<br>built to crush thirst fast</p><button class="grab">Grab a can</button></div>
+      </div>
+      <div class="can-card"><span class="idx">A·04</span>
+        <div class="can silver"><div class="lab"><span class="brand">Liquid<br>Death</span><span class="dag">†</span><span class="flav">Mango<br>Chainsaw</span><span class="oz">19.2 OZ † SPARKLING</span></div></div>
+        <div class="can-meta"><h3>Mango Chainsaw</h3><p>Riot of ripe mango with a<br>razor-dry finish</p><button class="grab">Grab a can</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 AFFINITY -->
+  <section class="panel affinity">
+    <div class="ghost">BLOOD</div>
+    <div>
+      <span class="tag rise">LD·04 — Taste Signature</span>
+      <h2 class="rise">Loved By<br><span>Fans Of</span></h2>
+      <p class="lead rise">Trusted by the loudest venues, hardest lifters and relentless creators. If your blood type is feedback and cold aluminum — you're one of us.</p>
+      <div class="stats rise">
+        <div class="stat"><b>100%</b><s>Mountain Water</s></div>
+        <div class="stat"><b>0</b><s>Plastic Forgiven</s></div>
+        <div class="stat"><b>∞</b><s>Recyclable</s></div>
+      </div>
+    </div>
+    <div class="fans">
+      <div class="fan rise"><span class="n">01</span><h3>Heavy Metal</h3><span class="arw">→</span></div>
+      <div class="fan rise"><span class="n">02</span><h3>Mountain Biking</h3><span class="arw">→</span></div>
+      <div class="fan rise"><span class="n">03</span><h3>Punk Rock</h3><span class="arw">→</span></div>
+      <div class="fan rise"><span class="n">04</span><h3>Tattoos</h3><span class="arw">→</span></div>
+    </div>
+  </section>
+
+  <!-- 05 END -->
+  <section class="panel end">
+    <div class="bgimg"></div>
+    <span class="tag rise">LD·05 — The Pit</span>
+    <h2 class="rise">Death To<br><span>Plastic</span></h2>
+    <p class="rise">Sell your soul for hydration. Join the pit for pop-up tour dates, can drops and first dibs on the Heavy Metal Heavy Lifting platform.</p>
+    <a class="big-cta rise" href="https://liquiddeath.com" target="_blank" rel="noopener">Join The Pit †</a>
+    <footer class="foot">
+      <span>© 2026 Liquid Death — Murder Your Thirst</span>
+      <span><a href="https://liquiddeath.com" target="_blank" rel="noopener">Official Store</a><a href="#">Event Tour</a><a href="#">Catalog</a><a href="#">Instagram</a></span>
+    </footer>
+  </section>
+
+</main>
+
+<nav class="rail">
+  <span class="lbl" id="lbl"><b>01</b> / 05 — MURDER</span>
+  <div class="track"><i id="fill"></i></div>
+  <div class="dots" id="dots"></div>
+  <span class="hint">Scroll · ← → · Drag</span>
+</nav>
+
+<script>
+const deck=document.getElementById('deck'),fill=document.getElementById('fill'),
+      lbl=document.getElementById('lbl'),dots=document.getElementById('dots'),
+      secs=[...deck.children],names=['MURDER','RITUAL','ARSENAL','AFFINITY','THE PIT'];
+const go=i=>deck.scrollTo({left:Math.max(0,Math.min(secs.length-1,i))*innerWidth,behavior:'smooth'});
+secs.forEach((_,i)=>{const d=document.createElement('button');d.className='dot';d.onclick=()=>go(i);dots.appendChild(d)});
+document.querySelectorAll('[data-go]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();go(+a.dataset.go)}));
+deck.addEventListener('wheel',e=>{const v=e.target.closest('[data-v]');
+  if(v&&v.scrollHeight>v.clientHeight){const m=v.scrollHeight-v.clientHeight;
+    if((e.deltaY>0&&v.scrollTop<m)||(e.deltaY<0&&v.scrollTop>0))return}
+  if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){e.preventDefault();deck.scrollLeft+=e.deltaY*1.5}},{passive:false});
+addEventListener('keydown',e=>{const i=Math.round(deck.scrollLeft/innerWidth),
+  m={ArrowRight:1,PageDown:1,' ':1,ArrowLeft:-1,PageUp:-1}[e.key];
+  if(m!==undefined){e.preventDefault();go(i+m)}
+  if(e.key==='Home')go(0);if(e.key==='End')go(secs.length-1)});
+deck.addEventListener('scroll',()=>{const i=Math.round(deck.scrollLeft/innerWidth);
+  fill.style.width=(deck.scrollLeft/(deck.scrollWidth-innerWidth)*100)+'%';
+  lbl.innerHTML=`<b>0${i+1}</b> / 05 — ${names[i]}`;
+  [...dots.children].forEach((d,j)=>d.classList.toggle('on',j===i))});
+const io=new IntersectionObserver(es=>es.forEach(x=>x.target.classList.toggle('in',x.intersectionRatio>.55)),{root:deck,threshold:.55});
+secs.forEach(s=>io.observe(s));secs[0].classList.add('in');
+</script>
+</body>
+</html>
