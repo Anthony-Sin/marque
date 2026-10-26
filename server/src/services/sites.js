@@ -350,7 +350,7 @@ export function renderSiteHTML(site) {
   // issue-style chrome when the page is too thin to index
   const hmetaItems = secs.length ? secs.map((s) => s.label) : (ctaOn ? ['Contact'] : ['Vol. 01', String(new Date().getFullYear())]);
   const navLinks = secs.map((s) => `<a href="#${s.id}">${esc(s.label)}</a>`).join('');
-  const ctaHref = links[0]?.href || (productsOn ? '#products' : (ctaOn ? '#cta' : '#top'));
+  const ctaHref = links[0]?.href || (productsOn ? '#products' : (ctaOn ? '#cta' : '#hero'));
   const heroGhost = hero.ctaAlt ? `<a class="arr" href="#${secs[0]?.id || 'cta'}">${esc(hero.ctaAlt)} <i>→</i></a>` : '';
   const navCta = content.navCta ? `<a class="btn-o" href="${esc(ctaHref)}">${esc(content.navCta)}</a>` : '';
   const mnav = secs.length ? `<details class="mnav"><summary>Menu</summary><nav>${navLinks}${ctaOn ? '<a href="#cta">Contact</a>' : ''}</nav></details>` : '';
@@ -369,7 +369,7 @@ export function renderSiteHTML(site) {
   };
 
   const heroHtml = `
-  <header class="hero ${heroSplit ? 'split' : 'solo'}"><div class="wrap ${heroSplit ? 'grid' : ''}">
+  <section id="hero" class="panel hp"><header class="hero ${heroSplit ? 'split' : 'solo'}"><div class="wrap ${heroSplit ? 'grid' : ''}">
     <div class="h-copy">
       <div class="h-core">
       ${hero.kicker ? `<div class="kick ${heroSplit ? '' : 'center'}"><i></i><span>${esc(hero.kicker)}</span></div>` : ''}
@@ -381,10 +381,10 @@ export function renderSiteHTML(site) {
     </div>
     ${heroSplit ? fig(heroImg, 'h-img') : ''}
   </div></header>
-  ${strip.length >= 2 ? `<div class="strip"><div class="mq"><div class="mq-in">${mqRow}</div></div></div>` : ''}`;
+  ${strip.length >= 2 ? `<div class="strip"><div class="mq"><div class="mq-in">${mqRow}</div></div></div>` : ''}</section>`;
 
   const storyHtml = storyOn ? `
-  <section id="story" class="sec"><div class="wrap s-grid">
+  <section id="story" class="sec panel"><div class="wrap s-grid">
     <div class="s-head">${kick(story.kicker)}${story.headline ? `<h2>${esc(story.headline)}</h2>` : ''}</div>
     <div class="s-body">
       ${storyImg ? fig(storyImg, 's-img') : ''}
@@ -394,10 +394,10 @@ export function renderSiteHTML(site) {
   </div></section>` : '';
 
   const productsHtml = productsOn ? `
-  <section id="products" class="sec"><div class="wrap">
+  <section id="products" class="sec panel"><div class="wrap">
     <div class="phead"><div>${kick(content.products?.kicker)}${content.products?.headline ? `<h2>${esc(content.products.headline)}</h2>` : ''}</div>${content.products?.sub ? `<p class="sub">${esc(content.products.sub)}</p>` : ''}</div>
     ${catImg.length === 1 && catTx.length ? '<div class="psplit">' : ''}
-    ${catImg.length ? `<div class="pgrid">${catImg.map((it) => `
+    ${catImg.length ? `<div class="pgrid hscroll">${catImg.map((it) => `
       <article class="pcell">
         <img class="ph" src="${esc(it.image)}" alt="${esc(it.name)}" loading="lazy">
         <h3>${esc(it.name)}</h3>
@@ -412,15 +412,15 @@ export function renderSiteHTML(site) {
   </div></section>` : '';
 
   const galleryHtml = galleryOn ? `
-  <section id="gallery" class="sec"><div class="wrap">
+  <section id="gallery" class="sec panel"><div class="wrap">
     <div class="phead"><div>${kick(content.gallery?.kicker)}${content.gallery?.headline ? `<h2>${esc(content.gallery.headline)}</h2>` : ''}</div></div>
-    <div class="g-grid n${galleryImgs.length}">${galleryImgs.map((im, i) => `
+    <div class="g-grid hscroll n${galleryImgs.length}">${galleryImgs.map((im, i) => `
       <figure class="${i === 0 && galleryImgs.length === 3 ? 'wide' : ''}"><img src="${esc(im.path)}" alt="${esc(im.caption || '')}" loading="lazy"><figcaption><span>Fig. ${String(i + 1).padStart(2, '0')}</span><span>${esc(im.caption || '')}</span></figcaption></figure>`).join('')}
     </div>
   </div></section>` : '';
 
   const tasteHtml = tasteOn ? `
-  <section id="taste" class="band"><div class="wrap">
+  <section id="taste" class="band panel"><div class="wrap">
     ${kick(taste.kicker, 'onband')}
     ${taste.headline ? `<h2>${esc(taste.headline)}</h2>` : ''}
     ${taste.blurb ? `<p class="b-lede">${esc(taste.blurb)}</p>` : ''}
@@ -428,7 +428,7 @@ export function renderSiteHTML(site) {
   </div></section>` : '';
 
   const ctaHtml = ctaOn ? `
-  <section id="cta" class="cta ${tasteOn ? '' : 'band'}"><div class="wrap">
+  <section id="cta" class="cta panel ${tasteOn ? '' : 'band'}"><div class="wrap">
     ${cta.headline ? `<h2>${esc(cta.headline)}</h2>` : ''}
     ${cta.sub ? `<p>${esc(cta.sub)}</p>` : ''}
     <div class="acts">${cta.button ? `<a class="btn" href="${esc(ctaHref)}">${esc(cta.button)}</a>` : ''}</div>
@@ -440,15 +440,21 @@ export function renderSiteHTML(site) {
   const indexCol = secs.length ? `<div class="fcol"><h4>Index</h4>${secs.map((s) => `<a href="#${s.id}">${esc(s.label)}</a>`).join('')}</div>` : '';
   const fcols = [indexCol, footerLinks].filter(Boolean).length;
 
+  // deck chrome — one dot per panel (mirror of the track order: hero → secs →
+  // cta → colophon) plus a hairline progress rail under the nav; both are
+  // hidden on mobile and updated by the inline script
+  const dotSecs = [{ id: 'hero', label: 'Intro' }, ...secs, ...(ctaOn ? [{ id: 'cta', label: 'Contact' }] : []), { id: 'end', label: 'Colophon' }];
+  const deckChrome = `<nav class="dots" aria-label="Panels">${dotSecs.map((d) => `<a href="#${d.id}"><span>${esc(d.label)}</span></a>`).join('')}</nav><div class="prog" aria-hidden="true"><i></i></div>`;
+
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(name)}${brand.tagline ? ` — ${esc(brand.tagline)}` : ''}</title>
 ${desc ? `<meta name="description" content="${esc(desc)}"><meta property="og:title" content="${esc(name)}"><meta property="og:description" content="${esc(desc)}">${heroImg ? `<meta property="og:image" content="${esc(heroImg.path)}">` : ''}` : ''}
 ${fontsLink}
 <style>
-:root{--bg:${bg};--ink:${ink};--mut:${mut};--line:${line};--sf:${sf};--acc:${accent};--acc-ink:${accInk};--acc-text:${accText};--band:${band};--band-ink:${bandInk};--band-mut:${bandMut};--band-line:${bandLine};--fd:${fd};--fb:${fb}}
+:root{--bg:${bg};--ink:${ink};--mut:${mut};--line:${line};--sf:${sf};--acc:${accent};--acc-ink:${accInk};--acc-text:${accText};--band:${band};--band-ink:${bandInk};--band-mut:${bandMut};--band-line:${bandLine};--fd:${fd};--fb:${fb};--navh:3.5rem}
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;scroll-padding-top:5.5rem}
-body{background:var(--bg);color:var(--ink);font:400 1rem/1.7 var(--fb);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html{scroll-behavior:smooth;scroll-padding-top:calc(var(--navh) + .8rem);height:100%}
+body{background:var(--bg);color:var(--ink);font:400 1rem/1.7 var(--fb);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
 img{display:block;max-width:100%}
 a{color:inherit}
 h1,h2,h3{font-family:var(--fd);font-weight:500;line-height:1.05;letter-spacing:-.015em}
@@ -468,8 +474,8 @@ h1,h2,h3{font-family:var(--fd);font-weight:500;line-height:1.05;letter-spacing:-
 .arr{display:inline-flex;align-items:center;gap:.4rem;text-decoration:none;font:600 .74rem/1 var(--fb);letter-spacing:.2em;text-transform:uppercase;color:var(--ink);border-bottom:1px solid var(--acc);padding-bottom:.4rem}
 .arr i{font-style:normal;color:var(--acc)}
 .arr:hover{color:var(--acc)}
-.top{position:sticky;top:0;z-index:60;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-.top .wrap{display:flex;align-items:center;gap:1.5rem;min-height:4.3rem}
+.top{position:sticky;top:0;z-index:60;flex:none;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.top .wrap{display:flex;align-items:center;gap:1.5rem;min-height:var(--navh)}
 .mark{font-family:var(--fd);font-size:1.2rem;letter-spacing:.01em;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
 .tnav{display:flex;gap:1.8rem;margin-left:auto;align-items:center}
 .tnav a{font-size:.73rem;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;color:var(--mut);padding-block:.5rem}
@@ -583,6 +589,60 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 .fcol a{display:block;text-decoration:none;padding:.38rem 0;font-size:.95rem}
 .fcol a:hover{color:var(--acc)}
 .fbase{display:flex;justify-content:space-between;gap:.8rem;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:clamp(2.5rem,5vw,4rem);padding-top:1.3rem;font-size:.73rem;letter-spacing:.14em;color:var(--mut)}
+/* ---- deck mode (≥721px): the page becomes a horizontal reel of full-viewport
+   panels — the body never scrolls vertically; .track carries x-scroll-snap ---- */
+.dots,.prog{display:none}
+@media (min-width:721px){
+  html,body{height:100%;overflow:hidden}
+  .track{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;scroll-padding-left:0;scrollbar-width:thin;scrollbar-color:var(--mut) transparent}
+  .panel{flex:none;width:100vw;min-width:100vw;height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;scrollbar-width:thin}
+  .panel+.panel{border-left:1px solid var(--line)}
+  .panel>.wrap{width:100%;margin-top:auto;margin-bottom:auto}
+  .panel.sec{padding-block:0}
+  .sec.panel>.wrap,.band.panel>.wrap,.cta.panel>.wrap,.foot.panel>.wrap{padding-block:clamp(1.4rem,4vh,3rem)}
+  .foot.panel{border-top:0}
+  .hp .hero{flex:1;min-height:0;padding-block:clamp(1.2rem,3.5vh,3rem);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin}
+  .hp .hero .wrap{width:100%;margin-top:auto;margin-bottom:auto}
+  .hp .strip{flex:none}
+  .panel .hero h1{font-size:clamp(2.9rem,6.8vw,6.8rem)}
+  .panel .lede{margin-top:1.2rem}
+  .panel .acts{margin-top:clamp(1.4rem,3.5vh,2.4rem)}
+  .panel .hmeta{padding-top:clamp(1.4rem,4vh,3rem)}
+  .hp .h-img img{height:min(58vh,34rem);height:min(58dvh,34rem);aspect-ratio:auto;width:100%;object-fit:cover}
+  .panel .phead{margin-bottom:clamp(1.2rem,3vh,2.2rem)}
+  .panel .pgrid{display:flex;width:auto;max-width:none;overflow-x:auto;scrollbar-width:thin;padding-bottom:.5rem}
+  .panel .pcell{flex:1 0 auto;min-width:clamp(13.5rem,17vw,18rem);padding:1.2rem}
+  .panel .ph{height:clamp(10rem,26vh,16rem);aspect-ratio:auto}
+  .panel .pcell h3{font-size:1.15rem}
+  .panel .pd{font-size:.88rem}
+  .panel .pfoot{padding-top:.7rem;min-height:2.2rem}
+  .panel .prow{padding:1.05rem 0}
+  .panel .psplit{align-items:start}
+  .panel .steps{margin-top:clamp(1.2rem,2.6vh,2rem)}
+  .panel .steps li{padding:.8rem 0}
+  .panel .s-body>p{margin-top:.9em}
+  .panel .s-body>p.first{font-size:clamp(1.05rem,1.6vw,1.25rem)}
+  .panel .s-img{margin-bottom:1.2rem}
+  .panel .s-img img{max-height:22vh;aspect-ratio:auto;width:100%;object-fit:cover}
+  .panel .g-grid{display:flex;gap:clamp(1rem,2.5vw,2rem);overflow-x:auto;scrollbar-width:thin;padding-bottom:.5rem}
+  .panel .g-grid figure{flex:1 0 auto;min-width:clamp(13rem,17vw,18rem);margin-top:0}
+  .panel .g-grid figure.wide{min-width:clamp(19rem,30vw,30rem);flex-grow:1.6}
+  .panel .g-grid img{width:100%;height:clamp(14rem,50vh,27rem);aspect-ratio:auto;object-fit:cover}
+  .panel .idx{margin-top:clamp(1.4rem,3.5vh,2.6rem)}
+  .panel .idx li{padding:1rem 0}
+  .panel .idx .nm{font-size:clamp(1.4rem,2.6vw,2.3rem)}
+  .panel .fbase{margin-top:clamp(1.4rem,3.5vh,2.6rem)}
+  .dots{display:flex;position:fixed;right:1.15rem;top:50%;transform:translateY(-50%);z-index:70;flex-direction:column;gap:.75rem}
+  .dots a{position:relative;display:block;width:.55rem;height:.55rem;border-radius:50%;background:var(--mut);opacity:.42;transition:opacity .2s,transform .2s,background .2s}
+  .dots a.on{opacity:1;background:var(--acc);transform:scale(1.45)}
+  .dots a span{position:absolute;right:1.35rem;top:50%;transform:translateY(-50%);font-size:.62rem;letter-spacing:.24em;text-transform:uppercase;color:var(--mut);opacity:0;transition:opacity .2s;white-space:nowrap;pointer-events:none}
+  .dots a:hover span,.dots a.on span{opacity:1}
+  .prog{display:block;position:fixed;left:0;right:0;top:calc(var(--navh) - 1px);height:2px;z-index:70;pointer-events:none}
+  .prog i{display:block;height:100%;background:var(--acc);transform-origin:0 50%;transform:scaleX(0)}
+}
+@media (min-width:721px) and (max-width:980px){
+  .hp .h-img img{height:min(32vh,20rem)}
+}
 @media (max-width:980px){
   .hero .grid{grid-template-columns:1fr}
   .h-img{max-width:34rem}
@@ -618,25 +678,59 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 </style></head>
 <body id="top">
 <header class="top"><div class="wrap">
-  <a class="mark" href="#top">${esc(name)}</a>
+  <a class="mark" href="#hero">${esc(name)}</a>
   <nav class="tnav">${navLinks}</nav>
   ${navCta}${mnav}
 </div></header>
-<main>
+<main class="track">
 ${heroHtml}
 ${storyHtml}
 ${productsHtml}
 ${galleryHtml}
 ${tasteHtml}
 ${ctaHtml}
-</main>
-<footer class="foot"><div class="wrap">
+<footer id="end" class="foot panel"><div class="wrap">
   <div class="fgrid c${fcols}">
     <div><div class="fmark">${esc(name)}</div>${(content.footer?.note || brand.tagline || brand.description) ? `<p class="fnote">${esc(content.footer?.note || brand.tagline || brand.description)}</p>` : ''}${(brand.tone || []).length ? `<div class="ftone">${brand.tone.slice(0, 5).map((t) => `<span>${esc(t)}</span>`).join('<i>·</i>')}</div>` : ''}</div>
     ${indexCol}${footerLinks}
   </div>
   <div class="fbase"><span>© ${year} ${esc(name)}</span><span>Site by Marque</span></div>
 </div></footer>
+</main>
+${deckChrome}
+<script>(function(){
+var t=document.querySelector('.track'),bar=document.querySelector('.prog i');
+var dots=[].slice.call(document.querySelectorAll('.dots a'));
+if(!t)return;
+var mq=matchMedia('(max-width:720px)'),lock=0;
+function upd(){
+  var max=t.scrollWidth-t.clientWidth;
+  if(bar)bar.style.transform='scaleX('+(max>0?t.scrollLeft/max:0)+')';
+  var on=Math.min(dots.length-1,Math.round(t.scrollLeft/Math.max(1,t.clientWidth)));
+  dots.forEach(function(d,i){d.classList.toggle('on',i===on)});
+}
+t.addEventListener('scroll',upd,{passive:true});addEventListener('resize',upd);upd();
+t.addEventListener('wheel',function(e){
+  if(mq.matches||Math.abs(e.deltaX)>Math.abs(e.deltaY))return;
+  var el=e.target&&e.target.closest?e.target.closest('.hscroll'):null;
+  if(el&&el.scrollWidth-el.clientWidth>4){
+    var room=e.deltaY<0?el.scrollLeft:el.scrollWidth-el.clientWidth-el.scrollLeft;
+    if(room>4){el.scrollLeft+=e.deltaY;return}
+  }
+  var p=e.target&&e.target.closest?e.target.closest('.panel'):null;
+  if(p&&p.scrollHeight-p.clientHeight>4){
+    if(e.deltaY>0?p.scrollTop+p.clientHeight<p.scrollHeight-4:p.scrollTop>4)return;
+  }
+  var n=Date.now();if(n<lock)return;lock=n+650;
+  t.scrollBy({left:(e.deltaY<0?-1:1)*t.clientWidth,behavior:'smooth'});
+},{passive:true});
+addEventListener('keydown',function(e){
+  if(mq.matches)return;
+  var d=e.key==='ArrowRight'||e.key==='PageDown'?1:e.key==='ArrowLeft'||e.key==='PageUp'?-1:0;
+  if(!d||/INPUT|TEXTAREA|SELECT/.test((e.target&&e.target.tagName)||''))return;
+  e.preventDefault();t.scrollBy({left:d*t.clientWidth,behavior:'smooth'});
+});
+})();</script>
 </body></html>`;
 }
 
