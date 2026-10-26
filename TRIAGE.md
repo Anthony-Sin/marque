@@ -354,3 +354,13 @@ Counts: HIGH 3 · MED 7 · LOW 4
 - CreativeEditor veil `e.target===e.currentTarget` guard — drawer clicks no longer bubble-close the editor.
 - Strategy mount drops duplicate /api/boards (d016535) — App ctx already loads it.
 - Post-merge verify: smoke 27/27, cold-open 16/16 dev+prod clean, palette→drawer z-order + arm gates confirmed in real Chromium.
+
+### Second overlay wave + unnesting (~05:45–06:05, 64f48d4..7fe0faa)
+- Websites seg-tabs → real APG tablist: arrows/Home/End switch+focus, roving tabindex, role=tabpanel wrapper mirrors .view plumbing (layout verified identical desktop+mobile).
+- video[controls] joined FOCUSABLE — motion previews inside trapped overlays (editor, card zoom) are keyboard-reachable now (verified Tab→VIDEO).
+- Overlay stack pinned on globalThis — HMR re-eval can't split the stack (same class as the Ctx fix).
+- Nested-interactive purge (the presentational-descendants bug): CreativeCard media well → real .cc-hit button under badges/veil/promote; .dash-plan → h4 title is the real open button; .stg-wx → corner chip is a real role=checkbox; .stg-chipbar → prompt text is the real modify button. role=button survives only on legit disclosure expanders (.imp-sug/.imp-steal — no nested controls).
+- Esc layer gates completed: promote fold + PillMenu defer via anyOverlayOpen() (palette's stopPropagation can't shield same-node document listeners — verified Esc1→editor, Esc2→promote); palette Esc itself gated on isTopOverlay (latent insurance).
+- Dead code removed: Kebab.jsx + KebabMenu export (unused; KebabMenu's Esc predated the gates).
+- Fresh real audit on liquiddeath.com replaced the stale huel.com residue in the Improve tab (7 LD-on-brand fixes, correct IG/TikTok socials, honest 'No X Linked').
+- profile.source stays null — honest provenance (hand-restored profile wasn't scraped); audit accepts explicit URL by design.
