@@ -193,7 +193,7 @@ function Building({ stage, status, url }) {
                     : <Icon name={s.icon} size={13} />}
               </span>
               <span>{s.label}</span>
-              {s.qloo && i === stage && <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Qloo API" />}
+              {s.qloo && i === stage && <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Taste graph" />}
             </div>
           ))}
         </div>

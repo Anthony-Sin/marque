@@ -10,6 +10,13 @@ export function init() {
   fs.mkdirSync(ASSETS_DIR, { recursive: true });
   try { state = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')); }
   catch { state = {}; }
+  // heal once at boot: image-registry rows pointing at deleted files are stale
+  // refs — any <img> or image op built on them 404s. Drop them.
+  const imgs = state.images;
+  if (Array.isArray(imgs)) {
+    const live = imgs.filter((i) => !i?.path?.startsWith('/assets/') || fs.existsSync(path.join(ASSETS_DIR, path.basename(i.path))));
+    if (live.length !== imgs.length) { state.images = live; persist(); }
+  }
 }
 
 function persist() {

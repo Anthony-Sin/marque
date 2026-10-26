@@ -1,20 +1,27 @@
 import React, { useState } from 'react';
 import Icon from './Icon.jsx';
+import { epLabel } from '../labels.js';
 
 // <QlooBadge mode="live"|"partial"|"error"|"off" label="…" /> — the everywhere-visible taste marker.
-// No simulated/demo modes: calls are live or they failed visibly.
-const MODE_LABEL = { live: ' · live', partial: ' · partial', error: ' · failed', off: ' · off' };
+// No simulated/demo modes: calls are live or they failed visibly. A badge only
+// renders when data is flowing — failed/off states are explained by the
+// evidence trail, not by a dead chip.
+const MODE_SUFFIX = { live: ' · live', partial: ' · limited' };
 const MODE_TITLE = {
-  live: 'Every call hit the live Qloo taste graph',
-  partial: 'Some Qloo calls failed — the trail shows which and why',
-  error: 'Qloo calls failed — see the call trail for the error',
-  off: 'Qloo not configured — no taste calls made',
+  live: 'Live audience data — every call reached the taste graph',
+  partial: 'Some taste calls failed — the evidence trail shows which and why',
+};
+// Callers sometimes pass the raw vendor name as a label — never print it.
+const humanLabel = (l) => {
+  const s = String(l || '').replace(/qloo(\s*api)?/gi, '').replace(/^[\s·—–-]+|[\s·—–-]+$/g, '');
+  return s || 'Taste signals';
 };
 export function QlooBadge({ mode = 'live', label, small }) {
-  const m = MODE_LABEL[mode] !== undefined ? mode : 'off';
+  const m = mode === 'live' ? 'live' : mode === 'partial' ? 'partial' : null;
+  if (!m) return null;
   return (
-    <span className={`qloo-badge${m === 'live' ? '' : m === 'partial' ? ' partial' : ' demo'}`} title={MODE_TITLE[m]}>
-      <Icon name="qloo" size={11} sw={2} /> {label || 'Taste intelligence'}{MODE_LABEL[m]}
+    <span className={`qloo-badge${m === 'partial' ? ' partial' : ''}`} title={MODE_TITLE[m]}>
+      <Icon name="qloo" size={11} sw={2} /> {humanLabel(label)}{MODE_SUFFIX[m]}
     </span>
   );
 }
@@ -27,9 +34,8 @@ export function SignalChips({ signals = [], max = 4 }) {
     <span className="row wrap" style={{ gap: 5 }}>
       {signals.slice(0, max).map((s, i) => (
         <span key={i} className="signal-chip"
-          title={`${s.entity || s.name} — Qloo taste-graph correlation ${s.affinity != null ? (+s.affinity).toFixed(2) : 'n/a'} (0–1, higher = stronger pull)`}>
+          title={`${s.entity || s.name} — audience overlap ${s.affinity != null ? (+s.affinity).toFixed(2) : 'n/a'} (0–1, higher = stronger pull)`}>
           {s.entity || s.name}
-          {s.affinity != null && <b>{(+s.affinity).toFixed(2)}</b>}
         </span>
       ))}
       {signals.length > max && <span className="signal-chip">+{signals.length - max}</span>}
@@ -50,7 +56,7 @@ export function TastePanel({ bundle, compact }) {
         <h3 style={{ margin: 0, fontSize: 17 }}>
           Taste Signature
         </h3>
-        <QlooBadge mode={mode} />
+        <QlooBadge mode={mode} label="Audience data" />
       </div>
       <p className="muted small" style={{ margin: '6px 0 4px' }}>
         What your audience also loves — correlations from Qloo's taste graph that ground every campaign we generate.
@@ -72,7 +78,7 @@ export function TastePanel({ bundle, compact }) {
           <div className="small" style={{ color: 'var(--ink-3)', textTransform: 'capitalize', marginBottom: 4 }}>{cat(a.type)}</div>
           {a.error && (
             <div className="small" style={{ color: 'var(--rose, #e88)', padding: '4px 0' }} title={a.error}>
-              insights call failed — {String(a.error).slice(0, 80)}
+              Taste data couldn't be reached — retry
             </div>
           )}
           {(a.entities || []).slice(0, compact ? 3 : 5).map((e) => (
@@ -104,7 +110,7 @@ export function TastePanel({ bundle, compact }) {
             <div className="mt8 small muted" style={{ fontFamily: 'monospace', fontSize: 11 }}>
               {bundle.calls.map((c, i) => (
                 <div key={i} style={{ padding: '3px 0', borderBottom: '1px solid var(--line-soft)' }}>
-                  {c.endpoint} · {Object.entries(c.params || {}).map(([k, v]) => `${k}=${String(v).slice(0, 40)}`).join(' ')}
+                  {epLabel(c.endpoint)} <span className="muted">{c.endpoint}</span> · {Object.entries(c.params || {}).map(([k, v]) => `${k}=${String(v).slice(0, 40)}`).join(' ')}
                   {c.n != null && <span style={{ color: 'var(--lime)' }}> → {c.n} results</span>}
                   {!!c.mode && c.mode !== 'live' && <span style={{ color: 'var(--rose, #e88)' }} title={c.error || ''}> · {c.mode}{c.error ? ` — ${String(c.error).slice(0, 60)}` : ''}</span>}
                   {!!c.tookMs && <span className="muted"> · {c.tookMs}ms</span>}

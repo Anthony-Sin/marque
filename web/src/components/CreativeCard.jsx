@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Icon from './Icon.jsx';
 import { api } from '../api.js';
-import { arCss, cleanNote, downloadAsset, fileExt, isRaster, MediaFallback } from './Composer.jsx';
+import { arCss, cleanNote, downloadAsset, fileExt, isRaster, MediaFallback, providerLabel } from './Composer.jsx';
 import CreativeOverlay from './CreativeOverlay.jsx';
 import { exportCreativePNG } from './creativeExport.js';
 import { chanLabel } from '../labels.js';
@@ -148,13 +148,13 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
         )}
         {video && (
           <button type="button" className="badge-v" onClick={(e) => { e.stopPropagation(); setZoom(true); }}
-            title={creative.videoProvider ? `Watch — animated by ${providerLabel(creative.videoProvider)}${creative.videoNote ? ` · ${cleanNote(creative.videoNote)}` : ''}` : 'Watch the animated version'}>
-            <Icon name="play" size={10} sw={2.4} /> watch{creative.videoProvider && creative.videoProvider !== 'veo' ? ` · ${providerLabel(creative.videoProvider)}` : ''}
+            title={creative.videoProvider ? `Watch — made with ${providerLabel(creative.videoProvider)}${creative.videoNote ? ` · ${cleanNote(creative.videoNote)}` : ''}` : 'Watch the animated version'}>
+            <Icon name="play" size={10} sw={2.4} /> watch{creative.videoProvider ? ` · ${providerLabel(creative.videoProvider)}` : ''}
           </button>
         )}
         {!!creative.imageProvider && (
           <span className={`badge-p p-${String(creative.imageProvider).split('-')[0]}`}
-            title={`Image rendered by ${providerLabel(creative.imageProvider)}`}>
+            title={`Image made with ${providerLabel(creative.imageProvider)}`}>
             {providerLabel(creative.imageProvider)}
           </span>
         )}
@@ -167,7 +167,7 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
               <Icon name="edit" size={12} /> <span>Edit</span>
             </button>
             {!raster && (
-              <button type="button" className={`veil-btn${creative.imageError ? ' failed' : ''}`} title={creative.imageError ? `Last image failed — ${cleanNote(creative.imageError)}. Retry` : 'Retry image generation'} disabled={retrying} onClick={retryImage}>
+              <button type="button" className={`veil-btn${creative.imageError ? ' failed' : ''}`} title={creative.imageError ? 'Last image attempt failed — try again' : 'Retry image generation'} disabled={retrying} onClick={retryImage}>
                 <Icon name="refresh" size={12} /> <span>Retry</span>
               </button>
             )}
@@ -224,7 +224,7 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
                     {ps ? (
                       ps.connected
                         ? <span className="pub-conn on">connected</span>
-                        : <span className="pub-conn" title={ps.needs?.length ? `needs ${ps.needs.join(', ')} in server/.env` : 'not configured'}>not connected</span>
+                        : <span className="pub-conn" title={`connect ${ps?.label || pk} in settings to enable posting`}>not connected</span>
                     ) : <span className="pub-conn">status…</span>}
                   </div>
                   <p className="promote-caption">
@@ -241,10 +241,10 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
                     </button>
                     {!pc?.text && (
                       <button className="btn ghost sm" disabled={pc?.status === 'loading'} onClick={() => loadPubCap(pk)}>
-                        <Icon name="sparkle" size={12} /> {pc?.status === 'loading' ? 'Writing…' : 'LLM caption'}
+                        <Icon name="sparkle" size={12} /> {pc?.status === 'loading' ? 'Writing…' : 'Write caption'}
                       </button>
                     )}
-                    <button className="btn ghost sm" disabled title={ps?.connected ? 'posting not wired yet' : `connect ${ps?.label || pk} first — add API keys to server/.env`}>
+                    <button className="btn ghost sm" disabled title={ps?.connected ? 'posting isn’t available yet — use the kit above' : `connect ${ps?.label || pk} in settings to enable posting`}>
                       <Icon name="send" size={12} /> Post
                     </button>
                   </div>
@@ -257,12 +257,12 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
       <div className="meta">
         <span className="ttl" title={creative.headline}>{creative.headline || 'Untitled creative'}</span>
         {!!creative.score && (
-          <span className="cc-score" title="Model-estimated thumbstop strength — not a measured metric">
-            est <b>{creative.score}</b>
+          <span className="cc-score" title="AI-estimated stopping power — not a measured metric">
+            score ~<b>{creative.score}</b>
           </span>
         )}
         {!!creative.imageError && (
-          <span className="cc-err" title={cleanNote(creative.imageError)}>
+          <span className="cc-err">
             image unavailable{retrying ? ' — retrying…' : ' — hit Retry'}
           </span>
         )}
@@ -296,9 +296,4 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
         </div>, document.body)}
     </div>
   );
-}
-
-// honest provider label — local model output is named, not hidden behind "AI"
-function providerLabel(p) {
-  return { 'local-sd-turbo': 'local · sd-turbo', local: 'local', gemini: 'gemini', pollinations: 'pollinations', 'ffmpeg-render': 'ffmpeg', veo: 'veo' }[p] || p;
 }

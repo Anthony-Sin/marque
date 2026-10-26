@@ -52,6 +52,27 @@ export function fmtDate(d) {
 // generated placeholders are saved as .svg and read as flat empty tiles.
 export const isRaster = (p) => !!p && !/\.svg(?:[?#]|$)/i.test(String(p));
 
+// provider id → human label for badges + tooltips. The in-house GPU engine
+// reports as 'local-<model>' (e.g. 'local-sdxl-turbo' from the health check) —
+// that's the studio renderer, named honestly. Anything unmapped still gets a
+// human label; a raw engine id never reaches the UI.
+const PROVIDER_LABELS = {
+  local: 'studio render',
+  gemini: 'cloud render',
+  imagen: 'cloud render',
+  pollinations: 'cloud render',
+  veo: 'video model',
+  ffmpeg: 'motion render',
+  'ffmpeg-render': 'motion render',
+  'site-capture': 'screen film',
+};
+export function providerLabel(p) {
+  const k = String(p || '').trim().toLowerCase();
+  if (PROVIDER_LABELS[k]) return PROVIDER_LABELS[k];
+  if (k.startsWith('local-') || k.startsWith('local_')) return 'studio render';
+  return 'render service';
+}
+
 // channel name → icon glyph (shared by campaign tiles + dashboard work cards)
 const CHAN_GLYPH = {
   instagram: 'image', tiktok: 'film', youtube: 'play', tv: 'site', streaming: 'share',
@@ -176,7 +197,7 @@ function PillMenu({ icon, label, has, open, onToggle, children, wide }) {
   );
 }
 
-// The big rounded prompt card: textarea + mic + Product/Images/Aspect pills + CTA.
+// The big rounded prompt card: textarea + Product/Images/Aspect pills + CTA.
 // onGenerate({prompt, productId, ingredients:{images,productUrl?}, aspectRatio})
 export default function Composer({
   seed,               // {text} — when set, fills the textarea (suggestion "Use")
@@ -187,7 +208,7 @@ export default function Composer({
   onGenerate,
   onAspect,             // (ar) => {} — live pill state, so parents never go stale
 }) {
-  const { profile, say } = useApp();
+  const { profile } = useApp();
   const [searchParams] = useSearchParams();
   const [prompt, setPrompt] = useState('');
   const [productId, setProductId] = useState(() => searchParams.get('product') || '');
@@ -231,10 +252,6 @@ export default function Composer({
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit(); }}
         />
-        <button className="icon-btn mic" title="Dictate (coming soon)" aria-label="Dictate (coming soon)" type="button"
-          onClick={() => say?.('Dictation is coming soon')}>
-          <Icon name="mic" />
-        </button>
         <div className="row">
           <PillMenu
             icon="bag" label={product ? `Product · ${product.name}` : 'Product'} has={!!product}

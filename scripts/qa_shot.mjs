@@ -38,11 +38,16 @@ for (let i = 0; i < repeat; i++) {
 // layout metrics QA cares about
 const metrics = await page.evaluate(() => {
   const main = document.querySelector('.main') || document.documentElement;
+  const doc = document.documentElement;
   return {
     viewport: `${innerWidth}x${innerHeight}`,
     mainScroll: main ? `${main.scrollWidth}x${main.scrollHeight} vs client ${main.clientWidth}x${main.clientHeight}` : 'n/a',
     hOverflow: main ? main.scrollWidth > main.clientWidth : null,
     vScrollNeeded: main ? main.scrollHeight > main.clientHeight : null,
+    // page-level scroll truth: document taller than viewport = the page scrolls even if .main doesn't
+    pageScrolls: doc.scrollHeight > innerHeight + 2 || document.body.scrollHeight > innerHeight + 2,
+    docScroll: `${doc.scrollWidth}x${doc.scrollHeight} vs viewport ${innerWidth}x${innerHeight}`,
+    hPageOverflow: doc.scrollWidth > innerWidth + 2,
   };
 });
 console.log('METRICS', JSON.stringify(metrics));

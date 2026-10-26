@@ -47,7 +47,11 @@ app.use('/assets', express.static(ASSETS_DIR, {
     res.setHeader('X-Content-Type-Options', 'nosniff');
   },
 }));
-app.use('/mockups', express.static(MOCKUPS_DIR));
+// dev scratch dir — design mockups, competitor captures. Dev-only: keep it off
+// the public surface in production unless explicitly re-enabled.
+if (process.env.NODE_ENV !== 'production' || process.env.MARQUE_DEV_MOCKUPS === '1') {
+  app.use('/mockups', express.static(MOCKUPS_DIR));
+}
 
 const h = (fn) => (req, res) => Promise.resolve(fn(req, res)).catch((e) => {
   console.error(`[marque] ${req.method} ${req.path} →`, e.message);
@@ -442,7 +446,7 @@ app.get('/api/dashboard', h(async (_req, res) => {
   ok(res, {
     profile: p ? { name: p.name || '', tagline: p.tagline || '', source: p.source || null } : null,
     boards,
-    campaigns: list('campaigns').map((c) => ({
+    campaigns: visibleCampaigns().map((c) => ({
       id: c.id,
       boardId: c.boardId || null,
       title: c.brief?.title || 'Untitled campaign',
@@ -506,10 +510,27 @@ app.post('/api/publish/caption', h(async (req, res) => {
   }
   ok(res, { platform, caption });
 }));
+// dedupe key — the tuple that makes a run "the same ask": source board, the
+// strategy it came from, and the brief title it confirmed. Free-typed
+// campaigns (no board/strategy) collapse on title alone.
+const campaignKey = (c) => `${c.boardId || ''}|${c.strategyId || ''}|${c.brief?.title || c.id}`;
+// list-visible campaigns — cheap honest signals only: drop dead runs (failed
+// with zero creatives — nothing to show) and collapse identical reruns to the
+// newest card. The records themselves stay — GET /api/campaigns/:id serves them.
+function visibleCampaigns() {
+  const alive = list('campaigns').filter((c) => !(c.genStatus === 'error' && !(c.creatives || []).length));
+  const newest = new Map();
+  for (const c of alive) {
+    const k = campaignKey(c);
+    const prev = newest.get(k);
+    if (!prev || String(c.createdAt || '') > String(prev.createdAt || '')) newest.set(k, c);
+  }
+  return alive.filter((c) => newest.get(campaignKey(c)) === c);
+}
 app.get('/api/campaigns', h(async (_req, res) => {
   const boards = list('boards') || [];
   ok(res, {
-    campaigns: list('campaigns').map((c) => {
+    campaigns: visibleCampaigns().map((c) => {
       const b = boards.find((x) => x.id === c.boardId);
       return { ...c, qlooBundle: b?.qlooBundle || c.qlooBundle || null, evidence: b?.evidence || c.evidence || null };
     }),
@@ -524,7 +545,7 @@ app.post('/api/campaigns/:id/demo-video', h(async (req, res) => {
   const version = site ? siteVersion(site) : null;
   if (!version?.html) return res.status(400).json({ error: 'no website version to film — generate a site first' });
   if (!siteVideoAvailable()) return res.status(503).json({ error: 'local capture unavailable' });
-  const creative = { id: uid(), medium: 'video', videoState: 'running', createdAt: now(), headline: 'Site demo', body: '', cta: '', angle: 'product demo', overlayStyle: 'editorial' };
+  const creative = { id: uid(), medium: 'video', videoState: 'running', createdAt: now(), headline: 'Site film', body: '', cta: '', angle: 'product demo', overlayStyle: 'editorial' };
   c.creatives = [...(c.creatives || []), creative];
   saveCampaign(c);
   const job = runJob('video', async () => {
@@ -574,6 +595,16 @@ app.post('/api/campaigns', h(async (req, res) => {
       || (srcBoard.strategies || []).find((s) => s.title && s.title === strategyTitle)
       || null)
     : null;
+  const resolvedStrategyId = strategyId || srcStrategy?.id || null;
+  // dedupe on create — re-confirming the same brief from the same board+strategy
+  // (double-click, retry after a dropped connection) must not stack a second
+  // identical card. Failed runs don't count — they earn a fresh attempt.
+  const existing = list('campaigns').find((x) =>
+    x.genStatus !== 'error'
+    && (x.boardId || null) === (boardId || null)
+    && (x.strategyId || null) === resolvedStrategyId
+    && x.brief?.title === brief.title);
+  if (existing) return ok(res, { campaign: existing, deduplicated: true });
   const campaign = {
     id: uid(), createdAt: now(), brief,
     productId: productId || null,
@@ -582,7 +613,7 @@ app.post('/api/campaigns', h(async (req, res) => {
     creatives: [],
     qlooSignals: qlooSignals || [],
     notes: notes || '',
-    strategyId: strategyId || srcStrategy?.id || null,
+    strategyId: resolvedStrategyId,
     strategyTitle: strategyTitle || srcStrategy?.title || '',
     boardId: boardId || null,
     strategySnapshot: srcStrategy ? {
@@ -612,7 +643,12 @@ app.post('/api/campaigns', h(async (req, res) => {
     } catch (e) {
       const stored = find('campaigns', campaign.id) || campaign;
       stored.genStatus = 'error';
-      stored.genError = String(e.message || e).slice(0, 300);
+      const raw = String(e.message || e);
+      stored.genError = raw.slice(0, 300);
+      // human-readable twin for the UI — genError keeps the raw provider detail
+      stored.genErrorHuman = /all image providers failed/i.test(raw)
+        ? 'Every image service failed — try again, or pick another engine.'
+        : 'Campaign generation failed — hit retry. The raw error is kept for debugging.';
       saveCampaign(stored);
       throw e;
     }
@@ -1028,25 +1064,32 @@ app.post('/api/brandbook/publish', h(async (req, res) => {
   set('brandbook', book);
   ok(res, { publishedSlug: slug });
 }));
+// unpublish is idempotent — with no book there is nothing published, which is
+// exactly the state the caller asked for. A 404 here surfaced in the UI as
+// "unpublish is not available on this server yet", which was wrong: the route
+// exists, the book just didn't.
 app.post('/api/brandbook/unpublish', h(async (_req, res) => {
   const book = get('brandbook');
-  if (!book) return res.status(404).json({ error: 'no book yet' });
+  if (!book) return ok(res, { ok: true, book: null });
   delete book.publishedSlug;
   set('brandbook', book);
   ok(res, { book });
 }));
+// published pages must never emit <img> tags for assets whose files are gone —
+// a stale profile image ref 404s inside an otherwise-loading page
+const liveProfileImages = (p) => (p ? { ...p, images: (p.images || []).filter((i) => i?.path && store.assetAbs(i.path)) } : p);
 app.get('/api/brandbook/pdf', h(async (_req, res) => {
   const book = get('brandbook');
   const profile = brand.currentProfile();
   if (!book || !profile) return res.status(404).json({ error: 'no book yet' });
   // no PDF engine on the box — serve the print-optimized view with a save-as-PDF hint
-  res.type('html').send(htmlBook(book, profile, { printHint: true }));
+  res.type('html').send(htmlBook(book, liveProfileImages(profile), { printHint: true }));
 }));
 app.get('/b/:slug', h(async (req, res) => {
   const book = get('brandbook');
   const profile = brand.currentProfile();
   if (!book || book.publishedSlug !== req.params.slug || !profile) return res.status(404).type('html').send(notPublished());
-  res.type('html').send(htmlBook(book, profile));
+  res.type('html').send(htmlBook(book, liveProfileImages(profile)));
 }));
 
 // ---------- upload ----------

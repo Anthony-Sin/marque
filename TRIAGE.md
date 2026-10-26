@@ -1,3 +1,47 @@
+# Marque sprint triage — deadline 9:00am EDT (Mon Oct 26 2026)
+
+**Sprint goal (user, verbatim):** 1) redesign/modify the white UI to fit in one page — no vertical page scroll (horizontal may scroll); add things, make it look better. 2) install a better image-gen model for the campaign — current outputs too bland. Look at examples, try different things, keep iterating: test → review → iterate → repeat until 9:00 AM ET. 6-agent swarm.
+
+**Env:** app :8787 (node, prod build) + :5173 (vite dev). localgen :8807 (python, .venv-gen/bin/python3 — system python lacks torch). GPU RTX 4070 Laptop **8GB** (~2.5GB used by desktop). Baseline commit 28eae9f.
+**QA tool:** `node scripts/qa_shot.mjs --url http://localhost:5173/<route> --out /tmp/x.png --w 1440 --h 900` (reports scroll metrics + console errors).
+**Variant apps:** /home/ANT/marque-var-ops (:5174, light ops-console direction), /home/ANT/marque-var-alt (:5175, contrasting direction).
+
+## Findings board (this sprint)
+_(reviewers append; builders consume)_
+
+| # | Sev | Finding | Status |
+|---|-----|---------|--------|
+| — | — | UI: vertical page scroll must go — every route fits 100dvh | in-progress (variants A/B) |
+| — | — | Imggen: sd-turbo outputs bland → SDXL-Turbo install on :8807 | in-progress (agent A) |
+| — | — | Imggen: prompt enrichment (lighting/lens/composition/palette) | in-progress (agent F) |
+| — | — | media.js:96 'local-sd-turbo' hardcoded label → read model from /health | assigned (agent F) |
+| 1 | HIGH | SDXL-Turbo VERIFIED working on :8808 — outputs dramatically better (golden-hour editorial vs flat). BUT 2nd+ gen OOMs: GPU shared w/ MuseTalk (2.0GB pid 862527) + TTS (238MB pid 834505) — only ~5.4GB headroom. Fix = model_cpu_offload + expandable_segments + empty_cache per gen + OOM retry, or fallback segmind/SSD-1B (3.4GB fits resident) | agent A on it |
+| 2 | MED | CLIP truncates prompts >77 tokens — enriched prompt tails (palette/mood) get cut. Front-load subject+photo terms or compress tail | agent F aware |
+| 3 | MED | qa_shot.mjs .main metric lied (body scrolls, .main didn't) — added pageScrolls/docScroll/hPageOverflow | FIXED |
+
+## QA round-1 findings (agent D — /tmp/marque/qa-r1/*.png)
+**Scroll truth: 4/6 routes scroll @desktop (strategy 1052, campaigns 957, websites 1052, brandbook 939 vs 900), 5/6 @mobile. Dashboard/onboarding/campaign-detail waste bottom 30-45%.**
+
+- [H] dashboard @390: H1 "DASHBOARD" overlaps Marque/STUDIO badge (x372 > 212)
+- [H] /strategy: .stg-topline pill flush at top:0, clipped; mobile Edit-ask clipped right edge
+- [H] /brandbook: slides ~60% empty placeholder-looking frames
+- [M] .stg-pick-aud/.stg-pick-fmts hard-clip text mid-word (scrollWidth 418 vs client 251, no ellipsis)
+- [M] /websites "Analyze vs competitors" nukes rendered audit → 90% empty + 1 spinner line during job
+- [M] Typed component re-animates cached content on every /strategy/:idx mount — makes real data look fake
+- [M] .stg-qread/.stg-qgroups clipped ~23px right edge (MOVIE col)
+- [M] campaigns Product dropdown = dead end ("No catalog items") overlapping composer
+- [M] jargon leak: `watch · ffmpeg`, `local · sd-turbo`, `EST 92 ★`, `Taste signature · failed`, dead Local chip while localgen down → audit agent 4d9efa49 mapping all
+- [L] duplicate identical campaign cards ("Heavy Metal Heavy Lifting" ×2)
+- [L] creative overlay text legibility ("Chug"→"Clug", lockup under badge chip)
+- [L] Generate-Brief disabled-look inconsistency vs onboarding CTA
+- [L] console noise: RR future-flag warnings, socket/cert errors, 404 on /b/book-*
+
+**Design-critic summary:** flat #fff canvas + identical border+hard-shadow recipe = "vibe-coded"; weak type range; vacant card interiors; internals leak. Winning moves: fill viewport, card interior architecture, tonal range, no hard-clipped copy, instant-load cached content + translate jargon.
+
+Variant lanes: ops (light) :5174 · alt (dark HUD) :5175 · edit (editorial) :5176
+
+---
+
 # Marque sprint triage — deadline 10:00am EDT (Sat Oct 24 2026)
 
 **Sprint goal:** one continuous workflow — brand identity → strategy board → one-click produce → final results. Merged pipeline (no separate "campaign step" UX), output-type picker on the strategy card, final-results surface carrying strategy+palette+Qloo provenance, websites generated from campaign/brand context. Removed test-only surfaces (/profile, /photoshoot). Then: full-flow demo video (cloned voice) + ~50 ranked creative mockup variants w/ per-mockup videos + gallery. Local commits only.
@@ -135,3 +179,11 @@ LOW (noted, later):
 - 78 mockups produced → 50 displayed + 28 vaulted; top-10 got print/a11y craft pass
 - Demo: marque-walkthrough.mp4 (174s) + v2 with title/end cards (180.6s), cloned voice
 - Residuals noted for later: none blocking; see round-12 review list above
+
+## Sprint 26-10-26 (cont.) — post-merge state @00:50
+- MERGED: variant-B dark HUD (marque-var-alt) → web/src. Qloo.jsx hand-merged (mainline badge-hide + variant epLabel trails). Build clean. :5173 verified pageScrolls:false on dash/strategy/campaigns.
+- media.js: steps 6→4; refs-honesty — local dropped from auto chain when refs present (local is txt2img-only; gemini does reframes), explicit local+refs returns note; promptStyle UNMARKED cue added (measured: kills label pseudo-text where negatives can't reach at guidance=0).
+- localgen.py: upscale was bilinear (resample=2 lie) → real LANCZOS; service restarted w/ sdxl-turbo seq-offload.
+- e2e verified: regen creative → local-sdxl-turbo 1408x1760 in 5.9s; photoshoot batch 4/4 clean; honest 400/404s; gemini path works (928x1152, gray-band artifact seen once — watch).
+- Open: photoshoot/agent-edit under provider:'local' still ignores refs by design (note now attached); stale creatives still labeled local-sd-turbo (honest historical data); label text artifacts reduced not eliminated.
+- In-flight agents: graft-details (var-ops/edit best-of), post-merge QA, ffmpeg site-film fix, e2e user flow.

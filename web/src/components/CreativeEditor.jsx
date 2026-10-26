@@ -4,7 +4,7 @@ import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import { QlooBadge, SignalChips } from './Qloo.jsx';
 import EvidenceDrawer from './EvidenceDrawer.jsx';
-import { downloadAsset, fileExt, useStages } from './Composer.jsx';
+import { downloadAsset, fileExt, useStages, providerLabel } from './Composer.jsx';
 import CreativeOverlay, { OVERLAY_STYLES } from './CreativeOverlay.jsx';
 import { exportCreativePNG } from './creativeExport.js';
 import '../views/studio.css';
@@ -97,7 +97,7 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
         <div className="row" style={{ justifyContent: 'space-between', marginBottom: 16 }}>
           <h3 style={{ margin: 0, fontSize: 18 }}>Edit creative</h3>
           <div className="row">
-            <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Qloo API" />
+            <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Audience data" />
             <button className="icon-btn" onClick={onClose} aria-label="Close"><Icon name="x" size={16} /></button>
           </div>
         </div>
@@ -164,12 +164,22 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
             <input value={regenPrompt} onChange={(e) => setRegenPrompt(e.target.value)}
               placeholder="e.g. warmer light, outdoors" />
             <div className="ovl-styles" style={{ marginTop: 6 }}>
-              {[['auto', 'Engine: auto'], ['local', 'Local'], ['gemini', 'Gemini'], ['pollinations', 'Pollinations']].map(([id, name]) => (
-                <button key={id} type="button"
-                  className={`ovl-st${regenProvider === id ? ' on' : ''}`}
-                  title={id === 'auto' ? `Default chain (${cur.imageProvider || 'auto'} used last)` : `Force ${name} for the next regen`}
-                  onClick={() => setRegenProvider(id)}>{name}</button>
-              ))}
+              {[['auto', 'Engine: auto'], ['local', 'Local'], ['gemini', 'Gemini'], ['pollinations', 'Pollinations']].map(([id, name]) => {
+                // gate chips on engines we know are down — never offer a dead engine
+                const offline = id === 'local'
+                  ? !!status && (status.localgen?.ok === false || !status.localgen?.configured)
+                  : id === 'gemini' ? !!status && !status.gemini : false;
+                const tip = id === 'auto'
+                  ? (cur.imageProvider ? `Last rendered by ${providerLabel(cur.imageProvider)}` : 'Default chain — picks the best available engine')
+                  : offline ? (id === 'local' ? 'local engine offline' : 'cloud engine not configured')
+                  : `Force ${name} for the next regen`;
+                return (
+                  <button key={id} type="button" disabled={offline}
+                    className={`ovl-st${regenProvider === id ? ' on' : ''}`}
+                    title={tip}
+                    onClick={() => !offline && setRegenProvider(id)}>{name}</button>
+                );
+              })}
             </div>
 
             <div className="editor-actions">

@@ -177,12 +177,17 @@ export default function Dashboard() {
       : (b.titles || []).slice(0, 2));
   };
 
+  const orphanWork = work.filter((c) => !boards.some((b) => b.id === c.boardId));
   return (
-    <div className="section dash-wrap">
-      {/* ---------- header — mark + name live in the top bar ---------- */}
+    <div className="section view dash-wrap">
+      {/* ---------- header — ops deck title + live counts ---------- */}
       <header className="dash-head">
         <h1 className="display dash-title">Dashboard</h1>
         <p className="dash-greet">What are we making today?</p>
+        <span className="dash-meta">
+          {boards.length} plan{boards.length === 1 ? '' : 's'}
+          {!!work.length && ` · ${work.length} campaign${work.length === 1 ? '' : 's'}`}
+        </span>
       </header>
 
       {!boards.length ? (
@@ -199,10 +204,12 @@ export default function Dashboard() {
           </Link>
         </div>
       ) : (
-        <>
+        <div className={`dash-deck${orphanWork.length ? '' : ' no-work'}`}>
           {/* ---------- your plans ---------- */}
-          <div className="section-label">Your plans</div>
-          <div className="grid c3">
+          <section className="card hud dash-zone">
+            <div className="zone-head"><span className="z-id">P-01</span>Your plans<span className="z-tag">pick a board to open it</span></div>
+            <div className="dash-zone-body">
+              <div className="grid c3">
             {boards.map((b) => {
               const active = board?.id && b.id === board.id;
               const titles = stratTitles(b);
@@ -298,15 +305,18 @@ export default function Dashboard() {
             })}
             <button type="button" className="card dash-new" onClick={() => nav('/strategy?new=1')}>
               <Icon name="plus" size={20} /> New plan
+              <span className="dash-new-sub">draft a new strategy board</span>
             </button>
-          </div>
+              </div>
+            </div>
+          </section>
 
           {/* ---------- other work — campaigns not tied to a shown plan ---------- */}
-          {!!work.filter((c) => !boards.some((b) => b.id === c.boardId)).length && (
-            <>
-              <div className="section-label">Other work</div>
+          {!!orphanWork.length && (
+            <section className="card hud dash-zone dash-zone-work">
+              <div className="zone-head"><span className="z-id">P-02</span>Recent output<span className="z-tag">{orphanWork.length} campaign{orphanWork.length === 1 ? '' : 's'}</span></div>
               <div className="dash-work">
-                {work.filter((c) => !boards.some((b) => b.id === c.boardId)).map((c) => {
+                {orphanWork.map((c) => {
                   const showImg = c.img && !badImg[c.id];
                   return (
                     <Link key={c.id} to={`/campaigns?open=${c.id}`} className="card dash-work-card">
@@ -335,9 +345,9 @@ export default function Dashboard() {
                   );
                 })}
               </div>
-            </>
+            </section>
           )}
-        </>
+        </div>
       )}
 
       {deleting && (

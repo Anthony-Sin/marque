@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useApp } from '../App.jsx';
 import Icon from './Icon.jsx';
 import { QlooBadge } from './Qloo.jsx';
+import { epLabel } from '../labels.js';
 import '../views/studio.css';
 
 // Right slide-over: the Qloo evidence trail — every signal type the asset was
@@ -94,7 +95,7 @@ export default function EvidenceDrawer({ title = 'Taste evidence', signals = [],
         <div className="section-label">Evidence trail · {calls.length} Qloo calls</div>
         {calls.length ? calls.map((c, i) => (
           <div key={i} className="call-line">
-            <b>{c.endpoint}</b>{' '}
+            <b>{epLabel(c.endpoint)}</b> <span className="muted">{c.endpoint}</span>{' '}
             {Object.entries(c.params || {}).map(([k, v]) => `${k}=${String(v).slice(0, 48)}`).join(' ')}
             {c.n != null && <span> → {c.n} results</span>}
             {c.tookMs != null && <span> · {c.tookMs}ms</span>}

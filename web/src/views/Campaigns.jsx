@@ -3,12 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
-import Composer, { arCss, isRaster, MediaFallback } from '../components/Composer.jsx';
+import Composer, { arCss, isRaster, MediaFallback, fmtDate } from '../components/Composer.jsx';
 import CreativeCard from '../components/CreativeCard.jsx';
 import CreativeEditor from '../components/CreativeEditor.jsx';
 import EvidenceDrawer from '../components/EvidenceDrawer.jsx';
 import Modal from '../components/Modal.jsx';
-import Wayfind from '../components/Wayfind.jsx';
 import { QlooBadge, SignalChips } from '../components/Qloo.jsx';
 import { chanLabel } from '../labels.js';
 import './studio.css';
@@ -358,97 +357,124 @@ export default function Campaigns() {
     const pendingSkels = making === open.id ? Math.max(0, EXPECTED_CREATIVES - creatives.length) : 0;
     const snap = open.strategySnapshot || null;
     const palKeys = Object.entries(profile?.colors || {}).filter(([, v]) => /^#|rgb/.test(String(v))).slice(0, 6);
+    const hasProv = !!(snap || open.strategyTitle || palKeys.length > 0);
     return (
-      <div className="section" style={{ paddingBottom: 80 }}>
-        <Wayfind />
-        <div className="page-head" style={{ textAlign: 'left', padding: '10px 0 18px' }}>
-          <button className="btn ghost sm mb8" onClick={() => show(null)}>
-            ← All campaigns
-          </button>
-          <h2 className="display" style={{ fontSize: 34 }}>{open.brief?.title || 'Campaign'}</h2>
-          {open.brief?.angle && <p className="sub" style={{ margin: 0, maxWidth: 640 }}>{open.brief.angle}</p>}
-          {open.brief?.keyMessage && (
-            <p className="res-km">“{open.brief.keyMessage}”{open.brief.audience ? <span className="res-km-aud"> — aimed at {open.brief.audience}</span> : ''}</p>
-          )}
-          <div className="row wrap mt8">
-            {(open.brief?.channels || []).map((c) => <span key={c} className="chan-chip">{chanLabel(c)}</span>)}
-            <span className="chan-chip">{open.aspectRatio || '1:1'}</span>
-            {open.medium === 'video' && <span className="chan-chip"><Icon name="play" size={10} /> video-first</span>}
-            <SignalChips signals={open.qlooSignals || []} />
-            <button className="btn ghost sm" onClick={() => setEvi(true)}>
-              <Icon name="qloo" size={14} /> Evidence
+      <div className="section view cp-view">
+        <div className="view-head cp-head">
+          <div className="vh-main">
+            <button className="btn ghost sm cp-back" onClick={() => show(null)}>
+              ← All campaigns
             </button>
+            <h2 className="display">{open.brief?.title || 'Campaign'}</h2>
+            {open.brief?.angle && <p className="sub">{open.brief.angle}</p>}
+            {open.brief?.keyMessage && (
+              <p className="res-km">“{open.brief.keyMessage}”{open.brief.audience ? <span className="res-km-aud"> — aimed at {open.brief.audience}</span> : ''}</p>
+            )}
           </div>
-          {/* provenance band — which strategy produced this, what the board
-              measured, and the palette every downstream artifact inherits */}
-          {(snap || open.strategyTitle || palKeys.length > 0) && (
-            <div className="res-band">
-              <div className="res-src">
-                {(snap?.title || open.strategyTitle) && (
-                  <span className="res-from"><Icon name="sparkle" size={11} /> from strategy <b>{snap?.title || open.strategyTitle}</b></span>
+          <div className="vh-side">
+            <div className="row wrap">
+              {(open.brief?.channels || []).map((c) => <span key={c} className="chan-chip">{chanLabel(c)}</span>)}
+              <span className="chan-chip">{open.aspectRatio || '1:1'}</span>
+              {open.medium === 'video' && <span className="chan-chip"><Icon name="play" size={10} /> video-first</span>}
+              <SignalChips signals={open.qlooSignals || []} />
+              <button className="btn ghost sm" onClick={() => setEvi(true)}>
+                <Icon name="qloo" size={14} /> Evidence
+              </button>
+            </div>
+            <div className="res-next">
+              <span className="res-next-lbl">Next output</span>
+              <button className="btn ghost sm" disabled={!!producingNext} onClick={makeWebsite}
+                title="Generate a marketing site that reuses this campaign's palette, product and creative imagery">
+                {producingNext === 'site' ? <span className="spinner" /> : <Icon name="site" size={13} />} Website
+              </button>
+              <button className="btn ghost sm" disabled={animating === 'demo' || !!producingNext} onClick={demoVideo}
+                title="Render the generated website locally and capture a real scroll video into this campaign">
+                {animating === 'demo' ? <span className="spinner" /> : <Icon name="film" size={13} />} Site film
+              </button>
+              <button className="btn ghost sm" disabled={!!producingNext} onClick={makeBook}
+                title="Compile the printable brand book">
+                {producingNext === 'book' ? <span className="spinner" /> : <Icon name="book" size={13} />} Brand book
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className={`cp-split${hasProv ? '' : ' solo'}`}>
+          {hasProv && (
+            <section className="card hud cp-panel cp-prov">
+              <div className="zone-head"><span className="z-id">PRV</span>Provenance</div>
+              <div className="cp-panel-body">
+                {/* provenance — which strategy produced this, what the board
+                    measured, and the palette every downstream artifact inherits */}
+                <div className="res-src">
+                  {(snap?.title || open.strategyTitle) && (
+                    <span className="res-from"><Icon name="sparkle" size={11} /> from strategy <b>{snap?.title || open.strategyTitle}</b></span>
+                  )}
+                  {typeof snap?.fit === 'number' && (
+                    <span className="res-fit" title="audience-fit score from the strategy board">{Math.round(snap.fit * 100)} fit</span>
+                  )}
+                  {!!snap?.estViews && (
+                    <span className="res-reach" title="board-estimated reach for this strategy"><Icon name="eye" size={11} />{fmtV(snap.estViews)} est.</span>
+                  )}
+                  {!!snap?.lean && <span className="chan-chip" title="audience lean from the taste read">{snap.lean}</span>}
+                  {(snap?.vibes || []).slice(0, 4).map((v) => <span key={v} className="chan-chip res-vibe">{v}</span>)}
+                  <QlooBadge mode={open.qlooBundle?.mode === 'live' ? 'live' : 'off'} label="Taste graph" />
+                </div>
+                {!!palKeys.length && (
+                  <div className="res-pal" title="Brand palette — the site and brand book inherit these">
+                    {palKeys.map(([k, v]) => (
+                      <span key={k} className="res-sw" style={{ background: v }} title={`${k} · ${v}`} />
+                    ))}
+                  </div>
                 )}
-                {typeof snap?.fit === 'number' && (
-                  <span className="res-fit" title="audience-fit score from the strategy board">{Math.round(snap.fit * 100)} fit</span>
-                )}
-                {!!snap?.estViews && (
-                  <span className="res-reach" title="board-estimated reach for this strategy"><Icon name="eye" size={11} />{fmtV(snap.estViews)} est.</span>
-                )}
-                {!!snap?.lean && <span className="chan-chip" title="audience lean from the taste read">{snap.lean}</span>}
-                {(snap?.vibes || []).slice(0, 4).map((v) => <span key={v} className="chan-chip res-vibe">{v}</span>)}
-                <QlooBadge mode={open.qlooBundle?.mode === 'live' ? 'live' : 'off'} label="Qloo" />
+                {/* ledger — the honest facts on record for this campaign */}
+                <div className="cp-dl">
+                  {open.createdAt && <div className="cp-dl-row"><span>Created</span><b>{fmtDate(open.createdAt)}</b></div>}
+                  {!!open.brief?.audience && <div className="cp-dl-row"><span>Audience</span><b>{open.brief.audience}</b></div>}
+                  {!!(open.brief?.channels || []).length && (
+                    <div className="cp-dl-row"><span>Channels</span><b>{open.brief.channels.map(chanLabel).join(' · ')}</b></div>
+                  )}
+                  <div className="cp-dl-row"><span>Format</span><b>{open.aspectRatio || '1:1'}{open.medium === 'video' ? ' · video-first' : ''}</b></div>
+                  <div className="cp-dl-row"><span>Creatives</span><b>{creatives.length}</b></div>
+                  {!!open.evidence?.calls?.length && (
+                    <div className="cp-dl-row"><span>Evidence</span><b>{open.evidence.calls.length} audience calls on record</b></div>
+                  )}
+                </div>
               </div>
-              {!!palKeys.length && (
-                <div className="res-pal" title="Brand palette — the site and brand book inherit these">
-                  {palKeys.map(([k, v]) => (
-                    <span key={k} className="res-sw" style={{ background: v }} title={`${k} · ${v}`} />
-                  ))}
+            </section>
+          )}
+          <section className="card hud cp-panel cp-bay">
+            <div className="zone-head"><span className="z-id">CRE</span>Creatives<span className="z-tag">{creatives.length}</span></div>
+            <div className="cp-panel-body">
+              <div className="creative-grid">
+                {creatives.map((cr) => (
+                  <CreativeCard
+                    key={cr.id}
+                    creative={cr}
+                    campaign={open}
+                    aspect={open.aspectRatio}
+                    animating={animating === cr.id}
+                    onEdit={setEditing}
+                    onAnimate={animateOne}
+                    onChanged={reload}
+                  />
+                ))}
+                {Array.from({ length: pendingSkels }, (_, i) => skelCreative(i, open.aspectRatio))}
+              </div>
+              {!creatives.length && !pendingSkels && (
+                <div className="empty">
+                  {open.genStatus === 'error' ? (
+                    <p>Generation failed — {open.genError || 'all providers errored'}. Hit Regenerate to retry.</p>
+                  ) : (
+                    <p>No creatives yet — generation may still be running.</p>
+                  )}
+                  <button className="btn ghost sm" onClick={reload}>
+                    <Icon name="refresh" size={13} /> Check again
+                  </button>
                 </div>
               )}
             </div>
-          )}
-          <div className="res-next">
-            <span className="res-next-lbl">Next output</span>
-            <button className="btn ghost sm" disabled={!!producingNext} onClick={makeWebsite}
-              title="Generate a marketing site that reuses this campaign's palette, product and creative imagery">
-              {producingNext === 'site' ? <span className="spinner" /> : <Icon name="site" size={13} />} Website
-            </button>
-            <button className="btn ghost sm" disabled={animating === 'demo' || !!producingNext} onClick={demoVideo}
-              title="Render the generated website locally and capture a real scroll video into this campaign">
-              {animating === 'demo' ? <span className="spinner" /> : <Icon name="film" size={13} />} Site film
-            </button>
-            <button className="btn ghost sm" disabled={!!producingNext} onClick={makeBook}
-              title="Compile the printable brand book">
-              {producingNext === 'book' ? <span className="spinner" /> : <Icon name="book" size={13} />} Brand book
-            </button>
-          </div>
+          </section>
         </div>
-        <div className="creative-grid">
-          {creatives.map((cr) => (
-            <CreativeCard
-              key={cr.id}
-              creative={cr}
-              campaign={open}
-              aspect={open.aspectRatio}
-              animating={animating === cr.id}
-              onEdit={setEditing}
-              onAnimate={animateOne}
-              onChanged={reload}
-            />
-          ))}
-          {Array.from({ length: pendingSkels }, (_, i) => skelCreative(i, open.aspectRatio))}
-        </div>
-        {!creatives.length && !pendingSkels && (
-          <div className="empty">
-            {open.genStatus === 'error' ? (
-              <p>Generation failed — {open.genError || 'all providers errored'}. Hit Regenerate to retry.</p>
-            ) : (
-              <p>No creatives yet — generation may still be running.</p>
-            )}
-            <button className="btn ghost sm" onClick={reload}>
-              <Icon name="refresh" size={13} /> Check again
-            </button>
-          </div>
-        )}
         {editing && (
           <CreativeEditor
             creative={editing}
@@ -464,17 +490,22 @@ export default function Campaigns() {
 
   // ---------- landing ----------
   const chans = (handoff?.strategy?.channels || []).map((c) => c.name || c).filter(Boolean);
+  const nCamps = campaigns?.length || 0;
   return (
-    <div className="section" style={{ paddingBottom: 80 }}>
-      <Wayfind />
-      <div className="page-head">
-        <h1 className="display">Campaigns</h1>
-        <p className="sub">Prompt a campaign or continue one below — brief first, creatives after.</p>
+    <div className="section view cp-view">
+      <div className="view-head">
+        <div className="vh-main">
+          <h1 className="display">Campaigns</h1>
+          <p className="sub">Prompt a campaign or continue one below — brief first, creatives after.</p>
+        </div>
       </div>
 
-      {/* one continuous card — composer on top, the brief materializes inside
-          the same surface once it lands (prompt → brief → confirm, no seam) */}
-      <div className={`composer-zone card flow-card${brief?.brief || phase === 'briefing' ? ' has-brief' : ''}`}>
+      <div className="cp-split">
+      {/* brief console — composer on top, the brief materializes inside the
+          same surface once it lands (prompt → brief → confirm, no seam) */}
+      <section className={`card hud cp-panel cp-console${brief?.brief || phase === 'briefing' ? ' has-brief' : ''}`}>
+        <div className="zone-head"><span className="z-id">BRI</span>Brief console</div>
+        <div className="cp-panel-body">
         {handoff && (
           <div className="camp-src">
             <Icon name="sparkle" size={12} />
@@ -512,6 +543,15 @@ export default function Campaigns() {
           </div>
         )}
 
+        {/* honest flow readout — what the console does, in three steps */}
+        {!brief?.brief && phase !== 'briefing' && (
+          <div className="cp-flow">
+            <span className="cp-flow-step"><b>01</b>Prompt or starter chip</span>
+            <span className="cp-flow-step"><b>02</b>Review the drafted brief</span>
+            <span className="cp-flow-step"><b>03</b>Confirm — creatives land in the list</span>
+          </div>
+        )}
+
       {phase === 'briefing' && !brief?.brief && (
         <div className="brief-card in-flow" aria-busy="true" aria-label="Drafting your campaign brief">
           <div className="row" style={{ justifyContent: 'space-between', marginBottom: 8 }}>
@@ -539,7 +579,7 @@ export default function Campaigns() {
         <div className="brief-card in-flow">
           <div className="row mat" style={{ '--i': 0, justifyContent: 'space-between', marginBottom: 8 }}>
             <h3>{brief.brief.title || 'Campaign brief'}</h3>
-            <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Qloo API" />
+            <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Taste graph" />
           </div>
           <div className="brief-field mat" style={{ '--i': 1 }}><span className="k">Angle</span><span className="v">{brief.brief.angle}</span></div>
           <div className="brief-field mat" style={{ '--i': 2 }}><span className="k">Audience</span><span className="v">{brief.brief.audience}</span></div>
@@ -582,9 +622,20 @@ export default function Campaigns() {
           </div>
         </div>
       )}
-      </div>
 
-      <div className="section-label">Your campaigns</div>
+      {/* status line pinned to the console floor — real counts, no filler */}
+      <div className="cp-console-foot">
+        <Icon name="qloo" size={11} />
+        <span>Grounded in your Business Profile{status?.qloo === 'live' ? ' + live taste graph' : ''}</span>
+        <span className="grow" />
+        <span className="cp-foot-n">{nCamps} campaign{nCamps === 1 ? '' : 's'} on record</span>
+      </div>
+        </div>
+      </section>
+
+      <section className="card hud cp-panel cp-list">
+        <div className="zone-head"><span className="z-id">OUT</span>Your campaigns<span className="z-tag">{nCamps}</span></div>
+        <div className="cp-panel-body">
       {campaigns === null ? (
         <div className="grid c2">
           {[0, 1].map((i) => (
@@ -629,6 +680,9 @@ export default function Campaigns() {
           </button>
         </div>
       )}
+        </div>
+      </section>
+      </div>
 
       {deleting && (
         <Modal narrow title="Delete this campaign?" onClose={() => setDeleting(null)}

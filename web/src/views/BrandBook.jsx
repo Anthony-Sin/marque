@@ -4,7 +4,6 @@ import { api, pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
 import PublishBar from '../components/PublishBar.jsx';
-import Wayfind from '../components/Wayfind.jsx';
 import { QlooBadge, TastePanel } from '../components/Qloo.jsx';
 import { postJson, useStages } from '../components/Composer.jsx';
 import './studio.css';
@@ -154,13 +153,14 @@ export default function BrandBook() {
   // ---------- loading ----------
   if (book === undefined) {
     return (
-      <div className="section">
-        <Wayfind />
-        <div className="page-head">
-          <h1 className="display">Your Brand Book</h1>
-          <p className="sub">A Brand Book generated from your Business Profile.</p>
+      <div className="section view bb-view">
+        <div className="view-head">
+          <div className="vh-main">
+            <h1 className="display">Your Brand Book</h1>
+            <p className="sub">A Brand Book generated from your Business Profile.</p>
+          </div>
         </div>
-        <div className="book-stage">
+        <div className="book-stage card hud">
           <div className="book-page" style={{ padding: 38, display: 'block' }}>
             <span className="skel skel-line" style={{ width: 120, marginBottom: 18 }} />
             <span className="skel" style={{ width: '100%', height: 240, borderRadius: 14 }} />
@@ -178,11 +178,12 @@ export default function BrandBook() {
   // ---------- wizard ----------
   if (step !== 'view') {
     return (
-      <div className="section" style={{ paddingBottom: 80 }}>
-        <Wayfind />
-        <div className="page-head">
-          <h1 className="display">Your Brand Book</h1>
-          <p className="sub">A Brand Book generated from your Business Profile.</p>
+      <div className="section view bb-view">
+        <div className="view-head">
+          <div className="vh-main">
+            <h1 className="display">Your Brand Book</h1>
+            <p className="sub">A Brand Book generated from your Business Profile.</p>
+          </div>
         </div>
         <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={upload} />
 
@@ -194,7 +195,7 @@ export default function BrandBook() {
           <span className="step-dot"><i>3</i> Create</span>
         </div>
 
-        <div style={{ maxWidth: 760, margin: '0 auto' }}>
+        <div className="bb-step">
           {step === 'cover' && (
             <div className="card pad">
               <h4 style={{ marginTop: 0 }}>Pick a cover image</h4>
@@ -264,38 +265,40 @@ export default function BrandBook() {
   // ---------- book view ----------
   const coverSrc = imgPath(book.coverImage);
   const bookImgs = (book.images || []).map(imgPath).filter(Boolean);
+  // a page only exists if it has real content — no empty spreads
+  const hasStory = !!(profile?.tagline || profile?.description || profile?.audience || profile?.values?.length);
+  const hasTaste = !!profile?.qloo && profile.qloo.mode !== 'error' && profile.qloo.mode !== 'none';
   const pages = [
     { id: 'cover', label: 'Cover' },
-    { id: 'story', label: 'Story' },
-    { id: 'palette', label: 'Palette' },
+    hasStory && { id: 'story', label: 'Story' },
+    colorList(profile).length > 0 && { id: 'palette', label: 'Palette' },
     { id: 'type', label: 'Typography' },
     { id: 'imagery', label: 'Imagery' },
-    { id: 'taste', label: 'Taste' },
-  ];
+    hasTaste && { id: 'taste', label: 'Taste' },
+  ].filter(Boolean);
   const cur = pages[Math.min(page, pages.length - 1)];
 
   return (
-    <div className="section" style={{ paddingBottom: 80 }}>
-      <Wayfind />
-      <div className="page-head" style={{ paddingBottom: 14 }}>
-        <h1 className="display">Your Brand Book</h1>
-        <p className="sub">A Brand Book generated from your Business Profile.</p>
+    <div className="section view bb-view">
+      <div className="view-head">
+        <div className="vh-main">
+          <h1 className="display">Your Brand Book</h1>
+          <p className="sub">A Brand Book generated from your Business Profile.</p>
+        </div>
+        <div className="vh-side">
+          <a className="btn ghost sm" href="/api/brandbook/pdf" target="_blank" rel="noreferrer" title="Opens the print view — Save as PDF from the browser print dialog">
+            <Icon name="download" /> Print / PDF
+          </a>
+          <button className="btn ghost sm" onClick={previewNewTab}>
+            <Icon name="eye" /> Preview
+          </button>
+          <button className="btn ghost sm" onClick={() => { setStep('cover'); setPicked([]); }}>
+            <Icon name="refresh" /> Recreate
+          </button>
+        </div>
       </div>
 
-      <div className="toolbar mb16" style={{ maxWidth: 840, margin: '0 auto 16px' }}>
-        <a className="btn ghost sm" href="/api/brandbook/pdf" target="_blank" rel="noreferrer" title="Opens the print view — Save as PDF from the browser print dialog">
-          <Icon name="download" /> Print / Save as PDF
-        </a>
-        <button className="btn ghost sm" onClick={previewNewTab}>
-          <Icon name="eye" /> Preview in New Tab
-        </button>
-        <span className="grow" />
-        <button className="btn ghost sm" onClick={() => { setStep('cover'); setPicked([]); }}>
-          <Icon name="refresh" /> Recreate
-        </button>
-      </div>
-
-      <div className="book-stage">
+      <div className="book-stage card hud">
         <div className="book-page">
           {cur.id === 'cover' && (
             <div className="book-cover">
@@ -367,14 +370,14 @@ export default function BrandBook() {
         </div>
 
         <div className="book-nav">
-          <button className="icon-btn" aria-label="Previous page" onClick={() => setPage((p) => Math.max(0, p - 1))}>←</button>
+          <button className="icon-btn" aria-label="Previous page" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>←</button>
           {pages.map((p, i) => (
-            <button key={p.id} className={`book-dot${i === page ? ' on' : ''}`} title={p.label} aria-current={i === page ? 'page' : undefined} onClick={() => setPage(i)} />
+            <button key={p.id} className={`book-dot${i === page ? ' on' : ''}`} title={p.label} aria-label={`Go to ${p.label} page`} aria-current={i === page ? 'page' : undefined} onClick={() => setPage(i)} />
           ))}
-          <button className="icon-btn" aria-label="Next page" onClick={() => setPage((p) => Math.min(pages.length - 1, p + 1))}>→</button>
+          <button className="icon-btn" aria-label="Next page" disabled={page >= pages.length - 1} onClick={() => setPage((p) => Math.min(pages.length - 1, p + 1))}>→</button>
         </div>
 
-        <div className="mt16">
+        <div className="bb-foot">
           <PublishBar
             publishedSlug={book.publishedSlug}
             base="/b/"
@@ -383,8 +386,6 @@ export default function BrandBook() {
             onPublish={publish}
             onUnpublish={unpublish}
           />
-        </div>
-        <div className="row mt8" style={{ justifyContent: 'center' }}>
           <QlooBadge mode={qlooMode} label="Taste signature inside" />
         </div>
       </div>

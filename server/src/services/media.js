@@ -7,6 +7,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { saveAssetBuf, assetAbs } from './store.js';
 import { genImage, genVideo } from './gemini.js';
+import { enrichPrompt, LOCALGEN_NEGATIVE } from './promptStyle.js';
 import { ENV } from '../config.js';
 import { tuning } from '../tuning.js';
 
@@ -19,13 +20,19 @@ export const dimsFor = (ar) => AR_DIMS[ar] || AR_DIMS['1:1'];
 const LOCAL_DIMS = tuning('localAspectDims');
 
 // local diffusion service (server/scripts/localgen.py) — ~1-3s on a 4070.
-export async function localgenImage(prompt, { aspectRatio = '1:1', steps = 6, seed } = {}) {
+// Prompts are run through promptStyle.enrichPrompt: caller briefs describe the
+// subject, not the photography — turbo-class models go bland without concrete
+// lens/light/texture cues. gemini gets the raw prompt (it needs no tags).
+export async function localgenImage(prompt, opts = {}) {
   if (!ENV.localgenUrl) throw new Error('localgen not configured');
+  // sdxl-turbo is ADD-distilled — measured knee at 4 steps; 6 just burns ~2s/img
+  const { aspectRatio = '1:1', steps = 4, seed } = opts;
   const [w, h] = LOCAL_DIMS[aspectRatio] || LOCAL_DIMS['1:1'];
+  const finalPrompt = enrichPrompt(prompt, { kind: opts.kind, palette: opts.palette, aspectRatio, enrich: opts.enrich });
   const res = await fetch(`${ENV.localgenUrl}/generate`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ prompt, width: w, height: h, steps, seed, upscale: 2, negative: 'text, words, letters, typography, logo, watermark, caption, title, signature, label, font, writing, alphabet, numbers, newspaper, magazine, book, poster, packaging, signage, billboard, screen, menu, printed' }),
+    body: JSON.stringify({ prompt: finalPrompt, width: w, height: h, steps, seed, upscale: 2, negative: LOCALGEN_NEGATIVE }),
     signal: AbortSignal.timeout(120000),
   });
   if (!res.ok) {
@@ -44,6 +51,23 @@ export async function localgenHealth() {
     const r = await fetch(`${ENV.localgenUrl}/health`, { signal: AbortSignal.timeout(3000) });
     return r.ok ? await r.json() : { ok: false };
   } catch { return { ok: false }; }
+}
+
+// Honest provider badge — resolved from the live /health `model` field
+// ('stabilityai/sdxl-turbo' → 'local-sdxl-turbo'). Cached once the model is
+// known (it doesn't change under a running process); while health is
+// unreachable nothing is cached and the label falls back to plain 'local'.
+let localProviderCached;
+async function localProviderTag() {
+  if (localProviderCached === undefined) {
+    const h = await localgenHealth().catch(() => null);
+    if (h?.ok && h.model) {
+      const short = String(h.model).split('/').pop().toLowerCase()
+        .replace(/[^a-z0-9.-]+/g, '-').replace(/^-+|-+$/g, '');
+      localProviderCached = short ? `local-${short}` : 'local';
+    }
+  }
+  return localProviderCached || 'local';
 }
 
 // pollinations.ai — no key needed; GET returns image bytes. ~10-30s.
@@ -74,26 +98,31 @@ export async function ffmpegAnimate(imageWebPath, { aspectRatio = '9:16', second
 
 // --- resilient wrappers: try the paid models first, fall back honestly ---
 
-// returns { path, provider: 'local'|'gemini'|'pollinations' } — throws if all fail.
+// returns { path, provider: 'local-<model>'|'local'|'gemini'|'pollinations' } — throws if all fail.
 // Provider order follows ENV.localgenProvider: 'local-first' (default in .env)
 // puts the on-GPU model first; 'local-only' pins it; 'fallback' keeps gemini
 // primary and uses local as the quota escape hatch; 'off' disables it.
 export async function genImageResilient(prompt, opts = {}) {
   const mode = ENV.localgenProvider || 'off';
   const useLocal = mode !== 'off' && !!ENV.localgenUrl;
-  const chain = opts.provider && opts.provider !== 'auto'
+  const hasRefs = !!(opts.refs?.length || opts.images?.length);
+  const chain = (opts.provider && opts.provider !== 'auto'
     ? [opts.provider]                                   // user-picked engine (e.g. "try gemini instead")
     : mode === 'local-only' ? ['local']
     : mode === 'local-first' && useLocal ? ['local', 'gemini', 'pollinations']
     : mode === 'fallback' && useLocal ? ['gemini', 'local', 'pollinations']
-    : ['gemini', 'pollinations'];
+    : ['gemini', 'pollinations'])
+    // local is pure txt2img — with a reference image it would return an
+    // unrelated generation; drop it from auto chains so the ref-capable
+    // provider actually does the reframe/edit the caller asked for.
+    .filter((p) => !(p === 'local' && hasRefs && opts.provider !== 'local'));
   const errs = [];
   for (const p of chain) {
     try {
       const path = p === 'local' ? await localgenImage(prompt, opts)
         : p === 'gemini' ? await genImage(prompt, opts)
         : await pollinationsImage(prompt, opts);
-      return { path, provider: p === 'local' ? 'local-sd-turbo' : p, note: errs.length ? `after: ${errs.join(' | ')}` : undefined };
+      return { path, provider: p === 'local' ? await localProviderTag() : p, note: [p === 'local' && hasRefs ? 'reference image ignored — local engine is text-to-image only' : null, errs.length ? `after: ${errs.join(' | ')}` : null].filter(Boolean).join(' · ') || undefined };
     } catch (e) {
       errs.push(`${p}(${String(e.message || e).slice(0, 110)})`);
     }

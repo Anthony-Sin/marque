@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef, createContext, useContext } from 'r
 import { Routes, Route, useNavigate, useLocation, Navigate, NavLink } from 'react-router-dom';
 import api from './api.js';
 import Icon, { Logo } from './components/Icon.jsx';
-import Wayfind from './components/Wayfind.jsx';
 import Onboarding from './views/Onboarding.jsx';
 import DashboardPage from './views/Dashboard.jsx';
 import StrategyPage from './views/Strategy.jsx';
@@ -13,15 +12,39 @@ import BrandBookPage from './views/BrandBook.jsx';
 export const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
 
-// Floating brand mark — pinned top-right on every page, out of the layout
-// flow so it never cuts into content. Section links live inside the workflow.
-function BrandMark() {
+// Nav rail — the deck's always-on instrument strip. One icon+label per surface;
+// gated sections stay visible but dimmed until a strategy board exists.
+const RAIL = [
+  { to: '/dashboard', icon: 'layout', label: 'deck' },
+  { to: '/strategy', icon: 'sparkle', label: 'board' },
+  { to: '/campaigns', icon: 'campaign', label: 'output', gate: true },
+  { to: '/websites', icon: 'site', label: 'sites', gate: true },
+  { to: '/brandbook', icon: 'book', label: 'book', gate: true },
+];
+function Rail() {
+  const { hasStrategy, status } = useApp();
+  const live = status?.qloo === 'live';
   return (
-    <NavLink to="/dashboard" className="brandmark" title="Marque Studio — dashboard">
-      <Logo size={20} />
-      <span className="topnav-brand-name">Marque</span>
-      <span className="topnav-brand-tag">STUDIO</span>
-    </NavLink>
+    <nav className="rail" aria-label="Studio sections">
+      <NavLink to="/dashboard" className="rail-brand" title="Marque Studio — dashboard">
+        <Logo size={26} />
+        <span className="rail-brand-name">MARQUE</span>
+      </NavLink>
+      <div className="rail-nav">
+        {RAIL.map((r) => (
+          <NavLink key={r.to} to={r.to}
+            className={({ isActive }) => `rail-link${isActive ? ' on' : ''}${r.gate && !hasStrategy ? ' locked' : ''}`}
+            title={r.gate && !hasStrategy ? `${r.label} — unlocks with a strategy board` : r.label}>
+            <Icon name={r.gate && !hasStrategy ? 'lock' : r.icon} size={17} />
+            <span className="rl-lbl">{r.label}</span>
+          </NavLink>
+        ))}
+      </div>
+      <div className="rail-foot" title={live ? 'Qloo taste graph — live' : 'Qloo — offline / demo'}>
+        <span className={`rail-lamp${live ? '' : ' off'}`} />
+        <span className="rl-lbl">{live ? 'qloo live' : 'qloo'}</span>
+      </div>
+    </nav>
   );
 }
 
@@ -29,17 +52,14 @@ function BrandMark() {
 function LockedScreen() {
   const nav = useNavigate();
   return (
-    <>
-      <div className="section"><Wayfind /></div>
-      <div className="locked-wrap" style={{ paddingTop: 60 }}>
-        <div className="locked-ic"><Icon name="lock" size={26} /></div>
-        <h2 className="display">Locked</h2>
-        <p>Generate a strategy on the Strategy board first — this section unlocks once your board exists.</p>
-        <button className="btn lime" onClick={() => nav('/strategy')}>
-          <Icon name="sparkle" size={15} /> Go to Strategy
-        </button>
-      </div>
-    </>
+    <div className="locked-wrap">
+      <div className="locked-ic"><Icon name="lock" size={26} /></div>
+      <h2 className="display">Locked</h2>
+      <p>Generate a strategy on the Strategy board first — this section unlocks once your board exists.</p>
+      <button className="btn lime" onClick={() => nav('/strategy')}>
+        <Icon name="sparkle" size={15} /> Go to Strategy
+      </button>
+    </div>
   );
 }
 
@@ -52,7 +72,7 @@ function Gate({ board, onRetry, children }) {
   }
   if (board === 'error') {
     return (
-      <div className="locked-wrap" style={{ paddingTop: 60 }}>
+      <div className="locked-wrap">
         <div className="locked-ic"><Icon name="refresh" size={26} /></div>
         <h2 className="display">Can't reach the studio</h2>
         <p>The strategy board didn't respond — check the server and try again.</p>
@@ -120,8 +140,8 @@ export default function App() {
 
   return (
     <Ctx.Provider value={ctx}>
-      <div className="shell">
-        {inApp && loc.pathname !== '/onboarding' && <BrandMark />}
+      <div className={`shell${inApp && loc.pathname !== '/onboarding' ? '' : ' no-rail'}`}>
+        {inApp && loc.pathname !== '/onboarding' && <Rail />}
         <div className="main">
           {profile === undefined ? (
             <div className="loading-wrap"><div className="spinner" /></div>

@@ -301,9 +301,9 @@ const DETAIL_CACHE = new Map();
 const ytIdOf = (u) => (String(u || '').match(/(?:youtube\.com\/(?:watch\?[^&]*v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/) || [])[1] || '';
 const tkIdOf = (u) => (String(u || '').match(/tiktok\.com\/(?:@[\w.-]+\/video\/|player\/v1\/)(\d+)/) || [])[1] || '';
 
-const SRC_LABEL = { scraped: 'scraped', 'catalog-art': 'catalog art', 'concept-art': 'concept art' };
+const SRC_LABEL = { scraped: 'from the web', 'catalog-art': 'catalog art', 'concept-art': 'concept art' };
 
-import { chanLabel } from '../labels.js';
+import { chanLabel, epLabel } from '../labels.js';
 
 // the ask minus imperative + audience tails → a clean product/subject phrase
 const cleanAsk = (raw) => (String(raw || '').split('→')[0]
@@ -349,7 +349,7 @@ function WildCard({ e, i, sel, onToggle }) {
       <span className="stg-wx-body stg-fill">
         <span className="stg-wx-plat">
           <Icon name={chanIcon(e.platform)} size={12} />{chanLabel(e.platform) || e.platform || 'web'}
-          <span className={`stg-src ${e.source || 'scraped'}`}>{SRC_LABEL[e.source] || e.source || 'scraped'}</span>
+          <span className={`stg-src ${e.source || 'scraped'}`}>{SRC_LABEL[e.source] || e.source || 'from the web'}</span>
         </span>
         <span className="stg-wx-title">{e.title}</span>
         {!!e.match && <span className="stg-wx-match" title={e.match}>{e.match}</span>}
@@ -742,9 +742,9 @@ export default function Strategy() {
   const provBits = [];
   if (ev.qlooMode && ev.qlooMode !== 'none') provBits.push('Qloo taste graph');
   if (calls.length) provBits.push(`${calls.length} call${calls.length === 1 ? '' : 's'}`);
-  if (ev.qlooMode && ev.qlooMode !== 'none') provBits.push(`${ev.qlooMode} mode`);
+  if (ev.qlooMode && ev.qlooMode !== 'none') provBits.push(`${ev.qlooMode} data`);
   if (ev.source) provBits.push(ev.source === 'tensor' ? 'Marque strategy model' : 'rule-based strategy model');
-  if ((sub?.url || res?.sub?.url) && !res?.urlContext?.scrapeFailed) provBits.push('site scrape');
+  if ((sub?.url || res?.sub?.url) && !res?.urlContext?.scrapeFailed) provBits.push('site context');
 
   // fetch-on-click: the slim board card doesn't carry brief/watchouts/fit likes —
   // opening /strategy/:idx fires the real fetch and the skeleton holds the gap.
@@ -861,7 +861,7 @@ export default function Strategy() {
   const qTop = [...entRows].sort((a, b) => b.affinity - a.affinity).slice(0, 3);
   const qChans = chans.slice(0, 3).map((c) => chanLabel(c.name));
   const detCalls = detEv.calls || [];
-  const detSources = [...new Set(detCalls.map((c) => c.endpoint).filter(Boolean))];
+  const detSources = [...new Set(detCalls.map((c) => c.endpoint).filter(Boolean).map(epLabel))];
 
   // "What we ruled out" — the board's antiStrategies, else derive from fit priors
   const anti = useMemo(() => {
@@ -924,7 +924,7 @@ export default function Strategy() {
   );
 
   return (
-    <div className={`section stg-wrap${isDetail && cur ? ' detail-open' : ''}`}>
+    <div className={`section view stg-wrap${isDetail && cur ? ' detail-open' : ''}`}>
       {!profile ? (
         <>
           <Wayfind />
@@ -1002,17 +1002,23 @@ export default function Strategy() {
                     onBlur={() => setRenaming(false)}
                   />
                 ) : (boards || []).length > 1 ? (
-                  // real switcher — the row looks like a picker, so make it one
-                  <select className="stg-plan-switch display" value={res.id || ''}
-                    onChange={async (e) => {
-                      const b = await openBoard(e.target.value).catch(() => null);
-                      if (b) { setResL(b); nav('/strategy'); }
-                    }}>
-                    {(boards || []).map((b) => <option key={b.id} value={b.id}>{b.title || 'Untitled plan'}</option>)}
-                  </select>
+                  // real switcher — the visible title ellipsizes (selects can't),
+                  // the transparent <select> on top catches the interaction
+                  <span className="stg-switch-wrap" title={res.title || 'Strategy board'}>
+                    <span className="stg-plans-title display" aria-hidden="true">
+                      <span className="stg-plans-txt">{res.title || 'Strategy board'}</span><span className="stg-switch-caret" />
+                    </span>
+                    <select className="stg-plan-switch" value={res.id || ''} aria-label="Switch plan"
+                      onChange={async (e) => {
+                        const b = await openBoard(e.target.value).catch(() => null);
+                        if (b) { setResL(b); nav('/strategy'); }
+                      }}>
+                      {(boards || []).map((b) => <option key={b.id} value={b.id}>{b.title || 'Untitled plan'}</option>)}
+                    </select>
+                  </span>
                 ) : (
-                  <span className="stg-plans-title display">
-                    {res.title || 'Strategy board'}
+                  <span className="stg-plans-title display" title={res.title || 'Strategy board'}>
+                    <span className="stg-plans-txt">{res.title || 'Strategy board'}</span>
                   </span>
                 )}
                 {!renaming && !!res.id && (
@@ -1202,11 +1208,11 @@ export default function Strategy() {
                     <span className="stg-ml">Data sources</span>
                     <div className="stg-srcs" style={{ marginTop: 7 }}>
                       {!!ev.qlooMode && ev.qlooMode !== 'none' && (
-                        <span className="stg-src-item"><Icon name="qloo" size={11} />{ev.qlooMode === 'live' ? 'Qloo taste graph · live' : `Qloo · ${ev.qlooMode}`}</span>
+                        <span className="stg-src-item"><Icon name="qloo" size={11} /><span className="stg-src-txt">{ev.qlooMode === 'live' ? 'audience data · live' : `audience data · ${ev.qlooMode}`}</span></span>
                       )}
-                      <span className="stg-src-item"><Icon name="sparkle" size={11} />{ev.source === 'tensor' ? 'Marque strategy model' : 'rule-based strategy model'}</span>
+                      <span className="stg-src-item"><Icon name="sparkle" size={11} /><span className="stg-src-txt">{ev.source === 'tensor' ? 'Marque strategy model' : 'rule-based strategy model'}</span></span>
                       {!!(sub?.url || res?.sub?.url) && (
-                        <span className="stg-src-item"><Icon name="globe" size={11} />{res?.urlContext?.scrapeFailed ? 'site unreachable' : 'site scrape'} · {host(sub?.url || res?.sub?.url)}</span>
+                        <span className="stg-src-item"><Icon name="globe" size={11} /><span className="stg-src-txt">{res?.urlContext?.scrapeFailed ? 'site unreachable' : 'your site'} · {host(sub?.url || res?.sub?.url)}</span></span>
                       )}
                       <span className="stg-src-item"><Icon name="film" size={11} />reference pulls on demand</span>
                     </div>
@@ -1276,7 +1282,7 @@ export default function Strategy() {
                             <span className="stg-pick-angle stg-fill" style={{ '--fo': '150ms' }}>{s.angle}</span>
                           )}
                           <span className="stg-pick-why stg-fill" style={{ '--fo': '170ms' }}>
-                            <span className="stg-pick-why-lbl">Qloo pull</span>
+                            <span className="stg-pick-why-lbl">Audience pull</span>
                             {pull.length ? pull.join(' · ') : 'broad affinities'}
                             {' → '}
                             {lean.label || 'audience'}
@@ -1517,7 +1523,7 @@ export default function Strategy() {
                   {(!!entGroups.length || !!detEv.qlooEvidence?.length) && (
                     <div className="stg-qread">
                       <div className="stg-tile-head">
-                        <span className="stg-ml">Qloo read</span>
+                        <span className="stg-ml">Audience read</span>
                         <span className="stg-prov" title="Where this evidence came from">
                           <Icon name="qloo" size={10} />
                           <span>

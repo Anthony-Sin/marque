@@ -6,3 +6,7 @@ export const chanLabel = (n) => {
   // enum-ish names like "instagram_reels" → "Instagram Reels"
   return String(n || '').replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 };
+
+// Qloo call endpoints → what the call actually did (raw path stays as detail)
+const EP_LABEL = { '/search': 'entity search', '/v2/tags': 'tag lookup', '/v2/insights': 'affinity insights' };
+export const epLabel = (ep) => EP_LABEL[ep] || String(ep || '').replace(/^\/(v\d+\/)?/, '') || 'qloo call';

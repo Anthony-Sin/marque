@@ -5,7 +5,6 @@ import { useApp } from '../App.jsx';
 import Icon from '../components/Icon.jsx';
 import VersionTabs from '../components/VersionTabs.jsx';
 import PublishBar from '../components/PublishBar.jsx';
-import Wayfind from '../components/Wayfind.jsx';
 import { QlooBadge } from '../components/Qloo.jsx';
 import { useStages, fmtDate } from '../components/Composer.jsx';
 import './studio.css';
@@ -150,109 +149,137 @@ export default function Websites() {
   const impComps = Array.isArray(imp?.competitors) ? imp.competitors : [];
 
   const renderImprove = () => (
-    <div className="imp-wrap">
-      <div className="card imp-ask">
-        <h3 className="display">Site audit</h3>
-        <p className="muted small">
-          We scrape your live site, check which socials it links, then rank concrete fixes —
-          benchmarked against the brands your audience already loves.
-        </p>
-        <div className="imp-ask-row">
-          <span className="imp-urlwrap">
-            <Icon name="globe" size={14} />
-            <input
-              value={impUrl}
-              placeholder="https://yoursite.com"
-              onChange={(e) => setImpUrl(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') analyze(); }}
-            />
-          </span>
-          <button className="btn lime" disabled={impBusy} onClick={analyze}>
-            {impBusy ? <span className="spinner" /> : <Icon name="sparkle" />}
-            {impBusy ? 'Analyzing…' : 'Analyze vs competitors'}
-          </button>
-        </div>
-        {!imp && !impBusy && (
-          <div className="imp-checks">
-            <div className="imp-check"><Icon name="globe" size={14} /><b>Scrape</b><span>Page copy, structure & social links</span></div>
-            <div className="imp-check"><Icon name="qloo" size={14} /><b>Benchmark</b><span>Against brands your audience loves</span></div>
-            <div className="imp-check"><Icon name="check" size={14} /><b>Fix list</b><span>Ranked by impact × effort</span></div>
-          </div>
-        )}
-      </div>
-
-      {impBusy && (
-        <div className="gen-note"><span className="spinner" />{impStage}</div>
-      )}
-
-      {impErr && !impBusy && (
-        <div className="imp-err">
-          <Icon name="x" size={14} /> Couldn't analyze that site — {impErr}
-          <button className="btn ghost sm" onClick={analyze}><Icon name="refresh" size={13} /> Retry</button>
-        </div>
-      )}
-
-      {imp && !impBusy && (
-        <>
-          <div className="muted small" style={{ margin: '-4px 0 4px' }}>
-            Audit of {imp.url || 'your site'}{imp.at ? ` · from ${fmtDate(imp.at)}` : ''}
-          </div>
-          {(!!impSocials.length || !!impMissing.length) && (
-            <div className="card pad imp-soc-card">
-              <div className="section-label" style={{ margin: '0 0 12px' }}>Socials</div>
-              <div className="chip-row">
-                {impSocials.map(([plat, href]) => (
-                  <a key={plat} className="imp-soc" href={absUrl(href)} target="_blank" rel="noopener noreferrer">
-                    <Icon name={socIcon(plat)} size={13} /> {plat}
-                  </a>
-                ))}
-                {impMissing.map((p) => (
-                  <span key={p} className="imp-miss" title={`Link ${cap(p)} on your site so we can plan for it`}>
-                    <Icon name="x" size={11} /> No {cap(p)} linked on your site
-                  </span>
-                ))}
+    <div className="cp-split ws-split">
+      <section className="card hud cp-panel ws-rail">
+        <div className="zone-head"><span className="z-id">AUD</span>Site audit</div>
+        <div className="cp-panel-body">
+          <div className="imp-ask">
+            <p className="muted small">
+              We scrape your live site, check which socials it links, then rank concrete fixes —
+              benchmarked against the brands your audience already loves.
+            </p>
+            <div className="imp-ask-row">
+              <span className="imp-urlwrap">
+                <Icon name="globe" size={14} />
+                <input
+                  value={impUrl}
+                  placeholder="https://yoursite.com"
+                  onChange={(e) => setImpUrl(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') analyze(); }}
+                />
+              </span>
+              <button className="btn lime" disabled={impBusy} onClick={analyze}>
+                {impBusy ? <span className="spinner" /> : <Icon name="sparkle" />}
+                {impBusy ? 'Analyzing…' : 'Analyze vs competitors'}
+              </button>
+            </div>
+            {!imp && !impBusy && (
+              <div className="imp-checks">
+                <div className="imp-check"><Icon name="globe" size={14} /><b>Scrape</b><span>Page copy, structure & social links</span></div>
+                <div className="imp-check"><Icon name="qloo" size={14} /><b>Benchmark</b><span>Against brands your audience loves</span></div>
+                <div className="imp-check"><Icon name="check" size={14} /><b>Fix list</b><span>Ranked by impact × effort</span></div>
               </div>
+            )}
+          </div>
+
+          {impBusy && (
+            <div className="gen-note"><span className="spinner" />{impStage}</div>
+          )}
+
+          {impErr && !impBusy && (
+            <div className="imp-err">
+              <Icon name="x" size={14} /> Couldn't analyze that site — {impErr}
+              <button className="btn ghost sm" onClick={analyze}><Icon name="refresh" size={13} /> Retry</button>
             </div>
           )}
 
-          {!!impSugs.length && (
-            <div>
-              <div className="section-label">Fix list — ranked by impact</div>
-              <div className="grid c2">
-                {impSugs.map((s, i) => (
-                  <div key={i} className="card imp-sug">
-                    <div className="imp-sug-top">
-                      <span className="imp-area">{s.area || 'site'}</span>
-                      <span className="imp-badges">
-                        {!!s.impact && <span className={`imp-badge impact-${String(s.impact).toLowerCase()}`}>impact {s.impact}</span>}
-                        {!!s.effort && <span className="imp-badge">effort {s.effort}</span>}
+          {imp && !impBusy && (
+            <>
+              <div className="muted small">
+                Audit of {imp.url || 'your site'}{imp.at ? ` · from ${fmtDate(imp.at)}` : ''}
+              </div>
+              {(!!impSocials.length || !!impMissing.length) && (
+                <div className="card pad imp-soc-card">
+                  <div className="section-label" style={{ margin: '0 0 12px' }}>Socials</div>
+                  <div className="chip-row">
+                    {impSocials.map(([plat, href]) => (
+                      <a key={plat} className="imp-soc" href={absUrl(href)} target="_blank" rel="noopener noreferrer">
+                        <Icon name={socIcon(plat)} size={13} /> {plat}
+                      </a>
+                    ))}
+                    {impMissing.map((p) => (
+                      <span key={p} className="imp-miss" title={`Link ${cap(p)} on your site so we can plan for it`}>
+                        <Icon name="x" size={11} /> No {cap(p)} linked on your site
                       </span>
-                    </div>
-                    {!!s.fix && <div className="imp-fix">{s.fix}</div>}
-                    {!!s.why && <div className="imp-why">{s.why}</div>}
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              )}
+
+              {!!impSteals.length && (
+                <div className="card pad imp-steal-card">
+                  <div className="section-label" style={{ margin: '0 0 6px' }}>What to steal</div>
+                  {impSteals.map((n, i) => (
+                    <div className="imp-steal" key={i}>
+                      <b>What to steal from {n.brand}</b>
+                      <span>{n.steal}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {!!impComps.length && (
+                <div className="imp-note">Benchmarked against: {impComps.join(', ')}</div>
+              )}
+            </>
           )}
 
-          {!!impSteals.length && (
-            <div className="card pad imp-steal-card">
-              <div className="section-label" style={{ margin: '0 0 6px' }}>What to steal</div>
-              {impSteals.map((n, i) => (
-                <div className="imp-steal" key={i}>
-                  <b>What to steal from {n.brand}</b>
-                  <span>{n.steal}</span>
-                </div>
+          {/* what's already on record — real sites, real publish state */}
+          {Array.isArray(sites) && !!sites.length && (
+            <div className="ws-sites">
+              <div className="imp-lab">Sites on record</div>
+              {[...sites].reverse().slice(0, 4).map((s, i) => (
+                <button key={s.id} type="button" className="ws-site-row"
+                  title="Open this site in the generator"
+                  onClick={() => { setTab('site'); setSiteId(s.id); setVid(null); }}>
+                  <span className="ws-site-name">
+                    Site {sites.length - i}{s.producedFrom?.campaignTitle ? ` — ${s.producedFrom.campaignTitle}` : ''}
+                  </span>
+                  <span className="ws-site-meta">
+                    {fmtDate(s.createdAt)}{s.publishedSlug ? ` · live /s/${s.publishedSlug}` : ' · not published'}
+                  </span>
+                </button>
               ))}
             </div>
           )}
-
-          {!!impComps.length && (
-            <div className="imp-note">Benchmarked against: {impComps.join(', ')}</div>
+        </div>
+      </section>
+      <section className="card hud cp-panel ws-fix">
+        <div className="zone-head"><span className="z-id">FIX</span>Fix list — ranked by impact{!!impSugs.length && <span className="z-tag">{impSugs.length}</span>}</div>
+        <div className="cp-panel-body">
+          {!!impSugs.length ? (
+            <div className="grid c2">
+              {impSugs.map((s, i) => (
+                <div key={i} className="card imp-sug">
+                  <div className="imp-sug-top">
+                    <span className="imp-area">{s.area || 'site'}</span>
+                    <span className="imp-badges">
+                      {!!s.impact && <span className={`imp-badge impact-${String(s.impact).toLowerCase()}`}>impact {s.impact}</span>}
+                      {!!s.effort && <span className="imp-badge">effort {s.effort}</span>}
+                    </span>
+                  </div>
+                  {!!s.fix && <div className="imp-fix">{s.fix}</div>}
+                  {!!s.why && <div className="imp-why">{s.why}</div>}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="empty">
+              <p>{impBusy ? 'Audit running — fixes will land here ranked by impact.' : 'Run an audit to populate a ranked fix list.'}</p>
+            </div>
           )}
-        </>
-      )}
+        </div>
+      </section>
     </div>
   );
 
@@ -271,7 +298,7 @@ export default function Websites() {
 
     if (sites === null) {
       return (
-        <>
+        <div className="site-view">
           <div className="ver-tabs">
             {[0, 1, 2].map((i) => (
               <span key={i} className="ver-tab" style={{ cursor: 'default' }}>
@@ -280,8 +307,8 @@ export default function Websites() {
               </span>
             ))}
           </div>
-          <span className="skel" style={{ height: '62vh', borderRadius: 16, display: 'block' }} />
-        </>
+          <span className="skel" style={{ flex: 1, minHeight: 0, borderRadius: 16, display: 'block' }} />
+        </div>
       );
     }
 
@@ -309,7 +336,7 @@ export default function Websites() {
     }
 
     return (
-      <>
+      <div className="site-view">
         <div className="row wrap" style={{ justifyContent: 'flex-end', marginBottom: 4, alignItems: 'center' }}>
           {sites.length > 1 && (
             <select
@@ -326,7 +353,7 @@ export default function Websites() {
               ))}
             </select>
           )}
-          <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Qloo API" />
+          <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Taste graph" />
         </div>
 
         <VersionTabs
@@ -386,7 +413,7 @@ export default function Websites() {
           )}
         </div>
 
-        <div className="mt16">
+        <div className="mt8">
           <PublishBar
             publishedSlug={site.publishedSlug}
             base="/s/"
@@ -396,24 +423,24 @@ export default function Websites() {
             onUnpublish={unpublish}
           />
         </div>
-      </>
+      </div>
     );
   };
 
   return (
-    <div className="section" style={{ paddingBottom: 80 }}>
-      <Wayfind />
-      <div className="page-head" style={{ paddingBottom: 18 }}>
-        <h1 className="display">Websites</h1>
-        <p className="sub">Audit your live site against competitors — or generate a new one from your Business Profile.</p>
-      </div>
-
-      <div className="row" style={{ justifyContent: 'center', marginBottom: 20 }}>
-        <div className="seg-tabs" role="tablist" aria-label="Websites sections">
-          <button role="tab" aria-selected={tab === 'improve'} className={tab === 'improve' ? 'on' : ''}
-            onClick={() => setTab('improve')}>Improve my site</button>
-          <button role="tab" aria-selected={tab === 'site'} className={tab === 'site' ? 'on' : ''}
-            onClick={() => setTab('site')}>Your website</button>
+    <div className="section view ws-view">
+      <div className="view-head">
+        <div className="vh-main">
+          <h1 className="display">Websites</h1>
+          <p className="sub">Audit your live site against competitors — or generate a new one from your Business Profile.</p>
+        </div>
+        <div className="vh-side">
+          <div className="seg-tabs" role="tablist" aria-label="Websites sections">
+            <button role="tab" aria-selected={tab === 'improve'} className={tab === 'improve' ? 'on' : ''}
+              onClick={() => setTab('improve')}>Improve my site</button>
+            <button role="tab" aria-selected={tab === 'site'} className={tab === 'site' ? 'on' : ''}
+              onClick={() => setTab('site')}>Your website</button>
+          </div>
         </div>
       </div>
 
