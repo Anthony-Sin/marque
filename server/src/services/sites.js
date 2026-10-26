@@ -35,7 +35,16 @@ Requirements:
 - Tone of voice must match the brand's tone keywords. Mobile-responsive, generous whitespace, rounded cards.`;
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const clip = (v, n) => { const s = String(v ?? '').replace(/\s+/g, ' ').trim(); return s ? s.slice(0, n) : null; };
+// clip: never ship a mid-word cut — snap back to the last word boundary
+// (kept ≥60% of the limit so we don't gut copy that starts with one long word)
+const clip = (v, n) => {
+  const s = String(v ?? '').replace(/\s+/g, ' ').trim();
+  if (!s) return null;
+  if (s.length <= n) return s;
+  const cut = s.slice(0, n);
+  const sp = cut.lastIndexOf(' ');
+  return (sp >= n * 0.6 ? cut.slice(0, sp) : cut).trimEnd();
+};
 
 // ---------------- render-input snapshot ----------------
 // Everything the template needs, frozen on the version so a published page
@@ -373,7 +382,7 @@ export function renderSiteHTML(site) {
     <div class="h-copy">
       <div class="h-core">
       ${hero.kicker ? `<div class="kick ${heroSplit ? '' : 'center'}"><i></i><span>${esc(hero.kicker)}</span></div>` : ''}
-      <h1>${esc(hero.headline || brand.tagline || name)}</h1>
+      <h1 class="${(() => { const t = hero.headline || brand.tagline || name || ''; return t.length > 90 ? 'hl-long' : t.length > 58 ? 'hl-mid' : ''; })()}">${esc(hero.headline || brand.tagline || name)}</h1>
       ${hero.sub ? `<p class="lede">${esc(hero.sub)}</p>` : ''}
       <div class="acts">${hero.cta ? `<a class="btn" href="${esc(ctaHref)}">${esc(hero.cta)}</a>` : ''}${heroGhost}</div>
       </div>
@@ -597,7 +606,8 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
   .track{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;scroll-padding-left:0;scrollbar-width:thin;scrollbar-color:var(--mut) transparent}
   .panel{flex:none;width:100vw;min-width:100vw;height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;overflow-x:hidden;overflow-y:auto;scrollbar-width:thin}
   .panel+.panel{border-left:1px solid var(--line)}
-  .panel>.wrap{width:100%;margin-top:auto;margin-bottom:auto}
+  /* right pad clears the fixed .dots rail + its hover labels */
+  .panel>.wrap{width:100%;margin-top:auto;margin-bottom:auto;padding-right:clamp(5rem,8vw,8.5rem)}
   .panel.sec{padding-block:0}
   .sec.panel>.wrap,.band.panel>.wrap,.cta.panel>.wrap,.foot.panel>.wrap{padding-block:clamp(1.4rem,4vh,3rem)}
   .foot.panel{border-top:0}
@@ -605,6 +615,8 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
   .hp .hero .wrap{width:100%;margin-top:auto;margin-bottom:auto}
   .hp .strip{flex:none}
   .panel .hero h1{font-size:clamp(2.9rem,6.8vw,6.8rem)}
+  .panel .hero h1.hl-mid{font-size:clamp(2.4rem,5.4vw,5.2rem)}
+  .panel .hero h1.hl-long{font-size:clamp(1.9rem,4.2vw,4rem)}
   .panel .lede{margin-top:1.2rem}
   .panel .acts{margin-top:clamp(1.4rem,3.5vh,2.4rem)}
   .panel .hmeta{padding-top:clamp(1.4rem,4vh,3rem)}
