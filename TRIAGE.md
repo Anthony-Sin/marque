@@ -345,3 +345,12 @@ Counts: HIGH 3 · MED 7 · LOW 4
 - Walk: /dashboard → /strategy/<board> (moodboard rail, fit scores) → strategy detail (real hunts, ≤90s partial-honest) → /campaigns?open=229d419b (can-on-ice creatives, motion renders) → /shoots (6 real shoots) → /websites → /s/liquid-death + /s/fern-matcha published → /brandbook → /b/book-9d8ee960 published → /profile (LD coherent, taste-off honest).
 - Provider honesty: text brain = devin-cli (tensor key dead ~23h, auto-fallback); images = local SDXL-Turbo (:8807, watchdog-restart ~54s, deep-check ~10min); video = ffmpeg (veo deprecated upstream); Qloo = live. Status LEDs report all of it truthfully.
 - Known honest gaps: /brandbook Imagery page empty (book.images=[]); Olipop bare-board 404 by design; 'Acumin Pro' font CDN may 404 → Georgia fallback.
+
+### Overlay-stack wave (~05:35–05:45, 7019855)
+- focus.js exports `isTopOverlay(root)` — the same stack that owns the Tab trap now gates every Escape: Modal, CreativeCard zoom, EvidenceDrawer, CreativeEditor, Photoshoot detail, Strategy lightbox. One Esc = one peel (was: every open veil raced the same keydown). Verified live editor+drawer: Esc1→drawer only, Esc2→editor.
+- ⌘K mutating actions armed: 'Run site audit' + non-active board rows now `↵ again runs it` instead of POSTing on first Enter (the silent activateBoard drift source). Verified: armed veil, zero posts, Enter2 fires once.
+- `.ck-item` tabIndex=-1 (focus stays on combobox input, aria-activedescendant owns the beam).
+- Drawer z-index 95→310 — palette-launched evidence drawer painted invisibly under lightbox/modal veils (z300); verified visible above strategy surface.
+- CreativeEditor veil `e.target===e.currentTarget` guard — drawer clicks no longer bubble-close the editor.
+- Strategy mount drops duplicate /api/boards (d016535) — App ctx already loads it.
+- Post-merge verify: smoke 27/27, cold-open 16/16 dev+prod clean, palette→drawer z-order + arm gates confirmed in real Chromium.
