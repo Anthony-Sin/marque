@@ -282,12 +282,15 @@ export default function CreativeCard({ creative, aspect = '1:1', campaign, anima
           </span>
         )}
 
-        <span className="grade" role="radiogroup" aria-label="Grade this creative"
+        {/* a labelled button row, not a radiogroup: APG radios would check on
+            arrow navigation, and every check is a real PATCH — five stops of
+            toggle buttons say exactly what each press does instead */}
+        <span className="grade" role="group" aria-label="Grade this creative"
           title={grade ? `Grade ${grade}/5` : 'Not graded'}>
           {[1, 2, 3, 4, 5].map((n) => (
             <button key={n} type="button"
               className={`grade-star${grade >= n ? ' on' : ''}`}
-              aria-label={`${n} star${n > 1 ? 's' : ''}`} aria-checked={grade === n} role="radio"
+              aria-label={`${n} star${n > 1 ? 's' : ''}`} aria-pressed={grade === n}
               onClick={() => rate(n)}>★</button>
           ))}
         </span>

@@ -601,6 +601,8 @@ export default function CommandPalette({ open, onClose }) {
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); onClose(); }
       else if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); disarm(); setNavIdx(flat.length ? (sel + 1) % flat.length : null); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); disarm(); setNavIdx(flat.length ? (sel - 1 + flat.length) % flat.length : null); }
+      else if (e.key === 'Home') { e.preventDefault(); e.stopPropagation(); disarm(); setNavIdx(flat.length ? 0 : null); }
+      else if (e.key === 'End') { e.preventDefault(); e.stopPropagation(); disarm(); setNavIdx(flat.length ? flat.length - 1 : null); }
       else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); if (flat[sel] || flat[0]) pick(flat[sel] || flat[0]); }
       else return;
     };
@@ -629,6 +631,11 @@ export default function CommandPalette({ open, onClose }) {
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Jump to a plan, campaign, site — or fire an action…"
                 aria-label="Command palette"
+                role="combobox"
+                aria-expanded="true"
+                aria-controls="ck-list"
+                aria-autocomplete="list"
+                aria-activedescendant={sel >= 0 ? `ck-opt-${sel}` : undefined}
                 autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
               />
               <span className="ck-count">{flat.length || '—'} hit{flat.length === 1 ? '' : 's'}</span>
@@ -654,7 +661,7 @@ export default function CommandPalette({ open, onClose }) {
                 </span>
               </div>
             )}
-            <div className="ck-list" ref={listRef} role="listbox">
+            <div className="ck-list" ref={listRef} role="listbox" id="ck-list">
               {!flat.length && (
                 <div className="ck-empty">No match — try a plan, campaign or action</div>
               )}
@@ -666,6 +673,7 @@ export default function CommandPalette({ open, onClose }) {
                   </div>
                   {g.items.map((it) => (
                     <button key={it.id} type="button" role="option" aria-selected={it.gi === sel}
+                      id={`ck-opt-${it.gi}`}
                       className={`ck-item${it.gi === sel ? ' on' : ''}`}
                       onMouseEnter={() => setNavIdx(it.gi)}
                       onMouseDown={(e) => e.preventDefault()}

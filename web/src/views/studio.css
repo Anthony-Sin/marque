@@ -143,6 +143,7 @@
 .creative-card .badge-v {
   /* below the overlay brand lockup (~10cqw tall) so neither covers the other */
   position: absolute; top: calc(11cqw + 6px); left: 10px; z-index: 2;
+  min-height: 24px;                     /* WCAG 2.5.8 target size */
   background: rgba(20,20,20,.78); color: var(--lime); font-size: 10.5px; font-weight: 700;
   padding: 3px 9px; border-radius:0; display: inline-flex; gap: 5px; align-items: center;
   border: 1px solid rgba(255,176,58,.35); cursor: pointer;
@@ -184,7 +185,8 @@
 /* 1–5 grade control on each creative card */
 .creative-card .grade { display: inline-flex; gap: 2px; flex: none; }
 .grade-star {
-  background: none; border: none; padding: 5px 4px; line-height: 1; margin: -5px -4px;
+  background: none; border: none; padding: 5px 5px; line-height: 1; margin: -5px -5px;
+  min-width: 24px; min-height: 24px;   /* WCAG 2.5.8 target size */
   font-size: 14px; color: var(--ink-4); cursor: pointer;
   transition: color .12s, transform .12s;
 }
@@ -492,6 +494,7 @@
 
 /* ---------- publish bar ---------- */
 .publish-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 18px; }
+.slug-in { min-height: 24px; }          /* WCAG 2.5.8 — the bare class is also a select on Websites */
 .publish-bar .slug-in {
   background: var(--bg-raise); border: 1px solid var(--line); color: var(--ink);
   border-radius:0; padding: 9px 15px; font-size: 13.5px; width: 200px; outline: none;
@@ -920,13 +923,14 @@
 .ws-site-acts { display: inline-flex; align-items: center; gap: 5px; flex: none; }
 .ws-live {
   display: inline-flex; align-items: center; gap: 4px; max-width: 120px;
+  min-height: 24px;                     /* WCAG 2.5.8 target size */
   font-family: var(--font-mono); font-size: 9px; letter-spacing: .03em; color: var(--lime);
   border: 1px solid rgba(255,176,58,.4); padding: 3px 7px;
 }
 .ws-live:hover { background: rgba(255,176,58,.12); }
 .ws-live-slug { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ws-unpub {
-  width: 19px; height: 19px; flex: none; padding: 0;
+  width: 24px; height: 24px; flex: none; padding: 0;   /* WCAG 2.5.8 — destructive, was 19px */
   display: inline-flex; align-items: center; justify-content: center;
   background: none; border: 1px solid var(--line-soft); color: var(--ink-4);
 }
@@ -1015,6 +1019,7 @@
 /* hover reroll — one-click regen on the tile, no editor round-trip */
 .cc-reroll {
   display: inline-flex; align-items: center; gap: 4px;
+  min-height: 24px;                     /* WCAG 2.5.8 target size */
   font-family: var(--font-mono); font-size: 8.5px; font-weight: 700;
   letter-spacing: .1em; text-transform: uppercase;
   color: rgba(255,255,255,.92); background: rgba(20,20,20,.82);
@@ -1031,6 +1036,7 @@
 .rr-cluster { display: inline-flex; align-items: center; gap: 9px; margin-left: 10px; }
 .rr-btn {
   display: inline-flex; align-items: center; gap: 6px;
+  min-height: 24px;                     /* WCAG 2.5.8 target size */
   font-family: var(--font-mono); font-size: 9px; font-weight: 700;
   letter-spacing: .14em; text-transform: uppercase;
   color: var(--ink-3); background: var(--card-3);

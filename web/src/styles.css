@@ -262,7 +262,11 @@ a.imp-soc:focus-visible,
 button.ws-site-row:focus-visible,
 button.book-dot:focus-visible,
 input[type="color"]:focus-visible,
-.grade [role="radio"]:focus-visible {
+.grade-star:focus-visible,
+.lightbox-x:focus-visible,
+.rr-btn:focus-visible,
+.ws-unpub:focus-visible,
+a.ws-live:focus-visible {
   outline: 2px solid var(--lime);
   outline-offset: 2px;
 }

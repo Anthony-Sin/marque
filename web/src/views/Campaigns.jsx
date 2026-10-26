@@ -247,6 +247,40 @@ export default function Campaigns() {
   }, [openId]);
 
   const open = (campaigns || []).find((c) => c.id === openId) || null;
+  const hasOpen = !!open;
+
+  // view-swap focus — opening a campaign unmounts the whole list view, so the
+  // trigger can't be handed focus back directly: on open, focus lands on the
+  // "← All campaigns" exit (it names where you are); on close it returns to
+  // that campaign's Open button, re-found by id inside the list panel.
+  const backRef = useRef(null);
+  const listRef = useRef(null);
+  const lastOpenId = useRef(null);
+  useEffect(() => {
+    if (hasOpen) {
+      lastOpenId.current = open.id;
+      backRef.current?.focus({ preventScroll: true });
+    } else if (lastOpenId.current) {
+      const id = lastOpenId.current;
+      lastOpenId.current = null;
+      const btn = listRef.current?.querySelector(`[data-camp="${id}"] .btn`);
+      (btn || listRef.current)?.focus({ preventScroll: true });
+    }
+  }, [hasOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Esc on the detail view = ← All campaigns — but only while no overlay owns
+  // the key (editor modal, evidence drawer, lightbox and the card promote kit
+  // all close themselves on Esc first)
+  useEffect(() => {
+    if (!hasOpen) return undefined;
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      if (document.querySelector('[aria-modal="true"], .promote-panel')) return;
+      show(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [hasOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // live strategy titles — the campaign's stored strategyTitle goes stale when
   // the source strategy is renamed or regenerated. Resolve the CURRENT title
@@ -307,7 +341,7 @@ export default function Campaigns() {
   // one campaign summary card — shared by grouped + ungrouped lists.
   // SVG/empty creatives get a branded fallback tile instead of a raw empty box.
   const campCard = (c) => (
-    <div key={c.id} className="card camp-card">
+    <div key={c.id} className="card camp-card" data-camp={c.id}>
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <h4>{c.brief?.title || 'Untitled campaign'}</h4>
         <span className="chan-chip">{c.aspectRatio || '1:1'}</span>
@@ -585,7 +619,7 @@ export default function Campaigns() {
       <div className="section view cp-view">
         <div className="view-head cp-head">
           <div className="vh-main">
-            <button className="btn ghost sm cp-back" onClick={() => show(null)}>
+            <button ref={backRef} className="btn ghost sm cp-back" onClick={() => show(null)}>
               ← All campaigns
             </button>
             <span className="vh-kicker">MARQUE / OUTPUT</span>
@@ -931,7 +965,7 @@ export default function Campaigns() {
         </div>
       </section>
 
-      <section className="card hud cp-panel cp-list">
+      <section className="card hud cp-panel cp-list" ref={listRef} tabIndex={-1}>
         <div className="zone-head"><span className="z-id">OUT</span>Your campaigns<span className="z-tag">{nCamps} TOTAL</span></div>
         <div className="cp-panel-body">
       {campaigns === null ? (

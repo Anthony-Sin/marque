@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api, { pollJob } from '../api.js';
 import { useApp } from '../App.jsx';
+import { useOverlayFocus } from '../focus.js';
 import Icon from '../components/Icon.jsx';
 import { thumb, providerLabel, downloadAsset, fmtDate } from '../components/Composer.jsx';
 import { cleanErr } from '../labels.js';
@@ -180,6 +181,7 @@ export default function Photoshoot() {
   const [confirmDel, setConfirmDel] = useState(false);
   const confirmT = useRef(null);
   useEffect(() => () => clearTimeout(confirmT.current), []);
+  const detRef = useRef(null);
 
   const load = async (quiet) => {
     try {
@@ -200,6 +202,19 @@ export default function Photoshoot() {
   const nRenders = sorted.reduce((n, j) => n + renders(j).length, 0);
   const latest = sorted[0]?.createdAt;
   const job = sorted.find((j) => j.id === sel) || null;
+  // the detail panel runs the drawer contract — focus moves in on open
+  // (close button first), Tab wraps inside, and closing hands focus back to
+  // the card that opened it. A deleted shoot's card is gone by then; the
+  // hook checks document.contains before restoring, so nothing lands on body.
+  useOverlayFocus(detRef, !!job);
+
+  // Esc closes the detail like every other overlay
+  useEffect(() => {
+    if (!job) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') select(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [job]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // live-poll only while something is actually rendering
   useEffect(() => {
@@ -368,7 +383,7 @@ export default function Photoshoot() {
 
           {/* ---------- detail panel ---------- */}
           {job && (
-            <aside className="card hud ps-detail" aria-label="Shoot detail">
+            <aside ref={detRef} className="card hud ps-detail" role="dialog" aria-modal="true" aria-label="Shoot detail">
               <div className="zone-head">
                 <span className="z-id">SHT</span>Shoot · {job.id.slice(0, 8)}
                 <span className={`z-tag ps-tag-${jobStatus(job)}`}>{jobStatus(job)}</span>

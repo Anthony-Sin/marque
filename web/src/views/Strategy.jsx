@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useApp } from '../App.jsx';
+import { useOverlayFocus } from '../focus.js';
 import Icon from '../components/Icon.jsx';
 import Wayfind from '../components/Wayfind.jsx';
 import { SignalChips } from '../components/Qloo.jsx';
@@ -488,6 +489,10 @@ function Moodboard({ board }) {
   const [job, setJob] = useState(null);    // live job {id,status,progress{done,total,tiles,failed}}
   const [err, setErr] = useState('');      // board.moodboardError + fetch/post failures
   const [zoom, setZoom] = useState(null);  // tile open in the lightbox
+  const zoomRef = useRef(null);
+  // lightbox takes focus (close button first), traps Tab, hands it back to
+  // the tile that opened it — the same contract the creative zoom runs
+  useOverlayFocus(zoomRef, !!zoom);
   const reqRef = useRef(0);                // stale-fetch guard across board switches
 
   // pull the tiles + running job onto the board record so the board object
@@ -683,7 +688,7 @@ function Moodboard({ board }) {
 
       {/* failures are counted aloud — never silent gaps in the grid */}
       {!!err && (
-        <div className="stg-mood-err">
+        <div className="stg-mood-err" role="status">
           <span><Icon name="x" size={12} /> {err}</span>
           <button type="button" className="btn ghost sm" disabled={running} onClick={generate}>
             <Icon name="refresh" size={12} /> Retry
@@ -706,7 +711,7 @@ function Moodboard({ board }) {
       )}
 
       {zoom && createPortal(
-        <div className="lightbox" role="dialog" aria-modal="true" aria-label={`${moodKind(zoom.kind)} moodboard tile`} onClick={() => setZoom(null)}>
+        <div ref={zoomRef} className="lightbox" role="dialog" aria-modal="true" aria-label={`${moodKind(zoom.kind)} moodboard tile`} onClick={() => setZoom(null)}>
           <button type="button" className="lightbox-x" aria-label="Close" onClick={() => setZoom(null)}><Icon name="x" size={18} /></button>
           <div className="lightbox-media stg-mood-lb" onClick={(e) => e.stopPropagation()}>
             <img src={moodFull(zoom.path)} alt={`${moodKind(zoom.kind)} moodboard tile`} />
@@ -972,6 +977,22 @@ export default function Strategy() {
     { id: 'site', icon: 'site', label: 'Website', hint: 'marketing site in the brand palette, from this strategy' },
     { id: 'book', icon: 'book', label: 'Brand book', hint: 'printable brand book' },
   ];
+  // the produce radiogroup is a real single-select, so it runs the APG radio
+  // contract like the editor's resize group (pickAr): one tab stop on the
+  // checked chip, arrows carry both focus and the check, Home/End jump ends
+  const roveOut = PRODUCE_OUTPUTS.some((o) => o.id === output) ? output : PRODUCE_OUTPUTS[0].id;
+  const pickOut = (e) => {
+    const ids = PRODUCE_OUTPUTS.map((o) => o.id);
+    const dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    let next;
+    if (dir) next = ids[(ids.indexOf(roveOut) + dir + ids.length) % ids.length];
+    else if (e.key === 'Home') next = ids[0];
+    else if (e.key === 'End') next = ids[ids.length - 1];
+    else return;
+    e.preventDefault();
+    setOutput(next);
+    e.currentTarget.parentElement?.querySelector(`[data-out="${next}"]`)?.focus();
+  };
   const produce = async (s) => {
     if (!s || producing) return;
     const keys = new Set(selEx[wildScope(s)] || []);
@@ -2088,8 +2109,11 @@ export default function Strategy() {
                       {PRODUCE_OUTPUTS.map((o) => (
                         <button key={o.id} type="button" role="radio" aria-checked={output === o.id}
                           className={`stg-out-chip${output === o.id ? ' on' : ''}`}
+                          data-out={o.id}
+                          tabIndex={o.id === roveOut ? 0 : -1}
                           title={o.hint}
-                          onClick={() => setOutput(o.id)}>
+                          onClick={() => setOutput(o.id)}
+                          onKeyDown={pickOut}>
                           <Icon name={o.icon} size={12} />{o.label}
                         </button>
                       ))}
