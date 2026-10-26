@@ -232,7 +232,7 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
   ].filter(Boolean).join(' · ');
 
   return (
-    <div className="modal-veil" onClick={onClose}>
+    <div className="modal-veil" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div ref={boxRef} className="modal editor" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Edit creative">
         <div className="row" style={{ justifyContent: 'space-between', marginBottom: 16 }}>
           <h3 style={{ margin: 0, fontSize: 18 }}>Edit creative</h3>
