@@ -15,7 +15,9 @@ const FOCUSABLE = [
 
 // Open overlays push onto this stack — only the TOPMOST one owns the Tab trap,
 // so a drawer over a modal doesn't fight the modal for the same keystroke.
-const stack = [];
+// globalThis: an HMR re-eval of this module would otherwise hand new overlays
+// a fresh stack while mounted ones still hold the old reference.
+const stack = (globalThis.__marqueOverlayStack ??= []);
 
 // Esc layering: a trapped overlay should only swallow Escape while it is the
 // topmost stack entry — otherwise two co-open overlays peel off one press.
