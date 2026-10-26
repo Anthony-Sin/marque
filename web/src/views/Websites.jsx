@@ -115,6 +115,22 @@ export default function Websites() {
   const { say, status, profile } = useApp();
   const [sp, setSp] = useSearchParams();
   const [tab, setTab] = useState(() => (sp.get('tab') === 'site' ? 'site' : 'improve')); // 'improve' | 'site'
+  const tabBtn = { improve: useRef(null), site: useRef(null) };
+  // APG tablist: arrows/Home/End move the selection like the click does (each
+  // switch is URL-backed), then focus lands on the newly-selected tab
+  const onTabsKey = (e) => {
+    const order = ['improve', 'site'];
+    const i = order.indexOf(tab);
+    let j = -1;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') j = (i + 1) % order.length;
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') j = (i - 1 + order.length) % order.length;
+    else if (e.key === 'Home') j = 0;
+    else if (e.key === 'End') j = order.length - 1;
+    if (j < 0 || j === i) return;
+    e.preventDefault();
+    goTab(order[j]);
+    tabBtn[order[j]].current?.focus();
+  };
   const [sites, setSites] = useState(null);
   const [vid, setVid] = useState(null);
   const [prompt, setPrompt] = useState('');
@@ -611,16 +627,22 @@ export default function Websites() {
           <p className="sub">Audit your live site against competitors — or generate a new one from your Business Profile.</p>
         </div>
         <div className="vh-side">
-          <div className="seg-tabs" role="tablist" aria-label="Websites sections">
-            <button role="tab" aria-selected={tab === 'improve'} className={tab === 'improve' ? 'on' : ''}
+          <div className="seg-tabs" role="tablist" aria-label="Websites sections" onKeyDown={onTabsKey}>
+            <button role="tab" id="ws-tab-improve" aria-selected={tab === 'improve'} aria-controls="ws-panel"
+              tabIndex={tab === 'improve' ? 0 : -1} ref={tabBtn.improve}
+              className={tab === 'improve' ? 'on' : ''}
               onClick={() => goTab('improve')}>Improve my site</button>
-            <button role="tab" aria-selected={tab === 'site'} className={tab === 'site' ? 'on' : ''}
+            <button role="tab" id="ws-tab-site" aria-selected={tab === 'site'} aria-controls="ws-panel"
+              tabIndex={tab === 'site' ? 0 : -1} ref={tabBtn.site}
+              className={tab === 'site' ? 'on' : ''}
               onClick={() => goTab('site')}>Your website</button>
           </div>
         </div>
       </div>
 
-      {tab === 'improve' ? renderImprove() : renderSite()}
+      <div id="ws-panel" role="tabpanel" className="ws-panel" aria-labelledby={`ws-tab-${tab}`}>
+        {tab === 'improve' ? renderImprove() : renderSite()}
+      </div>
     </div>
   );
 }

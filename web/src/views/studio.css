@@ -220,6 +220,9 @@
 .seg-tabs { display: inline-flex; gap: 4px; background: var(--card-3); border-radius:0; padding: 3px; }
 .seg-tabs button { border: none; background: none; color: var(--ink-3); font-size: 12px; padding: 5px 13px; border-radius:0; }
 .seg-tabs button.on { background: var(--lime); color: var(--lime-ink); font-weight: 600; }
+/* the tabpanel mirrors .view's column plumbing so the wrapped sections fill
+   the viewport exactly as they did before the landmark wrapper */
+.ws-panel { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
 @media (max-width: 880px) { .editor-grid { grid-template-columns: 1fr; } }
 
 /* ---------- evidence drawer ---------- */
