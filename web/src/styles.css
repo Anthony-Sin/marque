@@ -1076,7 +1076,7 @@ input:not([type=checkbox]):not([type=radio]), textarea, select { border-radius: 
 .rail-kbd:focus-visible { outline: 1px solid var(--lime); outline-offset: 2px; }
 
 .ck-veil {
-  position: fixed; inset: 0; z-index: 300;
+  position: fixed; inset: 0; z-index: 400;
   background: rgba(3, 6, 5, .68);
   display: flex; align-items: flex-start; justify-content: center;
   padding: 12dvh 16px 16px;
