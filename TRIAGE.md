@@ -374,3 +374,18 @@ Counts: HIGH 3 · MED 7 · LOW 4
   controls with real BUTTON/A elements only; zero orphaned or dead stops.
 - document.title audit: app shell consistent; published surfaces get brand
   titles (LD site, brand book).
+
+## Wave — fresh-eyes audit closure (~06:30 ET)
+- P1: `?site=` no longer dead-ends the Improve tab (explicit `?tab=improve`
+  write; cold-load initializer honors bare `?site`). Verified live.
+- P1: `items()` filters `tabIndex<0` — ⌘K rows can't leak Tab out of the
+  dialog for a keystroke.
+- P1: Photoshoot detail is an honest inline panel — no aria-modal, no trap;
+  Esc closes it, gated on `anyOverlayOpen`.
+- P2 sweep: Profile disarmRm Esc gate, listbox group/presentation roles,
+  grade stars `aria-pressed=grade>=n`, lightbox `target===currentTarget`,
+  ⌘K no-ops on /onboarding, chipbar draft-wipe click removed, honest
+  engine tooltip, dead FieldEdit/UploadBtn + ~370 lines dead CSS removed,
+  `.dash-plan` accent bar on `:focus-within` (was unreachable
+  `:focus-visible`), ver-tab iframe out of button, inline-edit focus
+  restore on all three sites.
