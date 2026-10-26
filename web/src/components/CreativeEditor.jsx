@@ -121,6 +121,9 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
   // the resize route resolves an image registry id OR an /assets/ basename
   const canReframe = /^\/assets\/[\w.-]+$/i.test(cur.imagePath || '');
   const selV = variants.find((v) => v.id === sel) || null;
+  // roving tab stop for the resize radiogroup — the checked segment owns it,
+  // else the first aspect the campaign's own (disabled) format doesn't block
+  const roveAr = reframeAr || RESIZE_ARS.find((a) => a !== aspect);
   const reframe = () => run('reframe', async () => {
     const base = String(cur.imagePath).split('/').pop();
     const { image } = await imgOp(`/api/images/${encodeURIComponent(base)}/resize`, { aspect: reframeAr });
@@ -133,6 +136,24 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
     setReframeAr('');
     say(`Reframed to ${v.ar} — saved to assets`);
   });
+  // resize radiogroup keys — ←/→ (plus ↑/↓/Home/End) carry both focus and the
+  // checked state through the aspects, skipping the campaign's own format
+  // which stays disabled (radio-group "selection follows focus" behavior)
+  const pickAr = (e) => {
+    const avail = RESIZE_ARS.filter((a) => a !== aspect);
+    if (!avail.length) return;
+    const dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    let next;
+    if (dir) {
+      const i = avail.indexOf(reframeAr);
+      next = avail[i === -1 ? (dir > 0 ? 0 : avail.length - 1) : (i + dir + avail.length) % avail.length];
+    } else if (e.key === 'Home') next = avail[0];
+    else if (e.key === 'End') next = avail[avail.length - 1];
+    else return;
+    e.preventDefault();
+    setReframeAr(next);
+    e.currentTarget.parentElement?.querySelector(`[data-ar="${next}"]`)?.focus();
+  };
   // image animate → 9:16 motion render. Unlike the creative route this can't
   // attach the clip to the creative — it lands in the asset library, honest.
   const animateVariant = (v) => run('animv', async () => {
@@ -223,9 +244,11 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
         <div className="editor-grid">
           <div>
             {cur.videoPath && (
-              <div className="seg-tabs mb8">
-                <button className={media === 'image' ? 'on' : ''} onClick={() => setMedia('image')}>Image</button>
-                <button className={media === 'video' ? 'on' : ''} onClick={() => { setMedia('video'); setSel(null); }}>Animation</button>
+              <div className="seg-tabs mb8" role="group" aria-label="Preview media">
+                <button type="button" className={media === 'image' ? 'on' : ''} aria-pressed={media === 'image'}
+                  aria-label="Image preview" onClick={() => setMedia('image')}>Image</button>
+                <button type="button" className={media === 'video' ? 'on' : ''} aria-pressed={media === 'video'}
+                  aria-label="Animation preview" onClick={() => { setMedia('video'); setSel(null); }}>Animation</button>
               </div>
             )}
             <div className="editor-preview">
@@ -258,10 +281,12 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
             {!!variants.length && (
               <div className="mt8">
                 <div className="seg-tabs" role="group" aria-label="Reframes and motion renders from this session">
-                  <button type="button" className={!sel ? 'on' : ''} aria-pressed={!sel} title={`The creative's own ${aspect} image`}
+                  <button type="button" className={!sel ? 'on' : ''} aria-pressed={!sel}
+                    aria-label={`Original ${aspect} preview`} title={`The creative's own ${aspect} image`}
                     onClick={() => setSel(null)}>{aspect} · original</button>
                   {variants.map((v) => (
                     <button key={v.id} type="button" className={sel === v.id ? 'on' : ''} aria-pressed={sel === v.id}
+                      aria-label={v.kind === 'video' ? 'Motion render preview' : `Reframed ${v.ar} preview`}
                       title={v.kind === 'video'
                         ? `Motion render · ${providerLabel(v.provider)} — saved to assets`
                         : `Reframed to ${v.ar} · ${providerLabel(v.provider)} — saved to assets`}
@@ -348,17 +373,19 @@ export default function CreativeEditor({ creative, campaign, onClose, onSaved })
             </div>
             {!!cur.imagePath && (
               <>
-                <label>Reframe <span className="muted" style={{ textTransform: 'none' }}>(img2img — extends the scene)</span></label>
+                <label id="reframe-ar-lbl">Reframe <span className="muted" style={{ textTransform: 'none' }}>(img2img — extends the scene)</span></label>
                 <div className="row" style={{ gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                  <div className="seg-tabs" role="group" aria-label="Target aspect ratio">
+                  <div className="seg-tabs" role="radiogroup" aria-labelledby="reframe-ar-lbl">
                     {RESIZE_ARS.map((a) => (
-                      <button key={a} type="button"
+                      <button key={a} type="button" role="radio" data-ar={a}
                         className={reframeAr === a ? 'on' : ''}
-                        aria-pressed={reframeAr === a}
+                        aria-checked={reframeAr === a}
+                        tabIndex={a === roveAr ? 0 : -1}
                         disabled={a === aspect || !!busy}
                         style={a === aspect ? { opacity: 0.45, cursor: 'default' } : undefined}
-                        title={a === aspect ? 'Current format — the campaign sets this' : `Reframe to ${a}`}
-                        onClick={() => setReframeAr(a)}>{a}{a === aspect ? ' ·now' : ''}</button>
+                        title={a === aspect ? 'Current format — the campaign sets this' : `Resize to ${a}`}
+                        onClick={() => setReframeAr(a)}
+                        onKeyDown={pickAr}>{a}{a === aspect ? ' ·now' : ''}</button>
                     ))}
                   </div>
                   <button className="btn sm" disabled={!!busy || !reframeAr || !canReframe}

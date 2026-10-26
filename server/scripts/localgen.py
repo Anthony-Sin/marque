@@ -5,6 +5,8 @@ POST /generate {"prompt": str, "width": int, "height": int, "steps": int, "seed"
                 "negative": str, "upscale": 2,
                 "image": "/assets/x.png"|base64, "strength": 0.55}  ->  image/png bytes
 GET  /health                                  ->  {"ok": true, "model": ..., "vram_mb": ...}
+GET  /health?deep=1                           ->  + one real 256px 4-step gen; 503 if it fails
+CLI  --selftest                               ->  load, run the deep check once, print JSON, exit
 
 Runs offline from the HF cache (HF_HUB_OFFLINE=1). sdxl-turbo fp16 is ~7GB of
 weights — too big to stay resident next to the desktop on an 8GB card — so the
@@ -13,19 +15,26 @@ enable_model_cpu_offload first and falls back to enable_sequential_cpu_offload
 if a full-size (1024px) warmup OOMs; "none" keeps everything resident (only
 viable for small models like sd-turbo). Keep it single-process.
 """
-import base64, gc, io, json, os, sys, threading, time
+import argparse, base64, gc, io, json, os, signal, sys, threading, time
 os.environ.setdefault("HF_HUB_OFFLINE", "1")
 os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import urlparse, parse_qs
 import torch
 from PIL import Image, ImageFilter
 from diffusers import AutoPipelineForText2Image, AutoPipelineForImage2Image
 
 MODEL = os.environ.get("LOCALGEN_MODEL", "stabilityai/sdxl-turbo")
-HOST, PORT = "127.0.0.1", int(os.environ.get("LOCALGEN_PORT", "8807"))
+ap = argparse.ArgumentParser(description="local SDXL-Turbo image service")
+ap.add_argument("--host", default=os.environ.get("LOCALGEN_HOST", "127.0.0.1"))
+ap.add_argument("--port", type=int, default=int(os.environ.get("LOCALGEN_PORT", "8807")))
+ap.add_argument("--selftest", action="store_true",
+                help="after warmup run one 256px 4-step gen, print VRAM/latency JSON, exit")
+ARGS = ap.parse_args()
+HOST, PORT = ARGS.host, ARGS.port
 OFFLOAD = os.environ.get("LOCALGEN_OFFLOAD", "auto").strip().lower()
 # sdxl-turbo is an ADD-distilled SDXL: guidance_scale 0, 1-4 inference steps,
 # 512px-native (512-768 is the detail sweet spot). Requests can go up to MAXPX.
@@ -204,38 +213,49 @@ def reframe_canvas(img, w, h):
     return bg
 
 
+def _is_oom(e):
+    s = str(e).lower()
+    return isinstance(e, torch.cuda.OutOfMemoryError) or "out of memory" in s
+
+
+def _run(prompt, w, h, n_steps, seed, negative, image, strength):
+    gen_device = torch.Generator("cuda").manual_seed(seed) if seed is not None else None
+    kw = dict(prompt=prompt, negative_prompt=negative or None,
+              num_inference_steps=n_steps, guidance_scale=0.0, generator=gen_device)
+    if image is not None:
+        return get_i2i()(image=reframe_canvas(image, w, h), strength=strength, **kw).images[0]
+    return pipe(width=w, height=h, **kw).images[0]
+
+
 def gen(prompt, w, h, steps, seed, negative, upscale, image=None, strength=None):
     w, h = snap8(w), snap8(h)
     strength = max(0.05, min(0.95, float(strength if strength is not None else STRENGTH)))
     n_steps = max(1, min(8, int(steps or STEPS)))
     out = None
-    for attempt in range(2):
-        s = int(seed) + attempt if seed is not None else None
-        gen_device = torch.Generator("cuda").manual_seed(s) if s is not None else None
-        with GEN_LOCK, torch.inference_mode():
-            if image is not None:
-                init = reframe_canvas(image, w, h)
-                out = get_i2i()(
-                    prompt=prompt,
-                    negative_prompt=negative or None,
-                    image=init,
-                    strength=strength,
-                    num_inference_steps=n_steps,
-                    guidance_scale=0.0,
-                    generator=gen_device,
-                ).images[0]
-            else:
-                out = pipe(
-                    prompt=prompt,
-                    negative_prompt=negative or None,
-                    width=w, height=h,
-                    num_inference_steps=n_steps,
-                    guidance_scale=0.0,
-                    generator=gen_device,
-                ).images[0]
+    noise_try, oom_retried = 0, False
+    while True:
+        s = int(seed) + noise_try if seed is not None else None
+        try:
+            with GEN_LOCK, torch.inference_mode():
+                out = _run(prompt, w, h, n_steps, s, negative, image, strength)
+        except Exception as e:
+            # OOM mid-gen: flush the allocator cache and retry ONCE at half
+            # steps — a degraded tile beats a 500 that cascades to cloud.
+            if not oom_retried and _is_oom(e):
+                oom_retried = True
+                n_steps = max(1, n_steps // 2)
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                print(f"[localgen] OOM — cache flushed, retrying once at {n_steps} step(s)", flush=True)
+                continue
+            raise
         if not is_noise(out):
             break
-        print(f"[localgen] noise rejected (attempt {attempt + 1})", flush=True)
+        noise_try += 1
+        if noise_try >= 2:
+            break
+        print(f"[localgen] noise rejected (attempt {noise_try})", flush=True)
     if is_noise(out):
         raise RuntimeError("local output rejected as noise")
     if upscale and upscale > 1:
@@ -243,6 +263,31 @@ def gen(prompt, w, h, steps, seed, negative, upscale, image=None, strength=None)
     buf = io.BytesIO()
     out.save(buf, format="PNG")
     return buf.getvalue()
+
+
+def deep_check():
+    """One real 256px 4-step gen — proves weights+VRAM, not just the socket.
+    Serialized behind GEN_LOCK so it queues behind any in-flight /generate."""
+    t0, img, err = time.time(), None, None
+    try:
+        with GEN_LOCK, torch.inference_mode():
+            img = pipe(
+                prompt="a single red circle centered on a white background",
+                width=256, height=256, num_inference_steps=4,
+                guidance_scale=0.0,
+                generator=torch.Generator("cuda").manual_seed(0),
+            ).images[0]
+    except Exception as e:
+        err = str(e)[:200]
+    d = {
+        "ok": img is not None and not is_noise(img),
+        "gen_ms": round((time.time() - t0) * 1000),
+        "vram_mb": round(torch.cuda.memory_allocated() / 1e6) if torch.cuda.is_available() else 0,
+        "vram_free_mb": free_vram_mb(),
+    }
+    if err:
+        d["error"] = err
+    return d
 
 
 class H(BaseHTTPRequestHandler):
@@ -258,10 +303,16 @@ class H(BaseHTTPRequestHandler):
         self.wfile.write(b)
 
     def do_GET(self):
-        if self.path == "/health":
+        u = urlparse(self.path)
+        if u.path == "/health":
             used = torch.cuda.memory_allocated() / 1e6 if torch.cuda.is_available() else 0
-            return self._json(200, {"ok": True, "model": MODEL,
-                                    "offload": ACTIVE_OFFLOAD, "vram_mb": round(used)})
+            body = {"ok": True, "model": MODEL, "offload": ACTIVE_OFFLOAD,
+                    "vram_mb": round(used), "pid": os.getpid()}
+            if parse_qs(u.query).get("deep", [""])[0] in ("1", "true"):
+                d = deep_check()
+                body.update(d)
+                return self._json(200 if d["ok"] else 503, body)
+            return self._json(200, body)
         self._json(404, {"error": "not found"})
 
     def do_POST(self):

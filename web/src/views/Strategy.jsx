@@ -629,10 +629,13 @@ function Moodboard({ board }) {
 
       {/* the tiles — kept visible (dimmed) while a reshuffle runs underneath */}
       {!!tiles.length && (
-        <div className={`stg-mood-grid${running ? ' regen' : ''}`}>
+        <div className={`stg-mood-grid${running ? ' regen' : ''}`}
+          role="region" tabIndex={0}
+          aria-label={`Moodboard — ${tiles.length} tiles, scroll sideways`}>
           {tiles.map((t, i) => (
             <button key={t.path || i} type="button" className="stg-mood-tile stg-fill"
               style={{ '--fo': `${i * 45}ms` }}
+              aria-label={`${moodKind(t.kind)} tile ${i + 1} of ${tiles.length} — open full render`}
               title={`${moodKind(t.kind)} — open full render`}
               onClick={() => setZoom(t)}>
               <img src={moodThumb(t.path, 400)} alt={`${moodKind(t.kind)} moodboard tile`} loading="lazy" />
@@ -1129,7 +1132,11 @@ export default function Strategy() {
   };
 
   // "why this fits" — composed from real board data: product, top entities, channels
-  const prodName = cleanAsk(sub?.prompt || res?.sub?.prompt || res?.title);
+  // prodName must be a NAME, not the whole prompt — possessive ('s) breaks on
+  // "Fern Matcha — ceremonial-grade…'s audience". Prefer the profile's real
+  // name; prompt fallback takes only its first clause.
+  const prodName = (profile?.name && profile.name !== 'Your Brand' ? profile.name : '')
+    || cleanAsk(sub?.prompt || res?.sub?.prompt || res?.title).split(/\s[—–-]\s|[,;:]/)[0].trim();
   const qTop = [...entRows].sort((a, b) => b.affinity - a.affinity).slice(0, 3);
   const qChans = chans.slice(0, 3).map((c) => chanLabel(c.name));
   const detCalls = detEv.calls || [];

@@ -198,7 +198,9 @@ export default function App() {
     return full;
   };
   const ctx = { profile, setProfile, refresh, status, say, board, setBoard, boards, setBoards, openBoard, hasStrategy };
-  const inApp = !!profile;
+  // a stub profile ('Your Brand' — the untouched scaffold) isn't an app user:
+  // it has no brand data for anything to key off, so route to onboarding
+  const inApp = !!profile && profile.name && profile.name !== 'Your Brand';
 
   return (
     <Ctx.Provider value={ctx}>

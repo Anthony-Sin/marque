@@ -255,15 +255,16 @@ function Building({ stage, status, url }) {
             <h2 className="display">Building your brand profile</h2>
             <div className="ob-stages">
               {STAGES.map((s, i) => (
-                <div key={i} className={`ob-stage${i < stage ? ' done' : ''}${i === stage ? ' now' : ''}`}>
+                <div key={i} className={`ob-stage${i < stage ? ' past' : ''}${i === stage ? ' now' : ''}`}>
                   <span className="ob-stage-ic">
-                    {i < stage ? <Icon name="check" size={13} sw={2.4} />
-                      : i === stage ? <span className="spinner pf-spin-xs" />
-                        : <Icon name={s.icon} size={13} />}
+                    {i === stage ? <span className="spinner pf-spin-xs" />
+                      : <Icon name={s.icon} size={13} />}
                   </span>
                   <span className="grow">{s.label}</span>
                   {s.qloo && i === stage && <QlooBadge mode={status?.qloo === 'live' ? 'live' : 'off'} label="Taste graph" />}
-                  <span className="ob-stage-st">{i < stage ? 'DONE' : i === stage ? 'RUN' : 'WAIT'}</span>
+                  {/* honest: the build is one opaque call — the rotating marker
+                      says what's believed to be running, never claims DONE */}
+                  <span className="ob-stage-st">{i === stage ? 'RUNNING' : i < stage ? '·' : 'QUEUED'}</span>
                 </div>
               ))}
             </div>

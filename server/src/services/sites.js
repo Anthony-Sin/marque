@@ -44,7 +44,7 @@ const clip = (v, n) => { const s = String(v ?? '').replace(/\s+/g, ' ').trim(); 
 function siteInputs(profile, ctx = null) {
   const seen = new Set();
   const images = [];
-  const addImg = (path, caption) => { if (path && assetAbs(path) && !seen.has(path)) { seen.add(path); images.push({ path, caption: clip(caption, 90) || '' }); } };
+  const addImg = (path, caption) => { if (path && assetAbs(path) && !seen.has(path)) { seen.add(path); images.push({ path, caption: clip(humanCaption(caption), 90) || '' }); } };
   for (const i of profile?.images || []) addImg(i?.path, i?.caption);
   for (const c of ctx?.campaign?.creatives || []) addImg(c?.image, c?.headline);
   const catalog = (profile?.catalog || [])
@@ -90,14 +90,18 @@ function cleanContent(raw, inputs) {
   const affSet = new Map(inputs.affinities.map((a) => [a.name.toLowerCase(), a.name]));
   const names = (arr, cap, len) => (Array.isArray(arr) ? arr.map((x) => clip(x, len)).filter(Boolean).slice(0, cap) : []);
   const out = {};
-  if (raw.navCta) out.navCta = clip(raw.navCta, 24);
+  // CTA fields: an explicit null still means "drop it", but a blocked generic
+  // string leaves the key absent so the honest fallback copy fills in
+  const ctaField = (o, k, v, n) => { if (v == null) { o[k] = null; return; } const s = ctaCopy(v, n); if (s != null) o[k] = s; };
+  if (raw.navCta != null) { const s = ctaCopy(raw.navCta, 24); if (s != null) out.navCta = s; }
   if (raw.hero && typeof raw.hero === 'object') {
     const h = raw.hero;
     out.hero = {
       kicker: clip(h.kicker, 48), headline: clip(h.headline, 120), sub: clip(h.sub, 280),
-      cta: clip(h.cta, 30), ctaAlt: clip(h.ctaAlt, 30),
       image: img(h.image), alt: clip(h.alt, 120) || '',
     };
+    ctaField(out.hero, 'cta', h.cta, 30);
+    ctaField(out.hero, 'ctaAlt', h.ctaAlt, 30);
   }
   if (Array.isArray(raw.strip)) out.strip = names(raw.strip, 8, 28);
   if (raw.story && typeof raw.story === 'object') {
@@ -119,7 +123,7 @@ function cleanContent(raw, inputs) {
     const picked = (Array.isArray(t.names) ? t.names : []).map((n) => affSet.get(String(n || '').toLowerCase())).filter(Boolean);
     out.taste = { kicker: clip(t.kicker, 48), headline: clip(t.headline, 90), blurb: clip(t.blurb, 220), names: [...new Set(picked)].slice(0, 6) };
   }
-  if (raw.cta && typeof raw.cta === 'object') out.cta = { headline: clip(raw.cta.headline, 120), sub: clip(raw.cta.sub, 220), button: clip(raw.cta.button, 30) };
+  if (raw.cta && typeof raw.cta === 'object') { out.cta = { headline: clip(raw.cta.headline, 120), sub: clip(raw.cta.sub, 220) }; ctaField(out.cta, 'button', raw.cta.button, 30); }
   if (raw.footer && typeof raw.footer === 'object') out.footer = { note: clip(raw.footer.note, 140) };
   return out;
 }
@@ -158,7 +162,7 @@ function contentFallback(inputs, ctx) {
     taste: inputs.affinities.length
       ? { kicker: 'Taste signature', headline: 'Loved by fans of', blurb: `The cultural affinities measured across the people who already love ${b.name || 'the brand'}.`, names: inputs.affinities.slice(0, 6).map((a) => a.name) }
       : null,
-    cta: { headline: clip(camp?.keyMessage || strat?.title, 120) || 'See it for yourself.', sub: clip(strat?.angle || camp?.angle, 220), button: hasCat ? 'Shop now' : 'Get in touch' },
+    cta: { headline: clip(camp?.keyMessage || strat?.title, 120) || 'See it for yourself.', sub: clip(strat?.angle || camp?.angle, 220), button: hasCat ? 'Shop the collection' : 'Get in touch' },
     footer: { note: clip(b.tagline, 140) },
   };
 }
@@ -200,6 +204,45 @@ const lum = (hex) => {
 };
 const contrast = (a, b) => { const la = lum(a), lb = lum(b); if (la == null || lb == null) return 1; return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
 const bestInk = (bg) => (contrast('#181410', bg) >= contrast('#f6f2ea', bg) ? '#181410' : '#f6f2ea');
+// move a foreground color toward its ground's best ink until it clears AA
+// (+margin) — keeps as much brand hue as readability allows
+const liftToContrast = (fg, bg, target = 4.6) => {
+  if (!fg || !bg) return fg;
+  if (contrast(fg, bg) >= target) return fg;
+  const inkV = bestInk(bg);
+  for (let t = 0.05; t <= 1.001; t += 0.05) { const m = mix(fg, inkV, t); if (m && contrast(m, bg) >= target) return m; }
+  return inkV;
+};
+// "muted" only earns the name while it still reads — the most blend into the
+// ground that still meets AA (plain ink when no blend passes)
+const mutedOn = (inkV, bg, blend) => { for (let t = blend; t >= 0; t -= 0.05) { const m = mix(inkV, bg, t); if (m && contrast(m, bg) >= 4.6) return m; } return inkV; };
+
+// a spec is not a price — "12-Pack", "16 oz" and friends must never wear
+// price styling. A real price carries a currency mark, a decimals figure,
+// an explicit currency code, or the word "free".
+const looksLikePrice = (v) => { const s = String(v ?? '').trim(); if (!s) return true; return /[$€£¥₹₩]|\b(?:usd|eur|gbp|jpy|cad|aud|nzd|inr|cny|krw|chf|sek|mxn|brl)\b|\d+[.,]\d{2}\b|^free$/i.test(s); };
+
+// clickbait-empty CTAs the deck contract forbids — a blocked string falls
+// back to copy that says what the button actually does
+const GENERIC_CTA = /^(learn more|shop now|click here|buy now|read more|find out more|see more|get started|sign up|order now|submit|go)\s*[→›»]?$/i;
+const ctaCopy = (v, n) => { const s = clip(v, n); return s && !GENERIC_CTA.test(s) ? s : null; };
+
+// stored captions carry internal provenance — engine names, provider tiers,
+// pipeline words — that reads as jargon on a published page (CSS uppercases
+// it into an all-caps shout). Segments made only of these tokens are
+// stripped; if nothing human remains, the slot falls back to "Fig. N".
+const CAP_PROV = new Set(['studio', 'free', 'cloud', 'local', 'remote', 'ai', 'ml', 'api', 'gen', 'generated', 'render', 'rendered', 'engine', 'model', 'sdxl', 'turbo', 'gemini', 'pollinations', 'veo', 'ffmpeg', 'img2img', 'cdn', 'proxy', 'placeholder', 'stock', 'demo', 'test', 'testing', 'kit', 'promote', 'sample', 'scratch', 'tmp', 'draft', 'b64', 'tier', 'provider']);
+const allProv = (s) => s.split(/[\s·•|/+_—–-]+/).filter(Boolean).every((t) => CAP_PROV.has(t.toLowerCase()));
+const humanCaption = (cap) => {
+  let s = String(cap ?? '').replace(/\s+/g, ' ').trim();
+  if (!s) return null;
+  // "(sdxl)" / "(via pollinations)"-style engine parentheticals
+  s = s.replace(/\(([^()]*)\)/g, (m, inner) => { const toks = inner.replace(/^(via|by|using|with|from|on)\s+/i, ''); return allProv(toks) ? ' ' : m; }).replace(/\s+/g, ' ').trim();
+  // "·"-separated provenance segments — "free · studio", "hero · local"
+  const kept = s.split(/\s*[·•|]\s*/).map((x) => x.trim()).filter((p) => p && !allProv(p));
+  s = kept.join(' · ').trim();
+  return s && !allProv(s) ? s : null;
+};
 
 const SYSFONTS = new Set(['serif', 'sans-serif', 'monospace', 'system-ui', 'georgia', 'helvetica', 'arial', 'times new roman', 'courier', 'courier new', 'verdana', 'tahoma', 'trebuchet ms', 'ui-sans-serif', 'ui-serif', 'ui-monospace', 'inherit']);
 const fontName = (v) => String(v || '').replace(/['"\\;{}()<>]/g, '').trim().slice(0, 60) || null;
@@ -224,7 +267,8 @@ export function renderSiteHTML(site) {
   if (style.theme === 'dark' && !dark) { bg = '#14110e'; dark = true; }
   if (style.theme === 'light' && dark) { bg = '#faf8f4'; dark = false; }
   const ink = rgb(c.text) && contrast(c.text, bg) >= 3 ? c.text : bestInk(bg);
-  const mut = mix(ink, bg, 0.48) || (dark ? '#9a958c' : '#6f6a60');
+  // "muted" must still read — mutedOn keeps the quietest blend that clears AA
+  const mut = mutedOn(ink, bg, 0.48);
   const line = mix(bg, ink, 0.14) || (dark ? '#333026' : '#ded9cd');
   // a surface token only earns its slot when it's subtly distinct AND keeps
   // the page polarity — a light surface on a dark theme would leave ink-colored
@@ -232,11 +276,15 @@ export function renderSiteHTML(site) {
   const sf = rgb(c.surface) && contrast(c.surface, bg) > 1.04 && ((lum(c.surface) ?? 1) < 0.5) === dark ? c.surface : (mix(bg, ink, 0.05) || bg);
   const accent = rgb(c.accent) ? c.accent : (rgb(c.primary) ? c.primary : '#9a4b1f');
   const accInk = bestInk(accent);
+  // accent worn as small text needs its own token — the raw hue only survives
+  // when it genuinely reads on the page ground (chips/labels, same contract
+  // as solid accent + acc-ink pairs)
+  const accText = liftToContrast(accent, bg);
   // the inverted band prefers the brand primary; it only falls back to ink
   // when primary would sit too close to the page background to read as a band
   const band = rgb(c.primary) && contrast(c.primary, bg) >= 1.35 ? c.primary : ink;
   const bandInk = bestInk(band);
-  const bandMut = mix(bandInk, band, 0.5) || mut;
+  const bandMut = mutedOn(bandInk, band, 0.5);
   const bandLine = mix(band, bandInk, 0.3) || line;
 
   // fonts — Google Fonts <link> only for real family names (same external
@@ -252,7 +300,7 @@ export function renderSiteHTML(site) {
   const okImg = (p) => typeof p === 'string' && p.startsWith('/assets/') && !!assetAbs(p);
   const pool = [];
   const seen = new Set();
-  const addPool = (p, caption) => { if (okImg(p) && !seen.has(p)) { seen.add(p); pool.push({ path: p, caption: caption || '' }); } };
+  const addPool = (p, caption) => { if (okImg(p) && !seen.has(p)) { seen.add(p); pool.push({ path: p, caption: humanCaption(caption) || '' }); } };
   for (const i of brand.images || []) addPool(i?.path, i?.caption);
   for (const i of catalog) addPool(i?.image, i?.name);
 
@@ -312,6 +360,13 @@ export function renderSiteHTML(site) {
   const kick = (text, cls = '') => `<div class="kick ${cls}"><i></i>${text ? `<span>${esc(text)}</span>` : ''}</div>`;
 
   const fig = (img, cls = '') => img ? `<figure class="${cls}"><img src="${esc(img.path)}" alt="${esc(img.caption || '')}" loading="lazy">${img.caption ? `<figcaption><span>${esc(img.caption)}</span></figcaption>` : ''}</figure>` : '';
+  // spec copy (pack size, volume) never wears price styling — a real price
+  // gets the tracked-caps slot, a spec gets plain muted text
+  const priceSlot = (v) => {
+    const s = String(v ?? '').trim();
+    if (!s) return '<span></span>';
+    return looksLikePrice(s) ? `<span class="price">${esc(s)}</span>` : `<span class="pspec">${esc(s)}</span>`;
+  };
 
   const heroHtml = `
   <header class="hero ${heroSplit ? 'split' : 'solo'}"><div class="wrap ${heroSplit ? 'grid' : ''}">
@@ -347,11 +402,11 @@ export function renderSiteHTML(site) {
         <img class="ph" src="${esc(it.image)}" alt="${esc(it.name)}" loading="lazy">
         <h3>${esc(it.name)}</h3>
         ${it.description ? `<p class="pd">${esc(it.description)}</p>` : ''}
-        <div class="pfoot"><span class="price">${esc(it.price != null && it.price !== '' ? it.price : '')}</span><span class="arr2">→</span></div>
+        <div class="pfoot">${priceSlot(it.price)}<span class="arr2">→</span></div>
       </article>`).join('')}
     </div>` : ''}
     ${catTx.length ? `<ol class="plist"${catImg.length > 1 ? ' style="margin-top:2.4rem"' : ''}>${catTx.map((it, i) => `
-      <li class="prow"><span class="n">${String(i + 1).padStart(2, '0')}</span><div class="pr"><h3>${esc(it.name)}</h3>${it.description ? `<p class="pd">${esc(it.description)}</p>` : ''}</div><span class="price">${esc(it.price != null && it.price !== '' ? it.price : '')}</span><span class="arr2">→</span></li>`).join('')}
+      <li class="prow"><span class="n">${String(i + 1).padStart(2, '0')}</span><div class="pr"><h3>${esc(it.name)}</h3>${it.description ? `<p class="pd">${esc(it.description)}</p>` : ''}</div>${priceSlot(it.price)}<span class="arr2">→</span></li>`).join('')}
     </ol>` : ''}
     ${catImg.length === 1 && catTx.length ? '</div>' : ''}
   </div></section>` : '';
@@ -390,7 +445,7 @@ export function renderSiteHTML(site) {
 ${desc ? `<meta name="description" content="${esc(desc)}"><meta property="og:title" content="${esc(name)}"><meta property="og:description" content="${esc(desc)}">${heroImg ? `<meta property="og:image" content="${esc(heroImg.path)}">` : ''}` : ''}
 ${fontsLink}
 <style>
-:root{--bg:${bg};--ink:${ink};--mut:${mut};--line:${line};--sf:${sf};--acc:${accent};--acc-ink:${accInk};--band:${band};--band-ink:${bandInk};--band-mut:${bandMut};--band-line:${bandLine};--fd:${fd};--fb:${fb}}
+:root{--bg:${bg};--ink:${ink};--mut:${mut};--line:${line};--sf:${sf};--acc:${accent};--acc-ink:${accInk};--acc-text:${accText};--band:${band};--band-ink:${bandInk};--band-mut:${bandMut};--band-line:${bandLine};--fd:${fd};--fb:${fb}}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;scroll-padding-top:5.5rem}
 body{background:var(--bg);color:var(--ink);font:400 1rem/1.7 var(--fb);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
@@ -438,7 +493,7 @@ h1,h2,h3{font-family:var(--fd);font-weight:500;line-height:1.05;letter-spacing:-
 .hero.split .h-copy{display:flex;flex-direction:column;align-self:stretch;justify-content:center}
 .hero.split .h-core{margin:auto 0}
 .hmeta{padding-top:3.2rem;display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap;font-size:.7rem;letter-spacing:.26em;text-transform:uppercase;color:var(--mut)}
-.hmeta .hm-k{color:var(--acc)}
+.hmeta .hm-k{color:var(--acc-text)}
 .hmeta span{white-space:nowrap}
 .hmeta i{font-style:normal;opacity:.5}
 figure{margin:0}
@@ -460,7 +515,7 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 .s-img img{width:100%;aspect-ratio:4/3;object-fit:cover}
 .steps{list-style:none;margin-top:2.8rem;border-top:1px solid var(--line)}
 .steps li{display:grid;grid-template-columns:3.4rem 1fr;gap:1.2rem;padding:1.55rem 0;border-bottom:1px solid var(--line)}
-.steps .n{font-family:var(--fd);font-size:1.05rem;color:var(--acc);padding-top:.25rem}
+.steps .n{font-family:var(--fd);font-size:1.05rem;color:var(--acc-text);padding-top:.25rem}
 .steps h3{font-size:1.3rem;letter-spacing:-.01em}
 .steps p{color:var(--mut);font-size:.95rem;max-width:44em;margin-top:.4rem}
 .phead{display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;margin-bottom:clamp(2.4rem,5vw,3.8rem)}
@@ -473,7 +528,7 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 .psplit .prow{flex:1;align-items:center}
 .plist{list-style:none;border-top:1px solid var(--line)}
 .prow{display:flex;align-items:baseline;gap:1.6rem;padding:1.35rem 0;border-bottom:1px solid var(--line)}
-.prow .n{font-size:.74rem;letter-spacing:.22em;color:var(--acc);min-width:2.6rem}
+.prow .n{font-size:.74rem;letter-spacing:.22em;color:var(--acc-text);min-width:2.6rem}
 .prow .pr{flex:1;min-width:0}
 .prow h3{font-size:1.3rem}
 .prow .pd{margin-top:.3rem}
@@ -482,6 +537,8 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
 .pd{color:var(--mut);font-size:.92rem;line-height:1.6}
 .pfoot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:.85rem;min-height:2.4rem}
 .price{font-size:.74rem;letter-spacing:.2em;text-transform:uppercase}
+.pspec{font-size:.88rem;color:var(--mut)}
+.pfoot .pspec,.prow .pspec{white-space:nowrap}
 .arr2{color:var(--acc);font-size:1.05rem;line-height:1}
 .g-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(1.2rem,3.5vw,3rem)}
 .g-grid figure:nth-child(even){margin-top:clamp(1.6rem,5vw,4.5rem)}
@@ -555,7 +612,7 @@ h2{font-size:clamp(2.05rem,4.4vw,3.4rem);margin-top:1.5rem}
   .idx li{gap:1rem}
   .prow{flex-wrap:wrap;gap:.8rem 1.6rem}
   .prow .pr{flex-basis:calc(100% - 4.2rem)}
-  .prow .price{margin-left:4.2rem}
+  .prow .price,.prow .pspec{margin-left:4.2rem}
   .steps li{grid-template-columns:2.6rem 1fr}
 }
 </style></head>
@@ -617,9 +674,92 @@ function extractHTML(t) {
 // repair common LLM defects in generated docs before they ship: a malformed
 // viewport meta (`name="viewport="content=…"`) is ignored by browsers so mobile
 // renders at the 980px fallback — strip broken metas and guarantee a good one.
+// The same pass covers docs stored before the fixes landed — /s/<slug> serves
+// legacy html through this function, so repairs reach already-published pages.
+
+// made-up CSS shorthands: `border-y:`/`border-x:` aren't properties — the
+// separators they meant to draw silently never compute (borderTopWidth: 0).
+// Only declaration position qualifies — a `.border-y:hover` selector must not
+// be mangled, so the name has to follow `{`, `;` or the block start.
+const fixBorderShorthands = (html) => html
+  .replace(/(^|[{;}])\s*border-y\s*:\s*([^;}{]+)/gi, (_m, p, v) => `${p}border-top:${v};border-bottom:${v}`)
+  .replace(/(^|[{;}])\s*border-x\s*:\s*([^;}{]+)/gi, (_m, p, v) => `${p}border-left:${v};border-right:${v}`);
+
+// chip-family text (`.badge`, `.chip`, `.pill`) sitting on its own translucent
+// tint: raw accent on a ~20% accent wash over a dark ground composites below
+// AA. Measure the composited ground and lift the text color toward the best
+// ink until it clears 4.6 — the same contract the renderer's chips hold. Docs
+// that already pass are untouched.
+function repairChipContrast(html) {
+  const root = html.match(/:root\s*\{([^{}]*)\}/);
+  const vars = new Map();
+  if (root) for (const m of root[1].matchAll(/(--[\w-]+)\s*:\s*([^;}{]+)/g)) vars.set(m[1], m[2].trim());
+  const resolve = (v) => String(v ?? '').replace(/var\(\s*(--[\w-]+)\s*(?:,[^)]*)?\)/g, (_m, n) => vars.get(n) ?? '');
+  const rgbaOf = (v) => {
+    const s = resolve(v).trim();
+    const m = s.match(/rgba?\(\s*([\d.]+)\s*[, ]\s*([\d.]+)\s*[, ]\s*([\d.]+)\s*(?:[,/]\s*([\d.]+%?))?/i);
+    if (m) { const a = m[4] == null ? 1 : (String(m[4]).endsWith('%') ? parseFloat(m[4]) / 100 : parseFloat(m[4])); return { c: [+m[1], +m[2], +m[3]], a: Number.isFinite(a) ? a : 1 }; }
+    const h = rgb(s); return h ? { c: h, a: 1 } : null;
+  };
+  // the page ground: body's own background wins; common bg-ish vars otherwise
+  const bodyBg = rgbaOf((html.match(/body\s*\{([^{}]*)\}/)?.[1].match(/background(?:-color)?\s*:\s*([^;]+)/) || [])[1]);
+  let page = bodyBg ? (bodyBg.a >= 1 ? bodyBg.c : [255, 255, 255].map((w, i) => Math.round(w * (1 - bodyBg.a) + bodyBg.c[i] * bodyBg.a))) : null;
+  if (!page) for (const k of ['--color-bg', '--bg', '--background', '--color-background', '--color-surface', '--surface', '--color-card', '--card']) { const v = rgbaOf(vars.get(k)); if (v) { page = v.c; break; } }
+  if (!page) page = [255, 255, 255];
+  return html.replace(/([^{}]*)\{([^{}]*)\}/g, (m, sel, decls) => {
+    if (!/(badge|chip|pill)/i.test(sel)) return m;
+    const colM = decls.match(/(^|;)\s*color\s*:\s*([^;]+)/); // `border-color:`/`background-color:` can't false-match — the name must follow `;` or the block start
+    if (!colM) return m;
+    const tint = rgbaOf((decls.match(/background(?:-color)?\s*:\s*([^;]+)/) || [])[1]);
+    const eff = tint ? (tint.a >= 1 ? tint.c : page.map((v, i) => Math.round(v * (1 - tint.a) + tint.c[i] * tint.a))) : page;
+    const col = rgbaOf(colM[2]);
+    if (!col) return m;
+    const effHex = toHex(eff), colHex = toHex(col.c);
+    if (contrast(colHex, effHex) >= 4.5) return m;
+    const fix = liftToContrast(colHex, effHex, 4.6);
+    if (fix === colHex) return m;
+    return `${sel}{${decls.replace(colM[0], `${colM[1]}color:${fix}`)}}`;
+  });
+}
+
+// dead `href="#"` anchors: a brand/logo mark takes the doc's own most-linked
+// external origin (its real brand url); anything else becomes an inert span
+// instead of a jump-to-top trap.
+function repairDeadAnchors(html) {
+  const counts = new Map();
+  for (const m of html.matchAll(/\bhref\s*=\s*['"](https?:\/\/[^'"]+)['"]/gi)) {
+    try { const o = new URL(m[1]).origin; counts.set(o, (counts.get(o) || 0) + 1); } catch { /* skip */ }
+  }
+  const origin = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+  return html.replace(/<a\b([^>]*?)\s*href\s*=\s*(['"])#\2([^>]*)>([\s\S]*?)<\/a\s*>/gi, (m, pre, _q, post, inner) => {
+    if (origin && /\bclass\s*=\s*['"][^'"]*\b(?:logo|brand|mark)\b/i.test(`${pre || ''} ${post || ''}`))
+      return `<a${pre || ''} href="${origin}" rel="noopener"${post || ''}>${inner}</a>`;
+    return `<span${pre || ''}${post || ''}>${inner}</span>`;
+  });
+}
+
+// a `.price` slot holding non-price copy ("12-Pack", pack sizes, specs) demotes
+// to plain `.spec` text — specs never masquerade as cost
+const repairPriceSlots = (html) => html.replace(
+  /<([a-z0-9]+)\b([^>]*\bclass\s*=\s*['"][^'"]*\bprice\b[^'"]*['"][^>]*)>([^<]*)<\/\1\s*>/gi,
+  (m, tag, attrs, inner) => {
+    const txt = inner.replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+    if (looksLikePrice(txt)) return m;
+    const fixed = attrs.replace(/(class\s*=\s*['"])([^'"]*)(['"])/i, (_m, o, cls, c) => o + cls.replace(/\bprice\b/g, 'spec') + c);
+    return `<${tag}${fixed}>${inner}</${tag}>`;
+  });
+
+// hardcoded footer years go stale — © lines track the render year instead
+const fixStaleYear = (html) => html.replace(/(©|&copy;|&#0*169;|&#x0*a9;)\s*(?:19|20)\d{2}(\s*[-–—]\s*(?:19|20)\d{2})?/gi, (_m, sym) => `${sym} ${new Date().getFullYear()}`);
+
 export function normalizeHTML(html) {
   if (!html || typeof html !== 'string') return html;
-  let out = html.replace(/<meta\s+name\s*=\s*["']?viewport=[^>]*>/gi, '');
+  let out = fixBorderShorthands(html);
+  out = repairChipContrast(out);
+  out = repairDeadAnchors(out);
+  out = repairPriceSlots(out);
+  out = fixStaleYear(out);
+  out = out.replace(/<meta\s+name\s*=\s*["']?viewport=[^>]*>/gi, '');
   if (!/<meta\s+name\s*=\s*["']viewport["']/i.test(out)) {
     const tag = '<meta name="viewport" content="width=device-width, initial-scale=1">';
     out = /<head[^>]*>/i.test(out) ? out.replace(/<head[^>]*>/i, (m) => `${m}\n${tag}`) : `${tag}\n${out}`;

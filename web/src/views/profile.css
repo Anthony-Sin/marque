@@ -181,6 +181,7 @@ input.pfv-in.pfv-name { font-size: 17px; font-weight: 600; }
   letter-spacing: .14em; text-transform: uppercase;
 }
 .pfv-kit-op:hover { background: var(--lime); color: var(--lime-ink); }
+.pfv-kit-op:focus-visible { outline: 2px solid var(--lime); outline-offset: 1px; }
 .pfv-kit-op.danger:hover { background: var(--rose); color: #2a1218; }
 .pfv-kit-op:disabled { opacity: .38; cursor: default; }
 .pfv-kit-op:disabled:hover { background: rgba(6, 10, 8, .62); color: var(--ink); }
@@ -199,6 +200,7 @@ input.pfv-in.pfv-name { font-size: 17px; font-weight: 600; }
   letter-spacing: .12em; text-transform: uppercase; padding: 5px 10px; cursor: pointer;
 }
 .pfv-kit-confirm-ops button:hover { border-color: var(--lime); color: var(--ink); }
+.pfv-kit-confirm-ops button:focus-visible { outline: 2px solid var(--lime); outline-offset: 1px; }
 .pfv-kit-confirm-ops button.go { background: var(--rose); border-color: var(--rose); color: #2a1218; }
 .pfv-kit-confirm-ops button:disabled { opacity: .45; cursor: default; }
 .pfv-kit-cap {

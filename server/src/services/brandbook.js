@@ -29,6 +29,36 @@ const lum = (hex) => {
 };
 const contrast = (a, b) => { const la = lum(a), lb = lum(b); if (la == null || lb == null) return 1; return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
 const bestInk = (bg) => (contrast('#181410', bg) >= contrast('#f6f2ea', bg) ? '#181410' : '#f6f2ea');
+// move a foreground color toward its ground's best ink until it clears AA
+// (+margin) — keeps as much brand hue as readability allows
+const liftToContrast = (fg, bg, target = 4.6) => {
+  if (!fg || !bg) return fg;
+  if (contrast(fg, bg) >= target) return fg;
+  const inkV = bestInk(bg);
+  for (let t = 0.05; t <= 1.001; t += 0.05) { const m = mix(fg, inkV, t); if (m && contrast(m, bg) >= target) return m; }
+  return inkV;
+};
+// "muted" only earns the name while it still reads — the most blend into the
+// ground that still meets AA (plain ink when no blend passes)
+const mutedOn = (inkV, bg, blend) => { for (let t = blend; t >= 0; t -= 0.05) { const m = mix(inkV, bg, t); if (m && contrast(m, bg) >= 4.6) return m; } return inkV; };
+
+// stored captions carry internal provenance — engine names, provider tiers,
+// pipeline words — that reads as jargon on the published doc (the caption
+// style uppercases it into an all-caps shout). Segments made only of these
+// tokens are stripped; if nothing human remains, the slot falls back to
+// "Fig. N" — the fig number is always printed separately anyway.
+const CAP_PROV = new Set(['studio', 'free', 'cloud', 'local', 'remote', 'ai', 'ml', 'api', 'gen', 'generated', 'render', 'rendered', 'engine', 'model', 'sdxl', 'turbo', 'gemini', 'pollinations', 'veo', 'ffmpeg', 'img2img', 'cdn', 'proxy', 'placeholder', 'stock', 'demo', 'test', 'testing', 'kit', 'promote', 'sample', 'scratch', 'tmp', 'draft', 'b64', 'tier', 'provider']);
+const allProv = (s) => s.split(/[\s·•|/+_—–-]+/).filter(Boolean).every((t) => CAP_PROV.has(t.toLowerCase()));
+const humanCaption = (cap) => {
+  let s = String(cap ?? '').replace(/\s+/g, ' ').trim();
+  if (!s) return null;
+  // "(sdxl)" / "(via pollinations)"-style engine parentheticals
+  s = s.replace(/\(([^()]*)\)/g, (m, inner) => { const toks = inner.replace(/^(via|by|using|with|from|on)\s+/i, ''); return allProv(toks) ? ' ' : m; }).replace(/\s+/g, ' ').trim();
+  // "·"-separated provenance segments — "free · studio", "hero · local"
+  const kept = s.split(/\s*[·•|]\s*/).map((x) => x.trim()).filter((p) => p && !allProv(p));
+  s = kept.join(' · ').trim();
+  return s && !allProv(s) ? s : null;
+};
 
 const SYSFONTS = new Set(['serif', 'sans-serif', 'monospace', 'system-ui', 'georgia', 'helvetica', 'arial', 'times new roman', 'courier', 'courier new', 'verdana', 'tahoma', 'trebuchet ms', 'ui-sans-serif', 'ui-serif', 'ui-monospace', 'inherit']);
 const fontName = (v) => String(v || '').replace(/['"\\;{}()<>]/g, '').trim().slice(0, 60) || null;
@@ -64,20 +94,29 @@ export function htmlBook(book, profile, { printHint = false } = {}) {
   const cover = imgs.find((i) => i.id === book?.coverImage) || imgs[0] || null;
   const picked = (book?.images || []).map((id) => imgs.find((i) => i.id === id)).filter(Boolean);
   const name = clip(profile?.name, 60) || 'The Brand';
+  // a placeholder name alone makes the doc generic — when the brand never
+  // named itself, the source domain is the real secondary identifier printed
+  // beside the placeholder (profile.name always wins when set)
+  const srcDomain = (() => { try { const h = new URL(profile?.source?.url || '').hostname.replace(/^www\./i, ''); return h || null; } catch { return null; } })();
+  const nameRef = clip(profile?.name, 60) ? name : (srcDomain ? `${name} · ${srcDomain}` : name);
   const affinities = (profile?.qloo?.affinities || []).filter((a) => (a?.entities || []).length);
 
   // ---- tokens: brand palette resolved for contrast ----
   const bg = rgb(c.background) ? c.background : '#faf8f4';
   const dark = (lum(bg) ?? 1) < 0.45;
   const ink = rgb(c.text) && contrast(c.text, bg) >= 3 ? c.text : bestInk(bg);
-  const mut = mix(ink, bg, 0.58) || (dark ? '#9a958c' : '#6f6a60');
+  // "muted" must still read — mutedOn keeps the quietest blend that clears AA
+  const mut = mutedOn(ink, bg, 0.58);
   const line = mix(bg, ink, 0.14) || (dark ? '#333026' : '#ddd8cc');
   const sf = rgb(c.surface) && contrast(c.surface, bg) > 1.04 ? c.surface : (mix(bg, ink, 0.05) || bg);
   const acc = rgb(c.accent) ? c.accent : (rgb(c.primary) ? c.primary : ink);
   const accInk = bestInk(acc);
+  // accent worn as small text needs its own token — the raw hue only survives
+  // when it genuinely reads on the page ground
+  const accText = liftToContrast(acc, bg);
   const band = rgb(c.primary) && contrast(c.primary, bg) >= 2.2 ? c.primary : (acc !== ink ? acc : (dark ? '#f6f2ea' : '#181410'));
   const bandInk = bestInk(band);
-  const bandMut = mix(bandInk, band, 0.62) || mut;
+  const bandMut = mutedOn(bandInk, band, 0.62);
   const bandLine = mix(band, bandInk, 0.3) || line;
 
   // ---- fonts: the book loads the faces it specifies ----
@@ -138,9 +177,11 @@ export function htmlBook(book, profile, { printHint = false } = {}) {
   const toneRows = tone.map((t, i) => `<div class="trow"><span class="tn">${pad2(i + 1)}</span><span class="tw">${esc(t)}</span></div>`).join('');
 
   const moodFigs = gridImgs.map((i, n) => {
-    const cap = clip(i.caption, 70) || `Fig. ${pad2(n + 1)}`;
+    const hcap = clip(humanCaption(i.caption), 70); // provenance scrubbed — internal pipeline tags never reach the published doc
+    const cap = hcap || `Fig. ${pad2(n + 1)}`;
+    const alt = hcap || `${name} imagery — frame ${pad2(n + 1)}`;
     const ref = `<span>Fig. ${pad2(n + 1)}</span>`;
-    return `<figure${n === 0 && gridImgs.length !== 2 ? ' class="feat"' : ''}><img src="${esc(i.path)}" alt="${esc(cap)}"><figcaption>${ref}<span>${esc(cap)}</span></figcaption></figure>`;
+    return `<figure${n === 0 && gridImgs.length !== 2 ? ' class="feat"' : ''}><img src="${esc(i.path)}" alt="${esc(alt)}"><figcaption>${ref}<span>${esc(cap)}</span></figcaption></figure>`;
   }).join('');
 
   const affRows = affinities.map((a) => {
@@ -150,7 +191,7 @@ export function htmlBook(book, profile, { printHint = false } = {}) {
 
   // ---- cover ----
   const coverArt = cover
-    ? `<figure class="cart"><img src="${esc(cover.path)}" alt="${esc(clip(cover.caption, 70) || `${name} cover art`)}"><figcaption><span>Cover art</span><span>${esc(clip(cover.caption, 60) || 'Studio series')}</span></figcaption></figure>`
+    ? `<figure class="cart"><img src="${esc(cover.path)}" alt="${esc(clip(humanCaption(cover.caption), 70) || `${name} cover art`)}"><figcaption><span>Cover art</span><span>${esc(clip(humanCaption(cover.caption), 60) || 'Studio series')}</span></figcaption></figure>`
     : (swatches.length ? `<div class="cart cart-pal"><div class="cpal">${swStrip}</div><figcaption><span>Palette</span><span>${swatches.length} colors</span></figcaption></div>` : '');
   const coverBody = `
     <div class="ctop"><span>Brand Book</span><span>Vol. 01 — ${esc(dateStr)}</span></div>
@@ -159,7 +200,7 @@ export function htmlBook(book, profile, { printHint = false } = {}) {
       <h1 class="cname">${esc(name)}</h1>
       ${profile?.tagline ? `<p class="ctag">${esc(profile.tagline)}</p>` : ''}
     </div>
-    <div class="cmeta"><span>${esc(name)}</span><span>Brand Book</span><span>© ${year}</span></div>`;
+    <div class="cmeta"><span>${esc(nameRef)}</span><span>Brand Book</span><span>© ${year}</span></div>`;
 
   // ---- contents ----
   const tocBody = `
@@ -272,7 +313,7 @@ ${ogImage}
 ${favicon}
 ${fontsLink}
 <style>
-:root{--bg:${bg};--ink:${ink};--mut:${mut};--line:${line};--sf:${sf};--acc:${acc};--acc-ink:${accInk};--band:${band};--band-ink:${bandInk};--band-mut:${bandMut};--band-line:${bandLine};--fd:${fd};--fb:${fb};--fm:ui-monospace,'SF Mono','Cascadia Mono',Menlo,Consolas,monospace}
+:root{--bg:${bg};--ink:${ink};--mut:${mut};--line:${line};--sf:${sf};--acc:${acc};--acc-ink:${accInk};--acc-text:${accText};--band:${band};--band-ink:${bandInk};--band-mut:${bandMut};--band-line:${bandLine};--fd:${fd};--fb:${fb};--fm:ui-monospace,'SF Mono','Cascadia Mono',Menlo,Consolas,monospace}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#e9e7e2;color:var(--ink);font:400 1rem/1.7 var(--fb);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 img{display:block;max-width:100%}
@@ -287,17 +328,17 @@ img{display:block;max-width:100%}
 
 /* ---- shared editorial atoms ---- */
 .kick{display:flex;align-items:baseline;gap:.7rem;font:600 .66rem/1.4 var(--fm);letter-spacing:.26em;text-transform:uppercase;color:var(--mut)}
-.kick b{color:var(--acc);font-weight:600}
+.kick b{color:var(--acc-text);font-weight:600}
 .kick i{font-style:normal;color:var(--line)}
 .sh{font-family:var(--fd);font-weight:600;font-size:clamp(2.1rem,4.8vw,3.3rem);line-height:1.02;letter-spacing:-.02em;margin:1.5rem 0 0;text-wrap:balance}
 .lede{font-size:clamp(1.04rem,1.5vw,1.26rem);line-height:1.66;color:var(--ink);max-width:34em;margin-top:clamp(1.6rem,3.5vh,2.4rem);text-wrap:pretty}
 .bp{font-size:.96rem;line-height:1.78;color:var(--ink);max-width:40em;margin-top:1.05rem}
 .sub-k{font:600 .66rem/1 var(--fm);letter-spacing:.26em;text-transform:uppercase;color:var(--mut);margin-top:clamp(2.2rem,5vh,3.2rem)}
 .pull{margin-top:clamp(1.8rem,4vh,2.6rem);border-left:2px solid var(--acc);padding:.4rem 0 .4rem 1.4rem}
-.pull-k{font:600 .62rem/1 var(--fm);letter-spacing:.26em;text-transform:uppercase;color:var(--acc);margin-bottom:.8rem}
+.pull-k{font:600 .62rem/1 var(--fm);letter-spacing:.26em;text-transform:uppercase;color:var(--acc-text);margin-bottom:.8rem}
 .pull p{font-family:var(--fd);font-size:clamp(1.15rem,2vw,1.5rem);line-height:1.45;max-width:26em}
 .trow{display:flex;align-items:baseline;gap:1.4rem;padding:1.15rem 0;border-bottom:1px solid var(--line);break-inside:avoid}
-.tn{font:600 .7rem/1 var(--fm);letter-spacing:.18em;color:var(--acc);min-width:2.4rem}
+.tn{font:600 .7rem/1 var(--fm);letter-spacing:.18em;color:var(--acc-text);min-width:2.4rem}
 .tw{font-family:var(--fd);font-weight:600;font-size:clamp(1.5rem,3.2vw,2.2rem);line-height:1.05;letter-spacing:-.015em}
 .vw{font-size:1.05rem}
 .vlist{margin-top:.4rem;border-top:1px solid var(--line)}
@@ -358,9 +399,9 @@ img{display:block;max-width:100%}
 /* ---- taste ---- */
 .alist{margin-top:clamp(1.8rem,4vh,2.6rem);border-top:1px solid var(--line)}
 .arow{display:grid;grid-template-columns:9rem 1fr;gap:1.4rem;padding:1.15rem 0;border-bottom:1px solid var(--line);break-inside:avoid}
-.atype{font:600 .62rem/1.5 var(--fm);letter-spacing:.22em;text-transform:uppercase;color:var(--acc);padding-top:.2rem}
+.atype{font:600 .62rem/1.5 var(--fm);letter-spacing:.22em;text-transform:uppercase;color:var(--acc-text);padding-top:.2rem}
 .anames{font-size:.96rem;line-height:1.75}
-.anames em{font-style:normal;font:600 .68rem/1 var(--fm);color:var(--acc);letter-spacing:.06em}
+.anames em{font-style:normal;font:600 .68rem/1 var(--fm);color:var(--acc-text);letter-spacing:.06em}
 .credit{margin-top:1.4rem;font:600 .62rem/1.5 var(--fm);letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}
 
 /* ---- back cover ---- */

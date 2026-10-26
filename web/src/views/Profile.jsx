@@ -85,6 +85,7 @@ export default function ProfilePage() {
   const [kitBusy, setKitBusy] = useState('');      // 'key:<k>' | 'rm:<k>' | 'up'
   const [confirmRm, setConfirmRm] = useState(null); // image id/path awaiting tap 2
   const confirmRmT = useRef(null);
+  const confirmFrom = useRef(null);               // the trash that opened the veil — focus returns on disarm
 
   // the server-truth snapshot the draft diffs against
   const base = useMemo(() => (p ? snap(init(p)) : null), [p]);
@@ -123,6 +124,15 @@ export default function ProfilePage() {
 
   // cancel a pending remove-confirm timer on unmount
   useEffect(() => () => clearTimeout(confirmRmT.current), []);
+
+  // Esc disarms a pending remove veil — the keyboard cancel for the two-tap
+  useEffect(() => {
+    if (!confirmRm) return;
+    const onKey = (e) => { if (e.key === 'Escape') disarmRm(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [confirmRm]);
 
   const set = (k) => (e) => setD((x) => ({ ...x, [k]: e.target ? e.target.value : e }));
   const setColor = (i, hex) => setD((x) => ({ ...x, colors: x.colors.map((c, j) => (j === i ? { ...c, hex } : c)) }));
@@ -184,14 +194,28 @@ export default function ProfilePage() {
     const next = [img, ...images.filter((x) => imgKey(x) !== imgKey(img))];
     writeImages(next, `key:${imgKey(img)}`).then((done) => done && say('Key image set — it drives image-to-image renders'));
   };
+  // close the remove veil — hands focus back to the trash that opened it, but
+  // only when focus is stranded inside the veil itself (the 4.2s auto-disarm
+  // firing while the user is somewhere else must never yank focus)
+  const disarmRm = () => {
+    clearTimeout(confirmRmT.current);
+    setConfirmRm(null);
+    const t = confirmFrom.current;
+    confirmFrom.current = null;
+    const ae = document.activeElement;
+    if (ae instanceof HTMLElement && ae.closest('.pfv-kit-confirm') && t && document.contains(t)) {
+      t.focus({ preventScroll: true });
+    }
+  };
   const askRm = (key) => {
     // two-tap confirm: first tap opens the veil on that thumb, auto-cancels
+    confirmFrom.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setConfirmRm(key);
     clearTimeout(confirmRmT.current);
-    confirmRmT.current = setTimeout(() => setConfirmRm(null), 4200);
+    confirmRmT.current = setTimeout(disarmRm, 4200);
   };
   const doRm = (img) => {
-    setConfirmRm(null); clearTimeout(confirmRmT.current);
+    setConfirmRm(null); clearTimeout(confirmRmT.current); confirmFrom.current = null;
     const next = (p.images || []).filter((x) => imgKey(x) !== imgKey(img));
     writeImages(next, `rm:${imgKey(img)}`).then((done) => done && say('Removed from brand kit — the file stays in assets'));
   };
@@ -415,16 +439,20 @@ export default function ProfilePage() {
                           ><Icon name="trash" size={11} sw={2.2} /></button>
                         </div>
                         {confirmRm === k && (
-                          <div className="pfv-kit-confirm" role="alert">
+                          <div className="pfv-kit-confirm" role="alert" aria-live="assertive">
                             <p>
                               Remove from the brand kit? The file stays in assets.
                               {i === 0 && ' Next image becomes key.'}
                             </p>
                             <span className="pfv-kit-confirm-ops">
-                              <button type="button" className="go" disabled={!!kitBusy} onClick={() => doRm(img)}>
+                              <button type="button" className="go" disabled={!!kitBusy}
+                                aria-label={`Confirm remove ${img.caption || `image ${i + 1}`} from the brand kit`}
+                                onClick={() => doRm(img)}>
                                 {kitBusy === `rm:${k}` ? '…' : 'Remove'}
                               </button>
-                              <button type="button" onClick={() => setConfirmRm(null)}>Keep</button>
+                              <button type="button"
+                                aria-label={`Keep ${img.caption || `image ${i + 1}`} in the brand kit`}
+                                onClick={disarmRm}>Keep</button>
                             </span>
                           </div>
                         )}
