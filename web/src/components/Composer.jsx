@@ -165,39 +165,6 @@ export async function downloadAsset(path, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
-// Kebab (⋮) + popover menu. Renders fragments so .kebab keeps its card-absolute position.
-export function KebabMenu({ items, icon = 'kebab' }) {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    if (!open) return undefined;
-    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open]);
-  return (
-    <>
-      <button className="kebab" title="More" aria-label="More" onClick={(e) => { e.stopPropagation(); setOpen(!open); }}>
-        <Icon name={icon} size={18} />
-      </button>
-      {open && (
-        <>
-          <div className="menu-backdrop" onClick={() => setOpen(false)} />
-          <div className="menu card-menu">
-            {items.filter(Boolean).map((it, i) =>
-              it.sep ? <div key={i} className="menu-sep" />
-              : it.title ? <div key={i} className="menu-title">{it.title}</div>
-              : (
-                <button key={i} className={it.danger ? 'danger' : ''} onClick={(e) => { e.stopPropagation(); setOpen(false); it.onClick?.(); }}>
-                  {it.label}
-                </button>
-              ))}
-          </div>
-        </>
-      )}
-    </>
-  );
-}
-
 // Pill with a dropdown menu; used inside the composer row.
 function PillMenu({ icon, label, has, open, onToggle, children, wide }) {
   useEffect(() => {
