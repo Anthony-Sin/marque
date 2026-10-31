@@ -55,7 +55,7 @@ export function boardContext(board, profile = null, product = null) {
     vibes: (read.vibeWords || []).slice(0, 5),
     strategies, strategy: strategies[0] || null,
     artists: names(board, 'artist'), brands: names(board, 'brand'),
-    movies: names(board, 'movie', 3), places: names(board, 'place'),
+    movies: names(board, 'movie', 3), places: names(board, 'place', 8),
     podcasts: names(board, 'podcast', 3), books: names(board, 'book', 3),
     palette: boardPalette(board, profile),
     productName, productDesc: short(product?.description || board?.urlContext?.description || '', 140),
@@ -68,19 +68,29 @@ export function boardContext(board, profile = null, product = null) {
 // the semantic label stored on the tile. Prompts put the subject in the
 // first sentence — enrichPrompt splices treatment cues right after it.
 export function buildTiles(c) {
-  const place = c.places.length ? `a place like ${and(c.places)}` : 'the venues this crowd gathers in';
+  // qloo places mix lodgings with real venues — a hostel/surf-lodge name in
+  // the prompt renders a literal beach boardwalk even when the crowd is
+  // metalheads. Only venue-type names survive; without one, describe the
+  // venue by function instead of naming a bed.
+  const venueish = c.places.filter((p) =>
+    /hall|club|cantina|lounge|stage|ballroom|theat|arena|amphitheat|pavilion|tavern|saloon|garage|dive|fillmore|bowery|bar\b/i.test(p));
+  const place = venueish.length
+    ? `a place like ${and(venueish)}`
+    : 'the mid-size live-music venues this crowd packs';
   const objects = [
     c.books[0] && `a dog-eared copy of ${short(c.books[0], 40)}`,
     c.movies[0] && `a creased still from ${short(c.movies[0], 40)}`,
     c.podcasts[0] && `earbuds queued on ${short(c.podcasts[0], 40)}`,
   ].filter(Boolean);
   const uniform = [...c.artists, ...c.brands].slice(0, 3);
-  const mood = c.vibes.slice(0, 3).join(' / ') || c.lean || 'the crowd';
+  // vibeWords leak place names too ("the still side of Venice Beach Hostel
+  // energy") — keep the mood to artists/brands the crowd reads as a mood.
+  const mood = c.vibes.filter((v) => !c.places.includes(v)).slice(0, 3).join(' / ') || c.lean || 'the crowd';
   const s = c.strategy;
   return [
     {
       id: 'persona', style: 'ad',
-      prompt: `Editorial portrait photograph of one member of this audience — ${c.audienceDesc}. ${c.artists.length ? `Styled like they listen to ${and(c.artists)}: ` : ''}worn merch, inked skin, unposed direct gaze — a real person, not a model.`,
+      prompt: `Editorial portrait photograph of one member of this audience — ${c.audienceDesc}. ${c.artists.length ? `Dressed for a ${and(c.artists)} show: ` : ''}worn black band merch or a gym tank, visible arm ink, day-after-the-pit look — unposed direct gaze, a real person, not a model.`,
     },
     {
       id: 'venue', style: 'hero',
@@ -98,7 +108,7 @@ export function buildTiles(c) {
       id: 'product', style: 'ad',
       // 'surface plain and unprinted' up front — the can renders inside the
       // encoder window where the anti-text cue can still reach it
-      prompt: `Documentary photograph of ${c.productName || 'the featured product'}, its surface plain and unprinted, standing on a scratched bar top in ${place}. Sticky wood grain, hard tungsten practical light, shallow focus, crowd bokeh — a real environment, not a studio packshot.`,
+      prompt: `Documentary photograph of a tall plain unprinted aluminum can — ${c.productName || 'the featured product'} — standing sharp in the center of frame on a scratched bar top in ${place}. Sticky wood grain, hard tungsten practical light, crowd bokeh behind — a real environment, but the can stays crisp and readable.`,
     },
     {
       id: 'music', style: 'motion',
@@ -108,12 +118,12 @@ export function buildTiles(c) {
     },
     {
       id: 'culture', style: 'photoshoot',
-      prompt: `Overhead knolling photograph on scratched steel, every cover and print blank and unmarked — ${objects.length ? objects.join(', ') : 'worn headphones, gym chalk, a creased ticket stub and a battered paperback'}. Hard even light, precise grid, fingertip-wide gaps.`,
+      prompt: `Overhead flat-lay knolling photograph on scratched steel, every cover and print blank and unmarked — ${objects.length ? objects.join(', ') + ', a battered festival wristband and a block of gym chalk' : 'worn headphones, gym chalk, a creased ticket stub and a battered paperback'}. Hard even light, precise grid, fingertip-wide gaps.`,
     },
     {
       id: 'strategy', style: 'hero',
       prompt: s
-        ? `Cinematic key art for "${short(s.title, 60)}" — ${short(s.angle || s.brief?.keyMessage || c.ask, 140)} — one striking frame, mood over message.`
+        ? `Cinematic key art poster for "${short(s.title, 60)}" — ${short(s.angle || s.brief?.keyMessage || c.ask, 140)} — one spotlit figure mid-lift on a festival stage, crowd silhouettes in haze, one striking frame, mood over message.`
         : `Cinematic key art for ${c.ask} — one striking frame, mood over message.`,
     },
     {
