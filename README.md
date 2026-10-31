@@ -5,6 +5,10 @@ artifacts. One continuous flow:
 
     profile → strategy board → moodboard → campaigns → shoots → sites → book
 
+**Demo** — walkthrough video: <https://youtu.be/KCMrd_DM5uY> · packaged
+release: <https://github.com/Anthony-Sin/marque/releases/tag/v1.0-qloo-hackathon>
+· built for the [Qloo Agentic Hackathon](https://qloo.devpost.com).
+
 - **Brand DNA** — `POST /api/profile/build` scrapes a URL (copy, colors,
   fonts, images) into voice/palette/audience; `/api/profile/scratch` builds
   one via agent chat; `/api/profile/template` clones a starter. Qloo
